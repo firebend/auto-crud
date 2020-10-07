@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
@@ -12,6 +11,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
     {
         Task<List<TEntity>> SearchAsync(EntitySearchRequest request,  CancellationToken cancellationToken = default);
 
-        Task<EntityPagedResponse<TEntity, TKey>> PageAsync(EntitySearchRequest request, CancellationToken cancellationToken = default);
+        Task<EntityPagedResponse<TEntity>> PageAsync(EntitySearchRequest request, CancellationToken cancellationToken = default);
     }
 }
