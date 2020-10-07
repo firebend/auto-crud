@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services
+namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
     public interface IEntityReadService<in TKey, TEntity>
         where TKey : struct

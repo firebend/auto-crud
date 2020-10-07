@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Interfaces;
 
-namespace Firebend.AutoCrud.Core.Models
+namespace Firebend.AutoCrud.Core.Models.Searching
 {
     public class EntityPagedResponse<TEntity, TKey>
         where TEntity : IEntity<TKey>

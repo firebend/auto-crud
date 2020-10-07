@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.JsonPatch;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services
+namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
     public interface IEntityUpdateService<in TKey, TEntity>
         where TKey : struct

@@ -1,4 +1,4 @@
-namespace Firebend.AutoCrud.Core.Models
+namespace Firebend.AutoCrud.Core.Models.Searching
 {
     public class EntityOrderDefinition
     {

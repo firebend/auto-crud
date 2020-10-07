@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Mongo", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.SqlServer", "Firebend.AutoCrud.SqlServer\Firebend.AutoCrud.SqlServer.csproj", "{20C5F77D-04CA-4458-A928-F63E91E2ED93}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Generator", "Firebend.AutoCrud.Generator\Firebend.AutoCrud.Generator.csproj", "{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{20C5F77D-04CA-4458-A928-F63E91E2ED93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20C5F77D-04CA-4458-A928-F63E91E2ED93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20C5F77D-04CA-4458-A928-F63E91E2ED93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
