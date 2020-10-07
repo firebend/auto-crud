@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Firebend.AutoCrud.Core.Models
+namespace Firebend.AutoCrud.Core.Models.Searching
 {
     public class EntitySearchRequest
     {

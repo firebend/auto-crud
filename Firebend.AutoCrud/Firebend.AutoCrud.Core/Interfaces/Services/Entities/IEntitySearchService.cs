@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Models;
+using Firebend.AutoCrud.Core.Models.Searching;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services
+namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
     public interface IEntitySearchService<TKey, TEntity>
         where TKey : struct

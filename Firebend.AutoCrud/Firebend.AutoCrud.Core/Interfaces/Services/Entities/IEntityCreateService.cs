@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services
+namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
     public interface IEntityCreateService<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
