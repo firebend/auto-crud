@@ -72,7 +72,9 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 for (var i = 0; i < parameters.Length; ++i)
                 {
                     var parameter = parameters[i];
+                    
                     var parameterBuilder = ctor.DefineParameter(i + 1, parameter.Attributes, parameter.Name);
+                    
                     if (((int)parameter.Attributes & (int)ParameterAttributes.HasDefault) != 0)
                     {
                         parameterBuilder.SetConstant(parameter.RawDefaultValue);
