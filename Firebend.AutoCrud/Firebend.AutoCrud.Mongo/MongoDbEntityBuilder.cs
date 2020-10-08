@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
 
 namespace Firebend.AutoCrud.Mongo
@@ -63,7 +64,7 @@ namespace Firebend.AutoCrud.Mongo
 
         public MongoDbEntityBuilder WithRead<TRegistration, TService>()
         {
-            return WithCreate(typeof(TRegistration), typeof(TService));
+            return WithRead(typeof(TRegistration), typeof(TService));
         }
 
         public MongoDbEntityBuilder WithRead()
@@ -71,7 +72,37 @@ namespace Firebend.AutoCrud.Mongo
             var registrationType = typeof(IEntityReadService<,>).MakeGenericType(EntityKeyType, EntityType);
             var serviceType = typeof(MongoEntityReadService<,>).MakeGenericType(EntityKeyType, EntityType);
 
-            return WithCreate(registrationType, serviceType);
+            return WithRead(registrationType, serviceType);
+        }
+        
+        public MongoDbEntityBuilder WithSearch(Type registrationType, Type serviceType, Type searchType)
+        {
+            return AddType(registrationType,
+                serviceType,
+                typeof(IEntitySearchService<,,>),
+                EntityKeyType, EntityType, serviceType);
+        }
+
+        public MongoDbEntityBuilder WithSearch<TRegistration, TService, TSearch>()
+            where TSearch : EntitySearchRequest
+        {
+            return WithSearch(typeof(TRegistration), typeof(TService), typeof(TSearch));
+        }
+
+        public MongoDbEntityBuilder WithSearch<TSearch>()
+            where TSearch : EntitySearchRequest
+        {
+            var searchType = typeof(TSearch);
+            
+            var registrationType = typeof(IEntitySearchService<,,>).MakeGenericType(EntityKeyType, EntityType, searchType);
+            var serviceType = typeof(MongoEntitySearchService<,,>).MakeGenericType(EntityKeyType, EntityType, searchType);
+
+            return WithSearch(registrationType, serviceType, searchType);
+        }
+
+        public MongoDbEntityBuilder WithSearch()
+        {
+            return WithSearch<EntitySearchRequest>();
         }
     }
 }
