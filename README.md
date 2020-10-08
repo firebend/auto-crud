@@ -1,6 +1,9 @@
 # Firebend.AutoCrud
 A library for creating CRUD dotnet core controllers. 
 
+# Status
+![Build and Test](https://github.com/firebend/auto-crud/workflows/Build%20and%20Test/badge.svg)
+
 # Goals
 - [ ] Fluent Data store agnostic CRUD
 - [ ] Support any kind of primary key ( GUID, integer, string, etc )
