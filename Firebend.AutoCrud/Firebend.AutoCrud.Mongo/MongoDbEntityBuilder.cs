@@ -125,5 +125,26 @@ namespace Firebend.AutoCrud.Mongo
 
             return WithUpdate(registrationType, serviceType);
         }
+        
+        public MongoDbEntityBuilder WithDelete(Type registrationType, Type serviceType)
+        {
+            return AddType(registrationType,
+                serviceType,
+                typeof(IEntityDeleteService<,>),
+                EntityKeyType, EntityType);
+        }
+
+        public MongoDbEntityBuilder WithDelete<TRegistration, TService>()
+        {
+            return WithDelete(typeof(TRegistration), typeof(TService));
+        }
+
+        public MongoDbEntityBuilder WithDelete()
+        {
+            var registrationType = typeof(IEntityDeleteService<,>).MakeGenericType(EntityKeyType, EntityType);
+            var serviceType = typeof(MongoEntityDeleteService<,>).MakeGenericType(EntityKeyType, EntityType);
+
+            return WithDelete(registrationType, serviceType);
+        }
     }
 }
