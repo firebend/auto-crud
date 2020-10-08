@@ -1,9 +1,7 @@
 using System;
 using Firebend.AutoCrud.Mongo.HostedServices;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -16,13 +14,13 @@ namespace Firebend.AutoCrud.Mongo
     {
         public static IServiceCollection ConfigureMongoDb(
             this IServiceCollection services,
-            IConfiguration configuration,
-            IHostEnvironment environment,
-            string connectionStringName)
+            string connectionString,
+            bool enableCommandLogging,
+            IMongoDbConfigurator configurator)
         {
-            if (string.IsNullOrWhiteSpace(connectionStringName))
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new ArgumentNullException(nameof(connectionStringName));
+                throw new ArgumentNullException(nameof(connectionString));
             }
             
             services.Scan(action => action.FromAssemblies()
@@ -32,18 +30,9 @@ namespace Firebend.AutoCrud.Mongo
                 .WithTransientLifetime()
             );
 
-            var connString = configuration.GetConnectionString(connectionStringName);
+            var mongoUrl = new MongoUrl(connectionString);
 
-            if (string.IsNullOrWhiteSpace(connString))
-            {
-                throw new Exception($"Mongo connection string not found. Name : {connectionStringName} ");
-            }
-
-            var mongoUrl = new MongoUrl(connString);
-
-            MongoDbConfigurator.Configure();
-
-            var isDev = environment.IsDevelopment();
+            configurator.Configure();
 
             services.AddScoped<IMongoClient>(x =>
             {
@@ -51,7 +40,7 @@ namespace Firebend.AutoCrud.Mongo
 
                 var mongoClientSettings = MongoClientSettings.FromUrl(mongoUrl);
 
-                if (isDev)
+                if (enableCommandLogging)
                 {
                     mongoClientSettings.ClusterConfigurator = cb =>
                     {
