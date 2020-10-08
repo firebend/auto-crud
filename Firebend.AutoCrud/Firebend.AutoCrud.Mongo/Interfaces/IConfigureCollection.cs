@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         Task ConfigureAsync(CancellationToken cancellationToken);
     }
 
-    public interface IConfigureCollection<TEntity, TKey> : IConfigureCollection 
+    public interface IConfigureCollection<TKey, TEntity> : IConfigureCollection 
         where TEntity : IEntity<TKey>
         where TKey : struct
     {

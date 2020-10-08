@@ -8,7 +8,7 @@ using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
-    public interface IMongoReadClient<TEntity, TKey>
+    public interface IMongoReadClient<TKey, TEntity>
         where TEntity: IEntity<TKey>
         where TKey : struct
     {

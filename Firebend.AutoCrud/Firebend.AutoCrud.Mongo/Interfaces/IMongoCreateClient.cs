@@ -4,7 +4,7 @@ using Firebend.AutoCrud.Core.Interfaces;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
-    public interface IMongoCreateClient<TEntity, TKey>
+    public interface IMongoCreateClient<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
     {

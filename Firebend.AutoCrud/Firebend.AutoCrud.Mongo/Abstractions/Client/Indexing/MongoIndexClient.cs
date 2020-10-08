@@ -13,7 +13,7 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 {
-    public class MongoIndexClient<TEntity, TKey> : MongoClientBaseEntity<TEntity, TKey>, IMongoIndexClient<TEntity, TKey>
+    public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoIndexClient<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         
         public MongoIndexClient(IMongoClient client,
             IMongoEntityConfiguration entityConfiguration,
-            ILogger<MongoIndexClient<TEntity, TKey>> logger,
+            ILogger<MongoIndexClient<TKey, TEntity>> logger,
             IMongoIndexProvider<TEntity> indexProvider) : base(client, logger, entityConfiguration)
         {
             _indexProvider = indexProvider;

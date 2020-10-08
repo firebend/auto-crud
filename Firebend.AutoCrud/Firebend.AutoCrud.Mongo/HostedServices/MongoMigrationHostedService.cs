@@ -14,7 +14,6 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
 {
     public class MongoMigrationHostedService : IHostedService
     {
-        
         private readonly IEnumerable<IMongoMigration> _migrations;
         private readonly ILogger _logger;
         private readonly IMongoDefaultDatabaseSelector _databaseSelector;

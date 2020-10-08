@@ -12,9 +12,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IMongoUpdateClient<TEntity, TKey> _updateClient;
+        private readonly IMongoUpdateClient<TKey, TEntity> _updateClient;
 
-        public MongoEntityUpdateService(IMongoUpdateClient<TEntity, TKey> updateClient)
+        public MongoEntityUpdateService(IMongoUpdateClient<TKey, TEntity> updateClient)
         {
             _updateClient = updateClient;
         }

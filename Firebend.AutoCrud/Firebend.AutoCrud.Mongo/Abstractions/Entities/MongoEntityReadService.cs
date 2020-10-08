@@ -11,9 +11,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
-        private readonly IMongoReadClient<TEntity, TKey> _readClient;
+        private readonly IMongoReadClient<TKey, TEntity> _readClient;
 
-        public MongoEntityReadService(IMongoReadClient<TEntity, TKey> readClient)
+        public MongoEntityReadService(IMongoReadClient<TKey, TEntity> readClient)
         {
             _readClient = readClient;
         }

@@ -11,7 +11,7 @@ using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
-    public abstract class MongoClientBaseEntity<TEntity, TKey> : MongoClientBase
+    public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase
         where TEntity : IEntity<TKey>
         where TKey : struct
     {

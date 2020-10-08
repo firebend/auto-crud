@@ -25,20 +25,6 @@ namespace Firebend.AutoCrud.Core.Extensions
             return builder;
         }
 
-        public static TBuilder WithRoute<TBuilder>(this TBuilder builder, string route)
-            where TBuilder : EntityCrudBuilder
-        {
-            builder.RoutePrefix = route;
-            return builder;
-        }
-
-        public static TBuilder WithGetAllEndpoint<TBuilder>(this TBuilder builder, bool getAll)
-            where TBuilder : EntityCrudBuilder
-        {
-            builder.IncludeGetAllEndpoint = getAll;
-            return builder;
-        }
-
         public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
             where TBuilder : EntityCrudBuilder
         {

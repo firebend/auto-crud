@@ -11,9 +11,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IMongoDeleteClient<TEntity, TKey> _deleteClient;
+        private readonly IMongoDeleteClient<TKey, TEntity> _deleteClient;
 
-        public MongoEntityDeleteService(IMongoDeleteClient<TEntity, TKey> deleteClient)
+        public MongoEntityDeleteService(IMongoDeleteClient<TKey, TEntity> deleteClient)
         {
             _deleteClient = deleteClient;
         }

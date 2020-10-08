@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
-    public interface IMongoUpdateClient<TEntity, TKey>
+    public interface IMongoUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

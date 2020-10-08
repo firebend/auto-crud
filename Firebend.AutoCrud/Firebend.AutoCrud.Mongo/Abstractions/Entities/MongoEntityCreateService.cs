@@ -7,13 +7,13 @@ using SharpCompress.Common.Tar;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public class MongoEntityCreateService<TEntity, TKey> : IEntityCreateService<TKey, TEntity>
+    public class MongoEntityCreateService<TKey, TEntity> : IEntityCreateService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IMongoCreateClient<TEntity, TKey> _createClient;
+        private readonly IMongoCreateClient<TKey, TEntity> _createClient;
 
-        public MongoEntityCreateService(IMongoCreateClient<TEntity, TKey> createClient)
+        public MongoEntityCreateService(IMongoCreateClient<TKey, TEntity> createClient)
         {
             _createClient = createClient;
         }
