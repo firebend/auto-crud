@@ -8,8 +8,10 @@ namespace Firebend.AutoCrud.Core.Models.Searching
 
         public int? PageSize { get; set; }
         
-        public IEnumerable<EntityOrderDefinition> OrderBy { get; set; }
+        public IEnumerable<string> OrderBy { get; set; }
         
         public string Search { get; set; }
+
+        public bool DoCount { get; set; } = true;
     }
 }
