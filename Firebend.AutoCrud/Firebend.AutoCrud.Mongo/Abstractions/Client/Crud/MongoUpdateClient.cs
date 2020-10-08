@@ -177,7 +177,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new List<TOut>();
         }
 
-        public async Task<TEntity> UpdateAsync(Guid id, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
+        public async Task<TEntity> UpdateAsync(TKey id, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
             
