@@ -2,33 +2,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using DnsClient.Internal;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Firebend.AutoCrud.Core.Extensions;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-namespace Firebend.AutoCrud.Mongo.Abstractions
+namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
     public abstract class MongoClientBaseEntity<TEntity, TKey> : MongoClientBase
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        private readonly IMongoEntityConfiguration _entityConfiguration;
+        protected IMongoEntityConfiguration EntityConfiguration { get; }
         
         protected MongoClientBaseEntity(IMongoClient client,
             ILogger logger,
             IMongoEntityConfiguration entityConfiguration) : base(client, logger)
         {
-            _entityConfiguration = entityConfiguration;
+            EntityConfiguration = entityConfiguration;
         }
         
         protected IMongoCollection<TEntity> GetCollection()
         {
-            var database = Client.GetDatabase(_entityConfiguration.DatabaseName);
+            var database = Client.GetDatabase(EntityConfiguration.DatabaseName);
 
-            return database.GetCollection<TEntity>(_entityConfiguration.CollectionName);
+            return database.GetCollection<TEntity>(EntityConfiguration.CollectionName);
         }
         
         protected IMongoQueryable<TEntity> GetFilteredCollection(FilterDefinition<TEntity> firstStageFilters = null)

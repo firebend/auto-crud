@@ -4,15 +4,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DnsClient.Internal;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-namespace Firebend.AutoCrud.Mongo.Abstractions
+namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public class MongoUpdateClient<TEntity, TKey> : MongoClientBaseEntity<TEntity, TKey>, IMongoUpdateClient<TEntity, TKey>
         where TKey : struct
@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions
         private readonly IMongoCollectionKeyGenerator<TEntity, TKey> _keyGenerator;
         
         public MongoUpdateClient(IMongoClient client,
-            ILogger logger,
+            ILogger<MongoUpdateClient<TEntity, TKey>> logger,
             IMongoEntityConfiguration entityConfiguration,
             IMongoCollectionKeyGenerator<TEntity, TKey> keyGenerator) : base(client, logger, entityConfiguration)
         {
