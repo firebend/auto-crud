@@ -1,14 +1,15 @@
 using System;
 using System.Threading.Tasks;
-using DnsClient.Internal;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
-namespace Firebend.AutoCrud.Mongo.Abstractions
+namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
     public abstract class MongoClientBase
     {
-        protected readonly IMongoClient Client;
-        protected readonly ILogger Logger;
+        protected IMongoClient Client { get; }
+        
+        protected ILogger Logger { get; }
 
         protected MongoClientBase(IMongoClient client,
             ILogger logger)

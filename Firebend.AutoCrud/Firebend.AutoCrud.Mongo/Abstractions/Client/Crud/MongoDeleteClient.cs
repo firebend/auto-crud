@@ -2,18 +2,20 @@ using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DnsClient.Internal;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
-namespace Firebend.AutoCrud.Mongo.Abstractions
+namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoDeleteClient<TEntity, TKey> : MongoClientBaseEntity<TEntity, TKey>, IMongoDeleteClient<TEntity, TKey>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        protected MongoDeleteClient(IMongoClient client, ILogger logger, IMongoEntityConfiguration entityConfiguration) : base(client, logger, entityConfiguration)
+        protected MongoDeleteClient(IMongoClient client,
+            ILogger<MongoDeleteClient<TEntity, TKey>> logger,
+            IMongoEntityConfiguration entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }
 
