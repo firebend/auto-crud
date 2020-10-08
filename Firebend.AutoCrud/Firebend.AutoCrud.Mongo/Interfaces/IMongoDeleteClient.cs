@@ -6,7 +6,7 @@ using Firebend.AutoCrud.Core.Interfaces;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
-    public interface IMongoDeleteClient<TEntity, TKey>
+    public interface IMongoDeleteClient<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {

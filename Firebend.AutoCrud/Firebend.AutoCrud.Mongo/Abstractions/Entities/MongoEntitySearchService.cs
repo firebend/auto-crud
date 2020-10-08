@@ -17,10 +17,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
     {
-        private readonly IMongoReadClient<TEntity, TKey> _readClient;
+        private readonly IMongoReadClient<TKey, TEntity> _readClient;
         private readonly IEntityDefaultOrderByProvider<TEntity, TKey> _orderByProvider;
 
-        public MongoEntitySearchService(IMongoReadClient<TEntity, TKey> readClient,
+        public MongoEntitySearchService(IMongoReadClient<TKey, TEntity> readClient,
             IEntityDefaultOrderByProvider<TEntity, TKey> orderByProvider)
         {
             _readClient = readClient;

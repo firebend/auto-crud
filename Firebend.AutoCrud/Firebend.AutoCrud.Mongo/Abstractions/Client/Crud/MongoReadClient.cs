@@ -12,12 +12,12 @@ using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
-    public class MongoReadClient<TEntity, TKey> : MongoClientBaseEntity<TEntity, TKey>, IMongoReadClient<TEntity, TKey>
+    public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoReadClient<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
         public MongoReadClient(IMongoClient client,
-            ILogger<MongoReadClient<TEntity, TKey>> logger,
+            ILogger<MongoReadClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }

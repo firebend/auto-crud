@@ -7,12 +7,12 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
-    public abstract class MongoCreateClient<TEntity, TKey> : MongoClientBaseEntity<TEntity, TKey>, IMongoCreateClient<TEntity, TKey>
+    public abstract class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoCreateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
         protected MongoCreateClient(IMongoClient client,
-            ILogger<MongoCreateClient<TEntity, TKey>> logger,
+            ILogger<MongoCreateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }
