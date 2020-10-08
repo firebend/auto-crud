@@ -20,6 +20,6 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build Firebend.AutoCrud/*.sln --configuration Release --no-restore
+      run: dotnet build Firebend.AutoCrud/Firebend.AutoCrud.sln --configuration Release --no-restore
     - name: Test
-      run: dotnet test Firebend.AutoCrud/*.sln --no-restore --verbosity normal
+      run: dotnet test Firebend.AutoCrud/Firebend.AutoCrud.sln --no-restore --verbosity normal
