@@ -8,9 +8,9 @@ namespace Firebend.AutoCrud.Mongo
 {
     public class MongoDbEntityBuilder : EntityCrudBuilder
     {
-        private MongoDbEntityBuilder AddType(Type registrationType, Type serviceType, Type typeToCheck)
+        private MongoDbEntityBuilder AddType(Type registrationType, Type serviceType, Type typeToCheck, params Type[] genericArguments)
         {
-            var createType = typeToCheck.MakeGenericType(EntityKeyType, EntityType);
+            var createType = typeToCheck.MakeGenericType(genericArguments);
             
             if (!registrationType.IsAssignableFrom(createType))
             {
@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Mongo
             {
                 throw new ArgumentException($"Service type is not assignable to {createType}");
             }
-
+            
             if (Registrations == null)
             {
                 Registrations = new Dictionary<Type, Type>();
@@ -34,7 +34,10 @@ namespace Firebend.AutoCrud.Mongo
 
         public MongoDbEntityBuilder WithCreate(Type registrationType, Type serviceType)
         {
-            return AddType(registrationType, serviceType, typeof(IEntityCreateService<,>));
+            return AddType(registrationType,
+                serviceType,
+                typeof(IEntityCreateService<,>),
+                EntityKeyType, EntityType);
         }
 
         public MongoDbEntityBuilder WithCreate<TRegistration, TService>()
