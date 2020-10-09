@@ -4,6 +4,6 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
 {
     public interface IMongoDefaultDatabaseSelector
     {
-        IMongoDatabase GetDefaultDb();
+        public string DefaultDb { get; }
     }
 }

@@ -15,6 +15,13 @@ namespace Firebend.AutoCrud.Mongo.Sample
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
+
+            Console.WriteLine("Sample complete. type 'quit' to exit.");
+            
+            while (Console.ReadLine().Equals("quit", StringComparison.InvariantCultureIgnoreCase))
+            {
+                
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -29,10 +36,12 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 .ConfigureServices((hostContext, services) =>
                 {
                     var builder = new MongoDbEntityBuilder(new DynamicClassGenerator());
+                    
                     builder.ForEntity<MongoDbEntityBuilder, Person, Guid>()
-                        .WithDatabase("Samples")
+                        .WithDefaultDatabase("Samples")
                         .WithCollection("People")
-                        .WithCrud();
+                        .WithCrud()
+                        .Build();
 
                     var crudGenerator = new EntityCrudGenerator(new DynamicClassGenerator());
                     

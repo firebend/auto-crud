@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
@@ -61,6 +62,28 @@ namespace Firebend.AutoCrud.Core.Extensions
             }
 
             return builder.WithRegistration(registrationType, serviceType);
+        }
+
+        public static TBuilder WithRegistrationInstance<TBuilder>(this TBuilder builder, Type registrationType, object instance)
+            where TBuilder : EntityBuilder
+        {
+            if (builder.InstanceRegistrations == null)
+            {
+                builder.InstanceRegistrations = new Dictionary<Type, object> {{registrationType, instance}};
+            }
+            else
+            {
+                if (builder.InstanceRegistrations.ContainsKey(registrationType))
+                {
+                    builder.InstanceRegistrations[registrationType] = instance;
+                }
+                else
+                {
+                    builder.InstanceRegistrations.Add(registrationType, instance);
+                }
+            }
+            
+            return builder;
         }
     }
 }

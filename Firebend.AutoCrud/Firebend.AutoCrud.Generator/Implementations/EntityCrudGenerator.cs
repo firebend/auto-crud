@@ -58,6 +58,11 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                 implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
             }
+
+            foreach (var (key, value) in builder.InstanceRegistrations)
+            {
+                collection.AddSingleton(key, value);
+            }
         }
         
         private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, Type> source)

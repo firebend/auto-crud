@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
@@ -6,6 +8,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
+using Firebend.AutoCrud.Mongo.Abstractions;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
@@ -18,6 +21,7 @@ namespace Firebend.AutoCrud.Mongo
     public class MongoDbEntityBuilder : EntityCrudBuilder
     {
         private readonly IDynamicClassGenerator _generator;
+        
         public override Type CreateType { get; } = typeof(MongoEntityCreateService<,>);
         
         public override Type ReadType { get; } = typeof(MongoEntityReadService<,>);
@@ -74,9 +78,9 @@ namespace Firebend.AutoCrud.Mongo
                 typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType));
         }
 
-        public override void Build()
+        protected override void OnBuild()
         {
-            base.Build();
+            base.OnBuild();
             ApplyPlatformTypes();
             RegisterCollectionNameInterfaceType();
             
@@ -100,10 +104,9 @@ namespace Firebend.AutoCrud.Mongo
                 throw new Exception("Please provide a database name for this entity.");
             }
             
-            var collectionNameSignature = $"{EntityType.Name}_{CollectionName}_CollectionName";
+            var signature = $"{EntityType.Name}_{CollectionName}_CollectionName";
             
-            var collectionNameInterfaceType = typeof(IMongoEntityConfiguration<,>).MakeGenericType(EntityKeyType, EntityType);
-            var collectionNameInterface = _generator.GenerateInterface(collectionNameInterfaceType, $"I{collectionNameSignature}");
+            var iFaceType = typeof(IMongoEntityConfiguration<,>).MakeGenericType(EntityKeyType, EntityType);
 
             var collectionNameField = new PropertySet
             {
@@ -121,15 +124,15 @@ namespace Firebend.AutoCrud.Mongo
                 Override = true
             };
 
-            var collectionNameImplementation = _generator.ImplementInterface(collectionNameInterface,
-                collectionNameSignature,
+            var instance = _generator.ImplementInterface(iFaceType,
+                signature,
                 new[]
                 {
                     collectionNameField,
                     databaseField
                 });
 
-            this.WithRegistration(collectionNameInterface, collectionNameImplementation.GetType());
+            this.WithRegistrationInstance(iFaceType, instance);
         }
 
         public MongoDbEntityBuilder WithDatabase(string db)
@@ -141,6 +144,42 @@ namespace Firebend.AutoCrud.Mongo
         public MongoDbEntityBuilder WithCollection(string collection)
         {
             CollectionName = collection;
+            return this;
+        }
+
+        public MongoDbEntityBuilder WithDefaultDatabase(string db)
+        {
+            if (string.IsNullOrWhiteSpace(db))
+            {
+                throw new Exception("Please provide a database name.");
+            }
+
+            if (string.IsNullOrWhiteSpace(Database))
+            {
+                Database = db;
+            }
+
+            var signature = $"DefaultDb";
+            
+            var iFaceType = typeof(IMongoDefaultDatabaseSelector);
+
+            var defaultDbField = new PropertySet
+            {
+                Name = nameof(IMongoDefaultDatabaseSelector.DefaultDb),
+                Type = typeof(string),
+                Value = db,
+                Override = true
+            };
+
+            var instance = _generator.ImplementInterface(iFaceType,
+                signature,
+                new[]
+                {
+                    defaultDbField,
+                });
+
+            this.WithRegistrationInstance(iFaceType, instance);
+            
             return this;
         }
     }
