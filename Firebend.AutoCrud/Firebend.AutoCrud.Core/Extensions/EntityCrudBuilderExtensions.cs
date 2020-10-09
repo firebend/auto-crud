@@ -1,44 +1,157 @@
 using System;
-using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Interfaces;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
     public static class EntityCrudBuilderExtensions
     {
-        public static TBuilder ForEntity<TBuilder, TEntity, TEntityKey>(this TBuilder builder)
+        public static TBuilder WithCreate<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
             where TBuilder : EntityCrudBuilder
-            where TEntity : IEntity<TEntityKey>
-            where TEntityKey : struct
         {
-            builder.EntityType = typeof(TEntity);
-            builder.EntityKeyType = typeof(TEntityKey);
-
-            return builder;
+            return builder.WithRegistration(registrationType,
+                serviceType,
+                typeof(IEntityCreateService<,>),
+                builder.EntityKeyType, builder.EntityType);
         }
 
-        public static TBuilder WithEntityName<TBuilder>(this TBuilder builder, string entityName)
+        public static TBuilder WithCreate<TBuilder, TRegistration, TService>(this TBuilder builder)
             where TBuilder : EntityCrudBuilder
         {
-            builder.EntityName = entityName;
-            return builder;
+            return builder.WithCreate(typeof(TRegistration), typeof(TService));
         }
 
-        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
+        public static TBuilder WithCreate<TBuilder>(this TBuilder builder)
             where TBuilder : EntityCrudBuilder
         {
-            builder.Registrations ??= new Dictionary<Type, Type>();
+            var registrationType = typeof(IEntityCreateService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
+            var serviceType = builder.CreateType.MakeGenericType(builder.EntityKeyType, builder.EntityType);
+
+            return builder.WithCreate(registrationType, serviceType);
+        }
+        
+        public static TBuilder WithRead<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
+            where TBuilder : EntityCrudBuilder
+        {
+            return builder.WithRegistration(registrationType,
+                serviceType,
+                typeof(IEntityReadService<,>),
+                builder.EntityKeyType, builder.EntityType);
+        }
+
+        public static TBuilder WithRead<TBuilder, TRegistration, TService>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+        {
+            return builder.WithRead(typeof(TRegistration), typeof(TService));
+        }
+
+        public static TBuilder WithRead<TBuilder>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+        {
+            var registrationType = typeof(IEntityReadService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
+            var serviceType = builder.ReadType.MakeGenericType(builder.EntityKeyType, builder.EntityType);
+
+            return builder.WithRead(registrationType, serviceType);
+        }
+        
+        public static TBuilder WithSearch<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType, Type searchType)
+            where TBuilder : EntityCrudBuilder
+        {
+            return builder.WithRegistration(registrationType,
+                serviceType,
+                typeof(IEntitySearchService<,,>),
+                builder.EntityKeyType, builder.EntityType, serviceType, searchType);
+        }
+
+        public static TBuilder WithSearch<TBuilder, TRegistration, TService, TSearch>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+            where TSearch : EntitySearchRequest
+        {
+            return builder.WithSearch(typeof(TRegistration), typeof(TService), typeof(TSearch));
+        }
+
+        public static TBuilder WithSearch<TBuilder, TSearch>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+            where TSearch : EntitySearchRequest
+        {
+            var searchType = typeof(TSearch);
             
-            builder.Registrations.Add(registrationType, serviceType);
-            
-            return builder;
+            var registrationType = typeof(IEntitySearchService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, searchType);
+            var serviceType = builder.SearchType.MakeGenericType(builder.EntityKeyType, builder.EntityType, searchType);
+
+            return builder.WithSearch(registrationType, serviceType, searchType);
         }
 
-        public static TBuilder WithRegistration<TBuilder, TRegistration, TService>(this TBuilder builder)
+        public static TBuilder WithSearch<TBuilder>(this TBuilder builder)
             where TBuilder : EntityCrudBuilder
         {
-            return builder.WithRegistration(typeof(TRegistration), typeof(TService));
+            return builder.WithSearch<TBuilder, EntitySearchRequest>();
+        }
+        
+        public static TBuilder WithUpdate<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
+            where TBuilder : EntityCrudBuilder
+        {
+            return builder.WithRegistration(registrationType,
+                serviceType,
+                typeof(IEntityUpdateService<,>),
+                builder.EntityKeyType, builder.EntityType);
+        }
+
+        public static TBuilder WithUpdate<TBuilder, TRegistration, TService>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+        {
+            return builder.WithUpdate(typeof(TRegistration), typeof(TService));
+        }
+
+        public static TBuilder WithUpdate<TBuilder>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+        {
+            var registrationType = typeof(IEntityUpdateService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
+            var serviceType = builder.UpdateType.MakeGenericType(builder.EntityKeyType, builder.EntityType);
+
+            return builder.WithUpdate(registrationType, serviceType);
+        }
+        
+        public static TBuilder WithDelete<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
+            where TBuilder : EntityCrudBuilder
+        {
+            return builder.WithRegistration(registrationType,
+                serviceType,
+                typeof(IEntityDeleteService<,>),
+                builder.EntityKeyType, builder.EntityType);
+        }
+
+        public static TBuilder WithDelete<TBuilder, TRegistration, TService>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+        {
+            return builder.WithDelete(typeof(TRegistration), typeof(TService));
+        }
+
+        public static TBuilder WithDelete<TBuilder>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+        {
+            var registrationType = typeof(IEntityDeleteService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
+            var serviceType = builder.DeleteType.MakeGenericType(builder.EntityKeyType, builder.EntityType);
+
+            return builder.WithDelete(registrationType, serviceType);
+        }
+
+        public static TBuilder WithCrud<TBuilder, TSearch>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+            where TSearch : EntitySearchRequest
+        {
+            return builder.WithCreate()
+                .WithRead()
+                .WithUpdate()
+                .WithDelete()
+                .WithSearch<TBuilder,TSearch>();
+        }
+
+        public static TBuilder WithCrud<TBuilder>(this TBuilder builder)
+            where TBuilder : EntityCrudBuilder
+        {
+            return builder.WithCrud<TBuilder, EntitySearchRequest>();
         }
     }
 }

@@ -1,23 +1,17 @@
 using System;
-using System.Collections.Generic;
 
 namespace Firebend.AutoCrud.Core.Abstractions
 {
-    public abstract class EntityCrudBuilder : BaseBuilder
+    public abstract class EntityCrudBuilder : EntityBuilder
     {
-        /// <summary>
-        /// Gets a value indicating the <see cref="Type"/> of Entity.
-        /// </summary>
-        public Type EntityType { get;  set; }
+        public abstract Type CreateType { get; }
         
-        /// <summary>
-        /// Gets value indicating the <see cref="Type"/> key for the entity.
-        /// </summary>
-        public Type EntityKeyType { get;  set; }
+        public abstract Type ReadType { get; }
         
-        /// <summary>
-        /// Gets a value indicating a friendly name for the entity used in routes.
-        /// </summary>
-        public string EntityName { get;  set; }
+        public abstract Type SearchType { get; }
+        
+        public abstract Type UpdateType { get; set; }
+        
+        public abstract Type DeleteType { get; }
     }
 }
