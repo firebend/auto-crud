@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         public MongoReadClient(IMongoClient client,
             ILogger<MongoReadClient<TKey, TEntity>> logger,
-            IMongoEntityConfiguration entityConfiguration) : base(client, logger, entityConfiguration)
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }
 

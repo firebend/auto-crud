@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.Mongo.Interfaces;
@@ -21,7 +20,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         private readonly IMongoIndexProvider<TEntity> _indexProvider;
         
         public MongoIndexClient(IMongoClient client,
-            IMongoEntityConfiguration entityConfiguration,
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ILogger<MongoIndexClient<TKey, TEntity>> logger,
             IMongoIndexProvider<TEntity> indexProvider) : base(client, logger, entityConfiguration)
         {

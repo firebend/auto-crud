@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         protected MongoCreateClient(IMongoClient client,
             ILogger<MongoCreateClient<TKey, TEntity>> logger,
-            IMongoEntityConfiguration entityConfiguration) : base(client, logger, entityConfiguration)
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }
 

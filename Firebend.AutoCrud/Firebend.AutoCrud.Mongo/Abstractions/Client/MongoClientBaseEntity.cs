@@ -16,11 +16,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        protected IMongoEntityConfiguration EntityConfiguration { get; }
+        protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
         
         protected MongoClientBaseEntity(IMongoClient client,
             ILogger logger,
-            IMongoEntityConfiguration entityConfiguration) : base(client, logger)
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger)
         {
             EntityConfiguration = entityConfiguration;
         }
