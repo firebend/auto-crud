@@ -12,6 +12,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Firebend.AutoCrud.Core\Firebend.AutoCrud.Core.csproj" />
+      <ProjectReference Include="..\Firebend.AutoCrud.Generator\Firebend.AutoCrud.Generator.csproj" />
+      <ProjectReference Include="..\Firebend.AutoCrud.Mongo\Firebend.AutoCrud.Mongo.csproj" />
     </ItemGroup>
 
 </Project>
