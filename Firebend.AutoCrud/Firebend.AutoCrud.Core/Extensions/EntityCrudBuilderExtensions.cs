@@ -1,5 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 
@@ -132,7 +133,12 @@ namespace Firebend.AutoCrud.Core.Extensions
             where TBuilder : EntityCrudBuilder
         {
             var registrationType = typeof(IEntityDeleteService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
-            var serviceType = builder.DeleteType.MakeGenericType(builder.EntityKeyType, builder.EntityType);
+
+            var deleteType = typeof(IActiveEntity).IsAssignableFrom(builder.EntityType)
+                ? builder.SoftDeleteType
+                : builder.DeleteType;
+            
+            var serviceType = deleteType.MakeGenericType(builder.EntityKeyType, builder.EntityType);
 
             return builder.WithDelete(registrationType, serviceType);
         }

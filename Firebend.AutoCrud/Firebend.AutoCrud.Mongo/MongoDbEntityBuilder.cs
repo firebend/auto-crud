@@ -12,8 +12,10 @@ namespace Firebend.AutoCrud.Mongo
         
         public override Type SearchType { get; } = typeof(MongoEntitySearchService<,,>);
         
-        public override Type UpdateType { get; set; } = typeof(MongoEntityUpdateService<,>);
+        public override Type UpdateType { get; } = typeof(MongoEntityUpdateService<,>);
         
         public override Type DeleteType { get; } = typeof(MongoEntityDeleteService<,>);
+
+        public override Type SoftDeleteType { get; } = typeof(MongoEntitySoftDeleteService<,>);
     }
 }
