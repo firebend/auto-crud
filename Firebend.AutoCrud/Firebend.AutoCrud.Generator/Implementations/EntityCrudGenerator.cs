@@ -29,7 +29,10 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 var typeToImplement = value;
                 var signature = $"{builder.EntityType.Name}_{typeToImplement.Name}";
 
-                var interfaceImplementations = new List<Type>();
+                var interfaceImplementations = new List<Type>
+                {
+                    key
+                };
 
                 if (key.IsInterface)
                 {

@@ -1,7 +1,7 @@
 using System;
 using MongoDB.Bson;
 
-namespace Firebend.AutoCrud.Mongo
+namespace Firebend.AutoCrud.Mongo.Configuration
 {
     public class MongoDateTimeOffsetBsonTypeMapper : ICustomBsonTypeMapper
     {
