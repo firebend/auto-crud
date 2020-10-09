@@ -10,8 +10,10 @@ namespace Firebend.AutoCrud.Core.Abstractions
         
         public abstract Type SearchType { get; }
         
-        public abstract Type UpdateType { get; set; }
+        public abstract Type UpdateType { get; }
         
         public abstract Type DeleteType { get; }
+        
+        public abstract Type SoftDeleteType { get; }
     }
 }
