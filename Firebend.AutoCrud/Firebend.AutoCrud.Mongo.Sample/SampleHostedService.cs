@@ -40,6 +40,8 @@ namespace Firebend.AutoCrud.Mongo.Sample
             _logger.LogInformation("Entity Added.");
             
             JsonSerializer.CreateDefault().Serialize(Console.Out, entity);
+            
+            Console.WriteLine();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

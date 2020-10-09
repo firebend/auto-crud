@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo;
@@ -14,14 +15,22 @@ namespace Firebend.AutoCrud.Mongo.Sample
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
-
-            Console.WriteLine("Sample complete. type 'quit' to exit.");
+            var cancellationToken = new CancellationTokenSource();
             
-            while (Console.ReadLine().Equals("quit", StringComparison.InvariantCultureIgnoreCase))
+            using var host = CreateHostBuilder(args).Build();
+            host.StartAsync(cancellationToken.Token).ContinueWith(task =>
+            {
+                Console.WriteLine("Sample complete. type 'quit' to exit.");
+            }, cancellationToken.Token);
+
+            while (!Console.ReadLine().Equals("quit", StringComparison.InvariantCultureIgnoreCase))
             {
                 
             }
+            
+            Console.WriteLine("Quiting....");
+            cancellationToken.Cancel();
+            Console.WriteLine("Done!");
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
