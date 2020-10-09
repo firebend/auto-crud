@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
