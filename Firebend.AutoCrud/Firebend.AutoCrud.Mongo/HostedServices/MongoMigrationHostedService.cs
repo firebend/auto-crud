@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.AutoCrud.Mongo.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -18,19 +19,30 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
         private readonly ILogger _logger;
         private readonly IMongoDefaultDatabaseSelector _databaseSelector;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly IMongoClient _mongoClient;
 
-        public MongoMigrationHostedService(IEnumerable<IMongoMigration> migrations,
-            ILogger<MongoMigrationHostedService> logger,
-            IMongoDefaultDatabaseSelector databaseSelector)
+        public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider)
         {
-            _migrations = migrations;
+            using var scope = serviceProvider.CreateScope();
+            
+            _migrations = scope.ServiceProvider.GetService<IEnumerable<IMongoMigration>>();
             _logger = logger;
-            _databaseSelector = databaseSelector;
+            _databaseSelector = scope.ServiceProvider.GetService<IMongoDefaultDatabaseSelector>();
+            _mongoClient = scope.ServiceProvider.GetService<IMongoClient>();
         }
 
         private async Task DoMigration(CancellationToken cancellationToken)
         {
-            var db = _databaseSelector.GetDefaultDb();
+            var dbName = _databaseSelector?.DefaultDb;
+
+            if (string.IsNullOrWhiteSpace(dbName))
+            {
+                return;
+                throw new Exception("No default db name provided.");
+            }
+            
+            var db = _mongoClient.GetDatabase(dbName);
+            
             var collection = db.GetCollection<MongoDbMigrationVersion>($"__{nameof(MongoDbMigrationVersion)}");
             
             var maxVersion = await collection.AsQueryable()
