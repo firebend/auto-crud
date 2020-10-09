@@ -5,6 +5,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services
 {
     public interface IEntityCrudGenerator
     {
-        void Generate(IServiceCollection collection, EntityCrudBuilder builder);
+        void Generate(IServiceCollection collection, EntityBuilder builder);
     }
 }
