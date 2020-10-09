@@ -8,11 +8,42 @@ using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
 using Scrutor;
 
-namespace Firebend.AutoCrud.Mongo
+namespace Firebend.AutoCrud.Mongo.Configuration
 {
     public static class MongoBootstrapper
     {
+        private static object bootStrapLock = new object();
+        private static bool isBootstrapped = false;
+        
         public static IServiceCollection ConfigureMongoDb(
+            this IServiceCollection services,
+            string connectionString,
+            bool enableCommandLogging,
+            IMongoDbConfigurator configurator)
+        {
+            if (isBootstrapped)
+            {
+                return services;
+            }
+
+            lock (bootStrapLock)
+            {
+                if (isBootstrapped)
+                {
+                    return services;
+                }
+
+                DoBootstrapping(services, connectionString, enableCommandLogging, configurator);
+
+                isBootstrapped = true;
+
+                return services;
+            }
+            
+            
+        }
+
+        private static void DoBootstrapping(
             this IServiceCollection services,
             string connectionString,
             bool enableCommandLogging,
@@ -63,8 +94,6 @@ namespace Firebend.AutoCrud.Mongo
             services.AddHostedService<ConfigureCollectionsHostedService>();
 
             services.AddHostedService<MongoMigrationHostedService>();
-
-            return services;
         }
     }
 }

@@ -16,4 +16,10 @@
       <ProjectReference Include="..\Firebend.AutoCrud.Mongo\Firebend.AutoCrud.Mongo.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

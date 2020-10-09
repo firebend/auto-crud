@@ -1,9 +1,8 @@
 using System;
 using System.Text;
-using Firebend.AutoCrud.Mongo.Interfaces;
 using MongoDB.Bson.Serialization;
 
-namespace Firebend.AutoCrud.Mongo
+namespace Firebend.AutoCrud.Mongo.Configuration
 {
     public class MongoIdGeneratorComb : IIdGenerator
     {

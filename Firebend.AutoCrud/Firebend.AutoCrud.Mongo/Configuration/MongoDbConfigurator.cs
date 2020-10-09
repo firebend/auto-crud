@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using MongoDB.Bson;
@@ -8,7 +7,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson.Serialization.Serializers;
 
-namespace Firebend.AutoCrud.Mongo
+namespace Firebend.AutoCrud.Mongo.Configuration
 {
     public class MongoDbConfigurator : IMongoDbConfigurator
     {

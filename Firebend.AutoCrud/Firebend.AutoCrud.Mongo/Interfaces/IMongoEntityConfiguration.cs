@@ -6,8 +6,8 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        public string CollectionName { get; set; }
+        public string CollectionName { get; }
         
-        public string DatabaseName { get; set; }
+        public string DatabaseName { get; }
     }
 }

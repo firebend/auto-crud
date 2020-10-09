@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
     {
         private CancellationTokenSource _cancellationTokenSource;
         
-        private IEntityCreateService<Guid, Person> _createService;
+        private readonly IEntityCreateService<Guid, Person> _createService;
 
         public SampleHostedService(IEntityCreateService<Guid, Person> createService)
         {

@@ -2,7 +2,9 @@
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo;
+using Firebend.AutoCrud.Mongo.Configuration;
 using Firebend.AutoCrud.Mongo.Sample.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -17,6 +19,13 @@ namespace Firebend.AutoCrud.Mongo.Sample
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, builder) =>
+                {
+                    if (hostingContext.HostingEnvironment.IsDevelopment())
+                    {
+                        builder.AddUserSecrets("Firebend.AutoCrud");
+                    }
+                })
                 .ConfigureServices((hostContext, services) =>
                 {
                     var builder = new MongoDbEntityBuilder(new DynamicClassGenerator());
@@ -28,6 +37,10 @@ namespace Firebend.AutoCrud.Mongo.Sample
                     var crudGenerator = new EntityCrudGenerator(new DynamicClassGenerator());
                     
                     crudGenerator.Generate(services, builder);
+
+                    services.ConfigureMongoDb(hostContext.Configuration.GetConnectionString("Mongo"),
+                        true,
+                        new MongoDbConfigurator());
                     
                     services.AddHostedService<SampleHostedService>();
                 });
