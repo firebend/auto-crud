@@ -1,8 +1,10 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
@@ -70,17 +72,31 @@ namespace Firebend.AutoCrud.Mongo
                 typeof(MongoConfigureCollection<,>),
                 typeof(IConfigureCollection<,>),
                 EntityKeyType, EntityType);
+
+            this.WithRegistration(typeof(IEntityDefaultOrderByProvider<,>),
+                typeof(DefaultEntityDefaultOrderByProvider<,>),
+                typeof(IEntityDefaultOrderByProvider<,>),
+                EntityKeyType, EntityType);
         }
 
         public override void Build()
         {
             base.Build();
-            ApplyPlatformTypes();
             RegisterCollectionNameInterfaceType();
         }
         
         private void RegisterCollectionNameInterfaceType()
         {
+            if (string.IsNullOrWhiteSpace(CollectionName))
+            {
+                throw new Exception("Please provide a collection name for this mongo entity");
+            }
+
+            if (string.IsNullOrWhiteSpace(Database))
+            {
+                throw new Exception("Please provide a database name for this entity.");
+            }
+            
             var collectionNameSignature = $"{EntityType.Name}_{CollectionName}_CollectionName";
             
             var collectionNameInterfaceType = typeof(IMongoEntityConfiguration<,>).MakeGenericType(EntityKeyType, EntityType);
@@ -93,12 +109,21 @@ namespace Firebend.AutoCrud.Mongo
                 Value = CollectionName,
                 Override = true
             };
+            
+            var databaseField = new PropertySet
+            {
+                Name = nameof(IMongoEntityConfiguration<Guid, FooEntity>.DatabaseName),
+                Type = typeof(string),
+                Value = Database,
+                Override = true
+            };
 
             var collectionNameImplementation = _generator.ImplementInterface(collectionNameInterface,
                 collectionNameSignature,
                 new[]
                 {
-                    collectionNameField
+                    collectionNameField,
+                    databaseField
                 });
 
             this.WithRegistration(collectionNameInterface, collectionNameImplementation.GetType());
