@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities

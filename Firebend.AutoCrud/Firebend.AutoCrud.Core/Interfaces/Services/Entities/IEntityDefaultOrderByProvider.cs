@@ -1,5 +1,6 @@
 using System;
 using System.Linq.Expressions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
