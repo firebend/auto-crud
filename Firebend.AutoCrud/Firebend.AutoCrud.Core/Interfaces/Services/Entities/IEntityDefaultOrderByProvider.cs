@@ -4,7 +4,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
-    public interface IEntityDefaultOrderByProvider<TEntity, TKey>
+    public interface IEntityDefaultOrderByProvider<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
     {

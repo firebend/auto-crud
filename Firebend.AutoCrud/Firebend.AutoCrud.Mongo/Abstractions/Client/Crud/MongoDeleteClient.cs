@@ -10,12 +10,12 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
-    public abstract class MongoDeleteClient<TEntity, TKey> : MongoClientBaseEntity<TKey, TEntity>, IMongoDeleteClient<TKey, TEntity>
+    public abstract class MongoDeleteClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoDeleteClient<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
         protected MongoDeleteClient(IMongoClient client,
-            ILogger<MongoDeleteClient<TEntity, TKey>> logger,
+            ILogger<MongoDeleteClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }

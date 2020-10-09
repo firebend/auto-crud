@@ -13,8 +13,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return builder.WithRegistration(registrationType,
                 serviceType,
-                typeof(IEntityCreateService<,>),
-                builder.EntityKeyType, builder.EntityType);
+                typeof(IEntityCreateService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType));
         }
 
         public static TBuilder WithCreate<TBuilder, TRegistration, TService>(this TBuilder builder)
@@ -37,8 +36,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return builder.WithRegistration(registrationType,
                 serviceType,
-                typeof(IEntityReadService<,>),
-                builder.EntityKeyType, builder.EntityType);
+                typeof(IEntityReadService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType));
         }
 
         public static TBuilder WithRead<TBuilder, TRegistration, TService>(this TBuilder builder)
@@ -61,8 +59,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return builder.WithRegistration(registrationType,
                 serviceType,
-                typeof(IEntitySearchService<,,>),
-                builder.EntityKeyType, builder.EntityType, serviceType, searchType);
+                typeof(IEntitySearchService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, searchType));
         }
 
         public static TBuilder WithSearch<TBuilder, TRegistration, TService, TSearch>(this TBuilder builder)
@@ -95,8 +92,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return builder.WithRegistration(registrationType,
                 serviceType,
-                typeof(IEntityUpdateService<,>),
-                builder.EntityKeyType, builder.EntityType);
+                typeof(IEntityUpdateService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType));
         }
 
         public static TBuilder WithUpdate<TBuilder, TRegistration, TService>(this TBuilder builder)
@@ -119,8 +115,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return builder.WithRegistration(registrationType,
                 serviceType,
-                typeof(IEntityDeleteService<,>),
-                builder.EntityKeyType, builder.EntityType);
+                typeof(IEntityDeleteService<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType));
         }
 
         public static TBuilder WithDelete<TBuilder, TRegistration, TService>(this TBuilder builder)
@@ -147,7 +142,8 @@ namespace Firebend.AutoCrud.Core.Extensions
             where TBuilder : EntityCrudBuilder
             where TSearch : EntitySearchRequest
         {
-            return builder.WithCreate()
+            return builder
+                .WithCreate()
                 .WithRead()
                 .WithUpdate()
                 .WithDelete()

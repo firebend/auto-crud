@@ -15,14 +15,14 @@ using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
-    public class MongoUpdateClient<TEntity, TKey> : MongoClientBaseEntity<TKey, TEntity>, IMongoUpdateClient<TKey, TEntity>
+    public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
         private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
         
         public MongoUpdateClient(IMongoClient client,
-            ILogger<MongoUpdateClient<TEntity, TKey>> logger,
+            ILogger<MongoUpdateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator) : base(client, logger, entityConfiguration)
         {

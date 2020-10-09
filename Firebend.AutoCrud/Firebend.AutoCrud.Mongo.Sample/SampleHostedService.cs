@@ -2,10 +2,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrude.Mongo.Sample.Models;
+using Firebend.AutoCrud.Mongo.Sample.Models;
 using Microsoft.Extensions.Hosting;
 
-namespace Firebend.AutoCrude.Mongo.Sample
+namespace Firebend.AutoCrud.Mongo.Sample
 {
     public class SampleHostedService : IHostedService
     {

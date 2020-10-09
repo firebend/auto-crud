@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Extensions
@@ -13,16 +12,10 @@ namespace Firebend.AutoCrud.Core.Extensions
             where TEntity : IEntity<TEntityKey>
             where TEntityKey : struct
         {
+            
             builder.EntityType = typeof(TEntity);
             builder.EntityKeyType = typeof(TEntityKey);
 
-            return builder;
-        }
-
-        public static TBuilder WithEntityName<TBuilder>(this TBuilder builder, string entityName)
-            where TBuilder : EntityBuilder
-        {
-            builder.EntityName = entityName;
             return builder;
         }
 
@@ -54,22 +47,20 @@ namespace Firebend.AutoCrud.Core.Extensions
             return builder.WithRegistration(typeof(TRegistration), typeof(TService));
         }
         
-        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType, Type typeToCheck, params Type[] genericArguments)
+        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType, Type typeToCheck)
             where TBuilder : EntityBuilder
         {
-            var createType = typeToCheck.MakeGenericType(genericArguments);
-            
-            if (!registrationType.IsAssignableFrom(createType))
+            if (!typeToCheck.IsAssignableFrom(serviceType))
             {
-                throw new ArgumentException($"Registration type is not assignable to {createType}");
+                throw new ArgumentException($"Registration type is not assignable to {typeToCheck}");
             }
             
-            if(serviceType.IsAssignableFrom(createType))
+            if(!typeToCheck.IsAssignableFrom(registrationType))
             {
-                throw new ArgumentException($"Service type is not assignable to {createType}");
+                throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
             }
 
-            return builder.WithRegistration(serviceType, registrationType);
+            return builder.WithRegistration(registrationType, serviceType);
         }
     }
 }

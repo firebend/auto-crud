@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.SqlServer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Generator", "Firebend.AutoCrud.Generator\Firebend.AutoCrud.Generator.csproj", "{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrude.Mongo.Sample", "Firebend.AutoCrude.Mongo.Sample\Firebend.AutoCrude.Mongo.Sample.csproj", "{10D18FFE-5D8B-47CC-A1E0-136B152D1EAB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Mongo.Sample", "Firebend.AutoCrud.Mongo.Sample\Firebend.AutoCrud.Mongo.Sample.csproj", "{10D18FFE-5D8B-47CC-A1E0-136B152D1EAB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

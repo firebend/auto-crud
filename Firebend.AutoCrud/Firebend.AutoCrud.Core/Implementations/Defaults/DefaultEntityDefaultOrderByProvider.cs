@@ -6,7 +6,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 
 namespace Firebend.AutoCrud.Core.Implementations.Defaults
 {
-    public class DefaultEntityDefaultOrderByProvider<TEntity, TKey> : IEntityDefaultOrderByProvider<TEntity, TKey>
+    public class DefaultEntityDefaultOrderByProvider<TKey, TEntity> : IEntityDefaultOrderByProvider<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
