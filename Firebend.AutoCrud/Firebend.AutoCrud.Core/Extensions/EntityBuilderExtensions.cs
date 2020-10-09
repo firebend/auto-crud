@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.Core.Extensions
             return builder.WithRegistration(typeof(TRegistration), typeof(TService));
         }
         
-        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type  registrationType, Type serviceType, Type typeToCheck, params Type[] genericArguments)
+        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType, Type typeToCheck, params Type[] genericArguments)
             where TBuilder : EntityBuilder
         {
             var createType = typeToCheck.MakeGenericType(genericArguments);

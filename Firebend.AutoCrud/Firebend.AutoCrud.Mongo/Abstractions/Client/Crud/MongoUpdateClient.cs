@@ -23,7 +23,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         
         public MongoUpdateClient(IMongoClient client,
             ILogger<MongoUpdateClient<TEntity, TKey>> logger,
-            IMongoEntityConfiguration entityConfiguration,
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator) : base(client, logger, entityConfiguration)
         {
             _keyGenerator = keyGenerator;

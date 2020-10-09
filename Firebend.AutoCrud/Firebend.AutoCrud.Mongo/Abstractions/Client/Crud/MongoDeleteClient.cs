@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         protected MongoDeleteClient(IMongoClient client,
             ILogger<MongoDeleteClient<TEntity, TKey>> logger,
-            IMongoEntityConfiguration entityConfiguration) : base(client, logger, entityConfiguration)
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }
 
