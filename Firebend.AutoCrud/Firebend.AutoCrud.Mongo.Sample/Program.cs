@@ -43,6 +43,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
                         new MongoDbConfigurator());
                     
                     services.AddHostedService<SampleHostedService>();
+                    
                 });
     }
 }
