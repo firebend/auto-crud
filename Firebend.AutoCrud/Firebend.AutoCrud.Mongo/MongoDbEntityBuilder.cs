@@ -46,42 +46,54 @@ namespace Firebend.AutoCrud.Mongo
 
         public MongoDbEntityBuilder() : this(new DynamicClassGenerator())
         {
-            
         }
 
         public override void ApplyPlatformTypes()
         {
             this.WithRegistration(typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType));
+                typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
+                false);
             
             this.WithRegistration(typeof(IMongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType));
+                typeof(IMongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
+                false);
             
             this.WithRegistration(typeof(IMongoUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoUpdateClient<, >).MakeGenericType(EntityKeyType, EntityType));
+                typeof(IMongoUpdateClient<, >).MakeGenericType(EntityKeyType, EntityType),
+                false);
             
             this.WithRegistration(typeof(IMongoDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoDeleteClient<, >).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoDeleteClient<, >).MakeGenericType(EntityKeyType, EntityType));
+                typeof(IMongoDeleteClient<, >).MakeGenericType(EntityKeyType, EntityType),
+                false);
             
             this.WithRegistration(typeof(IMongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoIndexClient<, >).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType));
+                typeof(IMongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType),
+                false);
             
             this.WithRegistration(typeof(IMongoIndexProvider<>).MakeGenericType(EntityType),
                 typeof(DefaultIndexProvider<>).MakeGenericType(EntityType),
-                typeof(IMongoIndexProvider<>).MakeGenericType(EntityType));
+                typeof(IMongoIndexProvider<>).MakeGenericType(EntityType),
+                false);
 
             this.WithRegistration(typeof(IConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType));
+                typeof(IConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
+                false);
+            
+            this.WithRegistration(typeof(IConfigureCollection),
+                typeof(MongoConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
+                typeof(IConfigureCollection),
+                false);
 
             this.WithRegistration(typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(DefaultEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType));
+                typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
+                false);
         }
 
         protected override void OnBuild()
@@ -187,6 +199,13 @@ namespace Firebend.AutoCrud.Mongo
             this.WithRegistrationInstance(iFaceType, instance);
             
             return this;
+        }
+
+        public MongoDbEntityBuilder WithFullTextSearch()
+        {
+            return this.WithRegistration(typeof(IMongoIndexProvider<>).MakeGenericType(EntityType),
+                typeof(FullTextIndexProvider<>).MakeGenericType(EntityType),
+                typeof(IMongoIndexProvider<>).MakeGenericType(EntityType));
         }
     }
 }

@@ -20,14 +20,17 @@ namespace Firebend.AutoCrud.Core.Extensions
             return builder;
         }
 
-        public static TBuilder WithEnityName<TBuilder>(this TBuilder builder, string entityName)
+        public static TBuilder WithEntity<TBuilder>(this TBuilder builder, string entityName)
             where TBuilder : EntityBuilder
         {
             builder.EntityName = entityName;
             return builder;
         }
 
-        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
+        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder,
+            Type registrationType,
+            Type serviceType,
+            bool replace = true)
             where TBuilder : EntityBuilder
         {
             if (builder.Registrations == null)
@@ -38,7 +41,10 @@ namespace Firebend.AutoCrud.Core.Extensions
             {
                 if (builder.Registrations.ContainsKey(registrationType))
                 {
-                    builder.Registrations[registrationType] = serviceType;
+                    if (replace)
+                    {
+                        builder.Registrations[registrationType] = serviceType;
+                    }
                 }
                 else
                 {
@@ -55,7 +61,11 @@ namespace Firebend.AutoCrud.Core.Extensions
             return builder.WithRegistration(typeof(TRegistration), typeof(TService));
         }
         
-        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType, Type typeToCheck)
+        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder,
+            Type registrationType,
+            Type serviceType,
+            Type typeToCheck,
+            bool replace = true)
             where TBuilder : EntityBuilder
         {
             if (!typeToCheck.IsAssignableFrom(serviceType))
@@ -68,7 +78,7 @@ namespace Firebend.AutoCrud.Core.Extensions
                 throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
             }
 
-            return builder.WithRegistration(registrationType, serviceType);
+            return builder.WithRegistration(registrationType, serviceType, replace);
         }
 
         public static TBuilder WithRegistrationInstance<TBuilder>(this TBuilder builder, Type registrationType, object instance)
