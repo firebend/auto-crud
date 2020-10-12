@@ -44,14 +44,14 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    new MongoEntityCrudGenerator(services, hostContext.Configuration.GetConnectionString("Mongo"))
+                    services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
                         .AddBuilder<Person, Guid>(person =>
                                 person.WithDefaultDatabase("Samples")
                                 .WithCollection("People")
                                 .WithCrud()
                                 .WithFullTextSearch()
                                 .WithRegistration<MongoDbEntityBuilder, IEntityReadService<Guid, Person>, PersonReadRepository>()
-                        ).Generate(services);
+                        ).Generate();
                     
                     services.AddHostedService<SampleHostedService>();
                     
