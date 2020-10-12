@@ -12,8 +12,8 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 {
     public static class MongoBootstrapper
     {
-        private static object bootStrapLock = new object();
-        private static bool isBootstrapped = false;
+        private static readonly object BootStrapLock = new object();
+        private static bool _isBootstrapped = false;
         
         public static IServiceCollection ConfigureMongoDb(
             this IServiceCollection services,
@@ -21,21 +21,21 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             bool enableCommandLogging,
             IMongoDbConfigurator configurator)
         {
-            if (isBootstrapped)
+            if (_isBootstrapped)
             {
                 return services;
             }
 
-            lock (bootStrapLock)
+            lock (BootStrapLock)
             {
-                if (isBootstrapped)
+                if (_isBootstrapped)
                 {
                     return services;
                 }
 
                 DoBootstrapping(services, connectionString, enableCommandLogging, configurator);
 
-                isBootstrapped = true;
+                _isBootstrapped = true;
 
                 return services;
             }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Generator.Implementations;
-using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Mongo.Configuration;
 using Firebend.AutoCrud.Mongo.Sample.Models;
 using Microsoft.Extensions.Configuration;
@@ -44,21 +42,12 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    var builder = new MongoDbEntityBuilder(new DynamicClassGenerator());
-                    
-                    builder.ForEntity<MongoDbEntityBuilder, Person, Guid>()
-                        .WithDefaultDatabase("Samples")
-                        .WithCollection("People")
-                        .WithCrud()
-                        .Build();
-
-                    var crudGenerator = new EntityCrudGenerator(new DynamicClassGenerator());
-                    
-                    crudGenerator.Generate(services, builder);
-
-                    services.ConfigureMongoDb(hostContext.Configuration.GetConnectionString("Mongo"),
-                        true,
-                        new MongoDbConfigurator());
+                    new MongoEntityCrudGenerator(services, hostContext.Configuration.GetConnectionString("Mongo"))
+                        .AddBuilder<Person, Guid>(person =>
+                                person.WithDefaultDatabase("Samples")
+                                .WithCollection("People")
+                                .WithCrud()
+                        ).Generate(services);
                     
                     services.AddHostedService<SampleHostedService>();
                     

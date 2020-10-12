@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
+using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo.Abstractions;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
@@ -41,6 +42,11 @@ namespace Firebend.AutoCrud.Mongo
         public MongoDbEntityBuilder(IDynamicClassGenerator generator)
         {
             _generator = generator;
+        }
+
+        public MongoDbEntityBuilder() : this(new DynamicClassGenerator())
+        {
+            
         }
 
         public override void ApplyPlatformTypes()
