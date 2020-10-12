@@ -11,5 +11,13 @@ namespace Firebend.AutoCrud.Tests
             var actual = 1;
             actual.Should().Be(expected);
         }
+
+        [Test]
+        public void TestShouldFail()
+        {
+            var expected = 1;
+            var actual = 1;
+            actual.Should().NotBe(expected);
+        }
     }
 }
