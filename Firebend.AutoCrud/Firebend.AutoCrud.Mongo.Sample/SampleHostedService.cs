@@ -87,14 +87,14 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 var read = await _readService.GetByKeyAsync(patched.Id, cancellationToken);
                 LogObject("Entity Read...", read);
 
-                var search = await _searchService.SearchAsync(new EntitySearchRequest
+                var search = await _searchService.PageAsync(new EntitySearchRequest
                 {
                     Search = "First",
                     PageNumber = 1,
                     PageSize = 10,
                     DoCount = true
-                });
-                LogObject("Search....", search);
+                }, cancellationToken);
+                LogObject("Page....", search);
 
                 var all = await _readService.GetAllAsync(cancellationToken);
                 LogObject("All Entities....", all);

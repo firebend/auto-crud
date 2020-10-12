@@ -68,7 +68,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             {
                 var dbCollection = GetCollection();
                 var builder = Builders<TEntity>.IndexKeys;
-                var indexesToAdd = _indexProvider.GetIndexes(builder).ToList();
+                var indexesToAdd = _indexProvider.GetIndexes(builder)?.ToArray();
+                
+                if(!(indexesToAdd?.Any() ?? false))
+                {
+                    return;
+                }
 
                 var indexesCursor = await dbCollection.Indexes.ListAsync(cancellationToken).ConfigureAwait(false);
                     
