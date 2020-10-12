@@ -1,17 +1,14 @@
 using Firebend.AutoCrud.Core.Abstractions;
+using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Mongo
 {
-    public class GenericMongoEntityCrudGenerator<TBuilder> : EntityCrudGenerator<TBuilder> where TBuilder : EntityBuilder, new()
-    {
-    }
-
     public class MongoEntityCrudGenerator : EntityCrudGenerator<MongoDbEntityBuilder>
     {
-        public MongoEntityCrudGenerator(IServiceCollection collection, string connectionString)
+        public MongoEntityCrudGenerator(IServiceCollection collection, string connectionString) : base(collection)
         {
             collection.ConfigureMongoDb(connectionString, true, new MongoDbConfigurator());
         }

@@ -7,7 +7,6 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Generator.Implementations
@@ -17,23 +16,25 @@ namespace Firebend.AutoCrud.Generator.Implementations
     {
         private readonly IDynamicClassGenerator _classGenerator;
 
-        protected EntityCrudGenerator(IDynamicClassGenerator classGenerator)
+        protected EntityCrudGenerator(IDynamicClassGenerator classGenerator, IServiceCollection serviceCollection)
         {
             _classGenerator = classGenerator;
+            ServiceCollection = serviceCollection;
         }
 
-        protected EntityCrudGenerator() : this(new DynamicClassGenerator())
+        protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(new DynamicClassGenerator(), serviceCollection)
         {
             
         }
 
-        public List<EntityBuilder> Builders { get; set; }
+        public List<EntityBuilder> Builders { get; } = new List<EntityBuilder>();
         
-        public virtual void Generate(IServiceCollection serviceCollection)
+        public IServiceCollection ServiceCollection { get; }
+        public void Generate()
         {
             foreach (var builder in Builders)
             {
-                Generate(serviceCollection, builder);
+                Generate(ServiceCollection, builder);
             }
         }
 
@@ -71,8 +72,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     typeToImplement,
                     signature,
                     implementedTypes,
-                    interfaceImplementations.ToArray(),
-                    null);
+                    interfaceImplementations.ToArray());
 
                 interfaceImplementations.ForEach(iFace =>
                 {
@@ -179,8 +179,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
         
         public EntityCrudGenerator<TBuilder> AddBuilder(TBuilder builder, Func<TBuilder, TBuilder> configure = null)
         {
-            Builders ??= new List<EntityBuilder>();
-
             if (configure != null)
             {
                 builder = configure(builder);
