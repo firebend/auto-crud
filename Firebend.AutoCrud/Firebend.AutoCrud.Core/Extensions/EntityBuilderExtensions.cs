@@ -15,7 +15,15 @@ namespace Firebend.AutoCrud.Core.Extensions
             
             builder.EntityType = typeof(TEntity);
             builder.EntityKeyType = typeof(TEntityKey);
+            builder.EntityName = builder.EntityType.Name;
 
+            return builder;
+        }
+
+        public static TBuilder WithEnityName<TBuilder>(this TBuilder builder, string entityName)
+            where TBuilder : EntityBuilder
+        {
+            builder.EntityName = entityName;
             return builder;
         }
 

@@ -8,6 +8,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services
     {
         List<EntityBuilder> Builders { get; set; }
         
-        void Generate(IServiceCollection collection);
+        void Generate(IServiceCollection serviceCollection);
     }
 }

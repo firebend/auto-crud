@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Generator.Implementations
@@ -28,50 +29,64 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         public List<EntityBuilder> Builders { get; set; }
         
-        public virtual void Generate(IServiceCollection collection)
+        public virtual void Generate(IServiceCollection serviceCollection)
         {
             foreach (var builder in Builders)
             {
-                Generate(collection, builder);
+                Generate(serviceCollection, builder);
             }
         }
 
-        protected virtual void Generate(IServiceCollection collection, EntityBuilder builder)
+        protected virtual void Generate(IServiceCollection serviceCollection, EntityBuilder builder)
         {
+            var signatureBase = $"{builder.EntityType.Name}_{builder.EntityName}";
             var implementedTypes = new List<Type>();
             
             builder.Build();
             
+            var extraInterfaces = GetCustomImplementations(builder.Registrations);
+            
             foreach (var (key, value) in OrderByDependencies(builder.Registrations))
             {
-                var typeToImplement = value;
-                var signature = $"{builder.EntityType.Name}_{typeToImplement.Name}";
-
-                var interfaceImplementations = new List<Type>
+                if (key.Name.Contains("Create"))
                 {
-                    key
-                };
+                    var __ = ";";
+                }
+                
+                var typeToImplement = value;
+                var interfaceImplementations = extraInterfaces.FindAll(x =>
+                    x.IsAssignableFrom(typeToImplement) && x.Name == $"I{typeToImplement.Name}");
+                
+                if (!key.IsAssignableFrom(typeToImplement))
+                {
+                    throw new InvalidCastException($"Cannot use {typeToImplement.Name} to implement {key.Name}");
+                }
 
+                var signature = $"{signatureBase}_{typeToImplement.Name}";
+                
                 if (key.IsInterface)
                 {
+                    interfaceImplementations.Add(key);
                     interfaceImplementations.Add(_classGenerator.GenerateInterface(key, $"I{signature}"));
                 }
 
                 interfaceImplementations = interfaceImplementations.Distinct().ToList();
-
-
-                var generatedImplementation = _classGenerator.GenerateDynamicClass(typeToImplement,
+                
+                var implementedType = _classGenerator.GenerateDynamicClass(
+                    typeToImplement,
                     signature,
                     implementedTypes,
                     interfaceImplementations.ToArray(),
-                    null
-                );
+                    null);
 
-                interfaceImplementations.ForEach(iFace => collection.AddScoped(iFace, generatedImplementation));
+                interfaceImplementations.ForEach(iFace =>
+                {
+                    serviceCollection.AddScoped(iFace, implementedType);
+                });
 
                 if (interfaceImplementations.Count == 0)
                 {
-                    collection.AddScoped(generatedImplementation);
+                    serviceCollection.AddScoped(implementedType);
                 }
 
                 implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
@@ -79,7 +94,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             foreach (var (key, value) in builder.InstanceRegistrations)
             {
-                collection.AddSingleton(key, value);
+                serviceCollection.AddSingleton(key, value);
             }
         }
         
@@ -130,14 +145,13 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 );
         }
         
-        private static List<Type> GetCustomImplementations(IDictionary<Type, Type> configureRegistrations,
-            IDictionary<Type, Type> typesToImplement)
+        private static List<Type> GetCustomImplementations(IDictionary<Type, Type> configureRegistrations)
         {
             var extraInterfaces = new List<Type>();
 
             if (configureRegistrations != null)
             {
-                foreach (var (key, value) in configureRegistrations)
+                foreach (var (key, value) in configureRegistrations.ToArray())
                 {
                     if (!key.IsAssignableFrom(value))
                     {
@@ -154,13 +168,13 @@ namespace Firebend.AutoCrud.Generator.Implementations
                         extraInterfaces.Add(matchingInterface);
                     }
 
-                    if (typesToImplement.ContainsKey(key))
+                    if (configureRegistrations.ContainsKey(key))
                     {
-                        typesToImplement[key] = value;
+                        configureRegistrations[key] = value;
                     }
                     else
                     {
-                        typesToImplement.Add(key, value);
+                        configureRegistrations.Add(key, value);
                     }
                 }
             }

@@ -17,9 +17,9 @@ namespace Firebend.AutoCrud.Mongo.Sample
         private CancellationTokenSource _cancellationTokenSource;
         private readonly IEntityCreateService<Guid, Person> _createService;
         private readonly IEntityUpdateService<Guid, Person> _updateService;
-        private readonly IEntityReadService<Guid, Person> _readService;
+        private readonly IPersonReadRepository _readService;
         private readonly ILogger<SampleHostedService> _logger;
-        private JsonSerializer _serializer;
+        private readonly JsonSerializer _serializer;
 
         public SampleHostedService(IServiceProvider serviceProvider, ILogger<SampleHostedService> logger)
         {
@@ -28,7 +28,29 @@ namespace Firebend.AutoCrud.Mongo.Sample
             using var scope = serviceProvider.CreateScope();
             _createService = scope.ServiceProvider.GetService<IEntityCreateService<Guid, Person>>();
             _updateService = scope.ServiceProvider.GetService<IEntityUpdateService<Guid, Person>>();
-            _readService = scope.ServiceProvider.GetService<IEntityReadService<Guid, Person>>();
+            _readService = scope.ServiceProvider.GetService<IPersonReadRepository>();
+
+            if (_createService == null)
+            {
+                const string msg = "Could not resolve create service";
+                _logger.LogError(msg);
+                throw new Exception(msg);
+            }
+
+            if (_updateService == null)
+            {
+                const string msg = "Could not resolve update service";
+                _logger.LogError(msg);
+                throw new Exception(msg);
+            }
+            
+            if (_readService == null)
+            {
+                const string msg = "Could not resolve read service";
+                _logger.LogError(msg);
+                throw new Exception(msg);
+            }
+            
             _serializer = JsonSerializer.Create(new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented
@@ -48,19 +70,21 @@ namespace Firebend.AutoCrud.Mongo.Sample
                     FirstName = $"First Name -{DateTimeOffset.UtcNow}",
                     LastName = $"Last Name -{DateTimeOffset.UtcNow}"
                 }, _cancellationTokenSource.Token);
-
+                
                 LogObject("Entity added....");
                 entity.FirstName = $"{entity.FirstName} - updated";
                 var updated = await _updateService.UpdateAsync(entity, cancellationToken);
                 LogObject("Entity updated...");
-
+                
                 var patch = new JsonPatchDocument<Person>();
                 patch.Add(x => x.FirstName, $"{updated.FirstName} - patched");
                 var patched = await _updateService.PatchAsync(updated.Id, patch, cancellationToken);
                 LogObject("Entity patched...");
-
                 var read = await _readService.GetByKeyAsync(patched.Id, cancellationToken);
                 LogObject("Entity Read...", read);
+
+                var all = await _readService.GetAllAsync(cancellationToken);
+                LogObject("All Entities....", all);
             }
             catch (Exception ex)
             {

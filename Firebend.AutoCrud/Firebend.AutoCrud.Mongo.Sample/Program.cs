@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Configuration;
 using Firebend.AutoCrud.Mongo.Sample.Models;
 using Microsoft.Extensions.Configuration;
@@ -47,6 +49,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
                                 person.WithDefaultDatabase("Samples")
                                 .WithCollection("People")
                                 .WithCrud()
+                                .WithRegistration<MongoDbEntityBuilder, IEntityReadService<Guid, Person>, PersonReadRepository>()
                         ).Generate(services);
                     
                     services.AddHostedService<SampleHostedService>();
