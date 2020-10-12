@@ -2,7 +2,6 @@ name: Build and Test
 
 on:
   push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -22,4 +21,4 @@ jobs:
     - name: Build
       run: dotnet build Firebend.AutoCrud/Firebend.AutoCrud.sln --configuration Release --no-restore
     - name: Test
-      run: dotnet test Firebend.AutoCrud/Firebend.AutoCrud.sln --no-restore --verbosity normal
+      run: dotnet test Firebend.AutoCrud/Firebend.AutoCrud.sln --logger GitHubActions --no-restore --verbosity normal
