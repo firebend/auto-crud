@@ -10,6 +10,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services
         
         IServiceCollection ServiceCollection { get; }
         
-        void Generate();
+        IServiceCollection Generate();
     }
 }

@@ -30,12 +30,15 @@ namespace Firebend.AutoCrud.Generator.Implementations
         public List<EntityBuilder> Builders { get; } = new List<EntityBuilder>();
         
         public IServiceCollection ServiceCollection { get; }
-        public void Generate()
+        
+        public IServiceCollection Generate()
         {
             foreach (var builder in Builders)
             {
                 Generate(ServiceCollection, builder);
             }
+
+            return ServiceCollection;
         }
 
         protected virtual void Generate(IServiceCollection serviceCollection, EntityBuilder builder)
