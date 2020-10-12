@@ -48,11 +48,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
             
             foreach (var (key, value) in OrderByDependencies(builder.Registrations))
             {
-                if (key.Name.Contains("Create"))
-                {
-                    var __ = ";";
-                }
-                
                 var typeToImplement = value;
                 var interfaceImplementations = extraInterfaces.FindAll(x =>
                     x.IsAssignableFrom(typeToImplement) && x.Name == $"I{typeToImplement.Name}");
