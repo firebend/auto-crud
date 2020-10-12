@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Sample.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
         private readonly IPersonReadRepository _readService;
         private readonly ILogger<SampleHostedService> _logger;
         private readonly JsonSerializer _serializer;
+        private IEntitySearchService<Guid, Person, EntitySearchRequest> _searchService;
 
         public SampleHostedService(IServiceProvider serviceProvider, ILogger<SampleHostedService> logger)
         {
@@ -29,6 +31,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
             _createService = scope.ServiceProvider.GetService<IEntityCreateService<Guid, Person>>();
             _updateService = scope.ServiceProvider.GetService<IEntityUpdateService<Guid, Person>>();
             _readService = scope.ServiceProvider.GetService<IPersonReadRepository>();
+            _searchService = scope.ServiceProvider.GetService<IEntitySearchService<Guid, Person, EntitySearchRequest>>();
 
             if (_createService == null)
             {
@@ -70,8 +73,8 @@ namespace Firebend.AutoCrud.Mongo.Sample
                     FirstName = $"First Name -{DateTimeOffset.UtcNow}",
                     LastName = $"Last Name -{DateTimeOffset.UtcNow}"
                 }, _cancellationTokenSource.Token);
-                
                 LogObject("Entity added....");
+                
                 entity.FirstName = $"{entity.FirstName} - updated";
                 var updated = await _updateService.UpdateAsync(entity, cancellationToken);
                 LogObject("Entity updated...");
@@ -80,8 +83,18 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 patch.Add(x => x.FirstName, $"{updated.FirstName} - patched");
                 var patched = await _updateService.PatchAsync(updated.Id, patch, cancellationToken);
                 LogObject("Entity patched...");
+                
                 var read = await _readService.GetByKeyAsync(patched.Id, cancellationToken);
                 LogObject("Entity Read...", read);
+
+                var search = await _searchService.SearchAsync(new EntitySearchRequest
+                {
+                    Search = "First",
+                    PageNumber = 1,
+                    PageSize = 10,
+                    DoCount = true
+                });
+                LogObject("Search....", search);
 
                 var all = await _readService.GetAllAsync(cancellationToken);
                 LogObject("All Entities....", all);
