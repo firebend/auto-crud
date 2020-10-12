@@ -12,13 +12,13 @@ namespace Firebend.AutoCrud.Mongo.Configuration
     public class MongoDbConfigurator : IMongoDbConfigurator
     {
         private static bool _configured;
-        private static readonly object _key = new object();
+        private static readonly object Key = new object();
 
         public void Configure()
         {
             if (_configured) return;
 
-            lock (_key)
+            lock (Key)
             {
                 if (_configured) return;
 

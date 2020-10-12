@@ -56,14 +56,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 //
                 // await PublishUpdateAsync(patch, original, cancellationToken).ConfigureAwait(false);
                 //
-                // return entity;
+                return entity;
             }
 
-            // if (doUpsert)
-            // {
-            //     await PublishCreateAsync(entity, cancellationToken).ConfigureAwait(false);
-            //     return entity;
-            // }
+            if (doUpsert)
+            {
+                //await PublishCreateAsync(entity, cancellationToken).ConfigureAwait(false);
+                return entity;
+            }
 
             return null;
         }
