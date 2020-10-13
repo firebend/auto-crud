@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
@@ -84,6 +85,32 @@ namespace Firebend.AutoCrud.Core.Extensions
                     builder.InstanceRegistrations[registrationType] = instance;
                 else
                     builder.InstanceRegistrations.Add(registrationType, instance);
+            }
+
+            return builder;
+        }
+
+        public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, Attribute attribute)
+            where TBuilder : BaseBuilder
+        {
+            var attributesToAdd = builder
+                .Registrations
+                .Where(x => x.Key.IsAssignableFrom(registrationType))
+                .Select(x => new KeyValuePair<Type, Attribute>(x.Key, attribute));
+
+            foreach (var (controllerType, attributeToAdd) in attributesToAdd)
+            {
+                if (builder.Attributes.ContainsKey(controllerType))
+                {
+                    (builder.Attributes[controllerType]??=new List<Attribute>()).Add(attributeToAdd);
+                }
+                else
+                {
+                    builder.Attributes.Add(controllerType, new List<Attribute>
+                    {
+                        attributeToAdd
+                    });
+                }
             }
 
             return builder;

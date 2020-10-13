@@ -13,6 +13,8 @@ namespace Firebend.AutoCrud.Core.Abstractions
 
         public IDictionary<Type, object> InstanceRegistrations { get; set; }
 
+        public IDictionary<Type, List<Attribute>> Attributes { get; set; }
+
         public void Build()
         {
             if (IsBuilt) return;

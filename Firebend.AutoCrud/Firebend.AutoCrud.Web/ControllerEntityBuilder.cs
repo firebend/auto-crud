@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Web.Abstractions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web
 {
     public class ControllerEntityBuilder
     {
-        public EntityCrudBuilder CrudBuilder { get; }
+        private EntityCrudBuilder CrudBuilder { get; }
         
         public Dictionary<Type, List<string>> Policies { get;  } = new Dictionary<Type, List<string>>();
         
@@ -27,7 +27,6 @@ namespace Firebend.AutoCrud.Web
 
             WithRoute($"api/v1/{name.ToKebabCase()}");
             WithOpenApiGroupName(name.ToSentenceCase());
-
         }
 
         private ControllerEntityBuilder WithController(Type type, Type typeToCheck, params Type[] genericArgs)
@@ -176,25 +175,14 @@ namespace Firebend.AutoCrud.Web
 
         public ControllerEntityBuilder AddAuthorizationPolicy(Type type, string policy = "")
         {
-            var policiesToAdd = CrudBuilder
-                .Registrations
-                .Where(x => x.Key.IsAssignableFrom(type))
-                .Select(x => new KeyValuePair<Type, string>(x.Key, policy));
+            var attribute = new AuthorizeAttribute();
 
-            foreach (var (controllerType, policyToAdd) in policiesToAdd)
+            if (!string.IsNullOrWhiteSpace(policy))
             {
-                if (Policies.ContainsKey(controllerType))
-                {
-                    (Policies[controllerType]??=new List<string>()).Add(policyToAdd);
-                }
-                else
-                {
-                    Policies.Add(controllerType, new List<string>
-                    {
-                        policyToAdd
-                    });
-                }
+                attribute.Policy = policy;
             }
+
+            CrudBuilder.WithAttribute(type, attribute);
 
             return this;
         }
