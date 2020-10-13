@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Web.Abstractions;
@@ -8,10 +10,24 @@ namespace Firebend.AutoCrud.Web
     public class ControllerEntityBuilder
     {
         public EntityCrudBuilder CrudBuilder { get; }
+        
+        public Dictionary<Type, List<string>> Policies { get;  } = new Dictionary<Type, List<string>>();
+        
+        public string Route { get; private set; }
+        
+        public string OpenApiGroupName { get; private set; }
 
         public ControllerEntityBuilder(EntityCrudBuilder builder)
         {
             CrudBuilder = builder;
+
+            var name = string.IsNullOrWhiteSpace(CrudBuilder.EntityName)
+                ? CrudBuilder.EntityType.Name
+                : CrudBuilder.EntityName;
+
+            WithRoute($"api/v1/{name.ToKebabCase()}");
+            WithOpenApiGroupName(name.ToSentenceCase());
+
         }
 
         private ControllerEntityBuilder WithController(Type type, Type typeToCheck, params Type[] genericArgs)
@@ -26,6 +42,18 @@ namespace Firebend.AutoCrud.Web
             
             CrudBuilder.WithRegistration(registrationType, registrationType);
             
+            return this;
+        }
+
+        public ControllerEntityBuilder WithRoute(string route)
+        {
+            Route = route;
+            return this;
+        }
+
+        public ControllerEntityBuilder WithOpenApiGroupName(string openApiGroupName)
+        {
+            OpenApiGroupName = openApiGroupName;
             return this;
         }
 
@@ -142,6 +170,84 @@ namespace Firebend.AutoCrud.Web
             {
                 WithGetAll();
             }
+
+            return this;
+        }
+
+        public ControllerEntityBuilder AddAuthorizationPolicy(Type type, string policy = "")
+        {
+            var policiesToAdd = CrudBuilder
+                .Registrations
+                .Where(x => x.Key.IsAssignableFrom(type))
+                .Select(x => new KeyValuePair<Type, string>(x.Key, policy));
+
+            foreach (var (controllerType, policyToAdd) in policiesToAdd)
+            {
+                if (Policies.ContainsKey(controllerType))
+                {
+                    (Policies[controllerType]??=new List<string>()).Add(policyToAdd);
+                }
+                else
+                {
+                    Policies.Add(controllerType, new List<string>
+                    {
+                        policyToAdd
+                    });
+                }
+            }
+
+            return this;
+        }
+
+        public ControllerEntityBuilder AddAuthorizationPolicy<TController>(string policy)
+        {
+            return AddAuthorizationPolicy(typeof(TController), policy);
+        }
+
+        public ControllerEntityBuilder AddCreateAuthorizationPolicy(string policy)
+        {
+            return AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+        }
+
+        public ControllerEntityBuilder AddDeleteAuthorizationPolicy(string policy)
+        {
+            return AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+        }
+
+        public ControllerEntityBuilder AddReadAuthorizationPolicy(string policy)
+        {
+            return AddAuthorizationPolicy(typeof(AbstractEntityReadController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+        }
+
+        public ControllerEntityBuilder AddReadAllAuthorizationPolicy(string policy)
+        {
+            return AddAuthorizationPolicy(typeof(AbstractEntityReadAllController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+        }
+
+        public ControllerEntityBuilder AddSearchAuthorizationPolicy(string policy)
+        {
+            return AddAuthorizationPolicy(typeof(AbstractEntitySearchController<,,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchType), policy);
+        }
+
+        public ControllerEntityBuilder AddUpdateAuthorizationPolicy(string policy)
+        {
+            return AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+        }
+        public ControllerEntityBuilder AddAlterAuthorizationPolicies(string policy = "")
+        {
+            AddCreateAuthorizationPolicy(policy);
+            AddDeleteAuthorizationPolicy(policy);
+            AddSearchAuthorizationPolicy(policy);
+            AddUpdateAuthorizationPolicy(policy);
+
+            return this;
+        }
+
+        public ControllerEntityBuilder AddAuthorizationPolicies(string policy = "")
+        {
+            AddAlterAuthorizationPolicies(policy);
+            AddReadAllAuthorizationPolicy(policy);
+            AddReadAuthorizationPolicy(policy);
 
             return this;
         }
