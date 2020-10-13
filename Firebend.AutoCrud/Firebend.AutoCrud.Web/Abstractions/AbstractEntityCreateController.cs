@@ -9,6 +9,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
+    [ApiController]
     public abstract class AbstractEntityCreateController<TKey, TEntity> : ControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
