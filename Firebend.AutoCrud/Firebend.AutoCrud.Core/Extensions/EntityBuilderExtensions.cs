@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
@@ -90,23 +91,23 @@ namespace Firebend.AutoCrud.Core.Extensions
             return builder;
         }
 
-        public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, Attribute attribute)
+        public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, CustomAttributeBuilder attribute)
             where TBuilder : BaseBuilder
         {
             var attributesToAdd = builder
                 .Registrations
                 .Where(x => x.Key.IsAssignableFrom(registrationType))
-                .Select(x => new KeyValuePair<Type, Attribute>(x.Key, attribute));
+                .Select(x => new KeyValuePair<Type, CustomAttributeBuilder>(x.Key, attribute));
 
             foreach (var (controllerType, attributeToAdd) in attributesToAdd)
             {
                 if (builder.Attributes.ContainsKey(controllerType))
                 {
-                    (builder.Attributes[controllerType]??=new List<Attribute>()).Add(attributeToAdd);
+                    (builder.Attributes[controllerType]??=new List<CustomAttributeBuilder>()).Add(attributeToAdd);
                 }
                 else
                 {
-                    builder.Attributes.Add(controllerType, new List<Attribute>
+                    builder.Attributes.Add(controllerType, new List<CustomAttributeBuilder>
                     {
                         attributeToAdd
                     });

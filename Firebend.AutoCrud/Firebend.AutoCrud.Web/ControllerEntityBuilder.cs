@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Web.Abstractions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web
 {
@@ -47,6 +49,14 @@ namespace Firebend.AutoCrud.Web
         public ControllerEntityBuilder WithRoute(string route)
         {
             Route = route;
+            
+            var routeCtor = typeof(RouteAttribute).GetConstructor(new[] { typeof(string) });
+            
+            if (routeCtor != null)
+            {
+                var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] {route});
+            }
+
             return this;
         }
 
@@ -173,16 +183,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        public ControllerEntityBuilder AddAuthorizationPolicy(Type type, string policy = "")
+        public ControllerEntityBuilder AddAuthorizationPolicy(Type type, string authorizePolicy = "")
         {
-            var attribute = new AuthorizeAttribute();
+            var authCtor = authorizePolicy == null
+                ? null
+                : typeof(AuthorizeAttribute).GetConstructor(!string.IsNullOrWhiteSpace(authorizePolicy)
+                    ? new[] { typeof(string) }
+                    : Type.EmptyTypes);
 
-            if (!string.IsNullOrWhiteSpace(policy))
+            if (authCtor != null)
             {
-                attribute.Policy = policy;
+                var args = !string.IsNullOrWhiteSpace(authorizePolicy)
+                    ? new object[] { authorizePolicy }
+                    : new object[] { };
+                
+                CrudBuilder.WithAttribute(type, new CustomAttributeBuilder(authCtor, args));
             }
-
-            CrudBuilder.WithAttribute(type, attribute);
 
             return this;
         }

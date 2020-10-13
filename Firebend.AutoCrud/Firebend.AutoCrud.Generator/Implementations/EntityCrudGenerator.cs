@@ -68,7 +68,8 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     typeToImplement,
                     signature,
                     implementedTypes,
-                    interfaceImplementations.ToArray());
+                    interfaceImplementations.ToArray(),
+                    builder.Attributes[key]?.ToArray());
 
                 interfaceImplementations.ForEach(iFace => { serviceCollection.AddScoped(iFace, implementedType); });
 
