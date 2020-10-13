@@ -17,7 +17,5 @@ namespace Firebend.AutoCrud.EntityFramework.Sample.Models
         
         [Required]
         public Guid PersonId { get; set; }
-        
-        public virtual Person Person { get; set; }
     }
 }

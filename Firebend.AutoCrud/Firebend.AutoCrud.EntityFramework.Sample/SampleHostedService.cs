@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -82,7 +83,15 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
                 var entity = await _createService.CreateAsync(new Person
                 {
                     FirstName = $"First Name -{DateTimeOffset.UtcNow}",
-                    LastName = $"Last Name -{DateTimeOffset.UtcNow}"
+                    LastName = $"Last Name -{DateTimeOffset.UtcNow}",
+                    Pets = new List<Pet>
+                    {
+                        new Pet
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = "Mr. Bojangles"
+                        }
+                    }
                 }, _cancellationTokenSource.Token);
                 LogObject("Entity added....");
 

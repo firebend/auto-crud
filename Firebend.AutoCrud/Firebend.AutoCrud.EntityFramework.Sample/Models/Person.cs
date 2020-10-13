@@ -20,6 +20,6 @@ namespace Firebend.AutoCrud.EntityFramework.Sample.Models
         [Required]
         public string LastName { get; set; }
         
-        public virtual ICollection<Pet> Pets { get; set; }
+        public ICollection<Pet> Pets { get; set; }
     }
 }

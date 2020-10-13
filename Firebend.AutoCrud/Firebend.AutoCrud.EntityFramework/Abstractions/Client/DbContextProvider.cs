@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : IEntity<TKey>
         where TContext : IDbContext
     {
-        private TContext _context;
+        private readonly TContext _context;
 
         public DbContextProvider(TContext context)
         {
