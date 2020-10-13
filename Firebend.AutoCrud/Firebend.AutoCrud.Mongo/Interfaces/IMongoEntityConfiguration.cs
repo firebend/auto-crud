@@ -7,7 +7,7 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TKey : struct
     {
         public string CollectionName { get; }
-        
+
         public string DatabaseName { get; }
     }
 }

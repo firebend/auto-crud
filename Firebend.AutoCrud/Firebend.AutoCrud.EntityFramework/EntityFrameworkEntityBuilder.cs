@@ -13,37 +13,37 @@ namespace Firebend.AutoCrud.EntityFramework
     public class EntityFrameworkEntityBuilder : EntityCrudBuilder
     {
         public override Type CreateType { get; } = typeof(EntityFrameworkEntityCreateService<,>);
-        
+
         public override Type ReadType { get; } = typeof(EntityFrameworkEntityReadService<,>);
-        
+
         public override Type SearchType { get; } = typeof(EntityFrameworkEntitySearchService<,,>);
-        
+
         public override Type UpdateType { get; } = typeof(EntityFrameworkEntityUpdateService<,>);
-        
+
         public override Type DeleteType { get; } = typeof(EntityFrameworkEntityDeleteService<,>);
-        
+
         public override Type SoftDeleteType { get; } = typeof(EntityFrameworkEntitySoftDeleteService<,>);
-        
+
         protected override void ApplyPlatformTypes()
         {
             this.WithRegistration(typeof(IEntityFrameworkCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(EntityFrameworkCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IEntityFrameworkCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IEntityFrameworkQueryClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(EntityFrameworkQueryClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IEntityFrameworkQueryClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IEntityFrameworkUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(EntityFrameworkUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityFrameworkUpdateClient<, >).MakeGenericType(EntityKeyType, EntityType),
+                typeof(IEntityFrameworkUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IEntityFrameworkDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(EntityFrameworkDeleteClient<, >).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityFrameworkDeleteClient<, >).MakeGenericType(EntityKeyType, EntityType),
+                typeof(EntityFrameworkDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
+                typeof(IEntityFrameworkDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
 
             this.WithRegistration(typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
@@ -68,6 +68,5 @@ namespace Firebend.AutoCrud.EntityFramework
         {
             return WithDbContext(typeof(TContext));
         }
-
     }
 }

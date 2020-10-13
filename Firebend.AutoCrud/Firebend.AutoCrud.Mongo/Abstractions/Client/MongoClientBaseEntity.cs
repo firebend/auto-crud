@@ -17,35 +17,32 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
         where TKey : struct
     {
         protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
-        
+
         protected MongoClientBaseEntity(IMongoClient client,
             ILogger logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger)
         {
             EntityConfiguration = entityConfiguration;
         }
-        
+
         protected IMongoCollection<TEntity> GetCollection()
         {
             var database = Client.GetDatabase(EntityConfiguration.DatabaseName);
 
             return database.GetCollection<TEntity>(EntityConfiguration.CollectionName);
         }
-        
+
         protected IMongoQueryable<TEntity> GetFilteredCollection(FilterDefinition<TEntity> firstStageFilters = null)
         {
             var mongoQueryable = GetCollection().AsQueryable();
 
-            if (firstStageFilters != null)
-            {
-                mongoQueryable = mongoQueryable.Where(_ => firstStageFilters.Inject());
-            }
+            if (firstStageFilters != null) mongoQueryable = mongoQueryable.Where(_ => firstStageFilters.Inject());
 
             var filters = BuildFilters();
 
             return filters == null ? mongoQueryable : mongoQueryable.Where(filters);
         }
-        
+
         protected Expression<Func<TEntity, bool>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null)
         {
             var securityFilters = GetSecurityFilters() ?? new List<Expression<Func<TEntity, bool>>>();
@@ -54,15 +51,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
                 .Where(x => x != null)
                 .ToList();
 
-            if (additionalFilter != null)
-            {
-                filters.Add(additionalFilter);
-            }
+            if (additionalFilter != null) filters.Add(additionalFilter);
 
-            if (filters.Count == 0)
-            {
-                return null;
-            }
+            if (filters.Count == 0) return null;
 
             return filters.Aggregate(default(Expression<Func<TEntity, bool>>),
                 (aggregate, filter) => aggregate.AndAlso(filter));

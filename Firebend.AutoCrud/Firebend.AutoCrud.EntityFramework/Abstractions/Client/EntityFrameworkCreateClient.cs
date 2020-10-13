@@ -5,13 +5,12 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
-    public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkCreateClient<TKey, TEntity>
+    public abstract class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkCreateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
         public EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider) : base(provider)
         {
-            
         }
 
         public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
@@ -19,7 +18,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var entry = await GetDbSet()
                 .AddAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
-            
+
             var savedEntity = entry.Entity;
 
             await Context.SaveChangesAsync(cancellationToken);

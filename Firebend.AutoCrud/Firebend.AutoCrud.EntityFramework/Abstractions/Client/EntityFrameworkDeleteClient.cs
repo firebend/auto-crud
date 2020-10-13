@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
-    public class EntityFrameworkDeleteClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkDeleteClient<TKey, TEntity>
+    public abstract class EntityFrameworkDeleteClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkDeleteClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
@@ -40,7 +40,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     entry.State = EntityState.Deleted;
                     entity = entry.Entity;
                 }
-
             }
             else
             {

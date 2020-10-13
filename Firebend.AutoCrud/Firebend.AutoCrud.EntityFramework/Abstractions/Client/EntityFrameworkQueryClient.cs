@@ -11,18 +11,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
-    public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkQueryClient<TKey, TEntity>
+    public abstract class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkQueryClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IEntityFrameworkFullTextExpressionProvider _fullTextSearchProvider;
-        
+
         public EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityFrameworkFullTextExpressionProvider fullTextSearchProvider) : base(contextProvider)
         {
             _fullTextSearchProvider = fullTextSearchProvider;
         }
-        
+
         protected IQueryable<TEntity> BuildQuery(
             string search = null,
             Expression<Func<TEntity, bool>> filter = null,
@@ -33,45 +33,29 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var queryable = GetFilteredQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
-            {
                 if (_fullTextSearchProvider?.HasValue ?? false)
-                {
                     queryable = queryable.Where(x => _fullTextSearchProvider.GetFullTextFilter(x));
-                }
-            }
-            
-            if (filter != null)
-            {
-                queryable = queryable.Where(filter);
-            }
+
+            if (filter != null) queryable = queryable.Where(filter);
 
             if (orderBys != null)
             {
                 IOrderedQueryable<TEntity> ordered = null;
 
                 foreach (var orderBy in orderBys)
-                {
                     if (orderBy != default)
-                    {
-                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
+                        ordered = ordered == null ? orderBy.@ascending ? queryable.OrderBy(orderBy.order) :
                             queryable.OrderByDescending(orderBy.order) :
-                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
+                            orderBy.@ascending ? ordered.ThenBy(orderBy.order) :
                             ordered.ThenByDescending(orderBy.order);
-                    }
-                }
 
-                if (ordered != null)
-                {
-                    queryable = ordered;
-                }
+                if (ordered != null) queryable = ordered;
             }
 
-            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0 ) > 0)
-            {
+            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
                 queryable = queryable
                     .Skip((pageNumber.Value - 1) * pageSize.Value)
                     .Take(pageSize.Value);
-            }
 
             return queryable;
         }
@@ -95,12 +79,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
         {
             int? count = null;
-            
+
             if (doCount)
-            {
                 count = await CountAsync(search, filter, cancellationToken)
                     .ConfigureAwait(false);
-            }
 
             var queryable = BuildQuery(search, filter, pageNumber, pageSize, orderBys);
 
@@ -125,18 +107,16 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
         {
             int? count = null;
-            
+
             if (doCount)
-            {
                 count = await CountAsync(search, filter, cancellationToken)
                     .ConfigureAwait(false);
-            }
 
             var queryable = BuildQuery(search, filter, pageNumber, pageSize, orderBys);
 
             var project = queryable.Select(projection);
 
-            var data = await   project.ToListAsync(cancellationToken);
+            var data = await project.ToListAsync(cancellationToken);
 
             return new EntityPagedResponse<TOut>
             {

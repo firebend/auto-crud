@@ -28,6 +28,6 @@ namespace Firebend.AutoCrud.Core.Extensions
         public static string SafeTrim(this string source)
         {
             return string.IsNullOrEmpty(source) ? source : source.Trim();
-        }   
+        }
     }
 }

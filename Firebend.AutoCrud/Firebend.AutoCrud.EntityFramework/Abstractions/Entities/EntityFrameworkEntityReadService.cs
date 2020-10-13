@@ -7,7 +7,7 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public class EntityFrameworkEntityReadService<TKey, TEntity> : IEntityReadService<TKey, TEntity>
+    public abstract class EntityFrameworkEntityReadService<TKey, TEntity> : IEntityReadService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

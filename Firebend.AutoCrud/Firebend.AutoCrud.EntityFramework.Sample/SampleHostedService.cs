@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
             _updateService = scope.ServiceProvider.GetService<IEntityUpdateService<Guid, Person>>();
             _readService = scope.ServiceProvider.GetService<IPersonReadRepository>();
             _searchService = scope.ServiceProvider.GetService<IEntitySearchService<Guid, Person, EntitySearchRequest>>();
-            
+
             var context = scope.ServiceProvider.GetService<AppDbContext>();
 
             if (context == null)

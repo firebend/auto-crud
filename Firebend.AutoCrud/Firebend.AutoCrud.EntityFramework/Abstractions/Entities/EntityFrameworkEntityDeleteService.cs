@@ -6,12 +6,12 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public class EntityFrameworkEntityDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
+    public abstract class EntityFrameworkEntityDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IEntityFrameworkDeleteClient<TKey, TEntity> _deleteClient;
-        
+
         public EntityFrameworkEntityDeleteService(IEntityFrameworkDeleteClient<TKey, TEntity> deleteClient)
         {
             _deleteClient = deleteClient;

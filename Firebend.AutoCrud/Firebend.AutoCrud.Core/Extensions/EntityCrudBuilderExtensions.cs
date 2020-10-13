@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.Core.Extensions
 
             return builder.WithCreate(registrationType, serviceType);
         }
-        
+
         public static TBuilder WithRead<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
             where TBuilder : EntityCrudBuilder
         {
@@ -53,7 +53,7 @@ namespace Firebend.AutoCrud.Core.Extensions
 
             return builder.WithRead(registrationType, serviceType);
         }
-        
+
         public static TBuilder WithSearch<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType, Type searchType)
             where TBuilder : EntityCrudBuilder
         {
@@ -74,7 +74,7 @@ namespace Firebend.AutoCrud.Core.Extensions
             where TSearch : EntitySearchRequest
         {
             var searchType = typeof(TSearch);
-            
+
             var registrationType = typeof(IEntitySearchService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, searchType);
             var serviceType = builder.SearchType.MakeGenericType(builder.EntityKeyType, builder.EntityType, searchType);
 
@@ -86,7 +86,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return builder.WithSearch<TBuilder, EntitySearchRequest>();
         }
-        
+
         public static TBuilder WithUpdate<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
             where TBuilder : EntityCrudBuilder
         {
@@ -109,7 +109,7 @@ namespace Firebend.AutoCrud.Core.Extensions
 
             return builder.WithUpdate(registrationType, serviceType);
         }
-        
+
         public static TBuilder WithDelete<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType)
             where TBuilder : EntityCrudBuilder
         {
@@ -132,7 +132,7 @@ namespace Firebend.AutoCrud.Core.Extensions
             var deleteType = typeof(IActiveEntity).IsAssignableFrom(builder.EntityType)
                 ? builder.SoftDeleteType
                 : builder.DeleteType;
-            
+
             var serviceType = deleteType.MakeGenericType(builder.EntityKeyType, builder.EntityType);
 
             return builder.WithDelete(registrationType, serviceType);
@@ -147,7 +147,7 @@ namespace Firebend.AutoCrud.Core.Extensions
                 .WithRead()
                 .WithUpdate()
                 .WithDelete()
-                .WithSearch<TBuilder,TSearch>();
+                .WithSearch<TBuilder, TSearch>();
         }
 
         public static TBuilder WithCrud<TBuilder>(this TBuilder builder)

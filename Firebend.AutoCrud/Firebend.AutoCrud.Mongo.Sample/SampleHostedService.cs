@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
         public SampleHostedService(IServiceProvider serviceProvider, ILogger<SampleHostedService> logger)
         {
             _logger = logger;
-            
+
             using var scope = serviceProvider.CreateScope();
             _createService = scope.ServiceProvider.GetService<IEntityCreateService<Guid, Person>>();
             _updateService = scope.ServiceProvider.GetService<IEntityUpdateService<Guid, Person>>();
@@ -45,14 +45,14 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 _logger.LogError(msg);
                 throw new Exception(msg);
             }
-            
+
             if (_readService == null)
             {
                 const string msg = "Could not resolve read service";
                 _logger.LogError(msg);
                 throw new Exception(msg);
             }
-            
+
             _serializer = JsonSerializer.Create(new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented
@@ -73,16 +73,16 @@ namespace Firebend.AutoCrud.Mongo.Sample
                     LastName = $"Last Name -{DateTimeOffset.UtcNow}"
                 }, _cancellationTokenSource.Token);
                 LogObject("Entity added....");
-                
+
                 entity.FirstName = $"{entity.FirstName} - updated";
                 var updated = await _updateService.UpdateAsync(entity, cancellationToken);
                 LogObject("Entity updated...");
-                
+
                 var patch = new JsonPatchDocument<Person>();
                 patch.Add(x => x.FirstName, $"{updated.FirstName} - patched");
                 var patched = await _updateService.PatchAsync(updated.Id, patch, cancellationToken);
                 LogObject("Entity patched...");
-                
+
                 var read = await _readService.GetByKeyAsync(patched.Id, cancellationToken);
                 LogObject("Entity Read...", read);
 
@@ -107,7 +107,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
         private void LogObject(string message, object entity = null)
         {
             _logger.LogInformation(message);
-            
+
             if (entity != null)
             {
                 _serializer.Serialize(Console.Out, entity);

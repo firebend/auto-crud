@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public class EntityFrameworkEntityUpdateService<TKey, TEntity> : IEntityUpdateService<TKey, TEntity>
+    public abstract class EntityFrameworkEntityUpdateService<TKey, TEntity> : IEntityUpdateService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

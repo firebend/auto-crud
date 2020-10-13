@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.Generator.Implementations;
+using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
@@ -19,21 +20,21 @@ namespace Firebend.AutoCrud.Mongo
     public class MongoDbEntityBuilder : EntityCrudBuilder
     {
         private readonly IDynamicClassGenerator _generator;
-        
+
         public override Type CreateType { get; } = typeof(MongoEntityCreateService<,>);
-        
+
         public override Type ReadType { get; } = typeof(MongoEntityReadService<,>);
-        
+
         public override Type SearchType { get; } = typeof(MongoEntitySearchService<,,>);
-        
+
         public override Type UpdateType { get; } = typeof(MongoEntityUpdateService<,>);
-        
+
         public override Type DeleteType { get; } = typeof(MongoEntityDeleteService<,>);
 
         public override Type SoftDeleteType { get; } = typeof(MongoEntitySoftDeleteService<,>);
-        
+
         public string CollectionName { get; set; }
-        
+
         public string Database { get; set; }
 
         public MongoDbEntityBuilder(IDynamicClassGenerator generator)
@@ -48,32 +49,32 @@ namespace Firebend.AutoCrud.Mongo
         protected override void ApplyPlatformTypes()
         {
             RegisterCollectionNameInterfaceType();
-            
+
             this.WithRegistration(typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IMongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IMongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IMongoUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoUpdateClient<, >).MakeGenericType(EntityKeyType, EntityType),
+                typeof(IMongoUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IMongoDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(MongoDeleteClient<, >).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoDeleteClient<, >).MakeGenericType(EntityKeyType, EntityType),
+                typeof(MongoDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
+                typeof(IMongoDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IMongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(MongoIndexClient<, >).MakeGenericType(EntityKeyType, EntityType),
+                typeof(MongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IMongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IMongoIndexProvider<>).MakeGenericType(EntityType),
                 typeof(DefaultIndexProvider<>).MakeGenericType(EntityType),
                 typeof(IMongoIndexProvider<>).MakeGenericType(EntityType),
@@ -83,7 +84,7 @@ namespace Firebend.AutoCrud.Mongo
                 typeof(MongoConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             this.WithRegistration(typeof(IConfigureCollection),
                 typeof(MongoConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IConfigureCollection),
@@ -93,30 +94,22 @@ namespace Firebend.AutoCrud.Mongo
                 typeof(DefaultEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-            
+
             if (EntityKeyType == typeof(Guid))
-            {
                 this.WithRegistration(typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
                     typeof(CombGuidMongoCollectionKeyGenerator<>).MakeGenericType(EntityType),
                     typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
                     false);
-            }
         }
-        
+
         private void RegisterCollectionNameInterfaceType()
         {
-            if (string.IsNullOrWhiteSpace(CollectionName))
-            {
-                throw new Exception("Please provide a collection name for this mongo entity");
-            }
+            if (string.IsNullOrWhiteSpace(CollectionName)) throw new Exception("Please provide a collection name for this mongo entity");
 
-            if (string.IsNullOrWhiteSpace(Database))
-            {
-                throw new Exception("Please provide a database name for this entity.");
-            }
-            
+            if (string.IsNullOrWhiteSpace(Database)) throw new Exception("Please provide a database name for this entity.");
+
             var signature = $"{EntityType.Name}_{CollectionName}_CollectionName";
-            
+
             var iFaceType = typeof(IMongoEntityConfiguration<,>).MakeGenericType(EntityKeyType, EntityType);
 
             var collectionNameField = new PropertySet
@@ -126,7 +119,7 @@ namespace Firebend.AutoCrud.Mongo
                 Value = CollectionName,
                 Override = true
             };
-            
+
             var databaseField = new PropertySet
             {
                 Name = nameof(IMongoEntityConfiguration<Guid, FooEntity>.DatabaseName),
@@ -160,18 +153,12 @@ namespace Firebend.AutoCrud.Mongo
 
         public MongoDbEntityBuilder WithDefaultDatabase(string db)
         {
-            if (string.IsNullOrWhiteSpace(db))
-            {
-                throw new Exception("Please provide a database name.");
-            }
+            if (string.IsNullOrWhiteSpace(db)) throw new Exception("Please provide a database name.");
 
-            if (string.IsNullOrWhiteSpace(Database))
-            {
-                Database = db;
-            }
+            if (string.IsNullOrWhiteSpace(Database)) Database = db;
 
             var signature = $"DefaultDb";
-            
+
             var iFaceType = typeof(IMongoDefaultDatabaseSelector);
 
             var defaultDbField = new PropertySet
@@ -186,11 +173,11 @@ namespace Firebend.AutoCrud.Mongo
                 signature,
                 new[]
                 {
-                    defaultDbField,
+                    defaultDbField
                 });
 
             this.WithRegistrationInstance(iFaceType, instance);
-            
+
             return this;
         }
 

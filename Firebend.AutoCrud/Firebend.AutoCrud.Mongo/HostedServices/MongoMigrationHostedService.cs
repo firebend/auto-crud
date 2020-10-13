@@ -24,7 +24,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
         public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
-            
+
             _migrations = scope.ServiceProvider.GetService<IEnumerable<IMongoMigration>>();
             _logger = logger;
             _databaseSelector = scope.ServiceProvider.GetService<IMongoDefaultDatabaseSelector>();
@@ -40,21 +40,20 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
                 return;
                 throw new Exception("No default db name provided.");
             }
-            
+
             var db = _mongoClient.GetDatabase(dbName);
-            
+
             var collection = db.GetCollection<MongoDbMigrationVersion>($"__{nameof(MongoDbMigrationVersion)}");
-            
+
             var maxVersion = await collection.AsQueryable()
                 .Select(x => x.Version)
                 .OrderByDescending(x => x)
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
-            
+
             foreach (var migration in _migrations
                 .Where(x => x.Version.Version > maxVersion)
                 .OrderBy(x => x.Version.Version))
-            {
                 try
                 {
                     await migration.ApplyMigrationAsync(cancellationToken).ConfigureAwait(false);
@@ -68,9 +67,8 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
                         migration.Version.Version);
                     break;
                 }
-            }
         }
-        
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
             return DoMigration(_cancellationTokenSource.Token);
@@ -79,7 +77,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _cancellationTokenSource.Cancel();
-            
+
             return Task.CompletedTask;
         }
     }

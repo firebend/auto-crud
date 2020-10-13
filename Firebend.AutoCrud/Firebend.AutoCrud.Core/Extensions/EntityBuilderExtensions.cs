@@ -12,7 +12,6 @@ namespace Firebend.AutoCrud.Core.Extensions
             where TEntity : IEntity<TEntityKey>
             where TEntityKey : struct
         {
-            
             builder.EntityType = typeof(TEntity);
             builder.EntityKeyType = typeof(TEntityKey);
             builder.EntityName = builder.EntityType.Name;
@@ -41,17 +40,14 @@ namespace Firebend.AutoCrud.Core.Extensions
             {
                 if (builder.Registrations.ContainsKey(registrationType))
                 {
-                    if (replace)
-                    {
-                        builder.Registrations[registrationType] = serviceType;
-                    }
+                    if (replace) builder.Registrations[registrationType] = serviceType;
                 }
                 else
                 {
                     builder.Registrations.Add(registrationType, serviceType);
                 }
             }
-            
+
             return builder;
         }
 
@@ -60,7 +56,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return builder.WithRegistration(typeof(TRegistration), typeof(TService), replace);
         }
-        
+
         public static TBuilder WithRegistration<TBuilder>(this TBuilder builder,
             Type registrationType,
             Type serviceType,
@@ -68,15 +64,9 @@ namespace Firebend.AutoCrud.Core.Extensions
             bool replace = true)
             where TBuilder : EntityBuilder
         {
-            if (!typeToCheck.IsAssignableFrom(serviceType))
-            {
-                throw new ArgumentException($"Registration type is not assignable to {typeToCheck}");
-            }
-            
-            if(!typeToCheck.IsAssignableFrom(registrationType))
-            {
-                throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
-            }
+            if (!typeToCheck.IsAssignableFrom(serviceType)) throw new ArgumentException($"Registration type is not assignable to {typeToCheck}");
+
+            if (!typeToCheck.IsAssignableFrom(registrationType)) throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
 
             return builder.WithRegistration(registrationType, serviceType, replace);
         }
@@ -91,15 +81,11 @@ namespace Firebend.AutoCrud.Core.Extensions
             else
             {
                 if (builder.InstanceRegistrations.ContainsKey(registrationType))
-                {
                     builder.InstanceRegistrations[registrationType] = instance;
-                }
                 else
-                {
                     builder.InstanceRegistrations.Add(registrationType, instance);
-                }
             }
-            
+
             return builder;
         }
     }

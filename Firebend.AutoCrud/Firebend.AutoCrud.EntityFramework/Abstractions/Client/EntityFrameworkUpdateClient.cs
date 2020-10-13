@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
-    public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
+    public abstract class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
@@ -35,7 +35,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     set.Attach(entity);
                     entry.State = EntityState.Modified;
                 }
-
             }
 
             await Context.SaveChangesAsync(cancellationToken);
@@ -47,11 +46,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var entity = await GetByKeyAsync(key, cancellationToken);
 
-            if (entity == null)
-            {
-                return null;
-            }
-            
+            if (entity == null) return null;
+
             jsonPatchDocument.ApplyTo(entity);
 
             return await UpdateAsync(entity, cancellationToken);

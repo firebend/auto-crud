@@ -18,21 +18,14 @@ namespace Firebend.AutoCrud.Core.Extensions
 
             foreach (var sourceProp in sourceProps)
             {
-                if (propertiesToIgnore != null && sourceProp.Name.In(propertiesToIgnore))
-                {
-                    continue;
-                }
+                if (propertiesToIgnore != null && sourceProp.Name.In(propertiesToIgnore)) continue;
 
                 if (destProps.Any(x => x.Name == sourceProp.Name))
                 {
                     var p = destProps.First(x => x.Name == sourceProp.Name);
 
-                    if (p.CanWrite)
-                    {
-                        p.SetValue(dest, sourceProp.GetValue(source, null), null);
-                    }
+                    if (p.CanWrite) p.SetValue(dest, sourceProp.GetValue(source, null), null);
                 }
-
             }
 
             return dest;

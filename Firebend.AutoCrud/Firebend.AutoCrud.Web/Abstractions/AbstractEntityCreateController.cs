@@ -9,7 +9,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public class AbstractEntityCreateController<TKey, TEntity> :ControllerBase
+    public abstract class AbstractEntityCreateController<TKey, TEntity> : ControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             _createService = createService;
             _entityValidationService = entityValidationService;
         }
-        
+
         [HttpPost]
         [SwaggerOperation("Creates an entity")]
         [SwaggerResponse(201, "Creates an entity.")]
@@ -34,19 +34,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var isValid = await _entityValidationService
                 .ValidateAsync(body, cancellationToken)
                 .ConfigureAwait(false);
-            
+
             if (!isValid.WasSuccessful)
             {
-                foreach (var modelError in isValid.Errors)
-                {
-                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
-                }
+                foreach (var modelError in isValid.Errors) ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
                 return BadRequest(ModelState);
             }
-            if (isValid.Model != null)
-            {
-                body = isValid.Model;
-            }
+
+            if (isValid.Model != null) body = isValid.Model;
 
             var entity = await _createService
                 .CreateAsync(body, cancellationToken)
@@ -73,17 +68,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 var isValid = await _entityValidationService
                     .ValidateAsync(entityToCreate, cancellationToken)
                     .ConfigureAwait(false);
-                
+
                 if (!isValid.WasSuccessful)
                 {
                     isValid.Model = toCreate;
                     errorEntities.Add(isValid);
                 }
-                
-                if (isValid.Model != null)
-                {
-                    entityToCreate = isValid.Model;
-                }
+
+                if (isValid.Model != null) entityToCreate = isValid.Model;
 
                 var entity = await _createService
                     .CreateAsync(entityToCreate, cancellationToken)
@@ -92,15 +84,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 createdEntities.Add(entity);
             }
 
-            if (createdEntities.Count > 0)
-            {
-                return Ok(new { created = createdEntities, errors = errorEntities });
-            }
-            
-            if (errorEntities.Count > 0)
-            {
-                return BadRequest(new {errors = errorEntities});
-            }
+            if (createdEntities.Count > 0) return Ok(new {created = createdEntities, errors = errorEntities});
+
+            if (errorEntities.Count > 0) return BadRequest(new {errors = errorEntities});
 
             return BadRequest();
         }

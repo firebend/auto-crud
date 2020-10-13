@@ -8,7 +8,6 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
 {
     public interface IPersonReadRepository : IEntityReadService<Guid, Person>
     {
-        
     }
 
     public class PersonReadRepository : EntityFrameworkEntityReadService<Guid, Person>, IPersonReadRepository
@@ -17,5 +16,4 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
         {
         }
     }
-    
 }

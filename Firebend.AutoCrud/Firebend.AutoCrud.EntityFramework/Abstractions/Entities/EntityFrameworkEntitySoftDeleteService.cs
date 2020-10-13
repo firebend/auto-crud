@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public class EntityFrameworkEntitySoftDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
+    public abstract class EntityFrameworkEntitySoftDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, IActiveEntity, new()
     {
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
-        
+
         public EntityFrameworkEntitySoftDeleteService(IEntityUpdateService<TKey, TEntity> updateService)
         {
             _updateService = updateService;
@@ -21,9 +21,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
         {
             var patch = new JsonPatchDocument<TEntity>();
-            
+
             patch.Add(x => x.IsDeleted, true);
-            
+
             return _updateService.PatchAsync(key, patch, cancellationToken);
         }
     }

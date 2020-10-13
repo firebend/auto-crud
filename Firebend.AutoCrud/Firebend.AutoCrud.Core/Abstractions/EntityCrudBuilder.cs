@@ -5,15 +5,15 @@ namespace Firebend.AutoCrud.Core.Abstractions
     public abstract class EntityCrudBuilder : EntityBuilder
     {
         public abstract Type CreateType { get; }
-        
+
         public abstract Type ReadType { get; }
-        
+
         public abstract Type SearchType { get; }
-        
+
         public abstract Type UpdateType { get; }
-        
+
         public abstract Type DeleteType { get; }
-        
+
         public abstract Type SoftDeleteType { get; }
 
         protected abstract void ApplyPlatformTypes();

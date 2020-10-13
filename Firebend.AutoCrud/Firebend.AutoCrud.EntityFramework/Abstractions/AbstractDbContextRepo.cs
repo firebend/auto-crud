@@ -11,12 +11,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions
 {
-    public class AbstractDbContextRepo<TKey, TEntity>
+    public abstract class AbstractDbContextRepo<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IDbContextProvider<TKey, TEntity> _provider;
-        
+
         private IDbContext _context;
 
         protected IDbContext Context => _context ??= _provider.GetDbContext();
@@ -33,23 +33,20 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken)
         {
-            return GetFilteredQueryable().FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken: cancellationToken);
+            return GetFilteredQueryable().FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
         }
-        
+
         protected IQueryable<TEntity> GetFilteredQueryable(Expression<Func<TEntity, bool>> firstStageFilters = null)
         {
             var queryable = GetDbSet().AsQueryable();
 
-            if (firstStageFilters != null)
-            {
-                queryable = queryable.Where(firstStageFilters);
-            }
+            if (firstStageFilters != null) queryable = queryable.Where(firstStageFilters);
 
             var filters = BuildFilters();
 
             return filters == null ? queryable : queryable.Where(filters);
         }
-        
+
         protected Expression<Func<TEntity, bool>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null)
         {
             var securityFilters = GetSecurityFilters() ?? new List<Expression<Func<TEntity, bool>>>();
@@ -58,15 +55,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
                 .Where(x => x != null)
                 .ToList();
 
-            if (additionalFilter != null)
-            {
-                filters.Add(additionalFilter);
-            }
+            if (additionalFilter != null) filters.Add(additionalFilter);
 
-            if (filters.Count == 0)
-            {
-                return null;
-            }
+            if (filters.Count == 0) return null;
 
             return filters.Aggregate(default(Expression<Func<TEntity, bool>>),
                 (aggregate, filter) => aggregate.AndAlso(filter));
