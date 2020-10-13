@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
@@ -9,7 +7,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.Generator.Implementations;
-using Firebend.AutoCrud.Mongo.Abstractions;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
@@ -48,8 +45,10 @@ namespace Firebend.AutoCrud.Mongo
         {
         }
 
-        public override void ApplyPlatformTypes()
+        protected override void ApplyPlatformTypes()
         {
+            RegisterCollectionNameInterfaceType();
+            
             this.WithRegistration(typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
@@ -94,19 +93,13 @@ namespace Firebend.AutoCrud.Mongo
                 typeof(DefaultEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
-        }
-
-        protected override void OnBuild()
-        {
-            base.OnBuild();
-            ApplyPlatformTypes();
-            RegisterCollectionNameInterfaceType();
             
             if (EntityKeyType == typeof(Guid))
             {
                 this.WithRegistration(typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
                     typeof(CombGuidMongoCollectionKeyGenerator<>).MakeGenericType(EntityType),
-                    typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType));
+                    typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
+                    false);
             }
         }
         

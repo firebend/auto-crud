@@ -16,9 +16,12 @@ namespace Firebend.AutoCrud.Core.Abstractions
         
         public abstract Type SoftDeleteType { get; }
 
-        public virtual void ApplyPlatformTypes()
+        protected abstract void ApplyPlatformTypes();
+
+        protected override void OnBuild()
         {
-            
+            base.OnBuild();
+            ApplyPlatformTypes();
         }
     }
 }

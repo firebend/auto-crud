@@ -29,7 +29,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken)
         {
-            return GetFilteredQueryable().FirstOrDefaultAsync(x => x.Id.Equals(key));
+            return GetFilteredQueryable().FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken: cancellationToken);
         }
         
         protected IQueryable<TEntity> GetFilteredQueryable(Expression<Func<TEntity, bool>> firstStageFilters = null)

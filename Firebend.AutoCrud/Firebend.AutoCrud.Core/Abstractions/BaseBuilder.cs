@@ -5,7 +5,7 @@ namespace Firebend.AutoCrud.Core.Abstractions
 {
     public abstract class BaseBuilder
     {
-        private object _lock = new object();
+        private readonly object _lock = new object();
         
         public bool IsBuilt { get; private set; }
         
