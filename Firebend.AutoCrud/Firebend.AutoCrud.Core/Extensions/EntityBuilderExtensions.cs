@@ -55,10 +55,10 @@ namespace Firebend.AutoCrud.Core.Extensions
             return builder;
         }
 
-        public static TBuilder WithRegistration<TBuilder, TRegistration, TService>(this TBuilder builder)
+        public static TBuilder WithRegistration<TBuilder, TRegistration, TService>(this TBuilder builder, bool replace = true)
             where TBuilder : EntityBuilder
         {
-            return builder.WithRegistration(typeof(TRegistration), typeof(TService));
+            return builder.WithRegistration(typeof(TRegistration), typeof(TService), replace);
         }
         
         public static TBuilder WithRegistration<TBuilder>(this TBuilder builder,

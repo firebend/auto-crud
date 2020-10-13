@@ -6,13 +6,13 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public class EntityFrameworkEntityDeleteService<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityDeleteService<TKey, TEntity>
+    public class EntityFrameworkEntityDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IEntityFrameworkDeleteClient<TKey, TEntity> _deleteClient;
         
-        public EntityFrameworkEntityDeleteService(IDbContext context, IEntityFrameworkDeleteClient<TKey, TEntity> deleteClient) : base(context)
+        public EntityFrameworkEntityDeleteService(IEntityFrameworkDeleteClient<TKey, TEntity> deleteClient)
         {
             _deleteClient = deleteClient;
         }

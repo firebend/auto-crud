@@ -17,8 +17,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
     {
         private readonly IEntityFrameworkFullTextExpressionProvider _fullTextSearchProvider;
         
-        public EntityFrameworkQueryClient(IDbContext context,
-            IEntityFrameworkFullTextExpressionProvider fullTextSearchProvider) : base(context)
+        public EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
+            IEntityFrameworkFullTextExpressionProvider fullTextSearchProvider) : base(contextProvider)
         {
             _fullTextSearchProvider = fullTextSearchProvider;
         }

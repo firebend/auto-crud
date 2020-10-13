@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public class EntityFrameworkEntitySoftDeleteService<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityDeleteService<TKey, TEntity>
+    public class EntityFrameworkEntitySoftDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, IActiveEntity, new()
     {
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
         
-        public EntityFrameworkEntitySoftDeleteService(IDbContext context, IEntityUpdateService<TKey, TEntity> updateService) : base(context)
+        public EntityFrameworkEntitySoftDeleteService(IEntityUpdateService<TKey, TEntity> updateService)
         {
             _updateService = updateService;
         }

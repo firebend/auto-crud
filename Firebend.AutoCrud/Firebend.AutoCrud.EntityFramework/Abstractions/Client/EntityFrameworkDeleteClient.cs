@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        public EntityFrameworkDeleteClient(IDbContext context) : base(context)
+        public EntityFrameworkDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider) : base(contextProvider)
         {
         }
 

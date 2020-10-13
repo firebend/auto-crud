@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
     {
         private readonly IEntityFrameworkCreateClient<TKey, TEntity> _createClient;
 
-        protected EntityFrameworkEntityCreateService( IEntityFrameworkCreateClient<TKey, TEntity> createClient)
+        protected EntityFrameworkEntityCreateService(IEntityFrameworkCreateClient<TKey, TEntity> createClient)
         {
             _createClient = createClient;
         }

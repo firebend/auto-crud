@@ -9,8 +9,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        public EntityFrameworkCreateClient(IDbContext context) : base(context)
+        public EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider) : base(provider)
         {
+            
         }
 
         public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)

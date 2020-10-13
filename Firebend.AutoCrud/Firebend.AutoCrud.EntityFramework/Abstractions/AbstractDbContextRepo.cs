@@ -15,11 +15,15 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        protected IDbContext Context { get; }
+        private readonly IDbContextProvider<TKey, TEntity> _provider;
         
-        public AbstractDbContextRepo(IDbContext context)
+        private IDbContext _context;
+
+        protected IDbContext Context => _context ??= _provider.GetDbContext();
+
+        protected AbstractDbContextRepo(IDbContextProvider<TKey, TEntity> provider)
         {
-            Context = context;
+            _provider = provider;
         }
 
         protected DbSet<TEntity> GetDbSet()

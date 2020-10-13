@@ -90,9 +90,12 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
             }
 
-            foreach (var (key, value) in builder.InstanceRegistrations)
+            if (builder.InstanceRegistrations != null)
             {
-                serviceCollection.AddSingleton(key, value);
+                foreach (var (key, value) in builder.InstanceRegistrations)
+                {
+                    serviceCollection.AddSingleton(key, value);
+                }
             }
         }
         

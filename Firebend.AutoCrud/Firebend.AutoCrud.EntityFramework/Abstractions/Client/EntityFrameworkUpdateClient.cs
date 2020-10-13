@@ -2,18 +2,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
-    public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityUpdateService<TKey, TEntity>
+    public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        public EntityFrameworkUpdateClient(IDbContext context) : base(context)
+        public EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider) : base(contextProvider)
         {
         }
 
@@ -44,7 +43,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return entry.Entity;
         }
 
-        public async Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        public async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
             var entity = await GetByKeyAsync(key, cancellationToken);
 
