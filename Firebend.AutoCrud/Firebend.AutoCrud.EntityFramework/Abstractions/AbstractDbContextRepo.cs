@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
@@ -12,95 +15,62 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-
-        private readonly IDbContext _context;
+        protected IDbContext Context { get; }
         
         public AbstractDbContextRepo(IDbContext context)
         {
-            _context = context;
+            Context = context;
         }
 
-        private DbSet<TEntity> GetDbSet()
+        protected DbSet<TEntity> GetDbSet()
         {
-            return _context.Set<TEntity>();
+            return Context.Set<TEntity>();
         }
 
-        public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken)
+        protected Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken)
         {
-            return GetDbSet().FindAsync(key).AsTask();
+            return GetFilteredQueryable().FirstOrDefaultAsync(x => x.Id.Equals(key));
         }
-
-        public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
+        
+        protected IQueryable<TEntity> GetFilteredQueryable(Expression<Func<TEntity, bool>> firstStageFilters = null)
         {
-            return await GetDbSet().ToArrayAsync(cancellationToken).ConfigureAwait(false);
-        }
+            var queryable = GetDbSet().AsQueryable();
 
-        public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
-        {
-            var e = (await GetDbSet().AddAsync(entity, cancellationToken).ConfigureAwait(false)).Entity;
-
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return e;
-        }
-
-        public async Task<TEntity> UpdateAsync(TKey key, TEntity entity, CancellationToken cancellationToken)
-        {
-            entity.Id = key;
-
-            var entry = _context.Entry(entity);
-
-            if (entry.State == EntityState.Detached)
+            if (firstStageFilters != null)
             {
-                var set = GetDbSet();
-
-                var found = await set.FindAsync(key);
-
-                if (found != null)
-                {
-                    entity.CopyPropertiesTo(found, "Id");
-                }
-                else
-                {
-                    set.Attach(entity);
-                    entry.State = EntityState.Modified;
-                }
-
+                queryable = queryable.Where(firstStageFilters);
             }
 
-            await _context.SaveChangesAsync(cancellationToken);
+            var filters = BuildFilters();
 
-            return entry.Entity;
+            return filters == null ? queryable : queryable.Where(filters);
         }
-
-        public async Task DeleteAsync(TKey key, CancellationToken cancellationToken)
+        
+        protected Expression<Func<TEntity, bool>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null)
         {
-            var entity = new TEntity
+            var securityFilters = GetSecurityFilters() ?? new List<Expression<Func<TEntity, bool>>>();
+
+            var filters = securityFilters
+                .Where(x => x != null)
+                .ToList();
+
+            if (additionalFilter != null)
             {
-                Id = key
-            };
-
-            var entry = _context.Entry(entity);
-
-            if (entry.State == EntityState.Detached)
-            {
-                var set = GetDbSet();
-
-                var found = await set.FindAsync(key);
-
-                if (found != null)
-                {
-                    set.Remove(found);
-                }
-                else
-                {
-                    set.Attach(entity);
-                    entry.State = EntityState.Deleted;
-                }
-
+                filters.Add(additionalFilter);
             }
 
-            await _context.SaveChangesAsync(cancellationToken);
+            if (filters.Count == 0)
+            {
+                return null;
+            }
+
+            return filters.Aggregate(default(Expression<Func<TEntity, bool>>),
+                (aggregate, filter) => aggregate.AndAlso(filter));
+        }
+
+        protected virtual IEnumerable<Expression<Func<TEntity, bool>>> GetSecurityFilters()
+        {
+            return null;
         }
     }
 }

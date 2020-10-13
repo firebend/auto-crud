@@ -6,10 +6,15 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+      <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="5.6.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Firebend.AutoCrud.Core\Firebend.AutoCrud.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Models" />
     </ItemGroup>
 
 </Project>

@@ -41,9 +41,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
                 mongoQueryable = mongoQueryable.Where(_ => firstStageFilters.Inject());
             }
 
-            var securityFilters = BuildFilters();
+            var filters = BuildFilters();
 
-            return securityFilters == null ? mongoQueryable : mongoQueryable.Where(BuildFilters());
+            return filters == null ? mongoQueryable : mongoQueryable.Where(filters);
         }
         
         protected Expression<Func<TEntity, bool>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null)

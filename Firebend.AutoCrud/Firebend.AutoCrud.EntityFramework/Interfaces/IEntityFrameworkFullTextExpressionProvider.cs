@@ -1,7 +1,9 @@
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
-    public class IEntityFrameworkFullTextExpressionProvider
+    public interface IEntityFrameworkFullTextExpressionProvider
     {
+        bool HasValue { get; }
         
+        bool GetFullTextFilter<TEntity>(TEntity entity);
     }
 }

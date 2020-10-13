@@ -1,6 +1,11 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
@@ -9,10 +14,13 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TEntity : class, IEntity<TKey>
     {
         private readonly IEntityCreateService<TKey, TEntity> _createService;
+        private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
 
-        public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService)
+        public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
+            IEntityValidationService<TKey, TEntity> entityValidationService)
         {
             _createService = createService;
+            _entityValidationService = entityValidationService;
         }
         
         [HttpPost]
@@ -23,7 +31,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         public virtual async Task<IActionResult> Post([FromBody] TEntity body,
             CancellationToken cancellationToken)
         {
-            var isValid = await _createService
+            var isValid = await _entityValidationService
                 .ValidateAsync(body, cancellationToken)
                 .ConfigureAwait(false);
             
@@ -44,7 +52,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 .CreateAsync(body, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Created($"{GetByIdRoute ?? Request.Path.Value}/{entity.Id}", entity);
+            return Created($"{Request.Path.Value}/{entity.Id}", entity);
         }
 
         [HttpPost]
@@ -62,7 +70,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             foreach (var toCreate in body)
             {
                 var entityToCreate = toCreate;
-                var isValid = await _createService
+                var isValid = await _entityValidationService
                     .ValidateAsync(entityToCreate, cancellationToken)
                     .ConfigureAwait(false);
                 
@@ -71,6 +79,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     isValid.Model = toCreate;
                     errorEntities.Add(isValid);
                 }
+                
                 if (isValid.Model != null)
                 {
                     entityToCreate = isValid.Model;
@@ -87,7 +96,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
             {
                 return Ok(new { created = createdEntities, errors = errorEntities });
             }
-            else if (errorEntities.Count > 0)
+            
+            if (errorEntities.Count > 0)
             {
                 return BadRequest(new {errors = errorEntities});
             }
