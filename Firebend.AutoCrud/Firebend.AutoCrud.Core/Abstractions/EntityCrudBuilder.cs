@@ -15,6 +15,8 @@ namespace Firebend.AutoCrud.Core.Abstractions
         public abstract Type DeleteType { get; }
 
         public abstract Type SoftDeleteType { get; }
+        
+        public Type SearchRequestType { get; set; }
 
         protected abstract void ApplyPlatformTypes();
 

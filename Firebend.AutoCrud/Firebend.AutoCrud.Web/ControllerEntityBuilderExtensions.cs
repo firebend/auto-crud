@@ -4,10 +4,10 @@ namespace Firebend.AutoCrud.Web
 {
     public static class ControllerEntityBuilderExtensions
     {
-        public static ControllerEntityBuilder UsingControllers<TBuilder>(this TBuilder builder)
+        public static ControllerEntityBuilder<TBuilder> UsingControllers<TBuilder>(this TBuilder builder)
             where TBuilder : EntityCrudBuilder
         {
-            return new ControllerEntityBuilder(builder);
+            return new ControllerEntityBuilder<TBuilder>(builder);
         }
     }
 }

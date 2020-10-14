@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
+using Firebend.AutoCrud.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Generator.Implementations
@@ -69,7 +71,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     signature,
                     implementedTypes,
                     interfaceImplementations.ToArray(),
-                    builder.Attributes[key]?.ToArray());
+                    GetAttributes(typeToImplement, builder.Attributes));
 
                 interfaceImplementations.ForEach(iFace => { serviceCollection.AddScoped(iFace, implementedType); });
 
@@ -81,6 +83,33 @@ namespace Firebend.AutoCrud.Generator.Implementations
             if (builder.InstanceRegistrations != null)
                 foreach (var (key, value) in builder.InstanceRegistrations)
                     serviceCollection.AddSingleton(key, value);
+        }
+
+        private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CrudBuilderAttributeModel>> builderAttributes)
+        {
+            if (builderAttributes == null)
+            {
+                return null;
+            }
+            
+            var attributes = new List<CustomAttributeBuilder>();
+
+            foreach (var (type, attribute) in builderAttributes)
+            {
+                if (type.IsAssignableFrom(typeToImplement))
+                {
+                    attributes.AddRange(attribute.Select(x => x.AttributeBuilder));
+                }
+            }
+
+            var attributeArray =  attributes.Distinct().ToArray();
+
+            if (attributeArray.Any())
+            {
+                return attributeArray;
+            }
+
+            return null;
         }
 
         private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, Type> source)

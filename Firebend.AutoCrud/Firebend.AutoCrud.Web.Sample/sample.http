@@ -1,0 +1,27 @@
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Simon",
+    "lastName": "Sample"
+}
+###
+PUT https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
+Content-Type: application/json
+
+{
+    "id": "f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc",
+    "firstName": "Simon",
+    "lastName": "Sample"
+}
+###
+DELETE https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
+
+###
+https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
+
+###
+https://localhost:5001/api/v1/ef-person/all
+
+###
+https://localhost:5001/api/v1/ef-person?search=Simon&pageSize=10&pageNumber=1

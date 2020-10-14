@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using Firebend.AutoCrud.Core.Models;
 
 namespace Firebend.AutoCrud.Core.Abstractions
 {
@@ -14,7 +15,7 @@ namespace Firebend.AutoCrud.Core.Abstractions
 
         public IDictionary<Type, object> InstanceRegistrations { get; set; }
 
-        public IDictionary<Type, List<CustomAttributeBuilder>> Attributes { get; set; }
+        public IDictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
 
         public void Build()
         {
