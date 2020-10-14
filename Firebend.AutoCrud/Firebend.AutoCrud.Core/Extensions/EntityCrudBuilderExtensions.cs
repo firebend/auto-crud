@@ -57,6 +57,8 @@ namespace Firebend.AutoCrud.Core.Extensions
         public static TBuilder WithSearch<TBuilder>(this TBuilder builder, Type registrationType, Type serviceType, Type searchType)
             where TBuilder : EntityCrudBuilder
         {
+            builder.SearchRequestType = searchType;
+            
             return builder.WithRegistration(registrationType,
                 serviceType,
                 typeof(IEntitySearchService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, searchType));

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -69,7 +70,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     signature,
                     implementedTypes,
                     interfaceImplementations.ToArray(),
-                    builder.Attributes[key]?.ToArray());
+                    GetAttributes(typeToImplement, builder.Attributes));
 
                 interfaceImplementations.ForEach(iFace => { serviceCollection.AddScoped(iFace, implementedType); });
 
@@ -81,6 +82,26 @@ namespace Firebend.AutoCrud.Generator.Implementations
             if (builder.InstanceRegistrations != null)
                 foreach (var (key, value) in builder.InstanceRegistrations)
                     serviceCollection.AddSingleton(key, value);
+        }
+
+        private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CustomAttributeBuilder>> builderAttributes)
+        {
+            if (builderAttributes == null)
+            {
+                return null;
+            }
+            
+            var attributes = new List<CustomAttributeBuilder>();
+
+            foreach (var (type, attribute) in builderAttributes)
+            {
+                if (type.IsAssignableFrom(typeToImplement))
+                {
+                    attributes.AddRange(attribute);
+                }
+            }
+
+            return attributes.ToArray();
         }
 
         private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, Type> source)

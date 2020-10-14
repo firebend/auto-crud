@@ -35,6 +35,9 @@ namespace Firebend.AutoCrud.Web.Sample
                     await context.Response.WriteAsync("Hello World!");
                 });
             });
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
     }
 }

@@ -1,11 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Mongo;
+using Firebend.AutoCrud.Web.Conventions;
+using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Web.Sample
 {
@@ -18,9 +19,28 @@ namespace Firebend.AutoCrud.Web.Sample
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+                .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    if (hostingContext.HostingEnvironment.IsDevelopment()) builder.AddUserSecrets("Firebend.AutoCrud");
+                })
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
+                        .AddBuilder<Person, Guid>(person =>
+                            person.WithDefaultDatabase("Samples")
+                                .WithCollection("People")
+                                .WithCrud()
+                                .WithFullTextSearch()
+                                .UsingControllers()
+                                .WithAllControllers(true)
+                                .AsEntityBuilder()
+                        ).Generate()
+                        .AddRouting()
+                        .AddSwaggerGen()
+                        .AddControllers()
+                        .ConfigureApplicationPartManager(
+                            manager => manager.FeatureProviders.Insert(0, new FirebendAutoCrudControllerConvention(services)));
                 });
     }
 }
