@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            if (key.Equals(body.Id))
+            if (!key.Equals(body.Id))
             {
                 ModelState.AddModelError(nameof(id), "The id provided in the url does not match the id in the body.");
                 return BadRequest(ModelState);
