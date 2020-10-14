@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.Core.Threading
             }
 
             public int RefCount { get; set; }
-            
+
             public T Value { get; }
         }
 
@@ -39,7 +39,7 @@ namespace Firebend.AutoCrud.Core.Threading
                     SemaphoreSlims[key] = item;
                 }
             }
-            
+
             return item.Value;
         }
 
@@ -47,43 +47,37 @@ namespace Firebend.AutoCrud.Core.Threading
         {
             GetOrCreate(key).Wait();
 
-            return new Releaser { Key = key };
+            return new Releaser {Key = key};
         }
 
         public async Task<IDisposable> LockAsync(object key, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
         {
-            var didGetLock =  await GetOrCreate(key)
-                .WaitAsync((int)(timeout?.TotalMilliseconds ?? -1), cancellationToken)
+            var didGetLock = await GetOrCreate(key)
+                .WaitAsync((int) (timeout?.TotalMilliseconds ?? -1), cancellationToken)
                 .ConfigureAwait(false);
 
-            return new Releaser { Key = key, DidGetLock = didGetLock};
+            return new Releaser {Key = key, DidGetLock = didGetLock};
         }
 
         private sealed class Releaser : IDisposable
         {
             public object Key { get; set; }
-            
+
             public bool DidGetLock { get; set; }
 
             public void Dispose()
             {
                 RefCounted<SemaphoreSlim> item;
-                
+
                 lock (SemaphoreSlims)
                 {
                     item = SemaphoreSlims[Key];
                     --item.RefCount;
 
-                    if (item.RefCount == 0)
-                    {
-                        SemaphoreSlims.Remove(Key);
-                    }
+                    if (item.RefCount == 0) SemaphoreSlims.Remove(Key);
                 }
 
-                if (DidGetLock)
-                {
-                    item.Value.Release();
-                }
+                if (DidGetLock) item.Value.Release();
             }
         }
     }

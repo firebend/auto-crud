@@ -1,16 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Core", "Firebend.AutoCrud.Core\Firebend.AutoCrud.Core.csproj", "{E23BD5C7-A426-4BA0-A152-C6638BC585E6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Mongo", "Firebend.AutoCrud.Mongo\Firebend.AutoCrud.Mongo.csproj", "{61C23AB2-80B1-47E4-98D9-5DF37416632B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.SqlServer", "Firebend.AutoCrud.SqlServer\Firebend.AutoCrud.SqlServer.csproj", "{20C5F77D-04CA-4458-A928-F63E91E2ED93}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Generator", "Firebend.AutoCrud.Generator\Firebend.AutoCrud.Generator.csproj", "{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Mongo.Sample", "Firebend.AutoCrud.Mongo.Sample\Firebend.AutoCrud.Mongo.Sample.csproj", "{10D18FFE-5D8B-47CC-A1E0-136B152D1EAB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Tests", "Firebend.AutoCrud.Tests\Firebend.AutoCrud.Tests.csproj", "{678B4CDD-70B1-4A7F-BEF4-62BDFC356E70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Web", "Firebend.AutoCrud.Web\Firebend.AutoCrud.Web.csproj", "{2D72D3DE-D591-4699-8C8F-6F57169E7EBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.EntityFramework", "Firebend.AutoCrud.EntityFramework\Firebend.AutoCrud.EntityFramework.csproj", "{075D10BC-6A98-45EA-9F07-FE2A77976DF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.EntityFramework.Sample", "Firebend.AutoCrud.EntityFramework.Sample\Firebend.AutoCrud.EntityFramework.Sample.csproj", "{C1D83DC6-005E-460F-A54A-9DF8EDD0A3FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Web.Sample", "Firebend.AutoCrud.Web.Sample\Firebend.AutoCrud.Web.Sample.csproj", "{62706813-FA02-4400-B695-31C5B3B7AF3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,10 +33,6 @@ Global
 		{61C23AB2-80B1-47E4-98D9-5DF37416632B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61C23AB2-80B1-47E4-98D9-5DF37416632B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61C23AB2-80B1-47E4-98D9-5DF37416632B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{20C5F77D-04CA-4458-A928-F63E91E2ED93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{20C5F77D-04CA-4458-A928-F63E91E2ED93}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{20C5F77D-04CA-4458-A928-F63E91E2ED93}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{20C5F77D-04CA-4458-A928-F63E91E2ED93}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6ED4BCE6-316D-4A0C-8351-EB0A1714F2BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -42,5 +45,21 @@ Global
 		{678B4CDD-70B1-4A7F-BEF4-62BDFC356E70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{678B4CDD-70B1-4A7F-BEF4-62BDFC356E70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{678B4CDD-70B1-4A7F-BEF4-62BDFC356E70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D72D3DE-D591-4699-8C8F-6F57169E7EBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D72D3DE-D591-4699-8C8F-6F57169E7EBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D72D3DE-D591-4699-8C8F-6F57169E7EBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D72D3DE-D591-4699-8C8F-6F57169E7EBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{075D10BC-6A98-45EA-9F07-FE2A77976DF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{075D10BC-6A98-45EA-9F07-FE2A77976DF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{075D10BC-6A98-45EA-9F07-FE2A77976DF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{075D10BC-6A98-45EA-9F07-FE2A77976DF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1D83DC6-005E-460F-A54A-9DF8EDD0A3FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1D83DC6-005E-460F-A54A-9DF8EDD0A3FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1D83DC6-005E-460F-A54A-9DF8EDD0A3FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1D83DC6-005E-460F-A54A-9DF8EDD0A3FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62706813-FA02-4400-B695-31C5B3B7AF3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62706813-FA02-4400-B695-31C5B3B7AF3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62706813-FA02-4400-B695-31C5B3B7AF3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62706813-FA02-4400-B695-31C5B3B7AF3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

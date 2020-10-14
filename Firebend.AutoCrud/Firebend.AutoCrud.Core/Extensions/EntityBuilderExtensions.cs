@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
@@ -12,7 +14,6 @@ namespace Firebend.AutoCrud.Core.Extensions
             where TEntity : IEntity<TEntityKey>
             where TEntityKey : struct
         {
-            
             builder.EntityType = typeof(TEntity);
             builder.EntityKeyType = typeof(TEntityKey);
             builder.EntityName = builder.EntityType.Name;
@@ -41,26 +42,23 @@ namespace Firebend.AutoCrud.Core.Extensions
             {
                 if (builder.Registrations.ContainsKey(registrationType))
                 {
-                    if (replace)
-                    {
-                        builder.Registrations[registrationType] = serviceType;
-                    }
+                    if (replace) builder.Registrations[registrationType] = serviceType;
                 }
                 else
                 {
                     builder.Registrations.Add(registrationType, serviceType);
                 }
             }
-            
+
             return builder;
         }
 
-        public static TBuilder WithRegistration<TBuilder, TRegistration, TService>(this TBuilder builder)
+        public static TBuilder WithRegistration<TBuilder, TRegistration, TService>(this TBuilder builder, bool replace = true)
             where TBuilder : EntityBuilder
         {
-            return builder.WithRegistration(typeof(TRegistration), typeof(TService));
+            return builder.WithRegistration(typeof(TRegistration), typeof(TService), replace);
         }
-        
+
         public static TBuilder WithRegistration<TBuilder>(this TBuilder builder,
             Type registrationType,
             Type serviceType,
@@ -68,15 +66,9 @@ namespace Firebend.AutoCrud.Core.Extensions
             bool replace = true)
             where TBuilder : EntityBuilder
         {
-            if (!typeToCheck.IsAssignableFrom(serviceType))
-            {
-                throw new ArgumentException($"Registration type is not assignable to {typeToCheck}");
-            }
-            
-            if(!typeToCheck.IsAssignableFrom(registrationType))
-            {
-                throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
-            }
+            if (!typeToCheck.IsAssignableFrom(serviceType)) throw new ArgumentException($"Registration type is not assignable to {typeToCheck}");
+
+            if (!typeToCheck.IsAssignableFrom(registrationType)) throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
 
             return builder.WithRegistration(registrationType, serviceType, replace);
         }
@@ -91,15 +83,37 @@ namespace Firebend.AutoCrud.Core.Extensions
             else
             {
                 if (builder.InstanceRegistrations.ContainsKey(registrationType))
-                {
                     builder.InstanceRegistrations[registrationType] = instance;
+                else
+                    builder.InstanceRegistrations.Add(registrationType, instance);
+            }
+
+            return builder;
+        }
+
+        public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, CustomAttributeBuilder attribute)
+            where TBuilder : BaseBuilder
+        {
+            var attributesToAdd = builder
+                .Registrations
+                .Where(x => x.Key.IsAssignableFrom(registrationType))
+                .Select(x => new KeyValuePair<Type, CustomAttributeBuilder>(x.Key, attribute));
+
+            foreach (var (controllerType, attributeToAdd) in attributesToAdd)
+            {
+                if (builder.Attributes.ContainsKey(controllerType))
+                {
+                    (builder.Attributes[controllerType]??=new List<CustomAttributeBuilder>()).Add(attributeToAdd);
                 }
                 else
                 {
-                    builder.InstanceRegistrations.Add(registrationType, instance);
+                    builder.Attributes.Add(controllerType, new List<CustomAttributeBuilder>
+                    {
+                        attributeToAdd
+                    });
                 }
             }
-            
+
             return builder;
         }
     }

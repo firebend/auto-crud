@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
     public abstract class MongoClientBase
     {
         protected IMongoClient Client { get; }
-        
+
         protected ILogger Logger { get; }
 
         protected MongoClientBase(IMongoClient client,
@@ -36,10 +36,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             }
             catch (Exception ex)
             {
-                if (retry)
-                {
-                    return await RetryErrorAsync(method, false);
-                }
+                if (retry) return await RetryErrorAsync(method, false);
 
                 Logger?.LogError(ex, "Error querying Document Store: \"{Message}\"", ex.Message);
 

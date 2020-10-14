@@ -24,7 +24,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             using var scope = _serviceProvider.CreateScope();
-            
+
             var collections = scope.ServiceProvider.GetService<IEnumerable<IConfigureCollection>>();
 
             if (collections != null)
@@ -32,7 +32,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
                 _logger.LogDebug("Configuring Mongo Collections...");
 
                 var configureTasks = collections.Select(x => x.ConfigureAsync(cancellationToken));
-                
+
                 await Task.WhenAll(configureTasks).ConfigureAwait(false);
 
                 _logger.LogDebug("Finished Configuring Mongo Collections.");

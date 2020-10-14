@@ -10,7 +10,8 @@ namespace Firebend.AutoCrud.Generator.Implementations
 {
     public class DynamicClassGenerator : IDynamicClassGenerator
     {
-        public Type GenerateDynamicClass(Type classType, string typeSignature, List<Type> implementedTypes, Type[] interfaces = null, CustomAttributeBuilder[] attributes = null)
+        public Type GenerateDynamicClass(Type classType, string typeSignature, List<Type> implementedTypes, Type[] interfaces = null,
+            CustomAttributeBuilder[] attributes = null)
         {
             if (!classType.IsClass)
                 throw new InvalidCastException("TClass must be a class");
@@ -19,47 +20,34 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 throw new ArgumentNullException(nameof(typeSignature));
 
             if (interfaces?.Length > 0)
-            {
                 foreach (var interfaceType in interfaces)
-                {
                     if (!interfaceType.IsInterface)
-                    {
                         throw new InvalidCastException($"{interfaceType.Name} must be an interface");
-                    }
-                }
-            }
 
             var tb = GetTypeBuilder(typeSignature, classType, interfaces);
             CreatePassThroughConstructors(tb, classType, implementedTypes);
 
             if (attributes?.Length > 0)
-            {
                 foreach (var attribute in attributes)
-                {
                     tb.SetCustomAttribute(attribute);
-                }
-            }
 
             return tb.CreateType();
         }
-        
+
         private static void CreatePassThroughConstructors(TypeBuilder builder, Type baseType, List<Type> implementedTypes)
         {
             var constructors = baseType.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            
+
             foreach (var constructor in constructors)
             {
                 var parameters = constructor.GetParameters();
-                
-                if (parameters.Length > 0 && parameters.Last().IsDefined(typeof(ParamArrayAttribute), false))
-                {
-                    continue;
-                }
+
+                if (parameters.Length > 0 && parameters.Last().IsDefined(typeof(ParamArrayAttribute), false)) continue;
 
                 var parameterTypes = parameters
                     .Select(pi => implementedTypes.FirstOrDefault(t => pi.ParameterType.IsAssignableFrom(t)) ?? pi.ParameterType)
                     .ToArray();
-                
+
                 var requiredCustomModifiers = parameters.Select(p => p.GetRequiredCustomModifiers()).ToArray();
                 var optionalCustomModifiers = parameters.Select(p => p.GetOptionalCustomModifiers()).ToArray();
 
@@ -68,38 +56,26 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     parameterTypes,
                     requiredCustomModifiers,
                     optionalCustomModifiers);
-                
+
                 for (var i = 0; i < parameters.Length; ++i)
                 {
                     var parameter = parameters[i];
-                    
+
                     var parameterBuilder = ctor.DefineParameter(i + 1, parameter.Attributes, parameter.Name);
-                    
-                    if (((int)parameter.Attributes & (int)ParameterAttributes.HasDefault) != 0)
-                    {
-                        parameterBuilder.SetConstant(parameter.RawDefaultValue);
-                    }
 
-                    foreach (var attribute in BuildCustomAttributes(parameter.GetCustomAttributesData()))
-                    {
-                        parameterBuilder.SetCustomAttribute(attribute);
-                    }
+                    if (((int) parameter.Attributes & (int) ParameterAttributes.HasDefault) != 0) parameterBuilder.SetConstant(parameter.RawDefaultValue);
+
+                    foreach (var attribute in BuildCustomAttributes(parameter.GetCustomAttributesData())) parameterBuilder.SetCustomAttribute(attribute);
                 }
 
-                foreach (var attribute in BuildCustomAttributes(constructor.GetCustomAttributesData()))
-                {
-                    ctor.SetCustomAttribute(attribute);
-                }
+                foreach (var attribute in BuildCustomAttributes(constructor.GetCustomAttributesData())) ctor.SetCustomAttribute(attribute);
 
                 var emitter = ctor.GetILGenerator();
                 emitter.Emit(OpCodes.Nop);
 
                 emitter.Emit(OpCodes.Ldarg_0);
-                
-                for (var i = 1; i <= parameters.Length; ++i)
-                {
-                    emitter.Emit(OpCodes.Ldarg, i);
-                }
+
+                for (var i = 1; i <= parameters.Length; ++i) emitter.Emit(OpCodes.Ldarg, i);
                 emitter.Emit(OpCodes.Call, constructor);
 
                 emitter.Emit(OpCodes.Ret);
@@ -115,7 +91,8 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 var namedPropertyValues = attribute.NamedArguments?.Where(a => a.MemberInfo is PropertyInfo).Select(a => a.TypedValue.Value).ToArray();
                 var namedFieldInfos = attribute.NamedArguments?.Select(a => a.MemberInfo).OfType<FieldInfo>().ToArray();
                 var namedFieldValues = attribute.NamedArguments?.Where(a => a.MemberInfo is FieldInfo).Select(a => a.TypedValue.Value).ToArray();
-                return new CustomAttributeBuilder(attribute.Constructor, attributeArgs, namedPropertyInfos, namedPropertyValues, namedFieldInfos, namedFieldValues);
+                return new CustomAttributeBuilder(attribute.Constructor, attributeArgs, namedPropertyInfos, namedPropertyValues, namedFieldInfos,
+                    namedFieldValues);
             }).ToArray();
         }
 
@@ -127,7 +104,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             if (string.IsNullOrWhiteSpace(typeSignature))
                 throw new ArgumentNullException(nameof(typeSignature));
 
-            var tb = GetTypeBuilder(typeSignature, interfaces: new[] { interfaceType }, isInterface: true);
+            var tb = GetTypeBuilder(typeSignature, interfaces: new[] {interfaceType}, isInterface: true);
 
             return tb.CreateType();
         }
@@ -140,7 +117,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             if (string.IsNullOrWhiteSpace(typeSignature))
                 throw new ArgumentNullException(nameof(typeSignature));
 
-            var tb = GetTypeBuilder(typeSignature, interfaces: new[] { interfaceType });
+            var tb = GetTypeBuilder(typeSignature, interfaces: new[] {interfaceType});
             tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
 
             var iProperties = interfaceType.GetProperties().Select(x => new PropertySet
@@ -159,45 +136,33 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 .ToArray();
 
             if (properties.Length > 0)
-            {
                 foreach (var field in properties)
-                {
                     CreateProperty(tb, field);
-                }
-            }
 
             var objectType = tb.CreateType();
             var instance = Activator.CreateInstance(objectType);
 
             if (properties.Length > 0)
-            {
                 foreach (var field in properties.Where(x => x.Value != null))
-                {
-                   SetProperty(objectType, instance, field.Name, field.Value);
-                }
-            }
+                    SetProperty(objectType, instance, field.Name, field.Value);
 
             return instance;
         }
-        
+
         private static TypeBuilder GetTypeBuilder(string typeSignature,
             Type parentType = null,
             Type[] interfaces = null,
             bool isInterface = false)
         {
             var typeAttributes = TypeAttributes.Public | TypeAttributes.AutoLayout;
-            
+
             if (isInterface)
-            {
                 typeAttributes |= TypeAttributes.Interface | TypeAttributes.Abstract;
-            }
             else
-            {
                 typeAttributes |= TypeAttributes.Class |
                                   TypeAttributes.AutoClass |
                                   TypeAttributes.AnsiClass |
                                   TypeAttributes.BeforeFieldInit;
-            }
 
             var an = new AssemblyName(typeSignature);
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
@@ -207,21 +172,18 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 typeAttributes,
                 parentType,
                 interfaces);
-            
+
             return tb;
         }
-        
+
         private static void CreateProperty(TypeBuilder tb, PropertySet propertySet)
         {
             var propertyBuilder = tb.DefineProperty(propertySet.Name, PropertyAttributes.HasDefault, propertySet.Type, null);
             var getterAttributes = MethodAttributes.Public |
-                MethodAttributes.SpecialName |
-                MethodAttributes.HideBySig;
+                                   MethodAttributes.SpecialName |
+                                   MethodAttributes.HideBySig;
 
-            if (propertySet.Override)
-            {
-                getterAttributes |= MethodAttributes.Virtual;
-            }
+            if (propertySet.Override) getterAttributes |= MethodAttributes.Virtual;
 
             var getPropertyMethodBuilder =
                 tb.DefineMethod(
@@ -240,11 +202,9 @@ namespace Firebend.AutoCrud.Generator.Implementations
             if (propertySet.Override && tb.BaseType != null)
             {
                 var baseMethod = tb.BaseType.GetMethod($"get_{propertySet.Name}", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                if (baseMethod != null)
-                {
-                    tb.DefineMethodOverride(getPropertyMethodBuilder, baseMethod);
-                }
+                if (baseMethod != null) tb.DefineMethodOverride(getPropertyMethodBuilder, baseMethod);
             }
+
             propertyBuilder.SetGetMethod(getPropertyMethodBuilder);
 
             var setPropertyMethodBuilder =
@@ -253,7 +213,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     MethodAttributes.HideBySig |
                     MethodAttributes.Public,
                     null,
-                    new[] { propertySet.Type });
+                    new[] {propertySet.Type});
 
             var setMethodBody = setPropertyMethodBuilder.GetILGenerator();
             var modifyProperty = setMethodBody.DefineLabel();
@@ -269,11 +229,11 @@ namespace Firebend.AutoCrud.Generator.Implementations
             setMethodBody.Emit(OpCodes.Ret);
             propertyBuilder.SetSetMethod(setPropertyMethodBuilder);
         }
-        
+
         private static void SetProperty(Type objectType, object instance, string fieldName, object fieldValue)
         {
             var property = objectType.GetProperty(fieldName);
-            
+
             property?.SetValue(instance, fieldValue);
         }
     }

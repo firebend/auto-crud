@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public class MongoEntitySoftDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
+    public abstract class MongoEntitySoftDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, IActiveEntity
     {
@@ -20,9 +20,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
         {
             var patch = new JsonPatchDocument<TEntity>();
-            
+
             patch.Add(x => x.IsDeleted, true);
-            
+
             return _updateService.PatchAsync(key, patch, cancellationToken);
         }
     }

@@ -8,7 +8,7 @@ using SharpCompress.Common.Tar;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public class MongoEntityCreateService<TKey, TEntity> : IEntityCreateService<TKey, TEntity>
+    public abstract class MongoEntityCreateService<TKey, TEntity> : IEntityCreateService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

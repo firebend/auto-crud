@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Interfaces;
@@ -13,7 +12,7 @@ using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
-    public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoReadClient<TKey, TEntity>
+    public abstract class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoReadClient<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
@@ -32,45 +31,30 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         {
             FilterDefinition<TEntity> firstStageFilter = null;
 
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                firstStageFilter = Builders<TEntity>.Filter.Text(search);
-            }
+            if (!string.IsNullOrWhiteSpace(search)) firstStageFilter = Builders<TEntity>.Filter.Text(search);
 
             var queryable = GetFilteredCollection(firstStageFilter);
 
-            if (filter != null)
-            {
-                queryable = queryable.Where(filter);
-            }
+            if (filter != null) queryable = queryable.Where(filter);
 
             if (orderBys != null)
             {
                 IOrderedMongoQueryable<TEntity> ordered = null;
 
                 foreach (var orderBy in orderBys)
-                {
                     if (orderBy != default)
-                    {
-                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
+                        ordered = ordered == null ? orderBy.@ascending ? queryable.OrderBy(orderBy.order) :
                             queryable.OrderByDescending(orderBy.order) :
-                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
+                            orderBy.@ascending ? ordered.ThenBy(orderBy.order) :
                             ordered.ThenByDescending(orderBy.order);
-                    }
-                }
 
-                if (ordered != null)
-                {
-                    queryable = ordered;
-                }
+                if (ordered != null) queryable = ordered;
             }
 
-            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0 ) > 0)
-            {
+            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
                 queryable = queryable
                     .Skip((pageNumber.Value - 1) * pageSize.Value)
                     .Take(pageSize.Value);
-            }
 
             return queryable;
         }
@@ -100,16 +84,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             CancellationToken cancellationToken = default)
         {
             int? count = null;
-            
+
             if (doCount)
-            {
                 count = await CountAsync(search, filter, cancellationToken)
                     .ConfigureAwait(false);
-            }
 
             var queryable = BuildQuery(search, filter, pageNumber, pageSize, orderBys);
 
-            var data = await  RetryErrorAsync(() => queryable.ToListAsync(cancellationToken))
+            var data = await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken))
                 .ConfigureAwait(false);
 
             return new EntityPagedResponse<TEntity>
@@ -132,18 +114,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             CancellationToken cancellationToken = default)
         {
             int? count = null;
-            
+
             if (doCount)
-            {
                 count = await CountAsync(search, filter, cancellationToken)
                     .ConfigureAwait(false);
-            }
 
             var queryable = BuildQuery(search, filter, pageNumber, pageSize, orderBys);
 
             var project = queryable.Select(projection);
 
-            var data = await  RetryErrorAsync(() => project.ToListAsync(cancellationToken))
+            var data = await RetryErrorAsync(() => project.ToListAsync(cancellationToken))
                 .ConfigureAwait(false);
 
             return new EntityPagedResponse<TOut>

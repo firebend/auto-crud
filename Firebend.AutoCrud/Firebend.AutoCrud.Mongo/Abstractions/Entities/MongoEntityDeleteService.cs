@@ -8,7 +8,7 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public class MongoEntityDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
+    public abstract class MongoEntityDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
@@ -21,11 +21,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 
         public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
         {
-            if (key.Equals(default))
-            {
-                throw new ArgumentException("Key is invalid", nameof(key));
-            }
-            
+            if (key.Equals(default)) throw new ArgumentException("Key is invalid", nameof(key));
+
             return _deleteClient.DeleteAsync(x => x.Id.Equals(key), cancellationToken);
         }
     }

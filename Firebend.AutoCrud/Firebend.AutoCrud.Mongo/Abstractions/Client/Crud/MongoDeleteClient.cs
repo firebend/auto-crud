@@ -2,7 +2,6 @@ using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -23,7 +22,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public async Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
         {
             filter = BuildFilters(filter);
-            
+
             var mongoCollection = GetCollection();
 
             var result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken));

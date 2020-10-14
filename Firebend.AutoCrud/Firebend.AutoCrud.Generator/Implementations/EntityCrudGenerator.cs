@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Firebend.AutoCrud.Generator.Implementations
 {
     public abstract class EntityCrudGenerator<TBuilder> : IEntityCrudGenerator
-        where TBuilder : EntityBuilder, new ()
+        where TBuilder : EntityBuilder, new()
     {
         private readonly IDynamicClassGenerator _classGenerator;
 
@@ -24,42 +24,38 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(new DynamicClassGenerator(), serviceCollection)
         {
-            
         }
 
         public List<EntityBuilder> Builders { get; } = new List<EntityBuilder>();
-        
+
         public IServiceCollection ServiceCollection { get; }
-        public void Generate()
+
+        public IServiceCollection Generate()
         {
-            foreach (var builder in Builders)
-            {
-                Generate(ServiceCollection, builder);
-            }
+            foreach (var builder in Builders) Generate(ServiceCollection, builder);
+
+            return ServiceCollection;
         }
 
         protected virtual void Generate(IServiceCollection serviceCollection, EntityBuilder builder)
         {
             var signatureBase = $"{builder.EntityType.Name}_{builder.EntityName}";
             var implementedTypes = new List<Type>();
-            
+
             builder.Build();
-            
+
             var extraInterfaces = GetCustomImplementations(builder.Registrations);
-            
+
             foreach (var (key, value) in OrderByDependencies(builder.Registrations))
             {
                 var typeToImplement = value;
                 var interfaceImplementations = extraInterfaces.FindAll(x =>
                     x.IsAssignableFrom(typeToImplement) && x.Name == $"I{typeToImplement.Name}");
-                
-                if (!key.IsAssignableFrom(typeToImplement))
-                {
-                    throw new InvalidCastException($"Cannot use {typeToImplement.Name} to implement {key.Name}");
-                }
+
+                if (!key.IsAssignableFrom(typeToImplement)) throw new InvalidCastException($"Cannot use {typeToImplement.Name} to implement {key.Name}");
 
                 var signature = $"{signatureBase}_{typeToImplement.Name}";
-                
+
                 if (key.IsInterface)
                 {
                     interfaceImplementations.Add(key);
@@ -67,32 +63,26 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 }
 
                 interfaceImplementations = interfaceImplementations.Distinct().ToList();
-                
+
                 var implementedType = _classGenerator.GenerateDynamicClass(
                     typeToImplement,
                     signature,
                     implementedTypes,
-                    interfaceImplementations.ToArray());
+                    interfaceImplementations.ToArray(),
+                    builder.Attributes[key]?.ToArray());
 
-                interfaceImplementations.ForEach(iFace =>
-                {
-                    serviceCollection.AddScoped(iFace, implementedType);
-                });
+                interfaceImplementations.ForEach(iFace => { serviceCollection.AddScoped(iFace, implementedType); });
 
-                if (interfaceImplementations.Count == 0)
-                {
-                    serviceCollection.AddScoped(implementedType);
-                }
+                if (interfaceImplementations.Count == 0) serviceCollection.AddScoped(implementedType);
 
                 implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
             }
 
-            foreach (var (key, value) in builder.InstanceRegistrations)
-            {
-                serviceCollection.AddSingleton(key, value);
-            }
+            if (builder.InstanceRegistrations != null)
+                foreach (var (key, value) in builder.InstanceRegistrations)
+                    serviceCollection.AddSingleton(key, value);
         }
-        
+
         private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, Type> source)
         {
             var orderedTypes = new List<KeyValuePair<Type, Type>>();
@@ -100,109 +90,91 @@ namespace Firebend.AutoCrud.Generator.Implementations
             if (source != null)
             {
                 var maxVisits = source.Count;
-                
+
                 var typesToAdd = source.ToDictionary(x => x.Key, x => x.Value);
-                
+
                 while (typesToAdd.Count > 0)
                 {
                     foreach (var type in typesToAdd.ToArray())
-                    {
                         if (CanAddType(type, typesToAdd))
                         {
                             orderedTypes.Add(type);
                             typesToAdd.Remove(type.Key);
                         }
-                    }
 
                     maxVisits--;
-                    
-                    if (maxVisits < 0)
-                    {
-                        throw new ApplicationException("Cannot resolve dependencies for DefaultCrud (do you have a circular reference?)");
-                    }
+
+                    if (maxVisits < 0) throw new ApplicationException("Cannot resolve dependencies for DefaultCrud (do you have a circular reference?)");
                 }
             }
+
             return orderedTypes;
         }
-        
+
         private static bool CanAddType(KeyValuePair<Type, Type> type, IDictionary<Type, Type> typesToAdd)
         {
             return type.Value.GetConstructors(
-                    BindingFlags.Public | 
-                    BindingFlags.NonPublic | 
+                    BindingFlags.Public |
+                    BindingFlags.NonPublic |
                     BindingFlags.Instance)
                 .All(
-                    info => info.GetParameters().All(parameterInfo => 
+                    info => info.GetParameters().All(parameterInfo =>
                         !typesToAdd.ContainsKey(parameterInfo.ParameterType) &&
                         typesToAdd
                             .All(types => !parameterInfo.ParameterType.IsAssignableFrom(types.Key))
                     )
                 );
         }
-        
+
         private static List<Type> GetCustomImplementations(IDictionary<Type, Type> configureRegistrations)
         {
             var extraInterfaces = new List<Type>();
 
             if (configureRegistrations != null)
-            {
                 foreach (var (key, value) in configureRegistrations.ToArray())
                 {
                     if (!key.IsAssignableFrom(value))
-                    {
                         throw new InvalidCastException(
                             $"Cannot use custom configuration {value.Name} to implement {key.Name}");
-                    }
 
                     var implementedInterfaces = value.GetInterfaces();
                     var matchingInterface =
                         implementedInterfaces.FirstOrDefault(x => x.Name == $"I{value.Name}");
 
-                    if (matchingInterface != null)
-                    {
-                        extraInterfaces.Add(matchingInterface);
-                    }
+                    if (matchingInterface != null) extraInterfaces.Add(matchingInterface);
 
                     if (configureRegistrations.ContainsKey(key))
-                    {
                         configureRegistrations[key] = value;
-                    }
                     else
-                    {
                         configureRegistrations.Add(key, value);
-                    }
                 }
-            }
 
             return extraInterfaces;
         }
-        
+
         public EntityCrudGenerator<TBuilder> AddBuilder(TBuilder builder, Func<TBuilder, TBuilder> configure = null)
         {
-            if (configure != null)
-            {
-                builder = configure(builder);
-            }
-            
+            if (configure != null) builder = configure(builder);
+
             Builders.Add(builder);
 
             return this;
         }
-        
+
         public EntityCrudGenerator<TBuilder> AddBuilder<T>(Func<TBuilder, TBuilder> configure)
-            
+
         {
             var builder = configure(new TBuilder());
-            
-             return AddBuilder(builder, configure);
+
+            return AddBuilder(builder, configure);
         }
-        
+
         public EntityCrudGenerator<TBuilder> AddBuilder<TEntity, TEntityKey>(Func<TBuilder, TBuilder> configure)
             where TEntity : IEntity<TEntityKey>
             where TEntityKey : struct
         {
             var builder = configure(new TBuilder().ForEntity<TBuilder, TEntity, TEntityKey>());
-            
+
             return AddBuilder(builder, configure);
         }
     }
