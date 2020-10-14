@@ -10,7 +10,7 @@ using Firebend.AutoCrud.Core.Models.Searching;
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
     public interface IMongoReadClient<TKey, TEntity>
-        where TEntity: IEntity<TKey>
+        where TEntity : IEntity<TKey>
         where TKey : struct
     {
         Task<TEntity> SingleOrDefaultAsync(

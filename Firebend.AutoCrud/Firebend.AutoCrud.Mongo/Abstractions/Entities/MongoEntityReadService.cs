@@ -8,7 +8,7 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public class MongoEntityReadService<TKey, TEntity> : IEntityReadService<TKey, TEntity>
+    public abstract class MongoEntityReadService<TKey, TEntity> : IEntityReadService<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {

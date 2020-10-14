@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
     {
-        Task<List<TEntity>> SearchAsync(TSearch request,  CancellationToken cancellationToken = default);
+        Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default);
 
         Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default);
     }

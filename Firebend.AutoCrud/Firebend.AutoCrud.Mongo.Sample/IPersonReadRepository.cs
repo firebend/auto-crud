@@ -8,9 +8,8 @@ namespace Firebend.AutoCrud.Mongo.Sample
 {
     public interface IPersonReadRepository : IEntityReadService<Guid, Person>
     {
-        
     }
-    
+
     public class PersonReadRepository : MongoEntityReadService<Guid, Person>, IPersonReadRepository
     {
         public PersonReadRepository(IMongoReadClient<Guid, Person> readClient) : base(readClient)

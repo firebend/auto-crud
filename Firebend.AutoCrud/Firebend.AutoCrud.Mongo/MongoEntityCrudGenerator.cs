@@ -1,5 +1,3 @@
-using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo.Configuration;
 using Microsoft.Extensions.DependencyInjection;

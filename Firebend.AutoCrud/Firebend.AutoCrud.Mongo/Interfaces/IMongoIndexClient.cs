@@ -9,7 +9,6 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        
         Task BuildIndexesAsync(CancellationToken cancellationToken = default);
 
         Task CreateCollectionAsync(CancellationToken cancellationToken = default);

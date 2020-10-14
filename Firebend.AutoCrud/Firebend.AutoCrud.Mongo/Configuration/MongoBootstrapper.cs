@@ -14,24 +14,18 @@ namespace Firebend.AutoCrud.Mongo.Configuration
     {
         private static readonly object BootStrapLock = new object();
         private static bool _isBootstrapped = false;
-        
+
         public static IServiceCollection ConfigureMongoDb(
             this IServiceCollection services,
             string connectionString,
             bool enableCommandLogging,
             IMongoDbConfigurator configurator)
         {
-            if (_isBootstrapped)
-            {
-                return services;
-            }
+            if (_isBootstrapped) return services;
 
             lock (BootStrapLock)
             {
-                if (_isBootstrapped)
-                {
-                    return services;
-                }
+                if (_isBootstrapped) return services;
 
                 DoBootstrapping(services, connectionString, enableCommandLogging, configurator);
 
@@ -39,8 +33,6 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
                 return services;
             }
-            
-            
         }
 
         private static void DoBootstrapping(
@@ -49,11 +41,8 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             bool enableCommandLogging,
             IMongoDbConfigurator configurator)
         {
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-            
+            if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentNullException(nameof(connectionString));
+
             services.Scan(action => action.FromAssemblies()
                 .AddClasses(classes => classes.AssignableTo<IMongoMigration>())
                 .UsingRegistrationStrategy(RegistrationStrategy.Append)
@@ -72,7 +61,6 @@ namespace Firebend.AutoCrud.Mongo.Configuration
                 var mongoClientSettings = MongoClientSettings.FromUrl(mongoUrl);
 
                 if (enableCommandLogging)
-                {
                     mongoClientSettings.ClusterConfigurator = cb =>
                     {
                         cb.Subscribe<CommandStartedEvent>(e =>
@@ -86,7 +74,6 @@ namespace Firebend.AutoCrud.Mongo.Configuration
                             logger.LogError("ERROR: {CommandName}({Duration}) - {Error}", e.CommandName, e.Duration,
                                 e.Failure));
                     };
-                }
 
                 return new MongoClient(mongoClientSettings);
             });
