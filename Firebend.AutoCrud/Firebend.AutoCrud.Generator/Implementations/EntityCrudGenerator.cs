@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
+using Firebend.AutoCrud.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Generator.Implementations
@@ -84,7 +85,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     serviceCollection.AddSingleton(key, value);
         }
 
-        private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CustomAttributeBuilder>> builderAttributes)
+        private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CrudBuilderAttributeModel>> builderAttributes)
         {
             if (builderAttributes == null)
             {
@@ -97,11 +98,18 @@ namespace Firebend.AutoCrud.Generator.Implementations
             {
                 if (type.IsAssignableFrom(typeToImplement))
                 {
-                    attributes.AddRange(attribute);
+                    attributes.AddRange(attribute.Select(x => x.AttributeBuilder));
                 }
             }
 
-            return attributes.ToArray();
+            var attributeArray =  attributes.Distinct().ToArray();
+
+            if (attributeArray.Any())
+            {
+                return attributeArray;
+            }
+
+            return null;
         }
 
         private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, Type> source)

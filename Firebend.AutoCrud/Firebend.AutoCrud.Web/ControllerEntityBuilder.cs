@@ -39,7 +39,7 @@ namespace Firebend.AutoCrud.Web
                 ? CrudBuilder.EntityType.Name
                 : CrudBuilder.EntityName;
 
-            WithRoute($"api/v1/{name.ToKebabCase()}");
+            WithRoute($"/api/v1/{name.ToKebabCase()}");
             WithOpenApiGroupName(name.ToSentenceCase());
             
             CrudBuilder.WithRegistration(
@@ -65,20 +65,26 @@ namespace Firebend.AutoCrud.Web
             
             CrudBuilder.WithRegistration(registrationType, registrationType);
             
+            AddRouteAttribute(registrationType);
+            
             return this;
+        }
+
+        private void AddRouteAttribute(Type controllerType)
+        {
+            var routeType = typeof(RouteAttribute);
+            var routeCtor = routeType.GetConstructor(new[] { typeof(string) });
+
+            if (routeCtor == null) return;
+            
+            var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] {Route});
+            
+            CrudBuilder.WithAttribute(controllerType, routeType, attributeBuilder);
         }
 
         public ControllerEntityBuilder<TBuilder> WithRoute(string route)
         {
             Route = route;
-            
-            var routeCtor = typeof(RouteAttribute).GetConstructor(new[] { typeof(string) });
-            
-            if (routeCtor != null)
-            {
-                var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] {route});
-                CrudBuilder.WithAttribute(typeof(ControllerBase), attributeBuilder);
-            }
 
             return this;
         }
@@ -193,11 +199,12 @@ namespace Firebend.AutoCrud.Web
 
         public ControllerEntityBuilder<TBuilder> WithAllControllers(bool includeGetAll = false)
         {
+            WithReadController();
             WithCreateController();
             WithDeleteController();
-            WithReadController();
             WithSearchController();
-
+            WithUpdateController();
+            
             if (includeGetAll)
             {
                 WithGetAllController();
@@ -208,9 +215,11 @@ namespace Firebend.AutoCrud.Web
 
         public ControllerEntityBuilder<TBuilder> AddAuthorizationPolicy(Type type, string authorizePolicy = "")
         {
+            var authType = typeof(AuthorizeAttribute);
+            
             var authCtor = authorizePolicy == null
                 ? null
-                : typeof(AuthorizeAttribute).GetConstructor(!string.IsNullOrWhiteSpace(authorizePolicy)
+                : authType.GetConstructor(!string.IsNullOrWhiteSpace(authorizePolicy)
                     ? new[] { typeof(string) }
                     : Type.EmptyTypes);
 
@@ -220,7 +229,7 @@ namespace Firebend.AutoCrud.Web
                     ? new object[] { authorizePolicy }
                     : new object[] { };
                 
-                CrudBuilder.WithAttribute(type, new CustomAttributeBuilder(authCtor, args));
+                CrudBuilder.WithAttribute(type, authType,new CustomAttributeBuilder(authCtor, args));
             }
 
             return this;

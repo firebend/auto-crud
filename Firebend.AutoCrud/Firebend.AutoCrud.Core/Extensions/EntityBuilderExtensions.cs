@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Models;
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
@@ -91,27 +92,57 @@ namespace Firebend.AutoCrud.Core.Extensions
             return builder;
         }
 
-        public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, CustomAttributeBuilder attribute)
+        public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, Type attributeType, CustomAttributeBuilder attribute)
             where TBuilder : BaseBuilder
         {
-            var attributesToAdd = builder
-                .Registrations
-                .Where(x => x.Key.IsAssignableFrom(registrationType))
-                .Select(x => new KeyValuePair<Type, CustomAttributeBuilder>(x.Key, attribute));
+            // var attributesToAdd = builder
+            //     .Registrations
+            //     .Where(x => x.Key.IsAssignableFrom(registrationType))
+            //     .Select(x => new KeyValuePair<Type, CustomAttributeBuilder>(x.Key, attribute))
+            //     .ToArray();
+            //
+            // if (!attributesToAdd.Any())
+            // {
+            //     return builder;
+            // }
+            //
+            // builder.Attributes ??= new Dictionary<Type, List<CustomAttributeBuilder>>();
+            //
+            // foreach (var (controllerType, attributeToAdd) in attributesToAdd)
+            // {
+            //     if (builder.Attributes.ContainsKey(controllerType))
+            //     {
+            //         (builder.Attributes[controllerType]??=new List<CustomAttributeBuilder>()).Add(attributeToAdd);
+            //     }
+            //     else
+            //     {
+            //         builder.Attributes.Add(controllerType, new List<CustomAttributeBuilder>
+            //         {
+            //             attributeToAdd
+            //         });
+            //     }
+            // }
+            
+            builder.Attributes ??= new Dictionary<Type, List<CrudBuilderAttributeModel>>();
 
-            foreach (var (controllerType, attributeToAdd) in attributesToAdd)
+            var model = new CrudBuilderAttributeModel
             {
-                if (builder.Attributes.ContainsKey(controllerType))
+                AttributeBuilder = attribute,
+                AttributeType = attributeType,
+            };
+            
+            if (builder.Attributes.ContainsKey(registrationType))
+            {
+                builder.Attributes[registrationType] ??= new List<CrudBuilderAttributeModel>();
+                builder.Attributes[registrationType].RemoveAll(x => x.AttributeType == attributeType);
+                builder.Attributes[registrationType].Add(model);
+            }
+            else
+            {
+                builder.Attributes.Add(registrationType, new List<CrudBuilderAttributeModel>
                 {
-                    (builder.Attributes[controllerType]??=new List<CustomAttributeBuilder>()).Add(attributeToAdd);
-                }
-                else
-                {
-                    builder.Attributes.Add(controllerType, new List<CustomAttributeBuilder>
-                    {
-                        attributeToAdd
-                    });
-                }
+                    model
+                });
             }
 
             return builder;

@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.Web.Sample
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
@@ -34,6 +34,8 @@ namespace Firebend.AutoCrud.Web.Sample
                 {
                     await context.Response.WriteAsync("Hello World!");
                 });
+
+                endpoints.MapControllers();
             });
 
             app.UseSwagger();
