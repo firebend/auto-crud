@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions;
@@ -54,27 +55,40 @@ namespace Firebend.AutoCrud.Web
                 typeof(IEntityKeyParser<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType));
         }
 
-        private void AddRouteAttribute(Type controllerType)
+        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetRouteAttributeInfo()
         {
             var routeType = typeof(RouteAttribute);
             var routeCtor = routeType.GetConstructor(new[] { typeof(string) });
 
-            if (routeCtor == null) return;
-            
+            if (routeCtor == null) return default;
+                
             var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] {Route});
+            return (routeType, attributeBuilder);
+        }
+
+        private void AddRouteAttribute(Type controllerType)
+        {
+            var (routeType, attributeBuilder) = GetRouteAttributeInfo();
             
             CrudBuilder.WithAttribute(controllerType, routeType, attributeBuilder);
         }
 
-        private void AddOpenApiGroupNameAttribute(Type controllerType)
+        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo()
         {
+            
             var attributeType = typeof(OpenApiGroupNameAttribute);
             var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
 
-            if (attributeCtor == null) return;
+            if (attributeCtor == null) return default;
             
             var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] {OpenApiGroupName});
-            
+
+            return (attributeType, attributeBuilder);
+        }
+
+        private void AddOpenApiGroupNameAttribute(Type controllerType)
+        {
+            var ( attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo();
             CrudBuilder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
@@ -96,19 +110,31 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        private void AddAttributeToAllControllers(Type attributeType, CustomAttributeBuilder attributeBuilder)
+        {
+            CrudBuilder
+                .Registrations
+                .Where(x => typeof(ControllerBase).IsAssignableFrom(x.Value))
+                .ToList()
+                .ForEach(x =>
+                {
+                    CrudBuilder.WithAttribute(x.Key, attributeType, attributeBuilder);
+                });
+        }
+
         public ControllerEntityBuilder<TBuilder> WithRoute(string route)
         {
             Route = route;
-
+            var (aType, aBuilder) = GetRouteAttributeInfo();
+            AddAttributeToAllControllers(aType, aBuilder);
             return this;
         }
 
         public ControllerEntityBuilder<TBuilder> WithOpenApiGroupName(string openApiGroupName)
         {
             OpenApiGroupName = openApiGroupName;
-            //todo allow this and route name to be configured "out of order" 
-            //loop through registrations where they are a controller
-            //all add attribute funcs
+            var (aType, aBuilder) = GetOpenApiGroupAttributeInfo();
+            AddAttributeToAllControllers(aType, aBuilder);
             return this;
         }
 
