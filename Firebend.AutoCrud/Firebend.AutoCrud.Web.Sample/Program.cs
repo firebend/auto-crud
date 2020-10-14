@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Conventions;
+using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,16 +35,29 @@ namespace Firebend.AutoCrud.Web.Sample
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
-                        .AddBuilder<Person, Guid>(person =>
+                        .AddBuilder<MongoPerson, Guid>(person =>
                             person.WithDefaultDatabase("Samples")
                                 .WithCollection("People")
                                 .WithCrud()
                                 .WithFullTextSearch()
                                 .UsingControllers()
                                 .WithAllControllers(true)
-                                .WithOpenApiGroupName("The Beautiful People")
+                                .WithOpenApiGroupName("The Beautiful Mongo People")
                                 .AsEntityBuilder()
                         ).Generate()
+                        .UsingEfCrud()
+                        .AddBuilder<EfPerson, Guid>(person => 
+                            person.WithDbContext<PersonDbContext>()
+                                .WithCrud()
+                                .UsingControllers()
+                                .WithAllControllers(true)
+                                .WithOpenApiGroupName("The Beautiful Sql People")
+                                .AsEntityBuilder())
+                        .Generate()
+                        .AddDbContext<PersonDbContext>(opt =>
+                        {
+                            opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer"));
+                        })
                         .AddRouting()
                         .AddSwaggerGen(opt =>
                         {
