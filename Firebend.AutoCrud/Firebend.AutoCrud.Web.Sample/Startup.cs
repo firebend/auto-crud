@@ -38,8 +38,15 @@ namespace Firebend.AutoCrud.Web.Sample
                 endpoints.MapControllers();
             });
 
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwagger(opt =>
+            {
+                opt.RouteTemplate = "/open-api/{documentName}/open-api.json";
+            });
+            
+            app.UseSwaggerUI(opt =>
+            {
+                opt.SwaggerEndpoint("/open-api/v1/open-api.json", "Firebend Auto Crud Web Sample");
+            });
         }
     }
 }

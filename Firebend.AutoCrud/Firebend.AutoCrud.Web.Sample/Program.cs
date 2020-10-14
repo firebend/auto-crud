@@ -1,9 +1,14 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Mongo;
+using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Conventions;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,11 +38,38 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithCrud()
                                 .WithFullTextSearch()
                                 .UsingControllers()
+                                .WithOpenApiGroupName("The Beautiful People")
                                 .WithAllControllers(true)
                                 .AsEntityBuilder()
                         ).Generate()
                         .AddRouting()
-                        .AddSwaggerGen()
+                        .AddSwaggerGen(opt =>
+                        {
+                            opt.TagActionsBy(x =>
+                            {
+                                List<string> list;
+
+                                if (x.ActionDescriptor is ControllerActionDescriptor controllerDescriptor)
+                                {
+                                    list = new List<string>
+                                    {
+                                        controllerDescriptor.ControllerTypeInfo?.GetCustomAttribute<OpenApiGroupNameAttribute>()?.GroupName ??
+                                        controllerDescriptor.ControllerTypeInfo?.Namespace?.Split('.')?.Last() ??
+                                        x.RelativePath
+                                    };
+                                }
+                                else
+                                {
+                                    list = new List<string>
+                                    {
+                                        x.RelativePath
+                                    };
+                                }
+
+                                return list;
+
+                            });
+                        })
                         .AddControllers()
                         .ConfigureApplicationPartManager(
                             manager => manager.FeatureProviders.Insert(0, new FirebendAutoCrudControllerConvention(services)));
