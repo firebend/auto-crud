@@ -14,6 +14,8 @@ Content-Type: application/json
     "firstName": "Simon",
     "lastName": "Sample"
 }
+###
+DELETE https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
 
 ###
 https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
