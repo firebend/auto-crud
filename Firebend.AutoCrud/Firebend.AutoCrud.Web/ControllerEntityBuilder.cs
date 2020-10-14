@@ -316,7 +316,6 @@ namespace Firebend.AutoCrud.Web
         {
             AddCreateAuthorizationPolicy(policy);
             AddDeleteAuthorizationPolicy(policy);
-            AddSearchAuthorizationPolicy(policy);
             AddUpdateAuthorizationPolicy(policy);
 
             return this;
