@@ -58,7 +58,10 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithOpenApiGroupName("The Beautiful Sql People")
                                 .AsEntityBuilder())
                         .Generate()
-                        .AddDbContext<PersonDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); })
+                        .AddDbContext<PersonDbContext>(opt =>
+                        {
+                            opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer"));
+                        })
                         .AddRouting()
                         .AddSwaggerGen(opt =>
                         {

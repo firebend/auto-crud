@@ -1,7 +1,9 @@
+using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
+
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces
 {
     public interface IElasticShardManager
     {
-        void RegisterShard(ShardMapMangerConfiguration configuration);
+        ShardMap RegisterShard(ShardMapMangerConfiguration configuration, string shardDatabaseName, string key);
     }
 }
