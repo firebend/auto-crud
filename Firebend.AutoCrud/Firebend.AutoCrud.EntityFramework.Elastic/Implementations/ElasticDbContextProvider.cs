@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             var key = _shardKeyProvider?.GetShardKey();
             
             var shard = _shardManager.RegisterShard(_shardMapMangerConfiguration,
-                _shardDatabaseNameProvider?.GetShardDatabaseName(),
+                _shardDatabaseNameProvider?.GetShardDatabaseName(key),
                 key);
 
             var connection = shard.OpenConnectionForKey(key, _shardMapMangerConfiguration.ConnectionString);
@@ -42,9 +42,21 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 .UseSqlServer(connection)
                 .Options;
 
-            var context = Activator.CreateInstance(typeof(TContext), options);
+            var instance = Activator.CreateInstance(typeof(TContext), options);
             
-            return (TContext)context;
+            if (instance == null)
+            {
+                throw new Exception("Could not create instance.");
+            }
+
+            if (!(instance is TContext context))
+            {
+                throw new Exception("Could not cast instance.");
+            }
+            
+            context.Database.EnsureCreated();
+            
+            return context;
         }
     }
 }

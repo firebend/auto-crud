@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.Web.Sample
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, PersonDbContext dbContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -35,8 +35,6 @@ namespace Firebend.AutoCrud.Web.Sample
             app.UseSwagger(opt => { opt.RouteTemplate = "/open-api/{documentName}/open-api.json"; });
 
             app.UseSwaggerUI(opt => { opt.SwaggerEndpoint("/open-api/v1/open-api.json", "Firebend Auto Crud Web Sample"); });
-
-            dbContext.Database.EnsureCreated();
         }
     }
 }

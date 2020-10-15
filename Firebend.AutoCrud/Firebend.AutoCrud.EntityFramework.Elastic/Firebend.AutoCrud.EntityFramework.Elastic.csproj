@@ -7,11 +7,21 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" Version="2.3.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.9" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.8" />
     </ItemGroup>
 
     <ItemGroup>
       <Compile Update="Models\ShardMapMangerConfiguration.cs">
         <Link>Models\ShardMapMangerConfiguration.cs</Link>
+      </Compile>
+      <Compile Update="Models\ElasticDbShardModel.cs">
+        <Link>Models\ElasticDbShardModel.cs</Link>
+      </Compile>
+      <Compile Update="Models\ElasticPoolShardModel.cs">
+        <Link>Models\ElasticPoolShardModel.cs</Link>
+      </Compile>
+      <Compile Update="Models\SqlServerElasticDbShardModel.cs">
+        <Link>Models\SqlServerElasticDbShardModel.cs</Link>
       </Compile>
     </ItemGroup>
 

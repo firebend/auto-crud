@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Conventions;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
+using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -53,15 +55,17 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithCrud()
                                 .WithDomainEventPublisherServiceProvider()
                                 .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
+                                .WithElasticPool(hostContext.HostingEnvironment, manager =>
+                                {
+                                    manager.ConnectionString = hostContext.Configuration.GetConnectionString("Elastic");
+                                })
+                                .WithShardKeyProvider<SampleElasticKeyProvider>()
+                                .WithShardDbNameProvider<SampleElasticDbNameProvider>()
                                 .UsingControllers()
                                 .WithAllControllers(true)
                                 .WithOpenApiGroupName("The Beautiful Sql People")
                                 .AsEntityBuilder())
                         .Generate()
-                        .AddDbContext<PersonDbContext>(opt =>
-                        {
-                            opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer"));
-                        })
                         .AddRouting()
                         .AddSwaggerGen(opt =>
                         {

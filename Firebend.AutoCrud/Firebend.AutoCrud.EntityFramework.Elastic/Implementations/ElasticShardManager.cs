@@ -7,7 +7,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
     public class ElasticShardManager : IElasticShardManager
     {
-        public ShardMap RegisterShard(ShardMapMangerConfiguration configuration, string shardDatabaseName, string key)
+        public ElasticDbShardModel RegisterShard(ShardMapMangerConfiguration configuration, string shardDatabaseName, string key)
         {
             if (string.IsNullOrWhiteSpace(shardDatabaseName))
             {
@@ -34,7 +34,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 shardMap.CreatePointMapping(key, shard);
             }
 
-            return shardMap;
+            return new ElasticPoolShardModel(shardMap);
         }
 
         private ShardMapManager GetShardMapManger(ShardMapMangerConfiguration configuration, string shardDatabaseName)
