@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Conventions;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
+using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -50,6 +51,8 @@ namespace Firebend.AutoCrud.Web.Sample
                         .AddBuilder<EfPerson, Guid>(person =>
                             person.WithDbContext<PersonDbContext>()
                                 .WithCrud()
+                                .WithDomainEventPublisherServiceProvider()
+                                .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
                                 .UsingControllers()
                                 .WithAllControllers(true)
                                 .WithOpenApiGroupName("The Beautiful Sql People")
