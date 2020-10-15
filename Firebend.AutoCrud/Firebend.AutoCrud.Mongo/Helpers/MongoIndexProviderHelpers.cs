@@ -1,4 +1,8 @@
+#region
+
 using MongoDB.Driver;
+
+#endregion
 
 namespace Firebend.AutoCrud.Mongo.Helpers
 {

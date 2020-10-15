@@ -1,3 +1,5 @@
+#region
+
 using System;
 using Firebend.AutoCrud.Mongo.HostedServices;
 using Firebend.AutoCrud.Mongo.Interfaces;
@@ -8,12 +10,14 @@ using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
 using Scrutor;
 
+#endregion
+
 namespace Firebend.AutoCrud.Mongo.Configuration
 {
     public static class MongoBootstrapper
     {
         private static readonly object BootStrapLock = new object();
-        private static bool _isBootstrapped = false;
+        private static bool _isBootstrapped;
 
         public static IServiceCollection ConfigureMongoDb(
             this IServiceCollection services,

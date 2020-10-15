@@ -1,9 +1,13 @@
+#region
+
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+
+#endregion
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
@@ -31,6 +35,5 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             return Ok(entities);
         }
-
     }
 }

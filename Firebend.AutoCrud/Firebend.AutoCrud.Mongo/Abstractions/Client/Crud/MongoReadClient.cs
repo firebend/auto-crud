@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -10,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+#endregion
+
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoReadClient<TKey, TEntity>
@@ -20,43 +24,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             ILogger<MongoReadClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
         {
-        }
-
-        protected IMongoQueryable<TEntity> BuildQuery(
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null)
-        {
-            FilterDefinition<TEntity> firstStageFilter = null;
-
-            if (!string.IsNullOrWhiteSpace(search)) firstStageFilter = Builders<TEntity>.Filter.Text(search);
-
-            var queryable = GetFilteredCollection(firstStageFilter);
-
-            if (filter != null) queryable = queryable.Where(filter);
-
-            if (orderBys != null)
-            {
-                IOrderedMongoQueryable<TEntity> ordered = null;
-
-                foreach (var orderBy in orderBys)
-                    if (orderBy != default)
-                        ordered = ordered == null ? orderBy.@ascending ? queryable.OrderBy(orderBy.order) :
-                            queryable.OrderByDescending(orderBy.order) :
-                            orderBy.@ascending ? ordered.ThenBy(orderBy.order) :
-                            ordered.ThenByDescending(orderBy.order);
-
-                if (ordered != null) queryable = ordered;
-            }
-
-            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
-                queryable = queryable
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value);
-
-            return queryable;
         }
 
 
@@ -80,7 +47,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             int? pageNumber = null,
             int? pageSize = null,
             bool doCount = true,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool @ascending)> orderBys = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
             CancellationToken cancellationToken = default)
         {
             int? count = null;
@@ -110,7 +77,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             int? pageNumber = null,
             int? pageSize = null,
             bool doCount = false,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool @ascending)> orderBys = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
             CancellationToken cancellationToken = default)
         {
             int? count = null;
@@ -147,6 +114,43 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             var queryable = BuildQuery(filter: filter);
 
             return RetryErrorAsync(() => queryable.AnyAsync(cancellationToken));
+        }
+
+        protected IMongoQueryable<TEntity> BuildQuery(
+            string search = null,
+            Expression<Func<TEntity, bool>> filter = null,
+            int? pageNumber = null,
+            int? pageSize = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null)
+        {
+            FilterDefinition<TEntity> firstStageFilter = null;
+
+            if (!string.IsNullOrWhiteSpace(search)) firstStageFilter = Builders<TEntity>.Filter.Text(search);
+
+            var queryable = GetFilteredCollection(firstStageFilter);
+
+            if (filter != null) queryable = queryable.Where(filter);
+
+            if (orderBys != null)
+            {
+                IOrderedMongoQueryable<TEntity> ordered = null;
+
+                foreach (var orderBy in orderBys)
+                    if (orderBy != default)
+                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
+                            queryable.OrderByDescending(orderBy.order) :
+                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
+                            ordered.ThenByDescending(orderBy.order);
+
+                if (ordered != null) queryable = ordered;
+            }
+
+            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
+                queryable = queryable
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value);
+
+            return queryable;
         }
     }
 }

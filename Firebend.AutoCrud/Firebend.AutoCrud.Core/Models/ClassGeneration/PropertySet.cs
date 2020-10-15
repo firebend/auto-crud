@@ -1,4 +1,8 @@
+#region
+
 using System;
+
+#endregion
 
 namespace Firebend.AutoCrud.Core.Models.ClassGeneration
 {

@@ -1,3 +1,5 @@
+#region
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -5,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection;
+
+#endregion
 
 namespace Firebend.AutoCrud.Web.Conventions
 {
@@ -31,7 +35,7 @@ namespace Firebend.AutoCrud.Web.Conventions
                     x.ServiceType,
                     x.ImplementationType.FullName
                 })
-                .SelectMany(x => x.ServiceType.GetCustomAttributes(), (t,a) => new
+                .SelectMany(x => x.ServiceType.GetCustomAttributes(), (t, a) => new
                 {
                     t.ServiceType,
                     t.FullName,

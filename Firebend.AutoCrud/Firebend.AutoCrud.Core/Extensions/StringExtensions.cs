@@ -1,6 +1,10 @@
+#region
+
 using System;
 using System.Linq;
 using System.Text;
+
+#endregion
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
@@ -30,7 +34,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return string.IsNullOrEmpty(source) ? source : source.Trim();
         }
-        
+
         public static string ToKebabCase(this string source)
         {
             if (source is null) return null;
@@ -77,9 +81,11 @@ namespace Firebend.AutoCrud.Core.Extensions
                     {
                         builder.Append("-");
                     }
+
                     builder.Append(char.ToLower(source[i]));
                 }
             }
+
             return builder.ToString();
         }
 
@@ -116,6 +122,7 @@ namespace Firebend.AutoCrud.Core.Extensions
                     builder.Append(source[i]);
                 }
             }
+
             return builder.ToString();
         }
     }

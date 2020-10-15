@@ -1,5 +1,9 @@
-using NUnit.Framework;
+#region
+
 using FluentAssertions;
+using NUnit.Framework;
+
+#endregion
 
 namespace Firebend.AutoCrud.Tests
 {

@@ -1,7 +1,11 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+
+#endregion
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
@@ -11,8 +15,8 @@ namespace Firebend.AutoCrud.Core.Extensions
             this Expression<Func<T, object>> source, bool ascending)
         {
             return source == null
-                ? default(IEnumerable<(Expression<Func<T, object>> order, bool @ascending)>)
-                : new List<(Expression<Func<T, object>> order, bool @ascending)> {(source, @ascending)};
+                ? default(IEnumerable<(Expression<Func<T, object>> order, bool ascending)>)
+                : new List<(Expression<Func<T, object>> order, bool ascending)> {(source, ascending)};
         }
 
         public static IEnumerable<(Expression<Func<T, object>> order, bool ascending)> ToOrderByAscending<T>(
@@ -58,7 +62,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             var orderFields = source?.ToList();
 
-            if (orderFields?.Any() != true) return new List<(Expression<Func<T, object>> order, bool @ascending)>();
+            if (orderFields?.Any() != true) return new List<(Expression<Func<T, object>> order, bool ascending)>();
 
             return orderFields.Select(x => x.ToOrderByGroup<T>()).Where(x => x != default).ToList();
         }

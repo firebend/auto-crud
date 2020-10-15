@@ -1,3 +1,5 @@
+#region
+
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -5,6 +7,8 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+
+#endregion
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
@@ -25,13 +29,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
-            
+
             await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))
-                .ConfigureAwait(false);;
-            
+                .ConfigureAwait(false);
+            ;
+
             await _eventPublisher.PublishEntityAddEventAsync(entity, cancellationToken)
-                .ConfigureAwait(false);;
-            
+                .ConfigureAwait(false);
+            ;
+
             return entity;
         }
     }

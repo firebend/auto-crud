@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,14 +15,16 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+#endregion
+
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
         private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
+        private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
 
         public MongoUpdateClient(IMongoClient client,
             ILogger<MongoUpdateClient<TKey, TEntity>> logger,
@@ -30,88 +34,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         {
             _keyGenerator = keyGenerator;
             _entityDomainEventPublisher = entityDomainEventPublisher;
-        }
-
-        protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
-            Expression<Func<TEntity, bool>> filter,
-            bool doUpsert,
-            CancellationToken cancellationToken)
-        {
-            var filters = BuildFilters(filter);
-
-            var mongoCollection = GetCollection();
-
-            var original = await RetryErrorAsync(() =>
-                mongoCollection.FindOneAndReplaceAsync(
-                    Builders<TEntity>.Filter.Where(filters),
-                    entity,
-                    new FindOneAndReplaceOptions<TEntity, TEntity>
-                    {
-                        ReturnDocument = ReturnDocument.Before,
-                        IsUpsert = doUpsert
-                    },
-                    cancellationToken));
-
-            if (original != null)
-            {
-                await _entityDomainEventPublisher
-                    .PublishEntityUpdatedEventAsync(original, entity, cancellationToken)
-                    .ConfigureAwait(false);
-                
-                return entity;
-            }
-
-            if (doUpsert)
-            {
-                await _entityDomainEventPublisher
-                    .PublishEntityAddEventAsync(entity, cancellationToken)
-                    .ConfigureAwait(false);
-                return entity;
-            }
-
-            return null;
-        }
-
-        protected virtual async Task<List<TKey>> UpdateManyInternalAsync(IMongoCollection<TEntity> mongoCollection,
-            List<EntityUpdate<TEntity>> entities,
-            CancellationToken cancellationToken = default)
-        {
-            if (entities == null || !entities.Any()) throw new ArgumentException("There are no entities provided to update.", nameof(entities));
-
-            var ids = new List<TKey>();
-
-            foreach (var entityUpdate in entities)
-            {
-                var id = await mongoCollection
-                    .AsQueryable()
-                    .Where(entityUpdate.Filter)
-                    .Select(x => x.Id)
-                    .FirstOrDefaultAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (id.Equals(default)) id = await _keyGenerator.GenerateKeyAsync(cancellationToken);
-
-                entityUpdate.Entity.Id = id;
-
-                ids.Add(id);
-            }
-
-            var writes = entities
-                .Select(x => new ReplaceOneModel<TEntity>(Builders<TEntity>
-                    .Filter
-                    .Where(y => y.Id.Equals(x.Entity.Id)), x.Entity)
-                {
-                    IsUpsert = true
-                });
-
-            await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
-                writes,
-                new BulkWriteOptions
-                {
-                    IsOrdered = true
-                }, cancellationToken));
-
-            return ids;
         }
 
         public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -193,6 +115,88 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             patch.ApplyTo(entity);
 
             return await UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, cancellationToken);
+        }
+
+        protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
+            Expression<Func<TEntity, bool>> filter,
+            bool doUpsert,
+            CancellationToken cancellationToken)
+        {
+            var filters = BuildFilters(filter);
+
+            var mongoCollection = GetCollection();
+
+            var original = await RetryErrorAsync(() =>
+                mongoCollection.FindOneAndReplaceAsync(
+                    Builders<TEntity>.Filter.Where(filters),
+                    entity,
+                    new FindOneAndReplaceOptions<TEntity, TEntity>
+                    {
+                        ReturnDocument = ReturnDocument.Before,
+                        IsUpsert = doUpsert
+                    },
+                    cancellationToken));
+
+            if (original != null)
+            {
+                await _entityDomainEventPublisher
+                    .PublishEntityUpdatedEventAsync(original, entity, cancellationToken)
+                    .ConfigureAwait(false);
+
+                return entity;
+            }
+
+            if (doUpsert)
+            {
+                await _entityDomainEventPublisher
+                    .PublishEntityAddEventAsync(entity, cancellationToken)
+                    .ConfigureAwait(false);
+                return entity;
+            }
+
+            return null;
+        }
+
+        protected virtual async Task<List<TKey>> UpdateManyInternalAsync(IMongoCollection<TEntity> mongoCollection,
+            List<EntityUpdate<TEntity>> entities,
+            CancellationToken cancellationToken = default)
+        {
+            if (entities == null || !entities.Any()) throw new ArgumentException("There are no entities provided to update.", nameof(entities));
+
+            var ids = new List<TKey>();
+
+            foreach (var entityUpdate in entities)
+            {
+                var id = await mongoCollection
+                    .AsQueryable()
+                    .Where(entityUpdate.Filter)
+                    .Select(x => x.Id)
+                    .FirstOrDefaultAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (id.Equals(default)) id = await _keyGenerator.GenerateKeyAsync(cancellationToken);
+
+                entityUpdate.Entity.Id = id;
+
+                ids.Add(id);
+            }
+
+            var writes = entities
+                .Select(x => new ReplaceOneModel<TEntity>(Builders<TEntity>
+                    .Filter
+                    .Where(y => y.Id.Equals(x.Entity.Id)), x.Entity)
+                {
+                    IsUpsert = true
+                });
+
+            await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
+                writes,
+                new BulkWriteOptions
+                {
+                    IsOrdered = true
+                }, cancellationToken));
+
+            return ids;
         }
     }
 }

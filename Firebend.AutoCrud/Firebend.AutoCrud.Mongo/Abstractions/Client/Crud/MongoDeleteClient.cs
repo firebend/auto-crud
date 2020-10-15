@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Linq.Expressions;
 using System.Threading;
@@ -8,6 +10,8 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
+#endregion
+
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoDeleteClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoDeleteClient<TKey, TEntity>
@@ -15,7 +19,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TEntity : IEntity<TKey>
     {
         private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
-        
+
         protected MongoDeleteClient(IMongoClient client,
             ILogger<MongoDeleteClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
@@ -31,7 +35,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             var mongoCollection = GetCollection();
 
             var result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken))
-                .ConfigureAwait(false);;
+                .ConfigureAwait(false);
+            ;
 
             if (result != null)
             {

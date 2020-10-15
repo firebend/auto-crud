@@ -1,6 +1,8 @@
+#region
+
 using System;
 using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -8,6 +10,8 @@ using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+
+#endregion
 
 namespace Firebend.AutoCrud.EntityFramework
 {

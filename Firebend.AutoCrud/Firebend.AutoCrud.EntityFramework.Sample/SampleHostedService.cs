@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -12,17 +14,19 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
+#endregion
+
 namespace Firebend.AutoCrud.EntityFramework.Sample
 {
     public class SampleHostedService : IHostedService
     {
-        private CancellationTokenSource _cancellationTokenSource;
         private readonly IEntityCreateService<Guid, Person> _createService;
-        private readonly IEntityUpdateService<Guid, Person> _updateService;
-        private readonly IPersonReadRepository _readService;
         private readonly ILogger<SampleHostedService> _logger;
+        private readonly IPersonReadRepository _readService;
+        private readonly IEntitySearchService<Guid, Person, EntitySearchRequest> _searchService;
         private readonly JsonSerializer _serializer;
-        private IEntitySearchService<Guid, Person, EntitySearchRequest> _searchService;
+        private readonly IEntityUpdateService<Guid, Person> _updateService;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public SampleHostedService(IServiceProvider serviceProvider, ILogger<SampleHostedService> logger)
         {
@@ -125,6 +129,13 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
             }
         }
 
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _cancellationTokenSource.Cancel();
+
+            return Task.CompletedTask;
+        }
+
         private void LogObject(string message, object entity = null)
         {
             _logger.LogInformation(message);
@@ -134,13 +145,6 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
                 _serializer.Serialize(Console.Out, entity);
                 Console.WriteLine();
             }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _cancellationTokenSource.Cancel();
-
-            return Task.CompletedTask;
         }
     }
 }

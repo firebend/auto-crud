@@ -1,4 +1,5 @@
-using System;
+#region
+
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -6,6 +7,8 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+
+#endregion
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
@@ -34,7 +37,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             CancellationToken cancellationToken)
         {
             var key = _entityKeyParser.ParseKey(id);
-            
+
             var deleted = await _deleteService
                 .DeleteAsync(key, cancellationToken)
                 .ConfigureAwait(false);
@@ -44,7 +47,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return Ok();
             }
 
-            return NotFound(new { id });
+            return NotFound(new {id});
         }
     }
 }

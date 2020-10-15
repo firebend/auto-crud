@@ -1,6 +1,10 @@
+#region
+
 using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
+
+#endregion
 
 namespace Firebend.AutoCrud.Web.Implementations
 {

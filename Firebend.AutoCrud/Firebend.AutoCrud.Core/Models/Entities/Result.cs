@@ -1,4 +1,8 @@
+#region
+
 using System.Collections.Generic;
+
+#endregion
 
 namespace Firebend.AutoCrud.Core.Models.Entities
 {

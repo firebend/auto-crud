@@ -1,5 +1,9 @@
+#region
+
 using System;
 using System.Linq.Expressions;
+
+#endregion
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
@@ -36,8 +40,8 @@ namespace Firebend.AutoCrud.Core.Extensions
         private class ReplaceExpressionVisitor
             : ExpressionVisitor
         {
-            private readonly Expression _oldValue;
             private readonly Expression _newValue;
+            private readonly Expression _oldValue;
 
             public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
             {

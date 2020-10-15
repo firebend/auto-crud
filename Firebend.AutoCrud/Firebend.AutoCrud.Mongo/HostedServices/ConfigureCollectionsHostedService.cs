@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+#endregion
+
 namespace Firebend.AutoCrud.Mongo.HostedServices
 {
     public class ConfigureCollectionsHostedService : IHostedService
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ConfigureCollectionsHostedService> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
         public ConfigureCollectionsHostedService(IServiceProvider serviceProvider, ILogger<ConfigureCollectionsHostedService> logger)
         {

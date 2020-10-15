@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,6 +7,8 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
+
+#endregion
 
 namespace Firebend.AutoCrud.Generator.Implementations
 {
@@ -32,6 +36,59 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     tb.SetCustomAttribute(attribute);
 
             return tb.CreateType();
+        }
+
+        public Type GenerateInterface(Type interfaceType, string typeSignature)
+        {
+            if (!interfaceType.IsInterface)
+                throw new InvalidCastException("TInterface must be an interface");
+
+            if (string.IsNullOrWhiteSpace(typeSignature))
+                throw new ArgumentNullException(nameof(typeSignature));
+
+            var tb = GetTypeBuilder(typeSignature, interfaces: new[] {interfaceType}, isInterface: true);
+
+            return tb.CreateType();
+        }
+
+        public object ImplementInterface(Type interfaceType, string typeSignature, PropertySet[] properties)
+        {
+            if (!interfaceType.IsInterface)
+                throw new InvalidCastException("TInterface must be an interface");
+
+            if (string.IsNullOrWhiteSpace(typeSignature))
+                throw new ArgumentNullException(nameof(typeSignature));
+
+            var tb = GetTypeBuilder(typeSignature, interfaces: new[] {interfaceType});
+            tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
+
+            var iProperties = interfaceType.GetProperties().Select(x => new PropertySet
+            {
+                Name = x.Name,
+                Type = x.PropertyType,
+                Override = true
+            });
+
+            properties ??= new PropertySet[0];
+
+            properties = properties
+                .Union(iProperties
+                    .Where(x => properties
+                        .All(y => y.Name != x.Name)))
+                .ToArray();
+
+            if (properties.Length > 0)
+                foreach (var field in properties)
+                    CreateProperty(tb, field);
+
+            var objectType = tb.CreateType();
+            var instance = Activator.CreateInstance(objectType);
+
+            if (properties.Length > 0)
+                foreach (var field in properties.Where(x => x.Value != null))
+                    SetProperty(objectType, instance, field.Name, field.Value);
+
+            return instance;
         }
 
         private static void CreatePassThroughConstructors(TypeBuilder builder, Type baseType, List<Type> implementedTypes)
@@ -94,59 +151,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 return new CustomAttributeBuilder(attribute.Constructor, attributeArgs, namedPropertyInfos, namedPropertyValues, namedFieldInfos,
                     namedFieldValues);
             }).ToArray();
-        }
-
-        public Type GenerateInterface(Type interfaceType, string typeSignature)
-        {
-            if (!interfaceType.IsInterface)
-                throw new InvalidCastException("TInterface must be an interface");
-
-            if (string.IsNullOrWhiteSpace(typeSignature))
-                throw new ArgumentNullException(nameof(typeSignature));
-
-            var tb = GetTypeBuilder(typeSignature, interfaces: new[] {interfaceType}, isInterface: true);
-
-            return tb.CreateType();
-        }
-
-        public object ImplementInterface(Type interfaceType, string typeSignature, PropertySet[] properties)
-        {
-            if (!interfaceType.IsInterface)
-                throw new InvalidCastException("TInterface must be an interface");
-
-            if (string.IsNullOrWhiteSpace(typeSignature))
-                throw new ArgumentNullException(nameof(typeSignature));
-
-            var tb = GetTypeBuilder(typeSignature, interfaces: new[] {interfaceType});
-            tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
-
-            var iProperties = interfaceType.GetProperties().Select(x => new PropertySet
-            {
-                Name = x.Name,
-                Type = x.PropertyType,
-                Override = true
-            });
-
-            properties ??= new PropertySet[0];
-
-            properties = properties
-                .Union(iProperties
-                    .Where(x => properties
-                        .All(y => y.Name != x.Name)))
-                .ToArray();
-
-            if (properties.Length > 0)
-                foreach (var field in properties)
-                    CreateProperty(tb, field);
-
-            var objectType = tb.CreateType();
-            var instance = Activator.CreateInstance(objectType);
-
-            if (properties.Length > 0)
-                foreach (var field in properties.Where(x => x.Value != null))
-                    SetProperty(objectType, instance, field.Name, field.Value);
-
-            return instance;
         }
 
         private static TypeBuilder GetTypeBuilder(string typeSignature,

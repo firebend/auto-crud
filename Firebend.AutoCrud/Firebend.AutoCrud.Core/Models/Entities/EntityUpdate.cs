@@ -1,5 +1,9 @@
+#region
+
 using System;
 using System.Linq.Expressions;
+
+#endregion
 
 namespace Firebend.AutoCrud.Core.Models.Entities
 {

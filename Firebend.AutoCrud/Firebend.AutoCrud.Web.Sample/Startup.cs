@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+#region
+
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
+#endregion
 
 namespace Firebend.AutoCrud.Web.Sample
 {
@@ -26,29 +26,20 @@ namespace Firebend.AutoCrud.Web.Sample
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                endpoints.MapGet("/", async context => { await context.Response.WriteAsync("Hello World!"); });
 
                 endpoints.MapControllers();
             });
 
-            app.UseSwagger(opt =>
-            {
-                opt.RouteTemplate = "/open-api/{documentName}/open-api.json";
-            });
-            
-            app.UseSwaggerUI(opt =>
-            {
-                opt.SwaggerEndpoint("/open-api/v1/open-api.json", "Firebend Auto Crud Web Sample");
-            });
-            
+            app.UseSwagger(opt => { opt.RouteTemplate = "/open-api/{documentName}/open-api.json"; });
+
+            app.UseSwaggerUI(opt => { opt.SwaggerEndpoint("/open-api/v1/open-api.json", "Firebend Auto Crud Web Sample"); });
+
             dbContext.Database.EnsureCreated();
         }
     }

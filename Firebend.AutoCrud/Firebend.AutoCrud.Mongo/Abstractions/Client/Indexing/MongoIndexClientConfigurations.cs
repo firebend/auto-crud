@@ -1,4 +1,8 @@
+#region
+
 using System.Collections.Concurrent;
+
+#endregion
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 {

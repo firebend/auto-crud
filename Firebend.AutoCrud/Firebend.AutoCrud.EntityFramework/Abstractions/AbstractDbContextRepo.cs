@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +11,8 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
+#endregion
+
 namespace Firebend.AutoCrud.EntityFramework.Abstractions
 {
     public abstract class AbstractDbContextRepo<TKey, TEntity>
@@ -19,12 +23,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         private IDbContext _context;
 
-        protected IDbContext Context => _context ??= _provider.GetDbContext();
-
         protected AbstractDbContextRepo(IDbContextProvider<TKey, TEntity> provider)
         {
             _provider = provider;
         }
+
+        protected IDbContext Context => _context ??= _provider.GetDbContext();
 
         protected DbSet<TEntity> GetDbSet()
         {

@@ -1,3 +1,5 @@
+#region
+
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,16 +11,18 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
+#endregion
+
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     public abstract class AbstractEntityUpdateController<TKey, TEntity> : ControllerBase
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
-        private readonly IEntityUpdateService<TKey, TEntity> _updateService;
-        private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityKeyParser<TKey, TEntity> _entityKeyParser;
         private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
+        private readonly IEntityReadService<TKey, TEntity> _readService;
+        private readonly IEntityUpdateService<TKey, TEntity> _updateService;
 
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
@@ -38,17 +42,17 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Put([FromRoute] string id,
-               [FromBody] TEntity body,
-               CancellationToken cancellationToken)
+            [FromBody] TEntity body,
+            CancellationToken cancellationToken)
         {
             var key = _entityKeyParser.ParseKey(id);
-            
+
             if (key.Equals(default) || key.Equals(null))
             {
                 ModelState.AddModelError(nameof(id), "An id is required");
                 return BadRequest(ModelState);
             }
-            
+
             if (body == null || body.Id.Equals(default) || body.Id.Equals(null))
             {
                 ModelState.AddModelError(nameof(body), "The entity body has no id provided.");
@@ -64,14 +68,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var isValid = await _entityValidationService
                 .ValidateAsync(body, cancellationToken)
                 .ConfigureAwait(false);
-            
+
             if (!isValid.WasSuccessful)
             {
                 foreach (var modelError in isValid.Errors)
                 {
                     ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
                 }
-                
+
                 return BadRequest(ModelState);
             }
 
@@ -81,7 +85,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (entity == null)
             {
-                return NotFound(new { key = id });
+                return NotFound(new {key = id});
             }
 
             return Ok(entity);
@@ -100,12 +104,12 @@ namespace Firebend.AutoCrud.Web.Abstractions
             if (patch == null)
             {
                 ModelState.AddModelError(nameof(patch), "A valid patch document is required.");
-                
+
                 return BadRequest(ModelState);
             }
-            
+
             var key = _entityKeyParser.ParseKey(id);
-            
+
             if (key.Equals(default) || key.Equals(null))
             {
                 ModelState.AddModelError(nameof(id), "An id is required");
@@ -119,13 +123,13 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (entity == null)
             {
-                return NotFound(new { id });
+                return NotFound(new {id});
             }
 
             var original = entity.Clone();
 
             patch.ApplyTo(entity, ModelState);
-            
+
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {
                 return BadRequest(ModelState);
@@ -134,13 +138,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var isValid = await _entityValidationService
                 .ValidateAsync(original, entity, patch, cancellationToken)
                 .ConfigureAwait(false);
-            
+
             if (!isValid.WasSuccessful)
             {
                 foreach (var modelError in isValid.Errors)
                 {
                     ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
                 }
+
                 return BadRequest(ModelState);
             }
 
@@ -158,7 +163,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return Ok(update);
             }
 
-            return NotFound(new { id });
+            return NotFound(new {id});
         }
     }
 }

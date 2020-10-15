@@ -1,8 +1,10 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Attributes;
@@ -16,6 +18,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+#endregion
+
 namespace Firebend.AutoCrud.Web.Sample
 {
     public class Program
@@ -25,8 +29,9 @@ namespace Firebend.AutoCrud.Web.Sample
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
                     if (hostingContext.HostingEnvironment.IsDevelopment()) builder.AddUserSecrets("Firebend.AutoCrud");
@@ -46,7 +51,7 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .AsEntityBuilder()
                         ).Generate()
                         .UsingEfCrud()
-                        .AddBuilder<EfPerson, Guid>(person => 
+                        .AddBuilder<EfPerson, Guid>(person =>
                             person.WithDbContext<PersonDbContext>()
                                 .WithCrud()
                                 .UsingControllers()
@@ -54,10 +59,7 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithOpenApiGroupName("The Beautiful Sql People")
                                 .AsEntityBuilder())
                         .Generate()
-                        .AddDbContext<PersonDbContext>(opt =>
-                        {
-                            opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer"));
-                        })
+                        .AddDbContext<PersonDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); })
                         .AddRouting()
                         .AddSwaggerGen(opt =>
                         {
@@ -83,7 +85,6 @@ namespace Firebend.AutoCrud.Web.Sample
                                 }
 
                                 return list;
-
                             });
                         })
                         .AddControllers()
@@ -91,5 +92,6 @@ namespace Firebend.AutoCrud.Web.Sample
                         .ConfigureApplicationPartManager(
                             manager => manager.FeatureProviders.Insert(0, new FirebendAutoCrudControllerConvention(services)));
                 });
+        }
     }
 }

@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +12,8 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
+#endregion
+
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
     public abstract class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> : IEntitySearchService<TKey, TEntity, TSearch>
@@ -17,8 +21,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
     {
-        private readonly IEntityFrameworkQueryClient<TKey, TEntity> _searchClient;
         private readonly IEntityDefaultOrderByProvider<TKey, TEntity> _orderByProvider;
+        private readonly IEntityFrameworkQueryClient<TKey, TEntity> _searchClient;
 
         public EntityFrameworkEntitySearchService(IEntityFrameworkQueryClient<TKey, TEntity> searchClient,
             IEntityDefaultOrderByProvider<TKey, TEntity> orderByProvider)
@@ -51,7 +55,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
             return null;
         }
 
-        private IEnumerable<(Expression<Func<TEntity, object>> order, bool @ascending)> GetOrderByGroups(TSearch search)
+        private IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> GetOrderByGroups(TSearch search)
         {
             var orderByGroups = search?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList();
 
@@ -60,7 +64,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
                 var orderBy = _orderByProvider.GetOrderBy();
 
                 if (orderBy != default)
-                    orderByGroups = new List<(Expression<Func<TEntity, object>> order, bool @ascending)>
+                    orderByGroups = new List<(Expression<Func<TEntity, object>> order, bool ascending)>
                     {
                         orderBy
                     };

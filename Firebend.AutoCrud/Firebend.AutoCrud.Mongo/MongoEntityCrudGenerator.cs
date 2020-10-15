@@ -1,6 +1,10 @@
+#region
+
 using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+#endregion
 
 namespace Firebend.AutoCrud.Mongo
 {

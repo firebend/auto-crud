@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +13,16 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+#endregion
+
 namespace Firebend.AutoCrud.Mongo.HostedServices
 {
     public class MongoMigrationHostedService : IHostedService
     {
-        private readonly IEnumerable<IMongoMigration> _migrations;
-        private readonly ILogger _logger;
-        private readonly IMongoDefaultDatabaseSelector _databaseSelector;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly IMongoDefaultDatabaseSelector _databaseSelector;
+        private readonly ILogger _logger;
+        private readonly IEnumerable<IMongoMigration> _migrations;
         private readonly IMongoClient _mongoClient;
 
         public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider)
@@ -29,6 +33,18 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
             _logger = logger;
             _databaseSelector = scope.ServiceProvider.GetService<IMongoDefaultDatabaseSelector>();
             _mongoClient = scope.ServiceProvider.GetService<IMongoClient>();
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            return DoMigration(_cancellationTokenSource.Token);
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _cancellationTokenSource.Cancel();
+
+            return Task.CompletedTask;
         }
 
         private async Task DoMigration(CancellationToken cancellationToken)
@@ -67,18 +83,6 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
                         migration.Version.Version);
                     break;
                 }
-        }
-
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            return DoMigration(_cancellationTokenSource.Token);
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _cancellationTokenSource.Cancel();
-
-            return Task.CompletedTask;
         }
     }
 }

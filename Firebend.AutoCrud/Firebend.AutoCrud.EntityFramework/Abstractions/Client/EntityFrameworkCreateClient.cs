@@ -1,8 +1,12 @@
+#region
+
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+
+#endregion
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -10,8 +14,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        private IEntityDomainEventPublisher _domainEventPublisher;
-        
+        private readonly IEntityDomainEventPublisher _domainEventPublisher;
+
         public EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider,
             IEntityDomainEventPublisher domainEventPublisher) : base(provider)
         {
@@ -29,7 +33,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             await Context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
-            
+
             await _domainEventPublisher
                 .PublishEntityAddEventAsync(savedEntity, cancellationToken)
                 .ConfigureAwait(false);
