@@ -1,8 +1,4 @@
-#region
-
 using Firebend.AutoCrud.Core.Interfaces.Models;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {

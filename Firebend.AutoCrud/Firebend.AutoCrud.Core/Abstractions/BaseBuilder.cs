@@ -1,10 +1,6 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Models;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Abstractions
 {

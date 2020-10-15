@@ -1,12 +1,8 @@
-#region
-
 using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {

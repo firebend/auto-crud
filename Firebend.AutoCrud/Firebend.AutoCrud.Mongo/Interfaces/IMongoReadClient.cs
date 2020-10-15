@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -7,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {

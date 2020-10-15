@@ -1,9 +1,5 @@
-#region
-
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Models.Searching;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
 {

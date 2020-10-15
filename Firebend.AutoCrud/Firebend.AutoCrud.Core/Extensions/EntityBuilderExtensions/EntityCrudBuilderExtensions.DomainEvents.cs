@@ -1,11 +1,7 @@
-#region
-
 using System;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Implementations.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
 {

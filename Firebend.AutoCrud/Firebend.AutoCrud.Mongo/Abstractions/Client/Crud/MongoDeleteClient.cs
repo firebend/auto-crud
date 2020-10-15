@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Linq.Expressions;
 using System.Threading;
@@ -9,8 +7,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {

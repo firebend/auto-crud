@@ -1,11 +1,7 @@
-#region
-
 using System.Collections.Generic;
 using Firebend.AutoCrud.Mongo.Helpers;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using MongoDB.Driver;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Implementations
 {

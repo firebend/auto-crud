@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +10,6 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 {

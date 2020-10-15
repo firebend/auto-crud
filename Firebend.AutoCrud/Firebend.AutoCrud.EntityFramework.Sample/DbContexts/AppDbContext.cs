@@ -1,10 +1,6 @@
-#region
-
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Sample.Models;
 using Microsoft.EntityFrameworkCore;
-
-#endregion
 
 namespace Firebend.AutoCrud.EntityFramework.Sample.DbContexts
 {

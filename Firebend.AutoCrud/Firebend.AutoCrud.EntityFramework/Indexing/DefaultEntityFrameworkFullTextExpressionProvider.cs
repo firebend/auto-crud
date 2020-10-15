@@ -1,9 +1,5 @@
-#region
-
 using System;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
-
-#endregion
 
 namespace Firebend.AutoCrud.EntityFramework.Indexing
 {

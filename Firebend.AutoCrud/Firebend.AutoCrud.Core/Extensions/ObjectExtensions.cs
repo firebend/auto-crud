@@ -1,11 +1,6 @@
-#region
-
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-
-#endregion
-
 namespace Firebend.AutoCrud.Core.Extensions
 {
     public static class ObjectExtensions

@@ -1,11 +1,7 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration
 {

@@ -1,11 +1,7 @@
-#region
-
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {

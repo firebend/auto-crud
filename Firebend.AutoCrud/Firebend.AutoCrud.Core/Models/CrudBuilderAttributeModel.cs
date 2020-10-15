@@ -1,9 +1,5 @@
-#region
-
 using System;
 using System.Reflection.Emit;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Models
 {

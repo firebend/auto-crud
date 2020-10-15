@@ -1,12 +1,8 @@
-#region
-
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Microsoft.AspNetCore.JsonPatch;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {

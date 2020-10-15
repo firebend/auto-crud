@@ -1,5 +1,3 @@
-#region
-
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,8 +8,6 @@ using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-
-#endregion
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {

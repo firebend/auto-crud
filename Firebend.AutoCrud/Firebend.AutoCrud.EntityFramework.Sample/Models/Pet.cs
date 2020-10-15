@@ -1,11 +1,7 @@
-#region
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-
-#endregion
 
 namespace Firebend.AutoCrud.EntityFramework.Sample.Models
 {

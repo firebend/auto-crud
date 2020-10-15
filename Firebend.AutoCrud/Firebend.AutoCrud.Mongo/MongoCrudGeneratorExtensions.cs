@@ -1,8 +1,4 @@
-#region
-
 using Microsoft.Extensions.DependencyInjection;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo
 {

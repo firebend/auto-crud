@@ -1,11 +1,7 @@
-#region
-
 using System;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Implementations.Defaults
 {

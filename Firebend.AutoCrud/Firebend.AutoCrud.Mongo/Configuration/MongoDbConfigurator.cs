@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Reflection;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -8,8 +6,6 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson.Serialization.Serializers;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Configuration
 {

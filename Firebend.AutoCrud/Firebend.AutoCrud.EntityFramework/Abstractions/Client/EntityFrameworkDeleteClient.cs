@@ -1,13 +1,9 @@
-#region
-
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
-
-#endregion
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {

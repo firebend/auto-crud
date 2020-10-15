@@ -1,11 +1,7 @@
-#region
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {

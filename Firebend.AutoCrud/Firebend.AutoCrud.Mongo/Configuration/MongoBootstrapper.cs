@@ -1,5 +1,3 @@
-#region
-
 using System;
 using Firebend.AutoCrud.Mongo.HostedServices;
 using Firebend.AutoCrud.Mongo.Interfaces;
@@ -9,8 +7,6 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
 using Scrutor;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Configuration
 {

@@ -1,13 +1,9 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
 {

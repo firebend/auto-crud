@@ -1,11 +1,6 @@
-#region
-
 using System;
 using System.Linq;
 using System.Text;
-
-#endregion
-
 namespace Firebend.AutoCrud.Core.Extensions
 {
     public static class StringExtensions

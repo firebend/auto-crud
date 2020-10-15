@@ -1,10 +1,6 @@
-#region
-
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Implementations.Defaults
 {

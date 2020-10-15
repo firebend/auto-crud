@@ -1,5 +1,3 @@
-#region
-
 using System;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
@@ -16,8 +14,6 @@ using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo
 {

@@ -1,8 +1,4 @@
-#region
-
 using System;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Interfaces.Models
 {

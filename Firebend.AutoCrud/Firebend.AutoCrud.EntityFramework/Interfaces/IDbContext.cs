@@ -1,11 +1,7 @@
-#region
-
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-
-#endregion
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {

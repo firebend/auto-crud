@@ -1,10 +1,6 @@
-#region
-
 using System;
 using System.Text;
 using MongoDB.Bson.Serialization;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Configuration
 {

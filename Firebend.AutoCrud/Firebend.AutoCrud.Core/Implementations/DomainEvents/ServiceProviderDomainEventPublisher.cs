@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Microsoft.Extensions.DependencyInjection;
-
-#endregion
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
 {

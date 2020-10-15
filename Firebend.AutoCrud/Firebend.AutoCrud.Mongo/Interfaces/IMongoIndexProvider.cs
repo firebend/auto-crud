@@ -1,9 +1,5 @@
-#region
-
 using System.Collections.Generic;
 using MongoDB.Driver;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {

@@ -1,9 +1,5 @@
-#region
-
 using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Sample.Models
 {

@@ -1,9 +1,4 @@
-#region
-
 using System;
-
-#endregion
-
 namespace Firebend.AutoCrud.Core.Abstractions
 {
     public abstract class EntityCrudBuilder : EntityBuilder

@@ -1,9 +1,5 @@
-#region
-
 using System;
 using MongoDB.Bson;
-
-#endregion
 
 namespace Firebend.AutoCrud.Mongo.Configuration
 {

@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Linq;
 using System.Reflection.Emit;
@@ -14,8 +12,6 @@ using Firebend.AutoCrud.Web.Implementations;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-#endregion
 
 namespace Firebend.AutoCrud.Web
 {
