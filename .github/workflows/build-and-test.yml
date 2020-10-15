@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  build__and_test:
+  build_and_test:
     name: Build, test, and release
     runs-on: ubuntu-latest
     steps:
