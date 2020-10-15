@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
@@ -19,13 +20,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TEntity : class, IEntity<TKey>
     {
         private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
+        private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
 
         public MongoUpdateClient(IMongoClient client,
             ILogger<MongoUpdateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator) : base(client, logger, entityConfiguration)
+            IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
+            IEntityDomainEventPublisher entityDomainEventPublisher) : base(client, logger, entityConfiguration)
         {
             _keyGenerator = keyGenerator;
+            _entityDomainEventPublisher = entityDomainEventPublisher;
         }
 
         protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
@@ -49,16 +53,21 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     cancellationToken));
 
             if (original != null)
-                //todo: domain events
-                // var patch = _jsonPatchDocumentGenerator.Generate(original, entity);
-                //
-                // await PublishUpdateAsync(patch, original, cancellationToken).ConfigureAwait(false);
-                //
+            {
+                await _entityDomainEventPublisher
+                    .PublishEntityUpdatedEventAsync(original, entity, cancellationToken)
+                    .ConfigureAwait(false);
+                
                 return entity;
+            }
 
             if (doUpsert)
-                //await PublishCreateAsync(entity, cancellationToken).ConfigureAwait(false);
+            {
+                await _entityDomainEventPublisher
+                    .PublishEntityAddEventAsync(entity, cancellationToken)
+                    .ConfigureAwait(false);
                 return entity;
+            }
 
             return null;
         }

@@ -12,12 +12,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        private readonly IDomainEventPublisher _eventPublisher;
+        private readonly IEntityDomainEventPublisher _eventPublisher;
 
         protected MongoCreateClient(IMongoClient client,
             ILogger<MongoCreateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IDomainEventPublisher eventPublisher) : base(client, logger, entityConfiguration)
+            IEntityDomainEventPublisher eventPublisher) : base(client, logger, entityConfiguration)
         {
             _eventPublisher = eventPublisher;
         }
@@ -25,8 +25,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
-            await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken));
-            await _eventPublisher.PublishEntityAddEventAsync(entity, cancellationToken);
+            
+            await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))
+                .ConfigureAwait(false);;
+            
+            await _eventPublisher.PublishEntityAddEventAsync(entity, cancellationToken)
+                .ConfigureAwait(false);;
+            
             return entity;
         }
     }

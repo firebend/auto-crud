@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
@@ -93,9 +94,16 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Patch([FromRoute] string id,
-            [FromBody] JsonPatchDocument<TEntity> patch,
+            [FromBody] [Required] JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken)
         {
+            if (patch == null)
+            {
+                ModelState.AddModelError(nameof(patch), "A valid patch document is required.");
+                
+                return BadRequest(ModelState);
+            }
+            
             var key = _entityKeyParser.ParseKey(id);
             
             if (key.Equals(default) || key.Equals(null))

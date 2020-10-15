@@ -4,6 +4,7 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.Generator.Implementations;
@@ -94,6 +95,8 @@ namespace Firebend.AutoCrud.Mongo
                 typeof(DefaultEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
+
+            this.WithRegistration<MongoDbEntityBuilder, IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
 
             if (EntityKeyType == typeof(Guid))
                 this.WithRegistration(typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),

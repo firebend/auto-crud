@@ -87,6 +87,7 @@ namespace Firebend.AutoCrud.Web.Sample
                             });
                         })
                         .AddControllers()
+                        .AddNewtonsoftJson()
                         .ConfigureApplicationPartManager(
                             manager => manager.FeatureProviders.Insert(0, new FirebendAutoCrudControllerConvention(services)));
                 });
