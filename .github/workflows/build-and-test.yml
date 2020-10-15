@@ -1,15 +1,15 @@
-name: Build and Test
+name: Build and test
 
 on:
   push:
+    branches:
+      - '!main'
   pull_request:
-    branches: [ main ]
 
 jobs:
-  build:
-
+  build__and_test:
+    name: Build, test, and release
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
