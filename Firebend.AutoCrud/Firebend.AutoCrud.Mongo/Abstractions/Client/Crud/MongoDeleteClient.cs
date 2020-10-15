@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -13,10 +14,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
+        
         protected MongoDeleteClient(IMongoClient client,
             ILogger<MongoDeleteClient<TKey, TEntity>> logger,
-            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
+            IEntityDomainEventPublisher entityDomainEventPublisher) : base(client, logger, entityConfiguration)
         {
+            _entityDomainEventPublisher = entityDomainEventPublisher;
         }
 
         public async Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
@@ -25,12 +30,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var mongoCollection = GetCollection();
 
-            var result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken));
+            var result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken))
+                .ConfigureAwait(false);;
 
             if (result != null)
             {
-                //todo: domain events
-                //await PublishDeleteAsync(result, cancellationToken).ConfigureAwait(false);
+                await _entityDomainEventPublisher
+                    .PublishEntityDeleteEventAsync(result, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             return result;
