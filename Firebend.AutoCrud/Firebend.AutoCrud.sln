@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 
+#
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Core", "Firebend.AutoCrud.Core\Firebend.AutoCrud.Core.csproj", "{E23BD5C7-A426-4BA0-A152-C6638BC585E6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Mongo", "Firebend.AutoCrud.Mongo\Firebend.AutoCrud.Mongo.csproj", "{61C23AB2-80B1-47E4-98D9-5DF37416632B}"
@@ -18,6 +18,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.EntityFramework.Sample", "Firebend.AutoCrud.EntityFramework.Sample\Firebend.AutoCrud.EntityFramework.Sample.csproj", "{C1D83DC6-005E-460F-A54A-9DF8EDD0A3FB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Web.Sample", "Firebend.AutoCrud.Web.Sample\Firebend.AutoCrud.Web.Sample.csproj", "{62706813-FA02-4400-B695-31C5B3B7AF3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.EntityFramework.Elastic", "Firebend.AutoCrud.EntityFramework.Elastic\Firebend.AutoCrud.EntityFramework.Elastic.csproj", "{01D0F301-96E0-48D7-B631-EF5A9E3BF3D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,5 +63,9 @@ Global
 		{62706813-FA02-4400-B695-31C5B3B7AF3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62706813-FA02-4400-B695-31C5B3B7AF3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62706813-FA02-4400-B695-31C5B3B7AF3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01D0F301-96E0-48D7-B631-EF5A9E3BF3D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01D0F301-96E0-48D7-B631-EF5A9E3BF3D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01D0F301-96E0-48D7-B631-EF5A9E3BF3D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01D0F301-96E0-48D7-B631-EF5A9E3BF3D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
