@@ -91,6 +91,12 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             return builder;
         }
 
+        public static TBuilder WithRegistrationInstance<TBuilder, TInstance>(this TBuilder builder, TInstance instance)
+            where TBuilder : EntityBuilder
+        {
+            return builder.WithRegistrationInstance(typeof(TInstance), instance);
+        }
+
         public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, Type attributeType, CustomAttributeBuilder attribute)
             where TBuilder : BaseBuilder
         {

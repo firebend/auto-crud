@@ -42,9 +42,9 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 .UseSqlServer(connection)
                 .Options;
 
-            var context = (IDbContext) Activator.CreateInstance(typeof(TContext), options);
-
-            return context;
+            var context = Activator.CreateInstance(typeof(TContext), options);
+            
+            return (TContext)context;
         }
     }
 }
