@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models;
 
-namespace Firebend.AutoCrud.Core.Extensions
+namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
 {
     public static class EntityBuilderExtensions
     {
@@ -95,14 +94,14 @@ namespace Firebend.AutoCrud.Core.Extensions
         public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, Type attributeType, CustomAttributeBuilder attribute)
             where TBuilder : BaseBuilder
         {
-           builder.Attributes ??= new Dictionary<Type, List<CrudBuilderAttributeModel>>();
+            builder.Attributes ??= new Dictionary<Type, List<CrudBuilderAttributeModel>>();
 
             var model = new CrudBuilderAttributeModel
             {
                 AttributeBuilder = attribute,
-                AttributeType = attributeType,
+                AttributeType = attributeType
             };
-            
+
             if (builder.Attributes.ContainsKey(registrationType))
             {
                 builder.Attributes[registrationType] ??= new List<CrudBuilderAttributeModel>();

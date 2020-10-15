@@ -31,6 +31,5 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             return Ok(entities);
         }
-
     }
 }

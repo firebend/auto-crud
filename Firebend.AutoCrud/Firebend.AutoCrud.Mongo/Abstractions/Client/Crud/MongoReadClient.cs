@@ -22,43 +22,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         {
         }
 
-        protected IMongoQueryable<TEntity> BuildQuery(
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null)
-        {
-            FilterDefinition<TEntity> firstStageFilter = null;
-
-            if (!string.IsNullOrWhiteSpace(search)) firstStageFilter = Builders<TEntity>.Filter.Text(search);
-
-            var queryable = GetFilteredCollection(firstStageFilter);
-
-            if (filter != null) queryable = queryable.Where(filter);
-
-            if (orderBys != null)
-            {
-                IOrderedMongoQueryable<TEntity> ordered = null;
-
-                foreach (var orderBy in orderBys)
-                    if (orderBy != default)
-                        ordered = ordered == null ? orderBy.@ascending ? queryable.OrderBy(orderBy.order) :
-                            queryable.OrderByDescending(orderBy.order) :
-                            orderBy.@ascending ? ordered.ThenBy(orderBy.order) :
-                            ordered.ThenByDescending(orderBy.order);
-
-                if (ordered != null) queryable = ordered;
-            }
-
-            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
-                queryable = queryable
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value);
-
-            return queryable;
-        }
-
 
         public Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
         {
@@ -80,7 +43,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             int? pageNumber = null,
             int? pageSize = null,
             bool doCount = true,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool @ascending)> orderBys = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
             CancellationToken cancellationToken = default)
         {
             int? count = null;
@@ -110,7 +73,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             int? pageNumber = null,
             int? pageSize = null,
             bool doCount = false,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool @ascending)> orderBys = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
             CancellationToken cancellationToken = default)
         {
             int? count = null;
@@ -147,6 +110,43 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             var queryable = BuildQuery(filter: filter);
 
             return RetryErrorAsync(() => queryable.AnyAsync(cancellationToken));
+        }
+
+        protected IMongoQueryable<TEntity> BuildQuery(
+            string search = null,
+            Expression<Func<TEntity, bool>> filter = null,
+            int? pageNumber = null,
+            int? pageSize = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null)
+        {
+            FilterDefinition<TEntity> firstStageFilter = null;
+
+            if (!string.IsNullOrWhiteSpace(search)) firstStageFilter = Builders<TEntity>.Filter.Text(search);
+
+            var queryable = GetFilteredCollection(firstStageFilter);
+
+            if (filter != null) queryable = queryable.Where(filter);
+
+            if (orderBys != null)
+            {
+                IOrderedMongoQueryable<TEntity> ordered = null;
+
+                foreach (var orderBy in orderBys)
+                    if (orderBy != default)
+                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
+                            queryable.OrderByDescending(orderBy.order) :
+                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
+                            ordered.ThenByDescending(orderBy.order);
+
+                if (ordered != null) queryable = ordered;
+            }
+
+            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
+                queryable = queryable
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value);
+
+            return queryable;
         }
     }
 }

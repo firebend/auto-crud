@@ -1,7 +1,8 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
@@ -50,6 +51,8 @@ namespace Firebend.AutoCrud.EntityFramework
                 typeof(DefaultEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
+
+            this.WithRegistration<EntityFrameworkEntityBuilder, IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
 
             this.WithRegistration<EntityFrameworkEntityBuilder,
                 IEntityFrameworkFullTextExpressionProvider,

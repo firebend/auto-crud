@@ -7,19 +7,6 @@ namespace Firebend.AutoCrud.Core.Threading
 {
     public sealed class AsyncDuplicateLock
     {
-        private sealed class RefCounted<T>
-        {
-            public RefCounted(T value)
-            {
-                RefCount = 1;
-                Value = value;
-            }
-
-            public int RefCount { get; set; }
-
-            public T Value { get; }
-        }
-
         private static readonly Dictionary<object, RefCounted<SemaphoreSlim>> SemaphoreSlims
             = new Dictionary<object, RefCounted<SemaphoreSlim>>();
 
@@ -57,6 +44,19 @@ namespace Firebend.AutoCrud.Core.Threading
                 .ConfigureAwait(false);
 
             return new Releaser {Key = key, DidGetLock = didGetLock};
+        }
+
+        private sealed class RefCounted<T>
+        {
+            public RefCounted(T value)
+            {
+                RefCount = 1;
+                Value = value;
+            }
+
+            public int RefCount { get; set; }
+
+            public T Value { get; }
         }
 
         private sealed class Releaser : IDisposable

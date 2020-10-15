@@ -27,32 +27,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             _indexProvider = indexProvider;
         }
 
-        private async Task CheckConfiguredAsync(string configurationKey, Func<Task> configure,
-            CancellationToken cancellationToken)
-        {
-            if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out var configured))
-                if (configured)
-                    return;
-
-            using (await new AsyncDuplicateLock()
-                .LockAsync(EntityConfiguration.CollectionName, cancellationToken)
-                .ConfigureAwait(false))
-            {
-                if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out configured))
-                    if (configured)
-                        return;
-
-                await configure();
-
-                MongoIndexClientConfigurations.Configurations[configurationKey] = true;
-            }
-        }
-
-        protected override IEnumerable<Expression<Func<TEntity, bool>>> GetSecurityFilters()
-        {
-            return Enumerable.Empty<Expression<Func<TEntity, bool>>>();
-        }
-
         public Task BuildIndexesAsync(CancellationToken cancellationToken = default)
         {
             return CheckConfiguredAsync($"{EntityConfiguration.CollectionName}.Indexes", async () =>
@@ -97,6 +71,32 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 
                 if (!collectionExists) await database.CreateCollectionAsync(EntityConfiguration.CollectionName, null, cancellationToken);
             }), cancellationToken);
+        }
+
+        private async Task CheckConfiguredAsync(string configurationKey, Func<Task> configure,
+            CancellationToken cancellationToken)
+        {
+            if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out var configured))
+                if (configured)
+                    return;
+
+            using (await new AsyncDuplicateLock()
+                .LockAsync(EntityConfiguration.CollectionName, cancellationToken)
+                .ConfigureAwait(false))
+            {
+                if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out configured))
+                    if (configured)
+                        return;
+
+                await configure();
+
+                MongoIndexClientConfigurations.Configurations[configurationKey] = true;
+            }
+        }
+
+        protected override IEnumerable<Expression<Func<TEntity, bool>>> GetSecurityFilters()
+        {
+            return Enumerable.Empty<Expression<Func<TEntity, bool>>>();
         }
     }
 }

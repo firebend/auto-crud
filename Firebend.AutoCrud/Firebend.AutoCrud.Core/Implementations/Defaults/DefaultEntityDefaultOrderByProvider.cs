@@ -1,6 +1,5 @@
 using System;
 using System.Linq.Expressions;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 
@@ -10,7 +9,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        public (Expression<Func<TEntity, object>>, bool @ascending) GetOrderBy()
+        public (Expression<Func<TEntity, object>>, bool ascending) GetOrderBy()
         {
             return default;
         }

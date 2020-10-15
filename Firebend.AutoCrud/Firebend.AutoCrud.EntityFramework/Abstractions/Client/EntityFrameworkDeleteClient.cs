@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,8 +11,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        public EntityFrameworkDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider) : base(contextProvider)
+        private readonly IEntityDomainEventPublisher _domainEventPublisher;
+
+        public EntityFrameworkDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider,
+            IEntityDomainEventPublisher domainEventPublisher) : base(contextProvider)
         {
+            _domainEventPublisher = domainEventPublisher;
         }
 
         public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
@@ -47,7 +52,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 entry.State = EntityState.Deleted;
             }
 
-            await Context.SaveChangesAsync(cancellationToken);
+            await Context
+                .SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            await _domainEventPublisher
+                .PublishEntityDeleteEventAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
 
             return entity;
         }

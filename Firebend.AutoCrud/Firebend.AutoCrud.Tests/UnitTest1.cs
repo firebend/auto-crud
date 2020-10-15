@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using FluentAssertions;
+using NUnit.Framework;
 
 namespace Firebend.AutoCrud.Tests
 {

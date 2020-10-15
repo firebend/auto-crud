@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -16,14 +15,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
-
         protected MongoClientBaseEntity(IMongoClient client,
             ILogger logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger)
         {
             EntityConfiguration = entityConfiguration;
         }
+
+        protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
 
         protected IMongoCollection<TEntity> GetCollection()
         {

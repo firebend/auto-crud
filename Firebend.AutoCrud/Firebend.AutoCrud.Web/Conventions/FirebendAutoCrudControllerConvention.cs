@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Web.Conventions
                     x.ServiceType,
                     x.ImplementationType.FullName
                 })
-                .SelectMany(x => x.ServiceType.GetCustomAttributes(), (t,a) => new
+                .SelectMany(x => x.ServiceType.GetCustomAttributes(), (t, a) => new
                 {
                     t.ServiceType,
                     t.FullName,

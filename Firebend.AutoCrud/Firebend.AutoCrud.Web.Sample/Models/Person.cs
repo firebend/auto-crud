@@ -7,23 +7,19 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 {
     public class MongoPerson : IEntity<Guid>
     {
-        public Guid Id { get; set; }
-
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
+        public Guid Id { get; set; }
     }
 
     [Table("EfPeople")]
     public class EfPerson : IEntity<Guid>
     {
-        [Key]
-        public Guid Id { get; set; }
+        [StringLength(250)] public string FirstName { get; set; }
 
-        [StringLength(250)]
-        public string FirstName { get; set; }
+        [StringLength(250)] public string LastName { get; set; }
 
-        [StringLength(250)]
-        public string LastName { get; set; }
+        [Key] public Guid Id { get; set; }
     }
 }

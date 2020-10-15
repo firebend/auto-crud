@@ -6,12 +6,12 @@ namespace Firebend.AutoCrud.EntityFramework.Sample.DbContexts
 {
     public class AppDbContext : DbContext, IDbContext
     {
-        public DbSet<Person> People { get; set; }
-
-        public DbSet<Pet> Pets { get; set; }
-
         public AppDbContext(DbContextOptions options) : base(options)
         {
         }
+
+        public DbSet<Person> People { get; set; }
+
+        public DbSet<Pet> Pets { get; set; }
     }
 }

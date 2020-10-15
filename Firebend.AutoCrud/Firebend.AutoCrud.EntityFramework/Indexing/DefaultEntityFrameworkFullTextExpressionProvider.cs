@@ -1,3 +1,4 @@
+using System;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Indexing
@@ -8,7 +9,7 @@ namespace Firebend.AutoCrud.EntityFramework.Indexing
 
         public bool GetFullTextFilter<TEntity>(TEntity entity)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

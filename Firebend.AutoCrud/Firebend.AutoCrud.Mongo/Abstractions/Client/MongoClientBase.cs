@@ -7,16 +7,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
     public abstract class MongoClientBase
     {
-        protected IMongoClient Client { get; }
-
-        protected ILogger Logger { get; }
-
         protected MongoClientBase(IMongoClient client,
             ILogger logger)
         {
             Client = client;
             Logger = logger;
         }
+
+        protected IMongoClient Client { get; }
+
+        protected ILogger Logger { get; }
 
         //todo: we may want to refactor this with polly or some other retry interface abstraction 
         protected Task RetryErrorAsync(Func<Task> method)

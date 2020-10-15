@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -34,7 +33,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             CancellationToken cancellationToken)
         {
             var key = _entityKeyParser.ParseKey(id);
-            
+
             var deleted = await _deleteService
                 .DeleteAsync(key, cancellationToken)
                 .ConfigureAwait(false);
@@ -44,7 +43,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return Ok();
             }
 
-            return NotFound(new { id });
+            return NotFound(new {id});
         }
     }
 }

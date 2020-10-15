@@ -13,7 +13,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
     public static class MongoBootstrapper
     {
         private static readonly object BootStrapLock = new object();
-        private static bool _isBootstrapped = false;
+        private static bool _isBootstrapped;
 
         public static IServiceCollection ConfigureMongoDb(
             this IServiceCollection services,

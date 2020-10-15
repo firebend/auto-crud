@@ -12,8 +12,8 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
 {
     public class ConfigureCollectionsHostedService : IHostedService
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ConfigureCollectionsHostedService> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
         public ConfigureCollectionsHostedService(IServiceProvider serviceProvider, ILogger<ConfigureCollectionsHostedService> logger)
         {

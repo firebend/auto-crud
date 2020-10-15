@@ -15,6 +15,17 @@ Content-Type: application/json
     "lastName": "Sample"
 }
 ###
+PATCH https://localhost:5001/api/v1/ef-person/b12f7ead-9e94-4bb9-415f-08d870cf85d2
+Content-Type: application/json
+
+[
+    {
+        "op": "replace",
+        "path": "/lastName",
+        "value": "Sample Patched"
+    }
+]
+###
 DELETE https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
 
 ###

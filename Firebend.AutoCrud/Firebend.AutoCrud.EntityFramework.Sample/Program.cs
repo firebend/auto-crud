@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Sample.DbContexts;
 using Firebend.AutoCrud.EntityFramework.Sample.Models;

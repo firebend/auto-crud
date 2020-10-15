@@ -1,10 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using SharpCompress.Common.Tar;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {

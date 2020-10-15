@@ -10,7 +10,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntitySearchController<TKey,TEntity,TSearch> : ControllerBase
+    public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch> : ControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Searches for entities")]
         [SwaggerResponse(200, "All the entities that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.")]
-        public virtual async Task<IActionResult> Search([FromQuery]TSearch searchRequest,
+        public virtual async Task<IActionResult> Search([FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
         {
             if (searchRequest == null)

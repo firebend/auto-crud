@@ -23,43 +23,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _fullTextSearchProvider = fullTextSearchProvider;
         }
 
-        protected IQueryable<TEntity> BuildQuery(
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null)
-        {
-            var queryable = GetFilteredQueryable();
-
-            if (!string.IsNullOrWhiteSpace(search))
-                if (_fullTextSearchProvider?.HasValue ?? false)
-                    queryable = queryable.Where(x => _fullTextSearchProvider.GetFullTextFilter(x));
-
-            if (filter != null) queryable = queryable.Where(filter);
-
-            if (orderBys != null)
-            {
-                IOrderedQueryable<TEntity> ordered = null;
-
-                foreach (var orderBy in orderBys)
-                    if (orderBy != default)
-                        ordered = ordered == null ? orderBy.@ascending ? queryable.OrderBy(orderBy.order) :
-                            queryable.OrderByDescending(orderBy.order) :
-                            orderBy.@ascending ? ordered.ThenBy(orderBy.order) :
-                            ordered.ThenByDescending(orderBy.order);
-
-                if (ordered != null) queryable = ordered;
-            }
-
-            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
-                queryable = queryable
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value);
-
-            return queryable;
-        }
-
         public new Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
         {
             return base.GetByKeyAsync(key, cancellationToken);
@@ -75,7 +38,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             int? pageNumber = null,
             int? pageSize = null,
             bool doCount = true,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool @ascending)> orderBys = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
             CancellationToken cancellationToken = default)
         {
             int? count = null;
@@ -103,7 +66,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             int? pageNumber = null,
             int? pageSize = null,
             bool doCount = false,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool @ascending)> orderBys = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
             CancellationToken cancellationToken = default)
         {
             int? count = null;
@@ -142,6 +105,43 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var queryable = BuildQuery(filter: filter);
 
             return queryable.AnyAsync(cancellationToken);
+        }
+
+        protected IQueryable<TEntity> BuildQuery(
+            string search = null,
+            Expression<Func<TEntity, bool>> filter = null,
+            int? pageNumber = null,
+            int? pageSize = null,
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null)
+        {
+            var queryable = GetFilteredQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                if (_fullTextSearchProvider?.HasValue ?? false)
+                    queryable = queryable.Where(x => _fullTextSearchProvider.GetFullTextFilter(x));
+
+            if (filter != null) queryable = queryable.Where(filter);
+
+            if (orderBys != null)
+            {
+                IOrderedQueryable<TEntity> ordered = null;
+
+                foreach (var orderBy in orderBys)
+                    if (orderBy != default)
+                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
+                            queryable.OrderByDescending(orderBy.order) :
+                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
+                            ordered.ThenByDescending(orderBy.order);
+
+                if (ordered != null) queryable = ordered;
+            }
+
+            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
+                queryable = queryable
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value);
+
+            return queryable;
         }
     }
 }

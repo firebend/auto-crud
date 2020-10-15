@@ -19,12 +19,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         private IDbContext _context;
 
-        protected IDbContext Context => _context ??= _provider.GetDbContext();
-
         protected AbstractDbContextRepo(IDbContextProvider<TKey, TEntity> provider)
         {
             _provider = provider;
         }
+
+        protected IDbContext Context => _context ??= _provider.GetDbContext();
 
         protected DbSet<TEntity> GetDbSet()
         {

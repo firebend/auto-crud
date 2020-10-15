@@ -1,9 +1,10 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.Generator.Implementations;
@@ -11,7 +12,6 @@ using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
-using Firebend.AutoCrud.Mongo.Configuration;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 
@@ -20,6 +20,15 @@ namespace Firebend.AutoCrud.Mongo
     public class MongoDbEntityBuilder : EntityCrudBuilder
     {
         private readonly IDynamicClassGenerator _generator;
+
+        public MongoDbEntityBuilder(IDynamicClassGenerator generator)
+        {
+            _generator = generator;
+        }
+
+        public MongoDbEntityBuilder() : this(new DynamicClassGenerator())
+        {
+        }
 
         public override Type CreateType { get; } = typeof(MongoEntityCreateService<,>);
 
@@ -36,15 +45,6 @@ namespace Firebend.AutoCrud.Mongo
         public string CollectionName { get; set; }
 
         public string Database { get; set; }
-
-        public MongoDbEntityBuilder(IDynamicClassGenerator generator)
-        {
-            _generator = generator;
-        }
-
-        public MongoDbEntityBuilder() : this(new DynamicClassGenerator())
-        {
-        }
 
         protected override void ApplyPlatformTypes()
         {
@@ -94,6 +94,8 @@ namespace Firebend.AutoCrud.Mongo
                 typeof(DefaultEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 false);
+
+            this.WithRegistration<MongoDbEntityBuilder, IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
 
             if (EntityKeyType == typeof(Guid))
                 this.WithRegistration(typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
@@ -157,7 +159,7 @@ namespace Firebend.AutoCrud.Mongo
 
             if (string.IsNullOrWhiteSpace(Database)) Database = db;
 
-            var signature = $"DefaultDb";
+            var signature = "DefaultDb";
 
             var iFaceType = typeof(IMongoDefaultDatabaseSelector);
 
