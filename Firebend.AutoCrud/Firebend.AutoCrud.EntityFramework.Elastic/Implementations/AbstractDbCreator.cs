@@ -8,28 +8,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
-    internal static class CreatedDatabases
-    {
-        public static readonly ConcurrentDictionary<string, bool> CreatedCache = new ConcurrentDictionary<string, bool>();
-
-        public static bool IsCreated(string key)
-        {
-            if (CreatedCache.ContainsKey(key))
-            {
-                return CreatedCache[key];
-            }
-
-            return false;
-        }
-
-        public static void  MarkAsCreate(string key)
-        {
-            CreatedCache.AddOrUpdate(key,
-                true,
-                (s, b) => true);
-        }
-    }
-    
     public abstract class AbstractDbCreator : IDbCreator
     {
         private readonly ILogger _logger;
@@ -41,7 +19,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
         protected abstract string GetSqlCommand(string dbName);
         
-        public async Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
+        public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 
@@ -52,35 +30,22 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
             var key = $"{connBuilder.DataSource}-{dbName}";
             
-            _logger.LogDebug($"Ensuring database is created. Key {key}");
+            var runKey = $"{GetType().FullName}.{key}";
 
-            if (CreatedDatabases.IsCreated(key))
+            return Run.OnceAsync(runKey, async ct =>
             {
+                _logger.LogDebug($"Creating database. Key {key}");
+
+                var cString = connBuilder.ConnectionString;
+                await using var conn = new SqlConnection(cString);
+                await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+                await using var command = conn.CreateCommand();
+                command.CommandText = GetSqlCommand(dbName);
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
                 _logger.LogDebug($"Database is created. Key {key}");
-                return;
-            }
-
-            using var _ = await new AsyncDuplicateLock().LockAsync(key, CancellationToken.None);
-
-            if (CreatedDatabases.IsCreated(key))
-            {
-                _logger.LogDebug($"Database is created. Key {key}");
-                return;
-            }
-            
-            _logger.LogDebug($"Database is not created. Creating now.... Key {key}");
-
-            var cString = connBuilder.ConnectionString;
-            await using var conn = new SqlConnection(cString);
-            await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
-            
-            await using var command = conn.CreateCommand();
-            command.CommandText = GetSqlCommand(dbName);
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            
-            CreatedDatabases.MarkAsCreate(key);
-            
-            _logger.LogDebug($"Database is created. Key {key}");
+            }, cancellationToken);
         }
     }
 }

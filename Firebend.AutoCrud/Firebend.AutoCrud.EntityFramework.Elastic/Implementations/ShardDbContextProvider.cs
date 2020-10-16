@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -55,12 +56,15 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             
             var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
                 .ConfigureAwait(false);
+
+            var temp = connection.ConnectionString;
                 
             var options = new DbContextOptionsBuilder()
                 .UseSqlServer(connection)
                 .Options;
 
-            var instance = Activator.CreateInstance(typeof(TContext), options);
+            var contextType = typeof(TContext);
+            var instance = Activator.CreateInstance(contextType, options);
             
             if (instance == null)
             {
@@ -71,14 +75,17 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             {
                 throw new Exception("Could not cast instance.");
             }
-            
-            await context.Database
-                .EnsureCreatedAsync(cancellationToken)
-                .ConfigureAwait(false);
 
-            await context.Database
-                .MigrateAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}", async ct =>
+            {
+                await context.Database
+                    .EnsureCreatedAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                await context.Database
+                    .MigrateAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
             
             return context;
         }
