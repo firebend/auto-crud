@@ -22,7 +22,7 @@ Content-Type: application/json
     {
         "op": "replace",
         "path": "/lastName",
-        "value": "Sample Patched"
+        "value": "Sample Patch"
     }
 ]
 ###

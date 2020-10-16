@@ -55,6 +55,7 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithCrud()
                                 .WithDomainEventPublisherServiceProvider()
                                 .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
+                                .WithDomainEventEntityUpdatedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
                                 .WithElasticPool(hostContext.HostingEnvironment, manager =>
                                 {
                                     manager.ConnectionString = hostContext.Configuration.GetConnectionString("Elastic");

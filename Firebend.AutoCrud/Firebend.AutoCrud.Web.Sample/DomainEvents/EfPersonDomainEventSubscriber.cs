@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 {
-    public class EfPersonDomainEventSubscriber : IEntityAddedDomainEventSubscriber<EfPerson>
+    public class EfPersonDomainEventSubscriber : IEntityAddedDomainEventSubscriber<EfPerson>, IEntityUpdatedDomainEventSubscriber<EfPerson>
     {
         private readonly ILogger _logger;
 
@@ -18,7 +18,14 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 
         public Task EntityAddedAsync(EfPerson entity, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Person Changed! {JsonConvert.SerializeObject(entity)}");
+            _logger.LogInformation($"Person Added! {JsonConvert.SerializeObject(entity)}");
+
+            return Task.CompletedTask;
+        }
+
+        public Task EntityUpdatedAsync(EfPerson original, EfPerson modified, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation($"Person Updated! {JsonConvert.SerializeObject(original)} {JsonConvert.SerializeObject(modified)}");
 
             return Task.CompletedTask;
         }
