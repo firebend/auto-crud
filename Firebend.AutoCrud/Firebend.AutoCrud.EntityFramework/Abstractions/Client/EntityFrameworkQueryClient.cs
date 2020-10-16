@@ -23,7 +23,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _fullTextSearchProvider = fullTextSearchProvider;
         }
 
-        public new async Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
+        public async Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             

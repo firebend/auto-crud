@@ -14,7 +14,12 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
         public static bool IsCreated(string key)
         {
-            return CreatedCache[key];
+            if (CreatedCache.ContainsKey(key))
+            {
+                return CreatedCache[key];
+            }
+
+            return false;
         }
 
         public static void  MarkAsCreate(string key)
