@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
@@ -6,7 +7,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
     {
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
 
-        public ElasticPoolDbCreator(ShardMapMangerConfiguration shardMapMangerConfiguration)
+        public ElasticPoolDbCreator(ILogger<ElasticPoolDbCreator> logger, ShardMapMangerConfiguration shardMapMangerConfiguration)
+            : base(logger)
         {
             _shardMapMangerConfiguration = shardMapMangerConfiguration;
 
