@@ -6,13 +6,13 @@ Content-Type: application/json
     "lastName": "Sample"
 }
 ###
-PUT https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
+PUT https://localhost:5001/api/v1/ef-person/566f3892-461c-44c6-6e59-08d8715aae38
 Content-Type: application/json
 
 {
-    "id": "f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc",
+    "id": "566f3892-461c-44c6-6e59-08d8715aae38",
     "firstName": "Simon",
-    "lastName": "Sample"
+    "lastName": "Sample Updated"
 }
 ###
 PATCH https://localhost:5001/api/v1/ef-person/566f3892-461c-44c6-6e59-08d8715aae38

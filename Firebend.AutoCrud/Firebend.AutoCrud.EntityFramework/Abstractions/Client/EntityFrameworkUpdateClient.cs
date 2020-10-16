@@ -22,51 +22,48 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return await UpdateInternalAsync(entity, null, cancellationToken);
-        }
+            var model = await GetByKeyAsync(entity.Id, cancellationToken).ConfigureAwait(false);
 
-        public async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
-        {
-            var original = await GetByKeyAsync(key, cancellationToken).ConfigureAwait(false);
-
-            if (original == null) return null;
-
-            var entity = original.Clone();
-
-            jsonPatchDocument.ApplyTo(entity);
-
-            return await UpdateInternalAsync(entity, original, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task<TEntity> UpdateInternalAsync(TEntity entity, TEntity original, CancellationToken cancellationToken)
-        {
-            var set = GetDbSet();
-
-            if (original == null)
+            if (model == null)
             {
-                original = await GetByKeyAsync(entity.Id, cancellationToken).ConfigureAwait(false);
-
-                if (original == null)
-                {
-                    return null;
-                }
-
-                entity.CopyPropertiesTo(original, "Id");
+                return null;
             }
 
-            var entry = set.Update(entity);
+            var original = model.Clone();
+            model = entity.CopyPropertiesTo(model);
 
             await Context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var modified = entry.Entity;
-
             await _domainEventPublisher
-                .PublishEntityUpdatedEventAsync(original, modified, cancellationToken)
+                .PublishEntityUpdatedEventAsync(original, model, cancellationToken)
                 .ConfigureAwait(false);
 
-            return modified;
+            return model;
+        }
+
+        public async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        {
+            var entity = await GetByKeyAsync(key, cancellationToken).ConfigureAwait(false);
+
+            if (entity == null)
+            {
+                return null;
+            }
+
+            var original = entity.Clone();
+
+            jsonPatchDocument.ApplyTo(original);
+
+            await Context
+                .SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            await _domainEventPublisher
+                .PublishEntityUpdatedEventAsync(original, entity, cancellationToken);
+
+            return entity;
         }
     }
 }
