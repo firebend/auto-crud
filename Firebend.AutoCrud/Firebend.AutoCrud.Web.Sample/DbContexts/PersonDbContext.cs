@@ -6,6 +6,10 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
 {
     public class PersonDbContext : DbContext, IDbContext
     {
+        public PersonDbContext() :base(new DbContextOptionsBuilder().UseSqlServer("SqlServer").Options)
+        {
+        }
+        
         public PersonDbContext(DbContextOptions options) : base(options)
         {
         }

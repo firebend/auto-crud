@@ -1,3 +1,4 @@
+using System;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,8 +16,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             await using var conn = await OpenConnection(null, rootConnectionString, cancellationToken).ConfigureAwait(false);
             await using var command = conn.CreateCommand();
             command.CommandText = GetSqlCommand(dbName);
-            var result = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            var __ = result;
+            Console.WriteLine(command.CommandText);
+             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
         
         
@@ -32,6 +33,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             var cString = connBuilder.ConnectionString;
 
             var conn = new SqlConnection(cString);
+            
             await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
             return conn;

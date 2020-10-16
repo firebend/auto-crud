@@ -6,11 +6,11 @@ Content-Type: application/json
     "lastName": "Sample"
 }
 ###
-PUT https://localhost:5001/api/v1/ef-person/566f3892-461c-44c6-6e59-08d8715aae38
+PUT https://localhost:5001/api/v1/ef-person/a617766f-9d3c-4316-3bed-08d8720e6476
 Content-Type: application/json
 
 {
-    "id": "566f3892-461c-44c6-6e59-08d8715aae38",
+    "id": "a617766f-9d3c-4316-3bed-08d8720e6476",
     "firstName": "Simon",
     "lastName": "Sample Updated"
 }

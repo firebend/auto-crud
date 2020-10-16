@@ -34,6 +34,10 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             
             var manager = await GetShardMapMangerAsync(cancellationToken).ConfigureAwait(false);
             var shardMap = GetShardMap(manager);
+
+            await _dbCreator.EnsureCreatedAsync(_shardMapMangerConfiguration.ConnectionString,
+                shardDatabaseName,
+                cancellationToken).ConfigureAwait(false);
             
             var shardLocation = new ShardLocation(_shardMapMangerConfiguration.Server, shardDatabaseName);
 

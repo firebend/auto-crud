@@ -1,9 +1,12 @@
 using System;
+using System.Data.Common;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
@@ -34,11 +37,24 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         {
             var key = _shardKeyProvider?.GetShardKey();
 
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new Exception("Shard key is null");
+            }
+
             var shard = await _shardManager
                 .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
                 .ConfigureAwait(false);
+
+            var keyBytes = Encoding.ASCII.GetBytes(key);
             
-            var connection = await shard.OpenConnectionForKeyAsync(key, _shardMapMangerConfiguration.ConnectionString)
+            var connStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString);
+            connStringBuilder.Remove("Data Source");
+            connStringBuilder.Remove("Initial Catalog");
+            
+            var shardConnectionString = connStringBuilder.ConnectionString;
+            
+            var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
                 .ConfigureAwait(false);
                 
             var options = new DbContextOptionsBuilder()
@@ -59,6 +75,10 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             
             await context.Database
                 .EnsureCreatedAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            await context.Database
+                .MigrateAsync(cancellationToken)
                 .ConfigureAwait(false);
             
             return context;
