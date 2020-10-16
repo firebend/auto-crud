@@ -7,5 +7,9 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         public string ConnectionString { get; set; }
         
         public string MapName { get; set; }
+        
+        public string ShardMapManagerDbName { get; set; } = "Shards";
+        
+        public string ElasticPoolName { get; set; }
     }
 }

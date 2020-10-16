@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
         {
-            var entry = await GetDbSet()
+            var entry = await GetDbSetAsync()
                 .AddAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
 

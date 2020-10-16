@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
@@ -6,6 +8,6 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        IDbContext GetDbContext();
+        Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default);
     }
 }

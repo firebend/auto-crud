@@ -56,12 +56,14 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithDomainEventPublisherServiceProvider()
                                 .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
                                 .WithDomainEventEntityUpdatedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
-                                .WithElasticPool(hostContext.HostingEnvironment, manager =>
+                                .WithElasticPool(false, manager =>
                                 {
                                     manager.ConnectionString = hostContext.Configuration.GetConnectionString("Elastic");
+                                    manager.MapName = hostContext.Configuration["Elastic:MapName"];
+                                    manager.Server = hostContext.Configuration["Elastic:ServerName"];
                                 })
-                                .WithShardKeyProvider<SampleElasticKeyProvider>()
-                                .WithShardDbNameProvider<SampleElasticDbNameProvider>()
+                                .WithShardKeyProvider<SampleKeyProvider>()
+                                .WithShardDbNameProvider<SampleDbNameProvider>()
                                 .UsingControllers()
                                 .WithAllControllers(true)
                                 .WithOpenApiGroupName("The Beautiful Sql People")

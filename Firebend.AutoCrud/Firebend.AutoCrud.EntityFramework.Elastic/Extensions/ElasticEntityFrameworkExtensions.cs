@@ -27,39 +27,46 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Extensions
             
             if (isDev)
             {
-                builder.WithRegistration<EntityFrameworkEntityBuilder, IElasticShardManager, SqlServerShardManager>();
+                builder.WithRegistration<EntityFrameworkEntityBuilder, IShardManager, SqlServerShardManager>();
             }
             else
             {
-                builder.WithRegistration<EntityFrameworkEntityBuilder, IElasticShardManager, ElasticShardManager>();
+                builder.WithRegistration<EntityFrameworkEntityBuilder, IShardManager, ShardManager>();
             }
             builder.WithRegistration(
                 typeof(IDbContextProvider<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType),
-                typeof(ElasticDbContextProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, builder.DbContextType),
+                typeof(ShardDbContextProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, builder.DbContextType),
                 typeof(IDbContextProvider<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType));
 
             return builder;
+        }
+        
+        public static EntityFrameworkEntityBuilder WithElasticPool(this EntityFrameworkEntityBuilder builder,
+            bool isDev,
+            Action<ShardMapMangerConfiguration> configure)
+        {
+            var shardConfig = new ShardMapMangerConfiguration();
+            configure(shardConfig);
+            return WithElasticPool(builder, shardConfig, isDev);
         }
 
         public static EntityFrameworkEntityBuilder WithElasticPool(this EntityFrameworkEntityBuilder builder,
             IHostEnvironment env,
             Action<ShardMapMangerConfiguration> configure)
         {
-            var shardConfig = new ShardMapMangerConfiguration();
-            configure(shardConfig);
-            return WithElasticPool(builder, shardConfig, env.IsDevelopment());
+            return builder.WithElasticPool(env.IsDevelopment(), configure);
         }
 
         public static EntityFrameworkEntityBuilder WithShardKeyProvider<TShardKeyProvider>(this EntityFrameworkEntityBuilder builder)
-            where TShardKeyProvider : IElasticShardKeyProvider
+            where TShardKeyProvider : IShardKeyProvider
         {
-            return builder.WithRegistration<EntityFrameworkEntityBuilder, IElasticShardKeyProvider, TShardKeyProvider>();
+            return builder.WithRegistration<EntityFrameworkEntityBuilder, IShardKeyProvider, TShardKeyProvider>();
         }
         
         public static EntityFrameworkEntityBuilder WithShardDbNameProvider<TShardDbNameProvider>(this EntityFrameworkEntityBuilder builder)
-            where TShardDbNameProvider : IElasticShardDatabaseNameProvider
+            where TShardDbNameProvider : IShardNameProvider
         {
-            return builder.WithRegistration<EntityFrameworkEntityBuilder, IElasticShardDatabaseNameProvider, TShardDbNameProvider>();
+            return builder.WithRegistration<EntityFrameworkEntityBuilder, IShardNameProvider, TShardDbNameProvider>();
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return GetDbSet().ToListAsync(cancellationToken);
+            return GetDbSetAsync().ToListAsync(cancellationToken);
         }
 
         public async Task<EntityPagedResponse<TEntity>> PageAsync(string search = null,

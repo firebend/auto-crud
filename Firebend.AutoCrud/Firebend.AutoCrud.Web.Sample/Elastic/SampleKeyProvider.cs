@@ -2,7 +2,7 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Sample.Elastic
 {
-    public class SampleElasticKeyProvider : IElasticShardKeyProvider
+    public class SampleKeyProvider : IShardKeyProvider
     {
         public string GetShardKey() => "Firebend";
     }

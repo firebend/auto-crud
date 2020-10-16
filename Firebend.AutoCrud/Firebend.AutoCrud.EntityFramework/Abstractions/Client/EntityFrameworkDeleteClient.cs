@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (entry.State == EntityState.Detached)
             {
-                var set = GetDbSet();
+                var set = GetDbSetAsync();
 
                 var found = await GetByKeyAsync(key, cancellationToken);
 

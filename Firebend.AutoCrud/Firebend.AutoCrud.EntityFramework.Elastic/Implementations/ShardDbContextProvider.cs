@@ -6,25 +6,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
-    public class ElasticDbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
+    public class ShardDbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
         where TContext : DbContext, IDbContext
     {
-        private readonly IElasticShardManager _shardManager;
-        private readonly IElasticShardKeyProvider _shardKeyProvider;
-        private readonly IElasticShardDatabaseNameProvider _shardDatabaseNameProvider;
+        private readonly IShardManager _shardManager;
+        private readonly IShardKeyProvider _shardKeyProvider;
+        private readonly IShardNameProvider _shardNameProvider;
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
 
-        public ElasticDbContextProvider(
-            IElasticShardManager shardManager,
-            IElasticShardKeyProvider shardKeyProvider,
-            IElasticShardDatabaseNameProvider shardDatabaseNameProvider,
+        public ShardDbContextProvider(
+            IShardManager shardManager,
+            IShardKeyProvider shardKeyProvider,
+            IShardNameProvider shardNameProvider,
             ShardMapMangerConfiguration shardMapMangerConfiguration)
         {
             _shardManager = shardManager;
             _shardKeyProvider = shardKeyProvider;
-            _shardDatabaseNameProvider = shardDatabaseNameProvider;
+            _shardNameProvider = shardNameProvider;
             _shardMapMangerConfiguration = shardMapMangerConfiguration;
         }
 
@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             var key = _shardKeyProvider?.GetShardKey();
             
             var shard = _shardManager.RegisterShard(_shardMapMangerConfiguration,
-                _shardDatabaseNameProvider?.GetShardDatabaseName(key),
+                _shardNameProvider?.GetShardName(key),
                 key);
 
             var connection = shard.OpenConnectionForKey(key, _shardMapMangerConfiguration.ConnectionString);
