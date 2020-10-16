@@ -7,20 +7,18 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
 {
     public class SqlServerElasticDbShardModel : ElasticDbShardModel
     {
-        private readonly IElasticShardDatabaseNameProvider _dbNameProvider;
+        private string _dbName;
 
-        public SqlServerElasticDbShardModel(IElasticShardDatabaseNameProvider dbNameProvider)
+        public SqlServerElasticDbShardModel(string dbName)
         {
-            _dbNameProvider = dbNameProvider;
+            _dbName = dbName;
         }
 
         public override DbConnection OpenConnectionForKey(string key, string connectionString)
         {
-            var dbName = _dbNameProvider.GetShardDatabaseName(key);
+            EnsureCreated(_dbName, connectionString);
             
-            EnsureCreated(dbName, connectionString);
-            
-            return OpenConnection(dbName, connectionString);
+            return OpenConnection(_dbName, connectionString);
         }
 
         private static DbConnection OpenConnection(string dbName, string connectionString)
