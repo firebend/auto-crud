@@ -24,21 +24,36 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             _provider = provider;
         }
 
-        protected IDbContext Context => _context ??= _provider.GetDbContext();
-
-        protected DbSet<TEntity> GetDbSet()
+        protected async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
         {
-            return Context.Set<TEntity>();
+            if (_context == null)
+            {
+                _context = await _provider
+                    .GetDbContextAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            return _context;
         }
 
-        protected Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken)
+        protected DbSet<TEntity> GetDbSet(IDbContext context)
         {
-            return GetFilteredQueryable().FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
+            return context.Set<TEntity>();
         }
 
-        protected IQueryable<TEntity> GetFilteredQueryable(Expression<Func<TEntity, bool>> firstStageFilters = null)
+        protected Task<TEntity> GetByKeyAsync(IDbContext context, TKey key, CancellationToken cancellationToken)
         {
-            var queryable = GetDbSet().AsQueryable();
+            return GetFilteredQueryableAsync(context).FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
+        }
+
+        protected IQueryable<TEntity> GetFilteredQueryableAsync(
+            IDbContext context,
+            Expression<Func<TEntity, bool>> firstStageFilters = null,
+            CancellationToken cancellationToken = default)
+        {
+            var set = GetDbSet(context);
+            
+            var queryable = set.AsQueryable();
 
             if (firstStageFilters != null) queryable = queryable.Where(firstStageFilters);
 

@@ -4,6 +4,6 @@ namespace Firebend.AutoCrud.Web.Sample.Elastic
 {
     public class SampleDbNameProvider : IShardNameProvider
     {
-        public string GetShardName(string key) => $"{key}_Sample";
+        public string GetShardName(string key) => $"{key}_CrudSample";
     }
 }

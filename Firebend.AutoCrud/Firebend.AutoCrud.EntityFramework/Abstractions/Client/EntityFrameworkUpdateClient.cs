@@ -22,7 +22,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            var model = await GetByKeyAsync(entity.Id, cancellationToken).ConfigureAwait(false);
+            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            
+            var model = await GetByKeyAsync(context, entity.Id, cancellationToken).ConfigureAwait(false);
 
             if (model == null)
             {
@@ -32,7 +34,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var original = model.Clone();
             model = entity.CopyPropertiesTo(model);
 
-            await Context
+            await context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -45,7 +47,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
-            var entity = await GetByKeyAsync(key, cancellationToken).ConfigureAwait(false);
+            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            var entity = await GetByKeyAsync(context, key, cancellationToken).ConfigureAwait(false);
 
             if (entity == null)
             {
@@ -56,7 +59,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             jsonPatchDocument.ApplyTo(original);
 
-            await Context
+            await context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 

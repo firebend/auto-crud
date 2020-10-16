@@ -14,7 +14,6 @@ using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -56,11 +55,12 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithDomainEventPublisherServiceProvider()
                                 .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
                                 .WithDomainEventEntityUpdatedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
-                                .WithElasticPool(false, manager =>
+                                .WithElasticPool(manager =>
                                 {
                                     manager.ConnectionString = hostContext.Configuration.GetConnectionString("Elastic");
                                     manager.MapName = hostContext.Configuration["Elastic:MapName"];
                                     manager.Server = hostContext.Configuration["Elastic:ServerName"];
+                                    manager.ElasticPoolName = hostContext.Configuration["Elastic:PoolName"];
                                 })
                                 .WithShardKeyProvider<SampleKeyProvider>()
                                 .WithShardDbNameProvider<SampleDbNameProvider>()

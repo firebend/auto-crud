@@ -15,7 +15,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             await using var conn = await OpenConnection(null, rootConnectionString, cancellationToken).ConfigureAwait(false);
             await using var command = conn.CreateCommand();
             command.CommandText = GetSqlCommand(dbName);
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            var result = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            var __ = result;
         }
         
         

@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -28,15 +30,16 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             _shardMapMangerConfiguration = shardMapMangerConfiguration;
         }
 
-        public IDbContext GetDbContext()
+        public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
         {
             var key = _shardKeyProvider?.GetShardKey();
-            
-            var shard = _shardManager.RegisterShard(_shardMapMangerConfiguration,
-                _shardNameProvider?.GetShardName(key),
-                key);
 
-            var connection = shard.OpenConnectionForKey(key, _shardMapMangerConfiguration.ConnectionString);
+            var shard = await _shardManager
+                .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
+                .ConfigureAwait(false);
+            
+            var connection = await shard.OpenConnectionForKeyAsync(key, _shardMapMangerConfiguration.ConnectionString)
+                .ConfigureAwait(false);
                 
             var options = new DbContextOptionsBuilder()
                 .UseSqlServer(connection)
@@ -54,7 +57,9 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 throw new Exception("Could not cast instance.");
             }
             
-            context.Database.EnsureCreated();
+            await context.Database
+                .EnsureCreatedAsync(cancellationToken)
+                .ConfigureAwait(false);
             
             return context;
         }

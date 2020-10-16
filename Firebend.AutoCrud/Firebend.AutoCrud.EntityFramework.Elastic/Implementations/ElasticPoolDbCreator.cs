@@ -4,7 +4,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
     public class ElasticPoolDbCreator : AbstractDbCreator
     {
-        private ShardMapMangerConfiguration _shardMapMangerConfiguration;
+        private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
 
         public ElasticPoolDbCreator(ShardMapMangerConfiguration shardMapMangerConfiguration)
         {
