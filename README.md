@@ -2,7 +2,6 @@
 A library for creating CRUD dotnet core controllers. 
 
 # Status
-![Build and Test](https://github.com/firebend/auto-crud/workflows/Build%20and%20Test/badge.svg)
 ![Build, Test, and Release](https://github.com/firebend/auto-crud/workflows/Build,%20Test,%20and%20Release/badge.svg)
 
 # Goals
