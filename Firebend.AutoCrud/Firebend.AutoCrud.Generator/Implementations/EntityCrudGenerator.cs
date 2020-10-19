@@ -41,6 +41,30 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         protected virtual void Generate(IServiceCollection serviceCollection, EntityBuilder builder)
         {
+            RegisterRegistrations(serviceCollection, builder);
+            RegisterInstances(serviceCollection, builder);
+            RegisterDynamicClasses(serviceCollection, builder);
+        }
+
+        private void RegisterDynamicClasses(IServiceCollection serviceCollection, BaseBuilder builder)
+        {
+            if (builder.DynamicClasses == null)
+            {
+                return;
+            }
+
+            foreach (var classRegistration in builder.DynamicClasses)
+            {
+                var instance = _classGenerator
+                    .ImplementInterface(classRegistration.Interface, classRegistration.Signature, classRegistration.Properties.ToArray());
+
+                serviceCollection.AddSingleton(classRegistration.Interface, instance);
+            }
+            
+        }
+
+        private void RegisterRegistrations(IServiceCollection serviceCollection, EntityBuilder builder)
+        {
             var signatureBase = $"{builder.EntityType.Name}_{builder.EntityName}";
             var implementedTypes = new List<Type>();
 
@@ -79,10 +103,19 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                 implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
             }
+        }
 
-            if (builder.InstanceRegistrations != null)
-                foreach (var (key, value) in builder.InstanceRegistrations)
-                    serviceCollection.AddSingleton(key, value);
+        private static void RegisterInstances(IServiceCollection serviceCollection, EntityBuilder builder)
+        {
+            if (builder.InstanceRegistrations == null)
+            {
+                return;
+            }
+            
+            foreach (var (key, value) in builder.InstanceRegistrations)
+            {
+                serviceCollection.AddSingleton(key, value);
+            }
         }
 
         private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CrudBuilderAttributeModel>> builderAttributes)

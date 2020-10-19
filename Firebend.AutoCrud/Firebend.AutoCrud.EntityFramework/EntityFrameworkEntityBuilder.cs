@@ -56,9 +56,10 @@ namespace Firebend.AutoCrud.EntityFramework
 
             this.WithRegistration<EntityFrameworkEntityBuilder, IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
 
-            this.WithRegistration<EntityFrameworkEntityBuilder,
-                IEntityFrameworkFullTextExpressionProvider,
-                DefaultEntityFrameworkFullTextExpressionProvider>(false);
+            this.WithRegistration(typeof(IEntityFrameworkFullTextExpressionProvider<,>).MakeGenericType(EntityKeyType, EntityType),
+                typeof(DefaultEntityFrameworkFullTextExpressionProvider<,>).MakeGenericType(EntityKeyType, EntityType),
+                typeof(IEntityFrameworkFullTextExpressionProvider<,>).MakeGenericType(EntityKeyType, EntityType),
+                false);
         }
 
         public EntityFrameworkEntityBuilder WithDbContext(Type dbContextType)

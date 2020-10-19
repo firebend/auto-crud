@@ -3,11 +3,10 @@ using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
-using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
@@ -19,17 +18,6 @@ namespace Firebend.AutoCrud.Mongo
 {
     public class MongoDbEntityBuilder : EntityCrudBuilder
     {
-        private readonly IDynamicClassGenerator _generator;
-
-        public MongoDbEntityBuilder(IDynamicClassGenerator generator)
-        {
-            _generator = generator;
-        }
-
-        public MongoDbEntityBuilder() : this(new DynamicClassGenerator())
-        {
-        }
-
         public override Type CreateType { get; } = typeof(MongoEntityCreateService<,>);
 
         public override Type ReadType { get; } = typeof(MongoEntityReadService<,>);
@@ -48,7 +36,7 @@ namespace Firebend.AutoCrud.Mongo
 
         protected override void ApplyPlatformTypes()
         {
-            RegisterCollectionNameInterfaceType();
+            RegisterEntityConfiguration();
 
             this.WithRegistration(typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(MongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
@@ -104,7 +92,7 @@ namespace Firebend.AutoCrud.Mongo
                     false);
         }
 
-        private void RegisterCollectionNameInterfaceType()
+        private void RegisterEntityConfiguration()
         {
             if (string.IsNullOrWhiteSpace(CollectionName)) throw new Exception("Please provide a collection name for this mongo entity");
 
@@ -130,15 +118,12 @@ namespace Firebend.AutoCrud.Mongo
                 Override = true
             };
 
-            var instance = _generator.ImplementInterface(iFaceType,
-                signature,
-                new[]
-                {
-                    collectionNameField,
-                    databaseField
-                });
-
-            this.WithRegistrationInstance(iFaceType, instance);
+            this.WithDynamicClass(new DynamicClassRegistration
+            {
+                Interface = iFaceType,
+                Properties = new[] {databaseField, collectionNameField},
+                Signature = signature
+            });
         }
 
         public MongoDbEntityBuilder WithDatabase(string db)
@@ -171,16 +156,12 @@ namespace Firebend.AutoCrud.Mongo
                 Override = true
             };
 
-            var instance = _generator.ImplementInterface(iFaceType,
-                signature,
-                new[]
-                {
-                    defaultDbField
-                });
-
-            this.WithRegistrationInstance(iFaceType, instance);
-
-            return this;
+            return this.WithDynamicClass(new DynamicClassRegistration
+            {
+                Interface = iFaceType,
+                Properties = new [] { defaultDbField },
+                Signature = signature
+            });
         }
 
         public MongoDbEntityBuilder WithFullTextSearch()

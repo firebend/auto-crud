@@ -15,6 +15,8 @@ namespace Firebend.AutoCrud.Core.Abstractions
         public IDictionary<Type, object> InstanceRegistrations { get; set; }
 
         public IDictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
+        
+        public List<DynamicClassRegistration> DynamicClasses { get; set; }
 
         public void Build()
         {

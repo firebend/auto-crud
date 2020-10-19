@@ -22,5 +22,11 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
         {
             return builder.WithCrud<TBuilder, EntitySearchRequest>();
         }
+
+        public static TBuilder AsBuilder<TBuilder>(this EntityCrudBuilder builder)
+            where TBuilder : EntityCrudBuilder
+        {
+            return (TBuilder) builder;
+        }
     }
 }

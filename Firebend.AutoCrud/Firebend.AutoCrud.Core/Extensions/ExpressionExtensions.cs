@@ -1,10 +1,18 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
     public static class ExpressionExtensions
     {
+        public static Expression<Func<T1, TResult>> FixParam<T1, T2, TResult>(this Expression<Func<T1, T2, TResult>> expression, T2 parameterValue)
+        {
+            var parameterToRemove = expression.Parameters.ElementAt(1);
+            var replacer = new ReplaceExpressionVisitor(parameterToRemove, Expression.Constant(parameterValue, typeof(T2)));
+            return Expression.Lambda<Func<T1, TResult>>(replacer.Visit(expression.Body), expression.Parameters.Where(p => p != parameterToRemove));
+        }
+        
         public static Expression<Func<T, bool>> AndAlso<T>(
             this Expression<Func<T, bool>> expr1,
             Expression<Func<T, bool>> expr2)
@@ -24,10 +32,14 @@ namespace Firebend.AutoCrud.Core.Extensions
             var right = rightVisitor.Visit(expr2.Body);
 
             if (left == null)
+            {
                 return expr2;
+            }
 
             if (right == null)
+            {
                 return expr1;
+            }
 
             return Expression.Lambda<Func<T, bool>>(
                 Expression.AndAlso(left, right), parameter);
@@ -48,7 +60,10 @@ namespace Firebend.AutoCrud.Core.Extensions
             public override Expression Visit(Expression node)
             {
                 if (node == _oldValue)
+                {
                     return _newValue;
+                }
+
                 return base.Visit(node);
             }
         }

@@ -97,6 +97,14 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             return builder.WithRegistrationInstance(typeof(TInstance), instance);
         }
 
+        public static TBuilder WithDynamicClass<TBuilder>(this TBuilder builder, DynamicClassRegistration classRegistration)
+            where TBuilder : EntityBuilder
+        {
+            builder.DynamicClasses??=new List<DynamicClassRegistration>();
+            builder.DynamicClasses.Add(classRegistration);
+            return builder;
+        }
+
         public static TBuilder WithAttribute<TBuilder>(this TBuilder builder, Type registrationType, Type attributeType, CustomAttributeBuilder attribute)
             where TBuilder : BaseBuilder
         {

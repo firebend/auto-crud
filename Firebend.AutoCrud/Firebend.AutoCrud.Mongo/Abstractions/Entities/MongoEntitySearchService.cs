@@ -52,13 +52,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 
             if (!(orderByGroups?.Any() ?? false))
             {
-                var orderBy = _orderByProvider.GetOrderBy();
+                var orderBy = _orderByProvider.OrderBy;
 
-                if (orderBy != default)
+                if (orderBy != default && orderBy.func != null)
+                {
                     orderByGroups = new List<(Expression<Func<TEntity, object>> order, bool ascending)>
                     {
                         orderBy
                     };
+                }
             }
 
             return orderByGroups;
