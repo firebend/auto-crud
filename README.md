@@ -3,6 +3,7 @@ A library for creating CRUD dotnet core controllers.
 
 # Status
 ![Build and Test](https://github.com/firebend/auto-crud/workflows/Build%20and%20Test/badge.svg)
+![Build, Test, and Release](https://github.com/firebend/auto-crud/workflows/Build,%20Test,%20and%20Release/badge.svg)
 
 # Goals
 - [x] Fluent Data store agnostic CRUD
@@ -10,9 +11,12 @@ A library for creating CRUD dotnet core controllers.
 - [ ] Good code coverage and unit test
 - [x] Samples
 - [ ] documentation
-- [ ] Firebend brand nuget repository entry. 
+- [x] Firebend brand nuget repository entry. 
 - [ ] Use GitHub actions for CI/CD to nuget.
 - [x] Support domain events? 
 - [ ] Support caching? 
 - [ ] Support CQRS?
 - [ ] Break out swagger stuff? i.e. `.AddSwagger()`
+
+# Firebend Nuget Page
+[https://nuget.org/profiles/firebend](https://www.nuget.org/profiles/Firebend)
