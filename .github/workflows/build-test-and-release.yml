@@ -36,6 +36,13 @@ jobs:
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
          TAG_COMMIT: false
 
+    - name: Publish EntityFramework Elastic
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.EntityFramework.Elastic/Firebend.AutoCrud.EntityFramework.Elastic.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
+
     - name: Publish Generator
       uses: rohith/publish-nuget@v2
       with:
@@ -47,13 +54,6 @@ jobs:
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.Mongo/Firebend.AutoCrud.Mongo.csproj
-         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-         TAG_COMMIT: false
-
-    - name: Publish SqlServer
-      uses: rohith/publish-nuget@v2
-      with:
-         PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.SqlServer/Firebend.AutoCrud.SqlServer.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
          TAG_COMMIT: false
 

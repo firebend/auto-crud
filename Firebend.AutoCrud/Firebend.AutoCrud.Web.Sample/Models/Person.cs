@@ -16,10 +16,15 @@ namespace Firebend.AutoCrud.Web.Sample.Models
     [Table("EfPeople")]
     public class EfPerson : IEntity<Guid>
     {
-        [StringLength(250)] public string FirstName { get; set; }
+        [StringLength(250)]
+        public string FirstName { get; set; }
 
-        [StringLength(250)] public string LastName { get; set; }
+        [StringLength(250)]
+        public string LastName { get; set; }
 
         [Key] public Guid Id { get; set; }
+        
+        [StringLength(100)]
+        public string NickName { get; set; }
     }
 }

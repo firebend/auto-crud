@@ -50,8 +50,10 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest();
             }
 
+            searchRequest.DoCount ??= true;
+
             var entities = await _searchService
-                .SearchAsync(searchRequest, cancellationToken)
+                .PageAsync(searchRequest, cancellationToken)
                 .ConfigureAwait(false);
 
             return Ok(entities);

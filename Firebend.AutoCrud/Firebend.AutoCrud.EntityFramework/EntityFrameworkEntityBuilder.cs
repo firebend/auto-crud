@@ -25,6 +25,8 @@ namespace Firebend.AutoCrud.EntityFramework
 
         public override Type SoftDeleteType { get; } = typeof(EntityFrameworkEntitySoftDeleteService<,>);
 
+        public Type DbContextType { get; set; }
+
         protected override void ApplyPlatformTypes()
         {
             this.WithRegistration(typeof(IEntityFrameworkCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
@@ -61,6 +63,8 @@ namespace Firebend.AutoCrud.EntityFramework
 
         public EntityFrameworkEntityBuilder WithDbContext(Type dbContextType)
         {
+            DbContextType = dbContextType;
+            
             return this.WithRegistration(typeof(IDbContextProvider<,>).MakeGenericType(EntityKeyType, EntityType),
                 typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, dbContextType),
                 typeof(IDbContextProvider<,>).MakeGenericType(EntityKeyType, EntityType));

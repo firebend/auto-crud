@@ -6,30 +6,30 @@ Content-Type: application/json
     "lastName": "Sample"
 }
 ###
-PUT https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
+PUT https://localhost:5001/api/v1/ef-person/9a627f6c-3fe2-4c18-bec9-08d87431b19f
 Content-Type: application/json
 
 {
-    "id": "f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc",
+    "id": "9a627f6c-3fe2-4c18-bec9-08d87431b19f",
     "firstName": "Simon",
-    "lastName": "Sample"
+    "lastName": "Sample Updated"
 }
 ###
-PATCH https://localhost:5001/api/v1/ef-person/b12f7ead-9e94-4bb9-415f-08d870cf85d2
+PATCH https://localhost:5001/api/v1/ef-person/23a52f04-a622-42fc-becb-08d87431b19f
 Content-Type: application/json
 
 [
     {
         "op": "replace",
         "path": "/lastName",
-        "value": "Sample Patched"
+        "value": "Sample Patch"
     }
 ]
 ###
 DELETE https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
 
 ###
-https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
+https://localhost:5001/api/v1/ef-person/9a627f6c-3fe2-4c18-bec9-08d87431b19f
 
 ###
 https://localhost:5001/api/v1/ef-person/all

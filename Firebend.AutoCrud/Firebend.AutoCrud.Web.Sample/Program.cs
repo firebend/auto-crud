@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Conventions;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
+using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -36,6 +38,13 @@ namespace Firebend.AutoCrud.Web.Sample
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
                 .ConfigureServices((hostContext, services) =>
                 {
+                    // services.AddDbContext<PersonDbContext>(cfg =>
+                    // {
+                    //
+                    //     var cstring = hostContext.Configuration.GetConnectionString("SqlServer");
+                    //     cfg.UseSqlServer(cstring);
+                    // });
+                    
                     services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
                         .AddBuilder<MongoPerson, Guid>(person =>
                             person.WithDefaultDatabase("Samples")
@@ -53,12 +62,21 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithCrud()
                                 .WithDomainEventPublisherServiceProvider()
                                 .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
+                                .WithDomainEventEntityUpdatedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
+                                .WithElasticPool(manager =>
+                                {
+                                    manager.ConnectionString = hostContext.Configuration.GetConnectionString("Elastic");
+                                    manager.MapName = hostContext.Configuration["Elastic:MapName"];
+                                    manager.Server = hostContext.Configuration["Elastic:ServerName"];
+                                    manager.ElasticPoolName = hostContext.Configuration["Elastic:PoolName"];
+                                })
+                                .WithShardKeyProvider<SampleKeyProvider>()
+                                .WithShardDbNameProvider<SampleDbNameProvider>()
                                 .UsingControllers()
                                 .WithAllControllers(true)
                                 .WithOpenApiGroupName("The Beautiful Sql People")
                                 .AsEntityBuilder())
                         .Generate()
-                        .AddDbContext<PersonDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); })
                         .AddRouting()
                         .AddSwaggerGen(opt =>
                         {

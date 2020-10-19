@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
@@ -15,9 +17,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _context = context;
         }
 
-        public IDbContext GetDbContext()
-        {
-            return _context;
-        }
+        private IDbContext GetDbContext() => _context;
+
+        public Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(GetDbContext());
     }
 }

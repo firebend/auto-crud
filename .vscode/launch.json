@@ -19,7 +19,8 @@
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
-            }
+            },
+            "requireExactSource": false
         }
 
     ]

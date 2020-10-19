@@ -12,6 +12,6 @@ namespace Firebend.AutoCrud.Core.Models.Searching
 
         public string Search { get; set; }
 
-        public bool DoCount { get; set; } = true;
+        public bool? DoCount { get; set; } = true;
     }
 }

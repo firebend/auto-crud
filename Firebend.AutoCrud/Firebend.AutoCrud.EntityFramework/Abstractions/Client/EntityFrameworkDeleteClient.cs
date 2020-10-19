@@ -21,18 +21,20 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
         {
+            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            
             var entity = new TEntity
             {
                 Id = key
             };
 
-            var entry = Context.Entry(entity);
+            var entry = context.Entry(entity);
 
             if (entry.State == EntityState.Detached)
             {
-                var set = GetDbSet();
+                var set = GetDbSet(context);
 
-                var found = await GetByKeyAsync(key, cancellationToken);
+                var found = await GetByKeyAsync(context, key, cancellationToken);
 
                 if (found != null)
                 {
@@ -52,7 +54,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 entry.State = EntityState.Deleted;
             }
 
-            await Context
+            await context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
