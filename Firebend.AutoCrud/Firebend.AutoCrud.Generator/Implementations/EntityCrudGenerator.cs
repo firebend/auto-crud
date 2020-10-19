@@ -34,7 +34,10 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         public IServiceCollection Generate()
         {
-            foreach (var builder in Builders) Generate(ServiceCollection, builder);
+            foreach (var builder in Builders)
+            {
+                Generate(ServiceCollection, builder);
+            }
 
             return ServiceCollection;
         }
@@ -48,13 +51,17 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         private void RegisterDynamicClasses(IServiceCollection serviceCollection, BaseBuilder builder)
         {
-            if (builder.DynamicClasses == null)
+            foreach (var reg in builder
+                .Registrations
+                .Where(x => x.Value is DynamicClassRegistration))
             {
-                return;
-            }
+                var classRegistration = reg.Value as DynamicClassRegistration;
 
-            foreach (var classRegistration in builder.DynamicClasses)
-            {
+                if (classRegistration == null)
+                {
+                    continue;
+                }
+                
                 var instance = _classGenerator
                     .ImplementInterface(classRegistration.Interface, classRegistration.Signature, classRegistration.Properties.ToArray());
 
@@ -70,9 +77,13 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             builder.Build();
 
-            var extraInterfaces = GetCustomImplementations(builder.Registrations);
+            var regs = builder.Registrations
+                .Where(x => x.Value is ServiceRegistration)
+                .ToDictionary(x => x.Key, x => (x.Value as ServiceRegistration)?.ServiceType);
 
-            foreach (var (key, value) in OrderByDependencies(builder.Registrations))
+            var extraInterfaces = GetCustomImplementations(regs);
+
+            foreach (var (key, value) in OrderByDependencies(regs))
             {
                 var typeToImplement = value;
                 var interfaceImplementations = extraInterfaces.FindAll(x =>
@@ -107,14 +118,15 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         private static void RegisterInstances(IServiceCollection serviceCollection, EntityBuilder builder)
         {
-            if (builder.InstanceRegistrations == null)
+            foreach (var (key, value) in builder.Registrations
+                .Where(x => x.Value is InstanceRegistration))
             {
-                return;
-            }
-            
-            foreach (var (key, value) in builder.InstanceRegistrations)
-            {
-                serviceCollection.AddSingleton(key, value);
+                var instance = (value as InstanceRegistration)?.Instance;
+
+                if (instance != null)
+                {
+                    serviceCollection.AddSingleton(key, instance);
+                }
             }
         }
 

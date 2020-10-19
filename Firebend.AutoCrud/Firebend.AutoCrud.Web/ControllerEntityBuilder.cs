@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations;
@@ -114,7 +115,8 @@ namespace Firebend.AutoCrud.Web
         {
             CrudBuilder
                 .Registrations
-                .Where(x => typeof(ControllerBase).IsAssignableFrom(x.Value))
+                .Where(x => x.Value is ServiceRegistration)
+                .Where(x => typeof(ControllerBase).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType))
                 .ToList()
                 .ForEach(x => { CrudBuilder.WithAttribute(x.Key, attributeType, attributeBuilder); });
         }

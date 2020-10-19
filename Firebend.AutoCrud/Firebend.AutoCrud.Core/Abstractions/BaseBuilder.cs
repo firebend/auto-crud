@@ -10,13 +10,9 @@ namespace Firebend.AutoCrud.Core.Abstractions
 
         public bool IsBuilt { get; private set; }
 
-        public IDictionary<Type, Type> Registrations { get; set; }
-
-        public IDictionary<Type, object> InstanceRegistrations { get; set; }
-
-        public IDictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
+        public IDictionary<Type, Registration> Registrations { get; set; }
         
-        public List<DynamicClassRegistration> DynamicClasses { get; set; }
+        public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
 
         public void Build()
         {

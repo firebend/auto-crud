@@ -13,6 +13,7 @@ using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Mongo
 {
@@ -118,11 +119,12 @@ namespace Firebend.AutoCrud.Mongo
                 Override = true
             };
 
-            this.WithDynamicClass(new DynamicClassRegistration
+            this.WithDynamicClass(iFaceType, new DynamicClassRegistration
             {
                 Interface = iFaceType,
                 Properties = new[] {databaseField, collectionNameField},
-                Signature = signature
+                Signature = signature,
+                Lifetime = ServiceLifetime.Singleton
             });
         }
 
@@ -156,11 +158,12 @@ namespace Firebend.AutoCrud.Mongo
                 Override = true
             };
 
-            return this.WithDynamicClass(new DynamicClassRegistration
+            return this.WithDynamicClass(iFaceType, new DynamicClassRegistration
             {
                 Interface = iFaceType,
                 Properties = new [] { defaultDbField },
-                Signature = signature
+                Signature = signature,
+                Lifetime = ServiceLifetime.Singleton
             });
         }
 

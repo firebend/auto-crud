@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
 {
@@ -19,15 +20,16 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             var propertySet = new PropertySet
             {
                 Name = nameof(IEntityDefaultOrderByProvider<Guid, FooEntity>.OrderBy),
-                Type = typeof(string),
+                Type = typeof((Expression<Func<TEntity, object>>, bool @ascending)),
                 Value = orderBy
             };
 
-            return builder.WithDynamicClass(new DynamicClassRegistration
+            return builder.WithDynamicClass(iFaceType, new DynamicClassRegistration
             {
                 Interface = iFaceType,
                 Properties = new [] { propertySet },
-                Signature = signature
+                Signature = signature,
+                Lifetime = ServiceLifetime.Singleton
             });
         }
     }

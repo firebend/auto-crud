@@ -4,6 +4,7 @@ using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
 {
@@ -28,29 +29,46 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             return builder;
         }
 
+        public static TBuilder WithRegistration<TBuilder>(this TBuilder builder, Type type, Registration registration, bool replace = true)
+            where TBuilder : EntityBuilder
+        {
+            if (builder.Registrations == null)
+            {
+                builder.Registrations = new Dictionary<Type, Registration>
+                {
+                    { type, registration }
+                };
+
+                return builder;
+            }
+
+            if (builder.Registrations.ContainsKey(type))
+            {
+                if (replace)
+                {
+                    builder.Registrations[type] = registration;
+                }
+
+                return builder;
+            }
+            
+            builder.Registrations.Add(type, registration);
+
+            return builder;
+        }
+
         public static TBuilder WithRegistration<TBuilder>(this TBuilder builder,
             Type registrationType,
             Type serviceType,
             bool replace = true)
             where TBuilder : EntityBuilder
         {
-            if (builder.Registrations == null)
+            var registration = new ServiceRegistration
             {
-                builder.Registrations = new Dictionary<Type, Type> {{registrationType, serviceType}};
-            }
-            else
-            {
-                if (builder.Registrations.ContainsKey(registrationType))
-                {
-                    if (replace) builder.Registrations[registrationType] = serviceType;
-                }
-                else
-                {
-                    builder.Registrations.Add(registrationType, serviceType);
-                }
-            }
+                ServiceType = serviceType
+            };
 
-            return builder;
+            return builder.WithRegistration(registrationType, registration, replace);
         }
 
         public static TBuilder WithRegistration<TBuilder, TRegistration, TService>(this TBuilder builder, bool replace = true)
@@ -76,19 +94,13 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
         public static TBuilder WithRegistrationInstance<TBuilder>(this TBuilder builder, Type registrationType, object instance)
             where TBuilder : EntityBuilder
         {
-            if (builder.InstanceRegistrations == null)
+            var registration = new InstanceRegistration
             {
-                builder.InstanceRegistrations = new Dictionary<Type, object> {{registrationType, instance}};
-            }
-            else
-            {
-                if (builder.InstanceRegistrations.ContainsKey(registrationType))
-                    builder.InstanceRegistrations[registrationType] = instance;
-                else
-                    builder.InstanceRegistrations.Add(registrationType, instance);
-            }
+                Instance = instance,
+                Lifetime = ServiceLifetime.Singleton
+            };
 
-            return builder;
+            return builder.WithRegistration(registrationType, registration);
         }
 
         public static TBuilder WithRegistrationInstance<TBuilder, TInstance>(this TBuilder builder, TInstance instance)
@@ -97,11 +109,11 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             return builder.WithRegistrationInstance(typeof(TInstance), instance);
         }
 
-        public static TBuilder WithDynamicClass<TBuilder>(this TBuilder builder, DynamicClassRegistration classRegistration)
+        public static TBuilder WithDynamicClass<TBuilder>(this TBuilder builder, Type type, DynamicClassRegistration classRegistration)
             where TBuilder : EntityBuilder
         {
-            builder.DynamicClasses??=new List<DynamicClassRegistration>();
-            builder.DynamicClasses.Add(classRegistration);
+            builder.WithRegistration(type, classRegistration);
+            
             return builder;
         }
 

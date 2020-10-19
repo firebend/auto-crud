@@ -12,7 +12,6 @@ using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
-using Firebend.AutoCrud.Web.Sample.Searching;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
@@ -38,13 +37,6 @@ namespace Firebend.AutoCrud.Web.Sample
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    // services.AddDbContext<PersonDbContext>(cfg =>
-                    // {
-                    //
-                    //     var cstring = hostContext.Configuration.GetConnectionString("SqlServer");
-                    //     cfg.UseSqlServer(cstring);
-                    // });
-                    
                     services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
                         .AddBuilder<MongoPerson, Guid>(person =>
                             person.WithDefaultDatabase("Samples")
@@ -62,8 +54,7 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithCrud()
                                 //.WithOrderBy<EfPerson>((p => p.LastName, true))
                                 .AsBuilder<EntityFrameworkEntityBuilder>()
-                                .WithSearchFilter(typeof(EfPersonSearchFilter))
-                                //.WithSearchFilter<EfPerson>((search, p) => p.FirstName.Contains(search) || p.LastName.Contains(search))
+                                .WithSearchFilter<EfPerson>((search, p) => p.FirstName.Contains(search) || p.LastName.Contains(search))
                                 .WithDomainEventPublisherServiceProvider()
                                 .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
                                 .WithDomainEventEntityUpdatedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()

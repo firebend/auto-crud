@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
@@ -20,13 +21,17 @@ namespace Firebend.AutoCrud.EntityFramework
                 typeof(IEntityFrameworkFullTextExpressionProvider<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType)
             );
         }
-        
-        //todo: setting this to private until i can figure out why it doesn't work JMA 10/19/2020
-        private static EntityFrameworkEntityBuilder WithSearchFilter<TEntity>(this EntityFrameworkEntityBuilder builder, Expression<Func<string, TEntity, bool>> filter)
+
+        public static EntityFrameworkEntityBuilder WithSearchFilter<T>(this EntityFrameworkEntityBuilder builder)
+        {
+            return builder.WithSearchFilter(typeof(T));
+        }
+
+        public static EntityFrameworkEntityBuilder WithSearchFilter<TEntity>(this EntityFrameworkEntityBuilder builder, Expression<Func<string, TEntity, bool>> filter)
         {
             var signature = $"{builder.EntityType.Name}_{builder.EntityName}_SearchFilter";
 
-            var iFaceType = typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
+            var iFaceType = typeof(IEntityFrameworkFullTextExpressionProvider<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
 
             var propertySet = new PropertySet
             {
@@ -36,11 +41,12 @@ namespace Firebend.AutoCrud.EntityFramework
                 Override = true
             };
 
-            return builder.WithDynamicClass(new DynamicClassRegistration
+            return builder.WithDynamicClass(iFaceType, new DynamicClassRegistration
             {
                 Interface = iFaceType,
                 Properties = new [] { propertySet },
-                Signature = signature
+                Signature = signature,
+                Lifetime = ServiceLifetime.Singleton
             });
         }
     }
