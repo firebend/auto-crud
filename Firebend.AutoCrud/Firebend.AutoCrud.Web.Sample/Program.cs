@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.Web.Sample
                                 .WithCrud()
                                 //.WithOrderBy<EfPerson>((p => p.LastName, true))
                                 .AsBuilder<EntityFrameworkEntityBuilder>()
-                                .WithSearchFilter<EfPerson>((search, p) => p.FirstName.Contains(search) || p.LastName.Contains(search))
+                                //.WithSearchFilter<EfPerson>((search, p) => p.FirstName.Contains(search) || p.LastName.Contains(search))
                                 .WithDomainEventPublisherServiceProvider()
                                 .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
                                 .WithDomainEventEntityUpdatedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()

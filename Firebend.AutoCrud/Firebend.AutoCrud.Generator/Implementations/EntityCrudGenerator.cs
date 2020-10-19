@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -34,10 +36,14 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         public IServiceCollection Generate()
         {
-            foreach (var builder in Builders)
+            Parallel.ForEach(Builders, builder =>
             {
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
                 Generate(ServiceCollection, builder);
-            }
+                stopWatch.Stop();
+                Console.WriteLine($"Generated entity crud for {builder.EntityType} in {stopWatch.ElapsedMilliseconds} (ms)");
+            });
 
             return ServiceCollection;
         }
@@ -77,13 +83,12 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             builder.Build();
 
-            var regs = builder.Registrations
-                .Where(x => x.Value is ServiceRegistration)
-                .ToDictionary(x => x.Key, x => (x.Value as ServiceRegistration)?.ServiceType);
+            var serviceRegistrations = builder.Registrations.Where(x => x.Value is ServiceRegistration)
+                .ToDictionary(x => x.Key, x => (ServiceRegistration) x.Value);
 
-            var extraInterfaces = GetCustomImplementations(regs);
+            var extraInterfaces = GetCustomImplementations(serviceRegistrations);
 
-            foreach (var (key, value) in OrderByDependencies(regs))
+            foreach (var (key, value) in OrderByDependencies(serviceRegistrations))
             {
                 var typeToImplement = value;
                 var interfaceImplementations = extraInterfaces.FindAll(x =>
@@ -157,7 +162,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return null;
         }
 
-        private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, Type> source)
+        private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, ServiceRegistration> source)
         {
             var orderedTypes = new List<KeyValuePair<Type, Type>>();
 
@@ -165,16 +170,19 @@ namespace Firebend.AutoCrud.Generator.Implementations
             {
                 var maxVisits = source.Count;
 
-                var typesToAdd = source.ToDictionary(x => x.Key, x => x.Value);
+                var typesToAdd = source
+                    .ToDictionary(x => x.Key, x => x.Value.ServiceType);
 
                 while (typesToAdd.Count > 0)
                 {
                     foreach (var type in typesToAdd.ToArray())
+                    {
                         if (CanAddType(type, typesToAdd))
                         {
                             orderedTypes.Add(type);
                             typesToAdd.Remove(type.Key);
                         }
+                    }
 
                     maxVisits--;
 
@@ -200,16 +208,20 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 );
         }
 
-        private static List<Type> GetCustomImplementations(IDictionary<Type, Type> configureRegistrations)
+        private static List<Type> GetCustomImplementations(IDictionary<Type, ServiceRegistration> configureRegistrations)
         {
             var extraInterfaces = new List<Type>();
 
             if (configureRegistrations != null)
-                foreach (var (key, value) in configureRegistrations.ToArray())
+                
+                foreach (var (key, reg) in configureRegistrations.ToArray())
                 {
+                    var value = reg.ServiceType;
+                    
                     if (!key.IsAssignableFrom(value))
-                        throw new InvalidCastException(
-                            $"Cannot use custom configuration {value.Name} to implement {key.Name}");
+                    {
+                        throw new InvalidCastException($"Cannot use custom configuration {value.Name} to implement {key.Name}");
+                    }
 
                     var implementedInterfaces = value.GetInterfaces();
                     var matchingInterface =
@@ -218,9 +230,13 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     if (matchingInterface != null) extraInterfaces.Add(matchingInterface);
 
                     if (configureRegistrations.ContainsKey(key))
-                        configureRegistrations[key] = value;
+                    {
+                        configureRegistrations[key] = reg;
+                    }
                     else
-                        configureRegistrations.Add(key, value);
+                    {
+                        configureRegistrations.Add(key, reg);
+                    }
                 }
 
             return extraInterfaces;

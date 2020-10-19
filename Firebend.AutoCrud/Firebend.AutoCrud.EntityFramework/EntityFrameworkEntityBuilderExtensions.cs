@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.EntityFramework
             return builder.WithSearchFilter(typeof(T));
         }
 
-        public static EntityFrameworkEntityBuilder WithSearchFilter<TEntity>(this EntityFrameworkEntityBuilder builder, Expression<Func<string, TEntity, bool>> filter)
+        private static EntityFrameworkEntityBuilder WithSearchFilter<TEntity>(this EntityFrameworkEntityBuilder builder, Expression<Func<string, TEntity, bool>> filter)
         {
             var signature = $"{builder.EntityType.Name}_{builder.EntityName}_SearchFilter";
 
