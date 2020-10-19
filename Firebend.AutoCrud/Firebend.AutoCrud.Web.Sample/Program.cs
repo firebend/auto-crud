@@ -75,29 +75,7 @@ namespace Firebend.AutoCrud.Web.Sample
                         .AddRouting()
                         .AddSwaggerGen(opt =>
                         {
-                            opt.TagActionsBy(x =>
-                            {
-                                List<string> list;
-
-                                if (x.ActionDescriptor is ControllerActionDescriptor controllerDescriptor)
-                                {
-                                    list = new List<string>
-                                    {
-                                        controllerDescriptor.ControllerTypeInfo?.GetCustomAttribute<OpenApiGroupNameAttribute>()?.GroupName ??
-                                        controllerDescriptor.ControllerTypeInfo?.Namespace?.Split('.')?.Last() ??
-                                        x.RelativePath
-                                    };
-                                }
-                                else
-                                {
-                                    list = new List<string>
-                                    {
-                                        x.RelativePath
-                                    };
-                                }
-
-                                return list;
-                            });
+                            opt.TagActionsBy(FirebendAutoCrudSwaggerGenTagger.TagActionsBy);
                         })
                         .AddControllers()
                         .AddNewtonsoftJson()
