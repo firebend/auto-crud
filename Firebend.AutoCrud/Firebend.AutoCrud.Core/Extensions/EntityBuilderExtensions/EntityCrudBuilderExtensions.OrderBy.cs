@@ -11,7 +11,22 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
 {
     public static class EntityCrudBuilderExtensionsOrderBy
     {
-        public static EntityCrudBuilder WithOrderBy<TEntity>(this EntityCrudBuilder builder, (Expression<Func<TEntity, object>>, bool @ascending) orderBy)
+        public static TBuilder WithOrderBy<TBuilder>(this TBuilder builder, Type type)
+            where TBuilder : EntityBuilder
+        {
+            return builder.WithRegistration(
+                typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType),
+                type,
+                typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType)
+            );
+        }
+
+        public static EntityCrudBuilder WithOrderBy<T>(this EntityCrudBuilder builder)
+        {
+            return builder.WithOrderBy(typeof(T));
+        }
+        
+        private static EntityCrudBuilder WithOrderBy<TEntity>(this EntityCrudBuilder builder, (Expression<Func<TEntity, object>>, bool @ascending) orderBy)
         {
             var signature = $"{builder.EntityType.Name}_{builder.EntityName}_OrderBy";
 

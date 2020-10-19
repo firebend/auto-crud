@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
+using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -35,6 +36,14 @@ namespace Firebend.AutoCrud.EntityFramework
 
             var propertySet = new PropertySet
             {
+                Name = nameof(IEntityFrameworkFullTextExpressionProvider<Guid, FooEntity>.Test),
+                Type = typeof(string),
+                Value = "filter",
+                Override = true
+            };
+            
+            var propertySet1 = new PropertySet
+            {
                 Name = nameof(IEntityFrameworkFullTextExpressionProvider<Guid, FooEntity>.Filter),
                 Type = typeof(Expression<Func<string, TEntity, bool>>),
                 Value = filter,
@@ -44,7 +53,7 @@ namespace Firebend.AutoCrud.EntityFramework
             return builder.WithDynamicClass(iFaceType, new DynamicClassRegistration
             {
                 Interface = iFaceType,
-                Properties = new [] { propertySet },
+                Properties = new [] { propertySet, propertySet1 },
                 Signature = signature,
                 Lifetime = ServiceLifetime.Singleton
             });

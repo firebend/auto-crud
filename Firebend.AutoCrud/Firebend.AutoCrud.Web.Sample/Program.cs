@@ -11,7 +11,9 @@ using Firebend.AutoCrud.Web.Conventions;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
+using Firebend.AutoCrud.Web.Sample.Filtering;
 using Firebend.AutoCrud.Web.Sample.Models;
+using Firebend.AutoCrud.Web.Sample.Ordering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
@@ -52,9 +54,9 @@ namespace Firebend.AutoCrud.Web.Sample
                         .AddBuilder<EfPerson, Guid>(person =>
                             person.WithDbContext<PersonDbContext>()
                                 .WithCrud()
-                                //.WithOrderBy<EfPerson>((p => p.LastName, true))
+                                .WithOrderBy<EfPersonOrder>()
                                 .AsBuilder<EntityFrameworkEntityBuilder>()
-                                //.WithSearchFilter<EfPerson>((search, p) => p.FirstName.Contains(search) || p.LastName.Contains(search))
+                                .WithSearchFilter<EfPersonFilter>()
                                 .WithDomainEventPublisherServiceProvider()
                                 .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
                                 .WithDomainEventEntityUpdatedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()

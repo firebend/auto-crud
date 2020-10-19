@@ -9,6 +9,7 @@ namespace Firebend.AutoCrud.EntityFramework.Indexing
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        public Expression<Func<TEntity, string, bool>> Filter { get; set; }
+        public virtual Expression<Func<TEntity, string, bool>> Filter { get; } = null;
+        public string Test { get; }
     }
 }
