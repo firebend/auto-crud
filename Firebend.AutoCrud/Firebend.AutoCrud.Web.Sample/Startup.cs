@@ -2,6 +2,7 @@ using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -35,6 +36,9 @@ namespace Firebend.AutoCrud.Web.Sample
             app.UseSwagger(opt => { opt.RouteTemplate = "/open-api/{documentName}/open-api.json"; });
 
             app.UseSwaggerUI(opt => { opt.SwaggerEndpoint("/open-api/v1/open-api.json", "Firebend Auto Crud Web Sample"); });
+
+            // db.Database.EnsureCreated();
+            // db.Database.Migrate();
         }
     }
 }

@@ -14,6 +14,7 @@ using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,6 +38,13 @@ namespace Firebend.AutoCrud.Web.Sample
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
                 .ConfigureServices((hostContext, services) =>
                 {
+                    // services.AddDbContext<PersonDbContext>(cfg =>
+                    // {
+                    //
+                    //     var cstring = hostContext.Configuration.GetConnectionString("SqlServer");
+                    //     cfg.UseSqlServer(cstring);
+                    // });
+                    
                     services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
                         .AddBuilder<MongoPerson, Guid>(person =>
                             person.WithDefaultDatabase("Samples")

@@ -7,47 +7,73 @@ namespace Firebend.AutoCrud.Core.Threading
 {
     internal static class RunOnceCaches
     {
-        private static readonly ConcurrentDictionary<string, bool> Cache = new ConcurrentDictionary<string, bool>();
+        private static readonly ConcurrentDictionary<string, object> Cache = new ConcurrentDictionary<string, object>();
 
-        public static bool HasRan(string key)
+        public static object GetValue(string key)
         {
             if (Cache.ContainsKey(key))
             {
                 return Cache[key];
             }
 
-            return false;
+            return default;
         }
 
-        public static void MarkAsRan(string key)
+        public static T GetValue<T>(string key)
+        {
+            var val = GetValue(key);
+
+            if (val == null || val.Equals(default(T)))
+            {
+                return default(T);
+            }
+
+            return (T) val;
+        }
+        
+
+        public static void UpdateValue(string key, object value)
         {
             Cache.AddOrUpdate(key,
-                true,
-                (s, b) => true);
-
-            var __ = "";
+                value,
+                (s, b) => value);
         }
     }
     
     public static class Run
     {
-        public static async Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+        public static Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken)
         {
-            if (RunOnceCaches.HasRan(key))
+            return OnceAsync(key, async ct =>
             {
-                return;
+                await action(ct).ConfigureAwait(false);
+                return true;
+            }, cancellationToken);
+        }
+        
+        public static async Task<T> OnceAsync<T>(string key, Func<CancellationToken, Task<T>> func, CancellationToken cancellationToken)
+        {
+            var temp = RunOnceCaches.GetValue<T>(key);
+
+            if (temp != null && !temp.Equals(default(T)))
+            {
+                return temp;
             }
             
             using var _ = await new AsyncDuplicateLock().LockAsync(key, cancellationToken).ConfigureAwait(false);
             
-            if (RunOnceCaches.HasRan(key))
+            temp = RunOnceCaches.GetValue<T>(key);
+
+            if (temp != null && !temp.Equals(default(T)))
             {
-                return;
+                return temp;
             }
 
-            await action(cancellationToken).ConfigureAwait(false);
-            
-            RunOnceCaches.MarkAsRan(key);
+            temp = await func(cancellationToken).ConfigureAwait(false);
+
+            RunOnceCaches.UpdateValue(key, temp);
+
+            return temp;
         }
     }
 }

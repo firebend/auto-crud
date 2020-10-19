@@ -42,28 +42,37 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 throw new Exception("Shard key is null");
             }
 
-            var shard = await _shardManager
-                .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
-                .ConfigureAwait(false);
-
-            var keyBytes = Encoding.ASCII.GetBytes(key);
-            
-            var connStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString);
-            connStringBuilder.Remove("Data Source");
-            connStringBuilder.Remove("Initial Catalog");
-            
-            var shardConnectionString = connStringBuilder.ConnectionString;
-            
-            var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
-                .ConfigureAwait(false);
-
-            var temp = connection.ConnectionString;
-                
-            var options = new DbContextOptionsBuilder()
-                .UseSqlServer(connection)
-                .Options;
-
             var contextType = typeof(TContext);
+
+            var connectionString = await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}.ConnectionString", async ct =>
+            {
+                var shard = await _shardManager
+                    .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
+                    .ConfigureAwait(false);
+
+                var keyBytes = Encoding.ASCII.GetBytes(key);
+            
+                var rootConnectionStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString);
+                rootConnectionStringBuilder.Remove("Data Source");
+                rootConnectionStringBuilder.Remove("Initial Catalog");
+            
+                var shardConnectionString = rootConnectionStringBuilder.ConnectionString;
+
+                await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
+                    .ConfigureAwait(false);
+
+                var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString)
+                {
+                    Password = rootConnectionStringBuilder.Password
+                };
+                
+                return connectionStringBuilder.ConnectionString;
+            }, cancellationToken).ConfigureAwait(false);
+
+            var options = new DbContextOptionsBuilder()
+                .UseSqlServer(connectionString)
+                .Options;
+            
             var instance = Activator.CreateInstance(contextType, options);
             
             if (instance == null)
@@ -76,7 +85,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 throw new Exception("Could not cast instance.");
             }
 
-            await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}", async ct =>
+            await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}.Init", async ct =>
             {
                 await context.Database
                     .EnsureCreatedAsync(cancellationToken)
