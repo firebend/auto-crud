@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,16 +8,11 @@ namespace Firebend.AutoCrud.Core.Threading
 {
     internal static class RunOnceCaches
     {
-        private static readonly ConcurrentDictionary<string, object> Cache = new ConcurrentDictionary<string, object>();
+        private static readonly IDictionary<string, object> Cache = new Dictionary<string, object>();
 
         public static object GetValue(string key)
         {
-            if (Cache.ContainsKey(key))
-            {
-                return Cache[key];
-            }
-
-            return default;
+            return Cache.ContainsKey(key) ? Cache[key] : default;
         }
 
         public static T GetValue<T>(string key)
@@ -25,7 +21,7 @@ namespace Firebend.AutoCrud.Core.Threading
 
             if (val == null || val.Equals(default(T)))
             {
-                return default(T);
+                return default;
             }
 
             return (T) val;
@@ -34,9 +30,7 @@ namespace Firebend.AutoCrud.Core.Threading
 
         public static void UpdateValue(string key, object value)
         {
-            Cache.AddOrUpdate(key,
-                value,
-                (s, b) => value);
+            Cache[key] = value;
         }
     }
     
@@ -74,6 +68,31 @@ namespace Firebend.AutoCrud.Core.Threading
             RunOnceCaches.UpdateValue(key, temp);
 
             return temp;
+        }
+    }
+    
+    public static class Memoizer
+    {
+        public static Func<A, R> Memoize<A, R>(this Func<A, R> f)
+        {
+            var cache = new ConcurrentDictionary<A, R>();
+            var syncMap = new ConcurrentDictionary<A, object>();
+            
+            return a =>
+            {
+                R r;
+                
+                if (!cache.TryGetValue(a, out r))
+                {
+                    var sync = syncMap.GetOrAdd(a, new object());
+                    lock (sync)
+                    {
+                        r = cache.GetOrAdd(a, f);
+                    }
+                    syncMap.TryRemove(a, out sync);
+                }
+                return r;
+            };
         }
     }
 }

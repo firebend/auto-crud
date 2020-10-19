@@ -28,8 +28,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .ConfigureAwait(false);;
 
             var savedEntity = entry.Entity;
-
-
+            
             await context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);

@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             var set = context.Set<TEntity>();
-            var list = await  set.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var list = await set.ToListAsync(cancellationToken).ConfigureAwait(false);
             return list;
         }
 
@@ -56,7 +56,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (doCount)
             {
-                count = await CountAsync(search, filter, cancellationToken)
+                count = await CountAsync(search, filter, context, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -88,7 +88,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (doCount)
             {
-                count = await CountAsync(search, filter, cancellationToken)
+                count = await CountAsync(search, filter, context, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -107,12 +107,24 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             };
         }
 
-        public async Task<int> CountAsync(string search,
+        public Task<int> CountAsync(
+            string search,
             Expression<Func<TEntity, bool>> expression,
             CancellationToken cancellationToken = default)
+            => CountAsync(search, expression, null, cancellationToken);
+
+        private async Task<int> CountAsync(
+            string search,
+            Expression<Func<TEntity, bool>> expression,
+            IDbContext dbContext = null,
+            CancellationToken cancellationToken = default)
         {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var queryable = BuildQuery(context, search, expression);
+            if (dbContext == null)
+            {
+                dbContext = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            var queryable = BuildQuery(dbContext, search, expression);
 
             var count = await queryable
                 .CountAsync(cancellationToken)
@@ -145,29 +157,45 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var queryable = GetFilteredQueryableAsync(context);
 
             if (!string.IsNullOrWhiteSpace(search))
+            {
                 if (_fullTextSearchProvider?.HasValue ?? false)
+                {
                     queryable = queryable.Where(x => _fullTextSearchProvider.GetFullTextFilter(x));
+                }
+            }
 
-            if (filter != null) queryable = queryable.Where(filter);
+            if (filter != null)
+            {
+                queryable = queryable.Where(filter);
+            }
 
             if (orderBys != null)
             {
                 IOrderedQueryable<TEntity> ordered = null;
 
                 foreach (var orderBy in orderBys)
+                {
                     if (orderBy != default)
+                    {
                         ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
                             queryable.OrderByDescending(orderBy.order) :
                             orderBy.ascending ? ordered.ThenBy(orderBy.order) :
                             ordered.ThenByDescending(orderBy.order);
+                    }
+                }
 
-                if (ordered != null) queryable = ordered;
+                if (ordered != null)
+                {
+                    queryable = ordered;
+                }
             }
 
             if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
+            {
                 queryable = queryable
                     .Skip((pageNumber.Value - 1) * pageSize.Value)
                     .Take(pageSize.Value);
+            }
 
             return queryable;
         }
