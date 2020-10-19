@@ -25,28 +25,6 @@ namespace Firebend.AutoCrud.Web.Conventions
                 .Where(x => baseControllerType.IsAssignableFrom(x.ServiceType))
                 .ToArray();
 
-            var routes = controllers
-                .Select(x => new
-                {
-                    x.ServiceType,
-                    x.ImplementationType.FullName
-                })
-                .SelectMany(x => x.ServiceType.GetCustomAttributes(), (t, a) => new
-                {
-                    t.ServiceType,
-                    t.FullName,
-                    Attribute = a
-                })
-                .Where(x => x.Attribute is RouteAttribute)
-                .Select(x => new
-                {
-                    x.ServiceType,
-                    x.FullName,
-                    x.Attribute,
-                    Route = (x.Attribute as RouteAttribute)?.Template
-                })
-                .ToArray();
-
             foreach (var descriptor in controllers)
             {
                 feature.Controllers.Add(descriptor.ServiceType.GetTypeInfo());
