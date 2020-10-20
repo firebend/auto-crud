@@ -14,22 +14,36 @@ namespace Firebend.AutoCrud.Generator.Implementations
             CustomAttributeBuilder[] attributes = null)
         {
             if (!classType.IsClass)
+            {
                 throw new InvalidCastException("TClass must be a class");
+            }
 
             if (string.IsNullOrWhiteSpace(typeSignature))
+            {
                 throw new ArgumentNullException(nameof(typeSignature));
+            }
 
             if (interfaces?.Length > 0)
+            {
                 foreach (var interfaceType in interfaces)
+                {
                     if (!interfaceType.IsInterface)
+                    {
                         throw new InvalidCastException($"{interfaceType.Name} must be an interface");
+                    }
+                }
+            }
 
             var tb = GetTypeBuilder(typeSignature, classType, interfaces);
             CreatePassThroughConstructors(tb, classType, implementedTypes);
 
             if (attributes?.Length > 0)
+            {
                 foreach (var attribute in attributes)
+                {
                     tb.SetCustomAttribute(attribute);
+                }
+            }
 
             return tb.CreateType();
         }
@@ -37,10 +51,14 @@ namespace Firebend.AutoCrud.Generator.Implementations
         public Type GenerateInterface(Type interfaceType, string typeSignature)
         {
             if (!interfaceType.IsInterface)
+            {
                 throw new InvalidCastException("TInterface must be an interface");
+            }
 
             if (string.IsNullOrWhiteSpace(typeSignature))
+            {
                 throw new ArgumentNullException(nameof(typeSignature));
+            }
 
             var tb = GetTypeBuilder(typeSignature, interfaces: new[] {interfaceType}, isInterface: true);
 
@@ -50,12 +68,17 @@ namespace Firebend.AutoCrud.Generator.Implementations
         public object ImplementInterface(Type interfaceType, string typeSignature, PropertySet[] properties)
         {
             if (!interfaceType.IsInterface)
+            {
                 throw new InvalidCastException("TInterface must be an interface");
+            }
 
             if (string.IsNullOrWhiteSpace(typeSignature))
+            {
                 throw new ArgumentNullException(nameof(typeSignature));
+            }
 
             var tb = GetTypeBuilder(typeSignature, interfaces: new[] {interfaceType});
+            
             tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
 
             var iProperties = interfaceType.GetProperties().Select(x => new PropertySet
@@ -74,17 +97,32 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 .ToArray();
 
             if (properties.Length > 0)
+            {
                 foreach (var field in properties)
+                {
                     CreateProperty(tb, field);
+                }
+            }
 
             var objectType = tb.CreateType();
+
+            if (objectType == null)
+            {
+                return null;
+            }
+            
             var instance = Activator.CreateInstance(objectType);
 
             if (properties.Length > 0)
+            {
                 foreach (var field in properties.Where(x => x.Value != null))
+                {
                     SetProperty(objectType, instance, field.Name, field.Value);
+                }
+            }
 
             return instance;
+
         }
 
         private static void CreatePassThroughConstructors(TypeBuilder builder, Type baseType, List<Type> implementedTypes)
@@ -116,19 +154,33 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                     var parameterBuilder = ctor.DefineParameter(i + 1, parameter.Attributes, parameter.Name);
 
-                    if (((int) parameter.Attributes & (int) ParameterAttributes.HasDefault) != 0) parameterBuilder.SetConstant(parameter.RawDefaultValue);
+                    if (((int) parameter.Attributes & (int) ParameterAttributes.HasDefault) != 0)
+                    {
+                        parameterBuilder.SetConstant(parameter.RawDefaultValue);
+                    }
 
-                    foreach (var attribute in BuildCustomAttributes(parameter.GetCustomAttributesData())) parameterBuilder.SetCustomAttribute(attribute);
+                    foreach (var attribute in BuildCustomAttributes(parameter.GetCustomAttributesData()))
+                    {
+                        parameterBuilder.SetCustomAttribute(attribute);
+                    }
                 }
 
-                foreach (var attribute in BuildCustomAttributes(constructor.GetCustomAttributesData())) ctor.SetCustomAttribute(attribute);
+                foreach (var attribute in BuildCustomAttributes(constructor.GetCustomAttributesData()))
+                {
+                    ctor.SetCustomAttribute(attribute);
+                }
 
                 var emitter = ctor.GetILGenerator();
+                
                 emitter.Emit(OpCodes.Nop);
 
                 emitter.Emit(OpCodes.Ldarg_0);
 
-                for (var i = 1; i <= parameters.Length; ++i) emitter.Emit(OpCodes.Ldarg, i);
+                for (var i = 1; i <= parameters.Length; ++i)
+                {
+                    emitter.Emit(OpCodes.Ldarg, i);
+                }
+                
                 emitter.Emit(OpCodes.Call, constructor);
 
                 emitter.Emit(OpCodes.Ret);
@@ -157,12 +209,16 @@ namespace Firebend.AutoCrud.Generator.Implementations
             var typeAttributes = TypeAttributes.Public | TypeAttributes.AutoLayout;
 
             if (isInterface)
+            {
                 typeAttributes |= TypeAttributes.Interface | TypeAttributes.Abstract;
+            }
             else
+            {
                 typeAttributes |= TypeAttributes.Class |
                                   TypeAttributes.AutoClass |
                                   TypeAttributes.AnsiClass |
                                   TypeAttributes.BeforeFieldInit;
+            }
 
             var an = new AssemblyName(typeSignature);
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
@@ -183,7 +239,10 @@ namespace Firebend.AutoCrud.Generator.Implementations
                                    MethodAttributes.SpecialName |
                                    MethodAttributes.HideBySig;
 
-            if (propertySet.Override) getterAttributes |= MethodAttributes.Virtual;
+            if (propertySet.Override)
+            {
+                getterAttributes |= MethodAttributes.Virtual;
+            }
 
             var getPropertyMethodBuilder =
                 tb.DefineMethod(
@@ -202,7 +261,11 @@ namespace Firebend.AutoCrud.Generator.Implementations
             if (propertySet.Override && tb.BaseType != null)
             {
                 var baseMethod = tb.BaseType.GetMethod($"get_{propertySet.Name}", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                if (baseMethod != null) tb.DefineMethodOverride(getPropertyMethodBuilder, baseMethod);
+                
+                if (baseMethod != null)
+                {
+                    tb.DefineMethodOverride(getPropertyMethodBuilder, baseMethod);
+                }
             }
 
             propertyBuilder.SetGetMethod(getPropertyMethodBuilder);

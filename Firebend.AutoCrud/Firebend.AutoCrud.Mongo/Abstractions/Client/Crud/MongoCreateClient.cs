@@ -28,11 +28,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))
                 .ConfigureAwait(false);
-            ;
-
+            
             await _eventPublisher.PublishEntityAddEventAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
-            ;
 
             return entity;
         }

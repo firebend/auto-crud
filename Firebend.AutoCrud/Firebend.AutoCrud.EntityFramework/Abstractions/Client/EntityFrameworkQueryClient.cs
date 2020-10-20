@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -15,10 +16,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        private readonly IEntityFrameworkFullTextExpressionProvider _fullTextSearchProvider;
+        private readonly IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> _fullTextSearchProvider;
 
         public EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityFrameworkFullTextExpressionProvider fullTextSearchProvider) : base(contextProvider)
+            IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> fullTextSearchProvider) : base(contextProvider)
         {
             _fullTextSearchProvider = fullTextSearchProvider;
         }
@@ -145,7 +146,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             
             return exists;
         }
-
+        
         protected IQueryable<TEntity> BuildQuery(
             IDbContext context,
             string search = null,
@@ -158,9 +159,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                if (_fullTextSearchProvider?.HasValue ?? false)
+                var searchWhere = _fullTextSearchProvider?.Filter;
+                
+                if (searchWhere != null)
                 {
-                    queryable = queryable.Where(x => _fullTextSearchProvider.GetFullTextFilter(x));
+                    var temp = searchWhere.FixParam(search);
+                    queryable = queryable.Where(temp);
                 }
             }
 

@@ -38,12 +38,12 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
-                        .AddBuilder<Person, Guid>(person =>
+                        .AddEntity<Guid, Person>(person => 
                             person.WithDefaultDatabase("Samples")
                                 .WithCollection("People")
-                                .WithCrud()
                                 .WithFullTextSearch()
-                                .WithRegistration<MongoDbEntityBuilder, IEntityReadService<Guid, Person>, PersonReadRepository>()
+                                .AddCrud()
+                                .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
                         ).Generate();
 
                     services.AddHostedService<SampleHostedService>();

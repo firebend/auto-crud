@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
-using Firebend.AutoCrud.Core.Interfaces.Models;
+using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Models;
@@ -13,8 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Generator.Implementations
 {
-    public abstract class EntityCrudGenerator<TBuilder> : IEntityCrudGenerator
-        where TBuilder : EntityBuilder, new()
+    public abstract class EntityCrudGenerator : IEntityCrudGenerator
     {
         private readonly IDynamicClassGenerator _classGenerator;
 
@@ -28,27 +27,85 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
         }
 
-        public List<EntityBuilder> Builders { get; } = new List<EntityBuilder>();
+        public List<BaseBuilder> Builders { get; } = new List<BaseBuilder>();
 
         public IServiceCollection ServiceCollection { get; }
 
         public IServiceCollection Generate()
         {
-            foreach (var builder in Builders) Generate(ServiceCollection, builder);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
+            Parallel.ForEach(Builders, builder =>
+            {
+                var builderStopwatch = new Stopwatch();
+                builderStopwatch.Start();
+                Generate(ServiceCollection, builder);
+                builderStopwatch.Stop();
+                Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {builderStopwatch.ElapsedMilliseconds} (ms)");
+            });
+            
+            stopwatch.Stop();
+            Console.WriteLine($"All entities generated in {stopwatch.ElapsedMilliseconds} (ms)");
 
             return ServiceCollection;
         }
 
-        protected virtual void Generate(IServiceCollection serviceCollection, EntityBuilder builder)
+        protected virtual void Generate(IServiceCollection serviceCollection, BaseBuilder builder)
         {
-            var signatureBase = $"{builder.EntityType.Name}_{builder.EntityName}";
+            RegisterRegistrations(serviceCollection, builder);
+            RegisterInstances(serviceCollection, builder);
+            RegisterDynamicClasses(serviceCollection, builder);
+            CallServiceCollectionHooks(serviceCollection, builder);
+        }
+
+        private static void CallServiceCollectionHooks(IServiceCollection serviceCollection, BaseBuilder builder)
+        {
+            if (builder.ServiceCollectionHooks == null)
+            {
+                return;
+            }
+
+            foreach (var hook in builder.ServiceCollectionHooks)
+            {
+                hook(serviceCollection);
+            }
+        }
+
+        private void RegisterDynamicClasses(IServiceCollection serviceCollection, BaseBuilder builder)
+        {
+            foreach (var reg in builder
+                .Registrations
+                .Where(x => x.Value is DynamicClassRegistration))
+            {
+                var classRegistration = reg.Value as DynamicClassRegistration;
+
+                if (classRegistration == null)
+                {
+                    continue;
+                }
+                
+                var instance = _classGenerator
+                    .ImplementInterface(classRegistration.Interface, classRegistration.Signature, classRegistration.Properties.ToArray());
+
+                serviceCollection.AddSingleton(classRegistration.Interface, instance);
+            }
+            
+        }
+
+        private void RegisterRegistrations(IServiceCollection serviceCollection, BaseBuilder builder)
+        {
+            var signatureBase = builder.SignatureBase;
             var implementedTypes = new List<Type>();
 
             builder.Build();
 
-            var extraInterfaces = GetCustomImplementations(builder.Registrations);
+            var serviceRegistrations = builder.Registrations.Where(x => x.Value is ServiceRegistration)
+                .ToDictionary(x => x.Key, x => (ServiceRegistration) x.Value);
 
-            foreach (var (key, value) in OrderByDependencies(builder.Registrations))
+            var extraInterfaces = GetCustomImplementations(serviceRegistrations);
+
+            foreach (var (key, value) in OrderByDependencies(serviceRegistrations))
             {
                 var typeToImplement = value;
                 var interfaceImplementations = extraInterfaces.FindAll(x =>
@@ -79,10 +136,20 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                 implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
             }
+        }
 
-            if (builder.InstanceRegistrations != null)
-                foreach (var (key, value) in builder.InstanceRegistrations)
-                    serviceCollection.AddSingleton(key, value);
+        private static void RegisterInstances(IServiceCollection serviceCollection, BaseBuilder builder)
+        {
+            foreach (var (key, value) in builder.Registrations
+                .Where(x => x.Value is InstanceRegistration))
+            {
+                var instance = (value as InstanceRegistration)?.Instance;
+
+                if (instance != null)
+                {
+                    serviceCollection.AddSingleton(key, instance);
+                }
+            }
         }
 
         private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CrudBuilderAttributeModel>> builderAttributes)
@@ -112,7 +179,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return null;
         }
 
-        private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, Type> source)
+        private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, ServiceRegistration> source)
         {
             var orderedTypes = new List<KeyValuePair<Type, Type>>();
 
@@ -120,16 +187,19 @@ namespace Firebend.AutoCrud.Generator.Implementations
             {
                 var maxVisits = source.Count;
 
-                var typesToAdd = source.ToDictionary(x => x.Key, x => x.Value);
+                var typesToAdd = source
+                    .ToDictionary(x => x.Key, x => x.Value.ServiceType);
 
                 while (typesToAdd.Count > 0)
                 {
                     foreach (var type in typesToAdd.ToArray())
+                    {
                         if (CanAddType(type, typesToAdd))
                         {
                             orderedTypes.Add(type);
                             typesToAdd.Remove(type.Key);
                         }
+                    }
 
                     maxVisits--;
 
@@ -155,16 +225,20 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 );
         }
 
-        private static List<Type> GetCustomImplementations(IDictionary<Type, Type> configureRegistrations)
+        private static List<Type> GetCustomImplementations(IDictionary<Type, ServiceRegistration> configureRegistrations)
         {
             var extraInterfaces = new List<Type>();
 
             if (configureRegistrations != null)
-                foreach (var (key, value) in configureRegistrations.ToArray())
+                
+                foreach (var (key, reg) in configureRegistrations.ToArray())
                 {
+                    var value = reg.ServiceType;
+                    
                     if (!key.IsAssignableFrom(value))
-                        throw new InvalidCastException(
-                            $"Cannot use custom configuration {value.Name} to implement {key.Name}");
+                    {
+                        throw new InvalidCastException($"Cannot use custom configuration {value.Name} to implement {key.Name}");
+                    }
 
                     var implementedInterfaces = value.GetInterfaces();
                     var matchingInterface =
@@ -173,38 +247,27 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     if (matchingInterface != null) extraInterfaces.Add(matchingInterface);
 
                     if (configureRegistrations.ContainsKey(key))
-                        configureRegistrations[key] = value;
+                    {
+                        configureRegistrations[key] = reg;
+                    }
                     else
-                        configureRegistrations.Add(key, value);
+                    {
+                        configureRegistrations.Add(key, reg);
+                    }
                 }
 
             return extraInterfaces;
         }
 
-        public EntityCrudGenerator<TBuilder> AddBuilder(TBuilder builder, Func<TBuilder, TBuilder> configure = null)
+        public EntityCrudGenerator AddBuilder<TBuilder>(TBuilder builder, Func<TBuilder, TBuilder> configure) 
+            where TBuilder : BaseBuilder,  new()
+
         {
-            if (configure != null) builder = configure(builder);
+            configure(new TBuilder());
 
             Builders.Add(builder);
 
             return this;
-        }
-
-        public EntityCrudGenerator<TBuilder> AddBuilder<T>(Func<TBuilder, TBuilder> configure)
-
-        {
-            var builder = configure(new TBuilder());
-
-            return AddBuilder(builder, configure);
-        }
-
-        public EntityCrudGenerator<TBuilder> AddBuilder<TEntity, TEntityKey>(Func<TBuilder, TBuilder> configure)
-            where TEntity : IEntity<TEntityKey>
-            where TEntityKey : struct
-        {
-            var builder = configure(new TBuilder().ForEntity<TBuilder, TEntity, TEntityKey>());
-
-            return AddBuilder(builder, configure);
         }
     }
 }

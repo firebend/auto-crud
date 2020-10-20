@@ -32,7 +32,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken))
                 .ConfigureAwait(false);
-            ;
 
             if (result != null)
             {

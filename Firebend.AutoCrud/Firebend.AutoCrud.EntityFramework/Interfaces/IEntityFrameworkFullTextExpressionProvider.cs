@@ -1,9 +1,13 @@
+using System;
+using System.Linq.Expressions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
-    public interface IEntityFrameworkFullTextExpressionProvider
+    public interface IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>
+        where TKey: struct
+        where TEntity : IEntity<TKey>
     {
-        bool HasValue { get; }
-
-        bool GetFullTextFilter<TEntity>(TEntity entity);
+        public Expression<Func<TEntity, string, bool>> Filter { get; }
     }
 }

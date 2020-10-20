@@ -1,17 +1,23 @@
 using System;
-using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using System.Linq.Expressions;
+using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models;
+using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
-    public class EntityFrameworkEntityBuilder : EntityCrudBuilder
+    public class EntityFrameworkEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>, new()
     {
         public override Type CreateType { get; } = typeof(EntityFrameworkEntityCreateService<,>);
 
@@ -29,51 +35,67 @@ namespace Firebend.AutoCrud.EntityFramework
 
         protected override void ApplyPlatformTypes()
         {
-            this.WithRegistration(typeof(IEntityFrameworkCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(EntityFrameworkCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityFrameworkCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IEntityFrameworkQueryClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(EntityFrameworkQueryClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityFrameworkQueryClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IEntityFrameworkUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(EntityFrameworkUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityFrameworkUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IEntityFrameworkDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(EntityFrameworkDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityFrameworkDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(DefaultEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration<EntityFrameworkEntityBuilder, IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
-
-            this.WithRegistration<EntityFrameworkEntityBuilder,
-                IEntityFrameworkFullTextExpressionProvider,
-                DefaultEntityFrameworkFullTextExpressionProvider>(false);
+            WithRegistration<IEntityFrameworkCreateClient<TKey, TEntity>, EntityFrameworkCreateClient<TKey, TEntity>>(false);
+            WithRegistration<IEntityFrameworkQueryClient<TKey, TEntity>, EntityFrameworkQueryClient<TKey, TEntity>>(false);
+            WithRegistration<IEntityFrameworkUpdateClient<TKey, TEntity>, EntityFrameworkUpdateClient<TKey, TEntity>>(false);
+            WithRegistration<IEntityFrameworkDeleteClient<TKey,TEntity>, EntityFrameworkDeleteClient<TKey,TEntity>>(false);
+            WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
+            WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
+            WithRegistration<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>,DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(false);
         }
 
-        public EntityFrameworkEntityBuilder WithDbContext(Type dbContextType)
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext(Type dbContextType)
         {
             DbContextType = dbContextType;
-            
-            return this.WithRegistration(typeof(IDbContextProvider<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, dbContextType),
-                typeof(IDbContextProvider<,>).MakeGenericType(EntityKeyType, EntityType));
+
+            var t = typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, dbContextType);
+
+            WithRegistration<IDbContextProvider<TKey, TEntity>>(t);
+
+            return this;
         }
 
-        public EntityFrameworkEntityBuilder WithDbContext<TContext>()
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext<TContext>()
             where TContext : IDbContext
         {
             return WithDbContext(typeof(TContext));
+        }
+        
+        
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Type type)
+        {
+            WithRegistration<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(type);
+            return this;
+        }
+
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter<T>()
+        {
+            return WithSearchFilter(typeof(T));
+        }
+
+        // ReSharper disable once UnusedMember.Local
+        private EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Expression<Func<string, TEntity, bool>> filter)
+        {
+            var signature = $"{SignatureBase}_SearchFilter";
+
+            var iFaceType = typeof(IEntityFrameworkFullTextExpressionProvider<TKey,TEntity>);
+            
+            var propertySet = new PropertySet<Expression<Func<string, TEntity, bool>>>
+            {
+                Name = nameof(IEntityFrameworkFullTextExpressionProvider<Guid, FooEntity>.Filter),
+                Value = filter,
+                Override = true
+            };
+
+            WithDynamicClass(iFaceType, new DynamicClassRegistration
+            {
+                Interface = iFaceType,
+                Properties = new [] { propertySet },
+                Signature = signature,
+                Lifetime = ServiceLifetime.Singleton
+            });
+
+            return this;
         }
     }
 }

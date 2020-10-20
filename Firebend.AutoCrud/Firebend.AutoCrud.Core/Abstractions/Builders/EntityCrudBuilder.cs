@@ -1,7 +1,11 @@
 using System;
-namespace Firebend.AutoCrud.Core.Abstractions
+using Firebend.AutoCrud.Core.Interfaces.Models;
+
+namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
-    public abstract class EntityCrudBuilder : EntityBuilder
+    public abstract class EntityCrudBuilder<TKey, TEntity> : EntityBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : IEntity<TKey>
     {
         public abstract Type CreateType { get; }
 

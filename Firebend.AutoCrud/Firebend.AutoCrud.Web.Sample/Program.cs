@@ -1,20 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
-using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
-using Firebend.AutoCrud.Web.Attributes;
-using Firebend.AutoCrud.Web.Conventions;
-using Firebend.AutoCrud.Web.Sample.DbContexts;
-using Firebend.AutoCrud.Web.Sample.DomainEvents;
-using Firebend.AutoCrud.Web.Sample.Elastic;
-using Firebend.AutoCrud.Web.Sample.Models;
+using Firebend.AutoCrud.Web.Sample.Extensions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,81 +20,25 @@ namespace Firebend.AutoCrud.Web.Sample
             return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
-                    if (hostingContext.HostingEnvironment.IsDevelopment()) builder.AddUserSecrets("Firebend.AutoCrud");
+                    if (hostingContext.HostingEnvironment.IsDevelopment())
+                    {
+                        builder.AddUserSecrets("Firebend.AutoCrud");
+                    }
                 })
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    // services.AddDbContext<PersonDbContext>(cfg =>
-                    // {
-                    //
-                    //     var cstring = hostContext.Configuration.GetConnectionString("SqlServer");
-                    //     cfg.UseSqlServer(cstring);
-                    // });
-                    
                     services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
-                        .AddBuilder<MongoPerson, Guid>(person =>
-                            person.WithDefaultDatabase("Samples")
-                                .WithCollection("People")
-                                .WithCrud()
-                                .WithFullTextSearch()
-                                .UsingControllers()
-                                .WithAllControllers(true)
-                                .WithOpenApiGroupName("The Beautiful Mongo People")
-                                .AsEntityBuilder()
-                        ).Generate()
-                        .UsingEfCrud()
-                        .AddBuilder<EfPerson, Guid>(person =>
-                            person.WithDbContext<PersonDbContext>()
-                                .WithCrud()
-                                .WithDomainEventPublisherServiceProvider()
-                                .WithDomainEventEntityAddedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
-                                .WithDomainEventEntityUpdatedSubscriber<EntityFrameworkEntityBuilder, EfPersonDomainEventSubscriber>()
-                                .WithElasticPool(manager =>
-                                {
-                                    manager.ConnectionString = hostContext.Configuration.GetConnectionString("Elastic");
-                                    manager.MapName = hostContext.Configuration["Elastic:MapName"];
-                                    manager.Server = hostContext.Configuration["Elastic:ServerName"];
-                                    manager.ElasticPoolName = hostContext.Configuration["Elastic:PoolName"];
-                                })
-                                .WithShardKeyProvider<SampleKeyProvider>()
-                                .WithShardDbNameProvider<SampleDbNameProvider>()
-                                .UsingControllers()
-                                .WithAllControllers(true)
-                                .WithOpenApiGroupName("The Beautiful Sql People")
-                                .AsEntityBuilder())
-                        .Generate()
+                        .AddMongoPerson().Generate()
+                        .UsingEfCrud().AddEfPerson(hostContext.Configuration).Generate()
                         .AddRouting()
-                        .AddSwaggerGen(opt =>
-                        {
-                            opt.TagActionsBy(x =>
-                            {
-                                List<string> list;
-
-                                if (x.ActionDescriptor is ControllerActionDescriptor controllerDescriptor)
-                                {
-                                    list = new List<string>
-                                    {
-                                        controllerDescriptor.ControllerTypeInfo?.GetCustomAttribute<OpenApiGroupNameAttribute>()?.GroupName ??
-                                        controllerDescriptor.ControllerTypeInfo?.Namespace?.Split('.')?.Last() ??
-                                        x.RelativePath
-                                    };
-                                }
-                                else
-                                {
-                                    list = new List<string>
-                                    {
-                                        x.RelativePath
-                                    };
-                                }
-
-                                return list;
-                            });
-                        })
+                        .AddSwaggerGen()
                         .AddControllers()
                         .AddNewtonsoftJson()
-                        .ConfigureApplicationPartManager(
-                            manager => manager.FeatureProviders.Insert(0, new FirebendAutoCrudControllerConvention(services)));
+                        .AddFirebendAutoCrudWeb(services);
                 });
         }
     }

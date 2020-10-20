@@ -1,35 +1,25 @@
 using System;
-using Firebend.AutoCrud.Core.Abstractions;
-using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
-using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Mongo
 {
-    public class MongoDbEntityBuilder : EntityCrudBuilder
+    public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct 
+        where TEntity : class, IEntity<TKey>
     {
-        private readonly IDynamicClassGenerator _generator;
-
-        public MongoDbEntityBuilder(IDynamicClassGenerator generator)
-        {
-            _generator = generator;
-        }
-
-        public MongoDbEntityBuilder() : this(new DynamicClassGenerator())
-        {
-        }
-
         public override Type CreateType { get; } = typeof(MongoEntityCreateService<,>);
 
         public override Type ReadType { get; } = typeof(MongoEntityReadService<,>);
@@ -48,63 +38,29 @@ namespace Firebend.AutoCrud.Mongo
 
         protected override void ApplyPlatformTypes()
         {
-            RegisterCollectionNameInterfaceType();
+            RegisterEntityConfiguration();
 
-            this.WithRegistration(typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(MongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoCreateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IMongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(MongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoReadClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IMongoUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(MongoUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoUpdateClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IMongoDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(MongoDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoDeleteClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IMongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(MongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IMongoIndexClient<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IMongoIndexProvider<>).MakeGenericType(EntityType),
-                typeof(DefaultIndexProvider<>).MakeGenericType(EntityType),
-                typeof(IMongoIndexProvider<>).MakeGenericType(EntityType),
-                false);
-
-            this.WithRegistration(typeof(IConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(MongoConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration(typeof(IConfigureCollection),
-                typeof(MongoConfigureCollection<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IConfigureCollection),
-                false);
-
-            this.WithRegistration(typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(DefaultEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
-                typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType),
-                false);
-
-            this.WithRegistration<MongoDbEntityBuilder, IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
+            WithRegistration<IMongoCreateClient<TKey, TEntity>, MongoCreateClient<TKey, TEntity>>(false);
+            WithRegistration<IMongoReadClient<TKey, TEntity>, MongoReadClient<TKey, TEntity>>(false);
+            WithRegistration<IMongoUpdateClient<TKey, TEntity>, MongoUpdateClient<TKey, TEntity>>(false);
+            WithRegistration<IMongoDeleteClient<TKey, TEntity>, MongoDeleteClient<TKey, TEntity>>(false);
+            WithRegistration<IMongoIndexClient<TKey, TEntity>, MongoIndexClient<TKey, TEntity>>(false);
+            WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
+            WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);
+            WithRegistration<IConfigureCollection, MongoConfigureCollection<TKey, TEntity>>(false);
+            WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
+            WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
 
             if (EntityKeyType == typeof(Guid))
-                this.WithRegistration(typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
+            {
+                WithRegistration(typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
                     typeof(CombGuidMongoCollectionKeyGenerator<>).MakeGenericType(EntityType),
                     typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
                     false);
+            }
         }
 
-        private void RegisterCollectionNameInterfaceType()
+        private void RegisterEntityConfiguration()
         {
             if (string.IsNullOrWhiteSpace(CollectionName)) throw new Exception("Please provide a collection name for this mongo entity");
 
@@ -130,30 +86,28 @@ namespace Firebend.AutoCrud.Mongo
                 Override = true
             };
 
-            var instance = _generator.ImplementInterface(iFaceType,
-                signature,
-                new[]
-                {
-                    collectionNameField,
-                    databaseField
-                });
-
-            this.WithRegistrationInstance(iFaceType, instance);
+            WithDynamicClass(iFaceType, new DynamicClassRegistration
+            {
+                Interface = iFaceType,
+                Properties = new[] {databaseField, collectionNameField},
+                Signature = signature,
+                Lifetime = ServiceLifetime.Singleton
+            });
         }
 
-        public MongoDbEntityBuilder WithDatabase(string db)
+        public MongoDbEntityBuilder<TKey, TEntity> WithDatabase(string db)
         {
             Database = db;
             return this;
         }
 
-        public MongoDbEntityBuilder WithCollection(string collection)
+        public MongoDbEntityBuilder<TKey, TEntity> WithCollection(string collection)
         {
             CollectionName = collection;
             return this;
         }
 
-        public MongoDbEntityBuilder WithDefaultDatabase(string db)
+        public MongoDbEntityBuilder<TKey, TEntity> WithDefaultDatabase(string db)
         {
             if (string.IsNullOrWhiteSpace(db)) throw new Exception("Please provide a database name.");
 
@@ -171,23 +125,21 @@ namespace Firebend.AutoCrud.Mongo
                 Override = true
             };
 
-            var instance = _generator.ImplementInterface(iFaceType,
-                signature,
-                new[]
-                {
-                    defaultDbField
-                });
-
-            this.WithRegistrationInstance(iFaceType, instance);
+            WithDynamicClass(iFaceType, new DynamicClassRegistration
+            {
+                Interface = iFaceType,
+                Properties = new [] { defaultDbField },
+                Signature = signature,
+                Lifetime = ServiceLifetime.Singleton
+            });
 
             return this;
         }
 
-        public MongoDbEntityBuilder WithFullTextSearch()
+        public MongoDbEntityBuilder<TKey, TEntity> WithFullTextSearch()
         {
-            return this.WithRegistration(typeof(IMongoIndexProvider<>).MakeGenericType(EntityType),
-                typeof(FullTextIndexProvider<>).MakeGenericType(EntityType),
-                typeof(IMongoIndexProvider<>).MakeGenericType(EntityType));
+            WithRegistration<IMongoIndexProvider<TEntity>, FullTextIndexProvider<TEntity>>();
+            return this;
         }
     }
 }

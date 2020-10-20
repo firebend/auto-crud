@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +35,7 @@ namespace Firebend.AutoCrud.Core.Threading
     
     public static class Run
     {
-        public static Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+        public static Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
         {
             return OnceAsync(key, async ct =>
             {
@@ -45,7 +44,7 @@ namespace Firebend.AutoCrud.Core.Threading
             }, cancellationToken);
         }
         
-        public static async Task<T> OnceAsync<T>(string key, Func<CancellationToken, Task<T>> func, CancellationToken cancellationToken)
+        public static async Task<T> OnceAsync<T>(string key, Func<CancellationToken, Task<T>> func, CancellationToken cancellationToken = default)
         {
             var temp = RunOnceCaches.GetValue<T>(key);
 
@@ -69,30 +68,40 @@ namespace Firebend.AutoCrud.Core.Threading
 
             return temp;
         }
-    }
-    
-    public static class Memoizer
-    {
-        public static Func<A, R> Memoize<A, R>(this Func<A, R> f)
+        
+        
+        public static void Once(string key, Action action)
         {
-            var cache = new ConcurrentDictionary<A, R>();
-            var syncMap = new ConcurrentDictionary<A, object>();
-            
-            return a =>
+            Once(key, () =>
             {
-                R r;
-                
-                if (!cache.TryGetValue(a, out r))
-                {
-                    var sync = syncMap.GetOrAdd(a, new object());
-                    lock (sync)
-                    {
-                        r = cache.GetOrAdd(a, f);
-                    }
-                    syncMap.TryRemove(a, out sync);
-                }
-                return r;
-            };
+                action();
+                return true;
+            });
+        }
+        
+        public static T Once<T>(string key, Func<T> func)
+        {
+            var temp = RunOnceCaches.GetValue<T>(key);
+
+            if (temp != null && !temp.Equals(default(T)))
+            {
+                return temp;
+            }
+            
+            using var _ = new AsyncDuplicateLock().Lock(key);
+            
+            temp = RunOnceCaches.GetValue<T>(key);
+
+            if (temp != null && !temp.Equals(default(T)))
+            {
+                return temp;
+            }
+
+            temp =  func();
+
+            RunOnceCaches.UpdateValue(key, temp);
+
+            return temp;
         }
     }
 }
