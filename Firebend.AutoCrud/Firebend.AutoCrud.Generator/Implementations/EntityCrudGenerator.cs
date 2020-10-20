@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -60,6 +59,20 @@ namespace Firebend.AutoCrud.Generator.Implementations
             RegisterRegistrations(serviceCollection, builder);
             RegisterInstances(serviceCollection, builder);
             RegisterDynamicClasses(serviceCollection, builder);
+            CallServiceCollectionHooks(serviceCollection, builder);
+        }
+
+        private static void CallServiceCollectionHooks(IServiceCollection serviceCollection, EntityBuilder builder)
+        {
+            if (builder.ServiceCollectionHooks == null)
+            {
+                return;
+            }
+
+            foreach (var hook in builder.ServiceCollectionHooks)
+            {
+                hook(serviceCollection);
+            }
         }
 
         private void RegisterDynamicClasses(IServiceCollection serviceCollection, BaseBuilder builder)

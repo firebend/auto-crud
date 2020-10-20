@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.Core.Threading
     
     public static class Run
     {
-        public static Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+        public static Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
         {
             return OnceAsync(key, async ct =>
             {
@@ -45,7 +45,7 @@ namespace Firebend.AutoCrud.Core.Threading
             }, cancellationToken);
         }
         
-        public static async Task<T> OnceAsync<T>(string key, Func<CancellationToken, Task<T>> func, CancellationToken cancellationToken)
+        public static async Task<T> OnceAsync<T>(string key, Func<CancellationToken, Task<T>> func, CancellationToken cancellationToken = default)
         {
             var temp = RunOnceCaches.GetValue<T>(key);
 

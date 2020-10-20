@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models;
@@ -143,6 +142,14 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
                 });
             }
 
+            return builder;
+        }
+
+        public static TBuilder WithServiceCollectionHook<TBuilder>(this TBuilder builder, Action<IServiceCollection> action)
+            where TBuilder : BaseBuilder
+        {
+            builder.ServiceCollectionHooks??=new List<Action<IServiceCollection>>();
+            builder.ServiceCollectionHooks.Add(action);
             return builder;
         }
     }

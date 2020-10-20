@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
@@ -13,6 +14,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public IDictionary<Type, Registration> Registrations { get; set; }
 
         public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
+        
+        public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
         
         public void Build()
         {

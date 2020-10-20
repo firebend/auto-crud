@@ -34,14 +34,17 @@ namespace Firebend.AutoCrud.Web.Sample
             return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
-                    if (hostingContext.HostingEnvironment.IsDevelopment()) builder.AddUserSecrets("Firebend.AutoCrud");
+                    if (hostingContext.HostingEnvironment.IsDevelopment())
+                    {
+                        builder.AddUserSecrets("Firebend.AutoCrud");
+                    }
                 })
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.TryAddEnumerable(
-                        ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
-                    
                     services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
                         .AddMongoPerson().Generate()
                         .UsingEfCrud().AddEfPerson(hostContext.Configuration).Generate()
@@ -52,8 +55,7 @@ namespace Firebend.AutoCrud.Web.Sample
                         })
                         .AddControllers()
                         .AddNewtonsoftJson()
-                        .ConfigureApplicationPartManager(
-                            manager => manager.FeatureProviders.Insert(0, new FirebendAutoCrudControllerConvention(services)));
+                        .AddFirebendAutoCrudWeb(services);
                 });
         }
     }

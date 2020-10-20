@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
@@ -9,12 +10,18 @@ using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
+using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations;
+using Firebend.AutoCrud.Web.Implementations.Options;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web
 {
@@ -134,8 +141,22 @@ namespace Firebend.AutoCrud.Web
         public ControllerConfigurator<TBuilder> WithOpenApiGroupName(string openApiGroupName)
         {
             OpenApiGroupName = openApiGroupName;
+            
             var (aType, aBuilder) = GetOpenApiGroupAttributeInfo();
+            
             AddAttributeToAllControllers(aType, aBuilder);
+
+            //todo: make a non async version
+            Run.OnceAsync("SwaggerGenOptions", ct =>
+            {
+                Builder.WithServiceCollectionHook(sc =>
+                {
+                    sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
+                });
+
+                return Task.CompletedTask;
+            }).GetAwaiter().GetResult();
+            
             return this;
         }
 
