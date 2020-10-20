@@ -35,10 +35,7 @@ namespace Firebend.AutoCrud.Web.Sample
                         .AddMongoPerson().Generate()
                         .UsingEfCrud().AddEfPerson(hostContext.Configuration).Generate()
                         .AddRouting()
-                        .AddSwaggerGen(opt =>
-                        {
-                            //opt.TagActionsBy(FirebendAutoCrudSwaggerGenTagger.TagActionsBy);
-                        })
+                        .AddSwaggerGen()
                         .AddControllers()
                         .AddNewtonsoftJson()
                         .AddFirebendAutoCrudWeb(services);
