@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Threading;
@@ -25,8 +26,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web
 {
-    public class ControllerConfigurator<TBuilder> : EntityCrudConfigurator<TBuilder>
-        where TBuilder : EntityCrudBuilder
+    public class ControllerConfigurator<TBuilder, TKey, TEntity> : EntityCrudConfigurator<TBuilder, TKey, TEntity>
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
         public ControllerConfigurator(TBuilder builder) : base(builder)
         {
@@ -49,15 +52,8 @@ namespace Firebend.AutoCrud.Web
             WithRoute($"/api/v1/{name.ToKebabCase()}");
             WithOpenApiGroupName(name.ToSentenceCase());
 
-            CrudBuilder.WithRegistration(
-                typeof(IEntityValidationService<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType),
-                typeof(DefaultEntityValidationService<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType),
-                typeof(IEntityValidationService<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType));
-
-            CrudBuilder.WithRegistration(
-                typeof(IEntityKeyParser<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType),
-                typeof(DefaultEntityKeyParser<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType),
-                typeof(IEntityKeyParser<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType));
+            CrudBuilder.WithRegistration<IEntityValidationService<TKey, TEntity>, DefaultEntityValidationService<TKey, TEntity>>(false);
+            CrudBuilder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
         }
 
         private TBuilder CrudBuilder { get; }
@@ -102,7 +98,7 @@ namespace Firebend.AutoCrud.Web
             CrudBuilder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
-        private ControllerConfigurator<TBuilder> WithController(Type type, Type typeToCheck, params Type[] genericArgs)
+        private ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type, Type typeToCheck, params Type[] genericArgs)
         {
             var registrationType = type.MakeGenericType(genericArgs);
             var typeToCheckGeneric = typeToCheck.MakeGenericType(genericArgs);
@@ -130,7 +126,7 @@ namespace Firebend.AutoCrud.Web
                 .ForEach(x => { CrudBuilder.WithAttribute(x.Key, attributeType, attributeBuilder); });
         }
 
-        public ControllerConfigurator<TBuilder> WithRoute(string route)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithRoute(string route)
         {
             Route = route;
             var (aType, aBuilder) = GetRouteAttributeInfo();
@@ -138,7 +134,7 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        public ControllerConfigurator<TBuilder> WithOpenApiGroupName(string openApiGroupName)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiGroupName(string openApiGroupName)
         {
             OpenApiGroupName = openApiGroupName;
             
@@ -160,109 +156,109 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        public ControllerConfigurator<TBuilder> WithCreateController(Type registrationType)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type registrationType)
         {
             return WithController(registrationType,
                 typeof(AbstractEntityCreateController<,>),
                 CrudBuilder.EntityKeyType, CrudBuilder.EntityType);
         }
 
-        public ControllerConfigurator<TBuilder> WithCreateController<TRegistrationType>()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController<TRegistrationType>()
         {
             return WithCreateController(typeof(TRegistrationType));
         }
 
-        public ControllerConfigurator<TBuilder> WithCreateController()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController()
         {
             return WithCreateController(typeof(AbstractEntityCreateController<,>));
         }
 
-        public ControllerConfigurator<TBuilder> WithDeleteController(Type registrationType)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController(Type registrationType)
         {
             return WithController(registrationType,
                 typeof(AbstractEntityDeleteController<,>),
                 CrudBuilder.EntityKeyType, CrudBuilder.EntityType);
         }
 
-        public ControllerConfigurator<TBuilder> WithDeleteController<TRegistrationType>()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController<TRegistrationType>()
         {
             return WithDeleteController(typeof(TRegistrationType));
         }
 
-        public ControllerConfigurator<TBuilder> WithDeleteController()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController()
         {
             return WithDeleteController(typeof(AbstractEntityDeleteController<,>));
         }
 
-        public ControllerConfigurator<TBuilder> WithGetAllController(Type registrationType)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController(Type registrationType)
         {
             return WithController(registrationType,
                 typeof(AbstractEntityReadAllController<,>),
                 CrudBuilder.EntityKeyType, CrudBuilder.EntityType);
         }
 
-        public ControllerConfigurator<TBuilder> WithGetAllController<TRegistrationType>()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController<TRegistrationType>()
         {
             return WithGetAllController(typeof(TRegistrationType));
         }
 
-        public ControllerConfigurator<TBuilder> WithGetAllController()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController()
         {
             return WithGetAllController(typeof(AbstractEntityReadAllController<,>));
         }
 
-        public ControllerConfigurator<TBuilder> WithReadController(Type registrationType)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController(Type registrationType)
         {
             return WithController(registrationType,
                 typeof(AbstractEntityReadController<,>),
                 CrudBuilder.EntityKeyType, CrudBuilder.EntityType);
         }
 
-        public ControllerConfigurator<TBuilder> WithReadController<TRegistrationType>()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController<TRegistrationType>()
         {
             return WithReadController(typeof(TRegistrationType));
         }
 
-        public ControllerConfigurator<TBuilder> WithReadController()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController()
         {
             return WithReadController(typeof(AbstractEntityReadController<,>));
         }
 
-        public ControllerConfigurator<TBuilder> WithSearchController(Type registrationType)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController(Type registrationType)
         {
             return WithController(registrationType,
                 typeof(AbstractEntitySearchController<,,>),
                 CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchRequestType);
         }
 
-        public ControllerConfigurator<TBuilder> WithSearchController<TRegistrationType>()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController<TRegistrationType>()
         {
             return WithSearchController(typeof(TRegistrationType));
         }
 
-        public ControllerConfigurator<TBuilder> WithSearchController()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController()
         {
             return WithSearchController(typeof(AbstractEntitySearchController<,,>));
         }
 
-        public ControllerConfigurator<TBuilder> WithUpdateController(Type registrationType)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(Type registrationType)
         {
             return WithController(registrationType,
                 typeof(AbstractEntityUpdateController<,>),
                 CrudBuilder.EntityKeyType, CrudBuilder.EntityType);
         }
 
-        public ControllerConfigurator<TBuilder> WithUpdateController<TRegistrationType>()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController<TRegistrationType>()
         {
             return WithUpdateController(typeof(TRegistrationType));
         }
 
-        public ControllerConfigurator<TBuilder> WithUpdateController()
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController()
         {
             return WithUpdateController(typeof(AbstractEntityUpdateController<,>));
         }
 
-        public ControllerConfigurator<TBuilder> WithAllControllers(bool includeGetAll = false)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithAllControllers(bool includeGetAll = false)
         {
             WithReadController();
             WithCreateController();
@@ -278,7 +274,7 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        public ControllerConfigurator<TBuilder> AddAuthorizationPolicy(Type type, string authorizePolicy = "")
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy(Type type, string authorizePolicy = "")
         {
             var authType = typeof(AuthorizeAttribute);
 
@@ -300,44 +296,44 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        public ControllerConfigurator<TBuilder> AddAuthorizationPolicy<TController>(string policy)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy<TController>(string policy)
         {
             return AddAuthorizationPolicy(typeof(TController), policy);
         }
 
-        public ControllerConfigurator<TBuilder> AddCreateAuthorizationPolicy(string policy)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateAuthorizationPolicy(string policy)
         {
             return AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
         }
 
-        public ControllerConfigurator<TBuilder> AddDeleteAuthorizationPolicy(string policy)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteAuthorizationPolicy(string policy)
         {
             return AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
         }
 
-        public ControllerConfigurator<TBuilder> AddReadAuthorizationPolicy(string policy)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAuthorizationPolicy(string policy)
         {
             return AddAuthorizationPolicy(typeof(AbstractEntityReadController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
         }
 
-        public ControllerConfigurator<TBuilder> AddReadAllAuthorizationPolicy(string policy)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllAuthorizationPolicy(string policy)
         {
             return AddAuthorizationPolicy(typeof(AbstractEntityReadAllController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType),
                 policy);
         }
 
-        public ControllerConfigurator<TBuilder> AddSearchAuthorizationPolicy(string policy)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddSearchAuthorizationPolicy(string policy)
         {
             return AddAuthorizationPolicy(
                 typeof(AbstractEntitySearchController<,,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchType), policy);
         }
 
-        public ControllerConfigurator<TBuilder> AddUpdateAuthorizationPolicy(string policy)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
         {
             return AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
         }
 
-        public ControllerConfigurator<TBuilder> AddAlterAuthorizationPolicies(string policy = "")
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterAuthorizationPolicies(string policy = "")
         {
             AddCreateAuthorizationPolicy(policy);
             AddDeleteAuthorizationPolicy(policy);
@@ -346,7 +342,7 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        public ControllerConfigurator<TBuilder> AddAuthorizationPolicies(string policy = "")
+        public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicies(string policy = "")
         {
             AddAlterAuthorizationPolicies(policy);
             AddReadAllAuthorizationPolicy(policy);

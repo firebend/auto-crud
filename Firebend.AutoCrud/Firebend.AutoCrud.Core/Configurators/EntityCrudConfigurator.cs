@@ -1,9 +1,7 @@
 using System;
 using System.Linq.Expressions;
-using Firebend.AutoCrud.Core.Abstractions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
-using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
@@ -13,13 +11,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Configurators
 {
-    public class EntityCrudConfigurator<TBuilder> : BuilderConfigurator<TBuilder> where TBuilder : EntityCrudBuilder
+    public class EntityCrudConfigurator<TBuilder, TKey, TEntity> : EntityBuilderConfigurator<TBuilder,TKey,TEntity>
+        where TEntity : class, IEntity<TKey>
+        where TKey : struct
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
     {
         public EntityCrudConfigurator(TBuilder builder) : base(builder)
         {
         }
         
-        public EntityCrudConfigurator<TBuilder> WithCrud<TSearch>()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCrud<TSearch>()
             where TSearch : EntitySearchRequest
         {
             WithCreate();
@@ -31,34 +32,34 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder> WithCrud()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithCrud()
         {
             return WithCrud<EntitySearchRequest>();
         }
         
-        public EntityCrudConfigurator<TBuilder> WithCreate(Type registrationType, Type serviceType)
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithCreate(Type registrationType, Type serviceType)
         {
             Builder.WithRegistration(registrationType,
                 serviceType,
-                typeof(IEntityCreateService<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType));
+                typeof(IEntityCreateService<TKey,TEntity>));
 
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder> WithCreate<TRegistration, TService>()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithCreate<TRegistration, TService>()
         {
             return WithCreate(typeof(TRegistration), typeof(TService));
         }
 
-        public EntityCrudConfigurator<TBuilder> WithCreate()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithCreate()
         {
-            var registrationType = typeof(IEntityCreateService<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+            var registrationType = typeof(IEntityCreateService<TKey,TEntity>);
             var serviceType = Builder.CreateType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
 
             return WithCreate(registrationType, serviceType);
         }
         
-        public EntityCrudConfigurator<TBuilder> WithDelete(Type registrationType, Type serviceType)
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithDelete(Type registrationType, Type serviceType)
         {
             Builder.WithRegistration(registrationType,
                 serviceType,
@@ -67,12 +68,12 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder> WithDelete<TRegistration, TService>()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithDelete<TRegistration, TService>()
         {
             return WithDelete(typeof(TRegistration), typeof(TService));
         }
 
-        public EntityCrudConfigurator<TBuilder> WithDelete()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithDelete()
         {
             var registrationType = typeof(IEntityDeleteService<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
 
@@ -85,27 +86,27 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithDelete(registrationType, serviceType);
         }
         
-        public EntityCrudConfigurator<TBuilder> WithOrderBy(Type type)
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithOrderBy(Type type)
         {
             Builder.WithRegistration(
-                typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType),
+                typeof(IEntityDefaultOrderByProvider<TKey,TEntity>),
                 type,
-                typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType)
+                typeof(IEntityDefaultOrderByProvider<TKey,TEntity>)
             );
 
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder> WithOrderBy<T>()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithOrderBy<T>()
         {
             return WithOrderBy(typeof(T));
         }
         
-        private EntityCrudConfigurator<TBuilder> WithOrderBy<TEntity>((Expression<Func<TEntity, object>>, bool @ascending) orderBy)
+        private EntityCrudConfigurator<TBuilder, TKey, TEntity>WithOrderBy((Expression<Func<TEntity, object>>, bool @ascending) orderBy)
         {
-            var signature = $"{Builder.EntityType.Name}_{Builder.EntityName}_OrderBy";
+            var signature = $"{Builder.SignatureBase}_OrderBy";
 
-            var iFaceType = typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+            var iFaceType = typeof(IEntityDefaultOrderByProvider<TKey,TEntity>);
 
             var propertySet = new PropertySet<(Expression<Func<TEntity, object>>, bool @ascending)>
             {
@@ -125,7 +126,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
         
-        public EntityCrudConfigurator<TBuilder> WithRead(Type registrationType, Type serviceType)
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithRead(Type registrationType, Type serviceType)
         {
             Builder.WithRegistration(registrationType,
                 serviceType,
@@ -134,12 +135,12 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder> WithRead<TRegistration, TService>()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithRead<TRegistration, TService>()
         {
             return WithRead(typeof(TRegistration), typeof(TService));
         }
 
-        public EntityCrudConfigurator<TBuilder> WithRead()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithRead()
         {
             var registrationType = typeof(IEntityReadService<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
             var serviceType = Builder.ReadType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
@@ -147,7 +148,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithRead(registrationType, serviceType);
         }
         
-        public EntityCrudConfigurator<TBuilder> WithSearch(Type registrationType, Type serviceType, Type searchType)
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithSearch(Type registrationType, Type serviceType, Type searchType)
         {
             Builder.SearchRequestType = searchType;
 
@@ -158,13 +159,13 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder> WithSearch<TRegistration, TService, TSearch>()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithSearch<TRegistration, TService, TSearch>()
             where TSearch : EntitySearchRequest
         {
             return WithSearch(typeof(TRegistration), typeof(TService), typeof(TSearch));
         }
 
-        public EntityCrudConfigurator<TBuilder> WithSearch<TSearch>()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithSearch<TSearch>()
             where TSearch : EntitySearchRequest
         {
             var searchType = typeof(TSearch);
@@ -175,12 +176,12 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithSearch(registrationType, serviceType, searchType);
         }
 
-        public EntityCrudConfigurator<TBuilder> WithSearch()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithSearch()
         {
             return WithSearch<EntitySearchRequest>();
         }
         
-        public EntityCrudConfigurator<TBuilder> WithUpdate(Type registrationType, Type serviceType)
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithUpdate(Type registrationType, Type serviceType)
         {
             Builder.WithRegistration(registrationType,
                 serviceType,
@@ -189,12 +190,12 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder> WithUpdate<TRegistration, TService>()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithUpdate<TRegistration, TService>()
         {
             return WithUpdate(typeof(TRegistration), typeof(TService));
         }
 
-        public EntityCrudConfigurator<TBuilder> WithUpdate()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithUpdate()
         {
             var registrationType = typeof(IEntityUpdateService<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
             var serviceType = Builder.UpdateType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);

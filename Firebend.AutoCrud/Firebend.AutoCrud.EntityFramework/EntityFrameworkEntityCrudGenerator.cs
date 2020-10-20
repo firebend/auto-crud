@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
-    public class EntityFrameworkEntityCrudGenerator : EntityCrudGenerator<EntityFrameworkEntityBuilder>
+    public class EntityFrameworkEntityCrudGenerator : EntityCrudGenerator
     {
         public EntityFrameworkEntityCrudGenerator(IDynamicClassGenerator classGenerator, IServiceCollection serviceCollection) : base(classGenerator,
             serviceCollection)

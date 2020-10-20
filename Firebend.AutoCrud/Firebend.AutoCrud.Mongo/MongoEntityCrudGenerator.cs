@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Mongo
 {
-    public class MongoEntityCrudGenerator : EntityCrudGenerator<MongoDbEntityBuilder>
+    public class MongoEntityCrudGenerator : EntityCrudGenerator
     {
         public MongoEntityCrudGenerator(IServiceCollection collection, string connectionString) : base(collection)
         {

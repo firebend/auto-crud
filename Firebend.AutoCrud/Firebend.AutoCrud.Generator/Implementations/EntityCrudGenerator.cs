@@ -6,8 +6,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
-using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
-using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Models;
@@ -15,8 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Generator.Implementations
 {
-    public abstract class EntityCrudGenerator<TBuilder> : IEntityCrudGenerator
-        where TBuilder : EntityBuilder, new()
+    public abstract class EntityCrudGenerator : IEntityCrudGenerator
     {
         private readonly IDynamicClassGenerator _classGenerator;
 
@@ -30,7 +27,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
         }
 
-        public List<EntityBuilder> Builders { get; } = new List<EntityBuilder>();
+        public List<BaseBuilder> Builders { get; } = new List<BaseBuilder>();
 
         public IServiceCollection ServiceCollection { get; }
 
@@ -45,7 +42,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 builderStopwatch.Start();
                 Generate(ServiceCollection, builder);
                 builderStopwatch.Stop();
-                Console.WriteLine($"Generated entity crud for {builder.EntityType} in {builderStopwatch.ElapsedMilliseconds} (ms)");
+                //Console.WriteLine($"Generated entity crud for {builder.EntityType} in {builderStopwatch.ElapsedMilliseconds} (ms)");
             });
             
             stopwatch.Stop();
@@ -54,7 +51,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return ServiceCollection;
         }
 
-        protected virtual void Generate(IServiceCollection serviceCollection, EntityBuilder builder)
+        protected virtual void Generate(IServiceCollection serviceCollection, BaseBuilder builder)
         {
             RegisterRegistrations(serviceCollection, builder);
             RegisterInstances(serviceCollection, builder);
@@ -62,7 +59,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             CallServiceCollectionHooks(serviceCollection, builder);
         }
 
-        private static void CallServiceCollectionHooks(IServiceCollection serviceCollection, EntityBuilder builder)
+        private static void CallServiceCollectionHooks(IServiceCollection serviceCollection, BaseBuilder builder)
         {
             if (builder.ServiceCollectionHooks == null)
             {
@@ -96,9 +93,9 @@ namespace Firebend.AutoCrud.Generator.Implementations
             
         }
 
-        private void RegisterRegistrations(IServiceCollection serviceCollection, EntityBuilder builder)
+        private void RegisterRegistrations(IServiceCollection serviceCollection, BaseBuilder builder)
         {
-            var signatureBase = $"{builder.EntityType.Name}_{builder.EntityName}";
+            var signatureBase = builder.SignatureBase;
             var implementedTypes = new List<Type>();
 
             builder.Build();
@@ -141,7 +138,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             }
         }
 
-        private static void RegisterInstances(IServiceCollection serviceCollection, EntityBuilder builder)
+        private static void RegisterInstances(IServiceCollection serviceCollection, BaseBuilder builder)
         {
             foreach (var (key, value) in builder.Registrations
                 .Where(x => x.Value is InstanceRegistration))
@@ -262,30 +259,15 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return extraInterfaces;
         }
 
-        public EntityCrudGenerator<TBuilder> AddBuilder(TBuilder builder, Func<TBuilder, TBuilder> configure = null)
+        public EntityCrudGenerator AddBuilder<TBuilder>(TBuilder builder, Func<TBuilder, TBuilder> configure) 
+            where TBuilder : BaseBuilder,  new()
+
         {
-            if (configure != null) builder = configure(builder);
+            configure(new TBuilder());
 
             Builders.Add(builder);
 
             return this;
-        }
-
-        public EntityCrudGenerator<TBuilder> AddBuilder<T>(Func<TBuilder, TBuilder> configure)
-
-        {
-            var builder = configure(new TBuilder());
-
-            return AddBuilder(builder, configure);
-        }
-
-        public EntityCrudGenerator<TBuilder> AddBuilder<TEntity, TEntityKey>(Func<TBuilder, TBuilder> configure)
-            where TEntity : IEntity<TEntityKey>
-            where TEntityKey : struct
-        {
-            var builder = configure(new TBuilder().ForEntity<TBuilder, TEntity, TEntityKey>());
-
-            return AddBuilder(builder, configure);
         }
     }
 }

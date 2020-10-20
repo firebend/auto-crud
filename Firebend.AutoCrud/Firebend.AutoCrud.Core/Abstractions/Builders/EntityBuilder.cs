@@ -1,19 +1,18 @@
 using System;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
-    public abstract class EntityBuilder : BaseBuilder
+    public abstract class EntityBuilder<TKey, TEntity> : BaseBuilder
+        where TKey : struct
+        where TEntity : IEntity<TKey>
     {
-        /// <summary>
-        ///     Gets a value indicating the <see cref="Type" /> of Entity.
-        /// </summary>
-        public Type EntityType { get; set; }
-
-        /// <summary>
-        ///     Gets value indicating the <see cref="Type" /> key for the entity.
-        /// </summary>
-        public Type EntityKeyType { get; set; }
-
         public string EntityName { get; set; }
+
+        public Type EntityType => typeof(TEntity);
+
+        public Type EntityKeyType => typeof(TKey);
+
+        public override string SignatureBase => $"{EntityType.Name}_{EntityName}";
     }
 }

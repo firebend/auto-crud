@@ -42,10 +42,10 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
                     services.AddDbContext<AppDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); },
                             ServiceLifetime.Singleton)
                         .UsingEfCrud()
-                        .AddBuilder<Person, Guid>(person =>
+                        .AddBuilder(new EntityFrameworkEntityBuilder<Guid, Person>(),  person =>
                             person.AddCrud(crud => crud.WithCrud())
                                 .WithDbContext<AppDbContext>()
-                                .WithRegistration<EntityFrameworkEntityBuilder, IEntityReadService<Guid, Person>, PersonReadRepository>()
+                                .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
                             )
                         .AddBuilder<Pet, Guid>(pet =>
                             pet.AddCrud(crud => crud.WithCrud())
