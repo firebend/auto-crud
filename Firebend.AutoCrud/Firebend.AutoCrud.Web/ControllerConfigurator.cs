@@ -298,23 +298,22 @@ namespace Firebend.AutoCrud.Web
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateAuthorizationPolicy(string policy)
         {
-            return AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+            return AddAuthorizationPolicy(typeof(AbstractEntityCreateController<TKey,TEntity>), policy);
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteAuthorizationPolicy(string policy)
         {
-            return AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+            return AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<TKey,TEntity>), policy);
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAuthorizationPolicy(string policy)
         {
-            return AddAuthorizationPolicy(typeof(AbstractEntityReadController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+            return AddAuthorizationPolicy(typeof(AbstractEntityReadController<TKey,TEntity>), policy);
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllAuthorizationPolicy(string policy)
         {
-            return AddAuthorizationPolicy(typeof(AbstractEntityReadAllController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType),
-                policy);
+            return AddAuthorizationPolicy(typeof(AbstractEntityReadAllController<TKey,TEntity>), policy);
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddSearchAuthorizationPolicy(string policy)
@@ -325,7 +324,7 @@ namespace Firebend.AutoCrud.Web
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
         {
-            return AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,>).MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType), policy);
+            return AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<TKey,TEntity>), policy);
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterAuthorizationPolicies(string policy = "")
