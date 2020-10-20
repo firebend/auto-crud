@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 builderStopwatch.Start();
                 Generate(ServiceCollection, builder);
                 builderStopwatch.Stop();
-                //Console.WriteLine($"Generated entity crud for {builder.EntityType} in {builderStopwatch.ElapsedMilliseconds} (ms)");
+                Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {builderStopwatch.ElapsedMilliseconds} (ms)");
             });
             
             stopwatch.Stop();

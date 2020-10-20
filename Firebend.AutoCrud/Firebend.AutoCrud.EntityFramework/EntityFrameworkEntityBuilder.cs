@@ -73,7 +73,8 @@ namespace Firebend.AutoCrud.EntityFramework
             return WithSearchFilter(typeof(T));
         }
 
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Expression<Func<string, TEntity, bool>> filter)
+        // ReSharper disable once UnusedMember.Local
+        private EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Expression<Func<string, TEntity, bool>> filter)
         {
             var signature = $"{SignatureBase}_SearchFilter";
 
