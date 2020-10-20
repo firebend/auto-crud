@@ -31,8 +31,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
             Builder.WithRegistrationInstance(shardConfiguration);
             Builder.WithRegistration<IShardManager, ShardManager>();
             Builder.WithRegistration<IDbContextProvider<TKey, TEntity>>(
-                typeof(ShardDbContextProvider<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.DbContextType),
-                false);
+                typeof(ShardDbContextProvider<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.DbContextType));
 
             WithDbCreator<DefaultDbCreator>();
             
