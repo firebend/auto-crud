@@ -49,7 +49,6 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
 
             if (string.IsNullOrWhiteSpace(dbName))
             {
-                return;
                 throw new Exception("No default db name provided.");
             }
 

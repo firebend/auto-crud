@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Web
                 list = new List<string>
                 {
                     controllerDescriptor.ControllerTypeInfo?.GetCustomAttribute<OpenApiGroupNameAttribute>()?.GroupName ??
-                    controllerDescriptor.ControllerTypeInfo?.Namespace?.Split('.')?.Last() ??
+                    controllerDescriptor.ControllerTypeInfo?.Namespace?.Split('.').Last() ??
                     apiDescription.RelativePath
                 };
             }

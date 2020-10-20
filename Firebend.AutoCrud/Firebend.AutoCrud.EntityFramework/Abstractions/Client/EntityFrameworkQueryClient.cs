@@ -159,7 +159,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var __ = _fullTextSearchProvider.Test;
                 var searchWhere = _fullTextSearchProvider?.Filter;
                 
                 if (searchWhere != null)

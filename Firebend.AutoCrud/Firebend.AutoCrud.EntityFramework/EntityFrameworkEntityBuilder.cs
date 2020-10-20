@@ -80,16 +80,8 @@ namespace Firebend.AutoCrud.EntityFramework
             var signature = $"{SignatureBase}_SearchFilter";
 
             var iFaceType = typeof(IEntityFrameworkFullTextExpressionProvider<TKey,TEntity>);
-
-            var propertySet = new PropertySet
-            {
-                Name = nameof(IEntityFrameworkFullTextExpressionProvider<Guid, FooEntity>.Test),
-                Type = typeof(string),
-                Value = "filter",
-                Override = true
-            };
             
-            var propertySet1 = new PropertySet<Expression<Func<string, TEntity, bool>>>
+            var propertySet = new PropertySet<Expression<Func<string, TEntity, bool>>>
             {
                 Name = nameof(IEntityFrameworkFullTextExpressionProvider<Guid, FooEntity>.Filter),
                 Value = filter,
@@ -99,7 +91,7 @@ namespace Firebend.AutoCrud.EntityFramework
             WithDynamicClass(iFaceType, new DynamicClassRegistration
             {
                 Interface = iFaceType,
-                Properties = new [] { propertySet, propertySet1 },
+                Properties = new [] { propertySet },
                 Signature = signature,
                 Lifetime = ServiceLifetime.Singleton
             });

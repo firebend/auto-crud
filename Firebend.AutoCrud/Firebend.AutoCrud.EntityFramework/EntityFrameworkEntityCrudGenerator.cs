@@ -1,3 +1,5 @@
+using System;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Generator.Implementations;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,14 @@ namespace Firebend.AutoCrud.EntityFramework
 
         public EntityFrameworkEntityCrudGenerator(IServiceCollection serviceCollection) : base(serviceCollection)
         {
+        }
+
+        public EntityFrameworkEntityCrudGenerator AddEntity<TKey, TEntity>(Action<EntityFrameworkEntityBuilder<TKey, TEntity>> configure)
+            where TKey : struct
+            where TEntity : class, IEntity<TKey>, new()
+        {
+            configure(new EntityFrameworkEntityBuilder<TKey, TEntity>());
+            return this;
         }
     }
 }

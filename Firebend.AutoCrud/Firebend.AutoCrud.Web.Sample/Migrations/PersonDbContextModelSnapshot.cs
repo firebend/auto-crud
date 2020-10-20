@@ -4,7 +4,6 @@ using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Firebend.AutoCrud.Web.Sample.Migrations
 {

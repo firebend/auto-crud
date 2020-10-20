@@ -9,7 +9,5 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         where TEntity : IEntity<TKey>
     {
         public Expression<Func<TEntity, string, bool>> Filter { get; }
-        
-        public string Test { get; }
     }
 }

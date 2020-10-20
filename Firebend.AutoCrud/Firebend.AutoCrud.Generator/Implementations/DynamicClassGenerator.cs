@@ -105,6 +105,12 @@ namespace Firebend.AutoCrud.Generator.Implementations
             }
 
             var objectType = tb.CreateType();
+
+            if (objectType == null)
+            {
+                return null;
+            }
+            
             var instance = Activator.CreateInstance(objectType);
 
             if (properties.Length > 0)
@@ -116,6 +122,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             }
 
             return instance;
+
         }
 
         private static void CreatePassThroughConstructors(TypeBuilder builder, Type baseType, List<Type> implementedTypes)

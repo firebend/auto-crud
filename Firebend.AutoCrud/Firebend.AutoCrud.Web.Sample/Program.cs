@@ -1,24 +1,10 @@
-using System;
-using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
-using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
-using Firebend.AutoCrud.Web.Conventions;
-using Firebend.AutoCrud.Web.Implementations.Options;
-using Firebend.AutoCrud.Web.Sample.DbContexts;
-using Firebend.AutoCrud.Web.Sample.DomainEvents;
-using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Extensions;
-using Firebend.AutoCrud.Web.Sample.Filtering;
-using Firebend.AutoCrud.Web.Sample.Models;
-using Firebend.AutoCrud.Web.Sample.Ordering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web.Sample
 {

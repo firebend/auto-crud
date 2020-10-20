@@ -17,23 +17,19 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             return builder;
         }
         
-        public static TBuilder AddCrud<TBuilder, TKey, TEntity>(this TBuilder builder)
-            where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        public static EntityCrudBuilder<TKey, TEntity> AddCrud<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder)
             where TKey : struct
             where TEntity : class, IEntity<TKey>
         {
-            var config = new EntityCrudConfigurator<TBuilder, TKey, TEntity>(builder);
-            config.WithCrud();
-            return builder;
+            return AddCrud(builder, crud => crud.WithCrud());
         }
 
-        public static TBuilder AddDomainEvents<TBuilder, TKey, TEntity>(this TBuilder builder,
-            Action<DomainEventsConfigurator<TBuilder, TKey, TEntity>> configure)
-            where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        public static EntityCrudBuilder<TKey, TEntity> AddDomainEvents<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder,
+            Action<DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure)
             where TKey : struct
             where TEntity : IEntity<TKey>
         {
-            var config = new DomainEventsConfigurator<TBuilder, TKey, TEntity>(builder);
+            var config = new DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
             configure(config);
             return builder;
         }
