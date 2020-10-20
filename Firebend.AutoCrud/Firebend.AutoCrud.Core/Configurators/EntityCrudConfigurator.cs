@@ -107,11 +107,11 @@ namespace Firebend.AutoCrud.Core.Configurators
 
             var iFaceType = typeof(IEntityDefaultOrderByProvider<,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
 
-            var propertySet = new PropertySet
+            var propertySet = new PropertySet<(Expression<Func<TEntity, object>>, bool @ascending)>
             {
                 Name = nameof(IEntityDefaultOrderByProvider<Guid, FooEntity>.OrderBy),
-                Type = typeof((Expression<Func<TEntity, object>>, bool @ascending)),
-                Value = orderBy
+                Value = orderBy,
+                Override = true
             };
 
             Builder.WithDynamicClass(iFaceType, new DynamicClassRegistration

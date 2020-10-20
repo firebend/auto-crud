@@ -35,7 +35,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
         {
             return generator.AddBuilder<EfPerson, Guid>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithSearchFilter<EfPersonFilter>()
+                    .WithSearchFilter<EfPerson>((search, p) => p.LastName.Contains(search))
+                    //.WithSearchFilter<EfPersonFilter>()
                     .AddCrud(crud => crud
                         .WithCrud()
                         .WithOrderBy<EfPersonOrder>())

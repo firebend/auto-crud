@@ -1,12 +1,9 @@
 using System;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
-using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,7 +25,7 @@ namespace Firebend.AutoCrud.EntityFramework
             return builder.WithSearchFilter(typeof(T));
         }
 
-        private static EntityFrameworkEntityBuilder WithSearchFilter<TEntity>(this EntityFrameworkEntityBuilder builder, Expression<Func<string, TEntity, bool>> filter)
+        public static EntityFrameworkEntityBuilder WithSearchFilter<TEntity>(this EntityFrameworkEntityBuilder builder, Expression<Func<string, TEntity, bool>> filter)
         {
             var signature = $"{builder.EntityType.Name}_{builder.EntityName}_SearchFilter";
 
@@ -42,10 +39,9 @@ namespace Firebend.AutoCrud.EntityFramework
                 Override = true
             };
             
-            var propertySet1 = new PropertySet
+            var propertySet1 = new PropertySet<Expression<Func<string, TEntity, bool>>>
             {
                 Name = nameof(IEntityFrameworkFullTextExpressionProvider<Guid, FooEntity>.Filter),
-                Type = typeof(Expression<Func<string, TEntity, bool>>),
                 Value = filter,
                 Override = true
             };
