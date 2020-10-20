@@ -19,6 +19,7 @@ namespace Firebend.AutoCrud.Mongo
         {
             var builder = new MongoDbEntityBuilder<TKey, TEntity>();
             configure(builder);
+            Builders.Add(builder);
             return this;
         }
     }

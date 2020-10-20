@@ -21,7 +21,9 @@ namespace Firebend.AutoCrud.EntityFramework
             where TKey : struct
             where TEntity : class, IEntity<TKey>, new()
         {
-            configure(new EntityFrameworkEntityBuilder<TKey, TEntity>());
+            var builder = new EntityFrameworkEntityBuilder<TKey, TEntity>();
+            configure(builder);
+            Builders.Add(builder);
             return this;
         }
     }

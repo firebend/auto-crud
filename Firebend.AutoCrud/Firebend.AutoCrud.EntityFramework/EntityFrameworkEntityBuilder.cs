@@ -48,11 +48,9 @@ namespace Firebend.AutoCrud.EntityFramework
         {
             DbContextType = dbContextType;
 
-            var t = typeof(IDbContextProvider<,>).MakeGenericType(EntityKeyType, EntityType);
-            
-            WithRegistration(t,
-                typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, dbContextType),
-                t);
+            var t = typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, dbContextType);
+
+            WithRegistration<IDbContextProvider<TKey, TEntity>>(t);
 
             return this;
         }

@@ -12,7 +12,6 @@ using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Mongo
@@ -48,7 +47,7 @@ namespace Firebend.AutoCrud.Mongo
             WithRegistration<IMongoIndexClient<TKey, TEntity>, MongoIndexClient<TKey, TEntity>>(false);
             WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
             WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);
-            WithRegistration<IConfiguration, MongoConfigureCollection<TKey, TEntity>>(false);
+            WithRegistration<IConfigureCollection, MongoConfigureCollection<TKey, TEntity>>(false);
             WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
             WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
 

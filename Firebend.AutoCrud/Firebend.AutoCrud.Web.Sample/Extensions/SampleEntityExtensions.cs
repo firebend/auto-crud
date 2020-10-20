@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
+using Firebend.AutoCrud.Web.Sample.Filtering;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Firebend.AutoCrud.Web.Sample.Ordering;
 using Microsoft.Extensions.Configuration;
@@ -32,7 +33,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
         {
             return generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithSearchFilter((search, p) => p.LastName.Contains(search))
+                    .WithSearchFilter<EfPersonFilter>()
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
