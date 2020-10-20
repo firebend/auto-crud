@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Abstractions;
+using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services;
@@ -36,14 +37,20 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         public IServiceCollection Generate()
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
             Parallel.ForEach(Builders, builder =>
             {
-                var stopWatch = new Stopwatch();
-                stopWatch.Start();
+                var builderStopwatch = new Stopwatch();
+                builderStopwatch.Start();
                 Generate(ServiceCollection, builder);
-                stopWatch.Stop();
-                Console.WriteLine($"Generated entity crud for {builder.EntityType} in {stopWatch.ElapsedMilliseconds} (ms)");
+                builderStopwatch.Stop();
+                Console.WriteLine($"Generated entity crud for {builder.EntityType} in {builderStopwatch.ElapsedMilliseconds} (ms)");
             });
+            
+            stopwatch.Stop();
+            Console.WriteLine($"All entities generated in {stopwatch.ElapsedMilliseconds} (ms)");
 
             return ServiceCollection;
         }

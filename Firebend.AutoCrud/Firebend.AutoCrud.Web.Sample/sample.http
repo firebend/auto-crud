@@ -2,8 +2,8 @@ POST https://localhost:5001/api/v1/ef-person
 Content-Type: application/json
 
 {
-    "firstName": "a",
-    "lastName": "a"
+    "firstName": "Simon",
+    "lastName": "Sample"
 }
 ###
 PUT https://localhost:5001/api/v1/ef-person/9a627f6c-3fe2-4c18-bec9-08d87431b19f

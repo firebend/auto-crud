@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Models;
 
-namespace Firebend.AutoCrud.Core.Abstractions
+namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
     public abstract class BaseBuilder
     {
@@ -11,9 +11,9 @@ namespace Firebend.AutoCrud.Core.Abstractions
         public bool IsBuilt { get; private set; }
 
         public IDictionary<Type, Registration> Registrations { get; set; }
-        
-        public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
 
+        public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
+        
         public void Build()
         {
             if (IsBuilt) return;

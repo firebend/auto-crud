@@ -41,8 +41,8 @@ namespace Firebend.AutoCrud.Mongo.Sample
                         .AddBuilder<Person, Guid>(person =>
                             person.WithDefaultDatabase("Samples")
                                 .WithCollection("People")
-                                .WithCrud()
                                 .WithFullTextSearch()
+                                .AddCrud()
                                 .WithRegistration<MongoDbEntityBuilder, IEntityReadService<Guid, Person>, PersonReadRepository>()
                         ).Generate();
 

@@ -43,14 +43,14 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
                             ServiceLifetime.Singleton)
                         .UsingEfCrud()
                         .AddBuilder<Person, Guid>(person =>
-                            person.WithCrud()
+                            person.AddCrud(crud => crud.WithCrud())
                                 .WithDbContext<AppDbContext>()
                                 .WithRegistration<EntityFrameworkEntityBuilder, IEntityReadService<Guid, Person>, PersonReadRepository>()
-                        )
+                            )
                         .AddBuilder<Pet, Guid>(pet =>
-                            pet.WithCrud()
+                            pet.AddCrud(crud => crud.WithCrud())
                                 .WithDbContext<AppDbContext>()
-                        )
+                            )
                         .Generate();
 
                     services.AddHostedService<SampleHostedService>();

@@ -1,6 +1,6 @@
 using System;
 
-namespace Firebend.AutoCrud.Core.Abstractions
+namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
     public abstract class EntityBuilder : BaseBuilder
     {
