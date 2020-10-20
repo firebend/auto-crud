@@ -68,5 +68,40 @@ namespace Firebend.AutoCrud.Core.Threading
 
             return temp;
         }
+        
+        
+        public static void Once(string key, Action action)
+        {
+            Once(key, () =>
+            {
+                action();
+                return true;
+            });
+        }
+        
+        public static T Once<T>(string key, Func<T> func)
+        {
+            var temp = RunOnceCaches.GetValue<T>(key);
+
+            if (temp != null && !temp.Equals(default(T)))
+            {
+                return temp;
+            }
+            
+            using var _ = new AsyncDuplicateLock().Lock(key);
+            
+            temp = RunOnceCaches.GetValue<T>(key);
+
+            if (temp != null && !temp.Equals(default(T)))
+            {
+                return temp;
+            }
+
+            temp =  func();
+
+            RunOnceCaches.UpdateValue(key, temp);
+
+            return temp;
+        }
     }
 }

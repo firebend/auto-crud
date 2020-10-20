@@ -139,17 +139,14 @@ namespace Firebend.AutoCrud.Web
             var (aType, aBuilder) = GetOpenApiGroupAttributeInfo();
             
             AddAttributeToAllControllers(aType, aBuilder);
-
-            //todo: make a non async version
-            Run.OnceAsync("SwaggerGenOptions", ct =>
+            
+            Run.Once($"{GetType().FullName}.SwaggerGenOptions",() =>
             {
                 Builder.WithServiceCollectionHook(sc =>
                 {
                     sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
                 });
-
-                return Task.CompletedTask;
-            }).GetAwaiter().GetResult();
+            });
             
             return this;
         }
