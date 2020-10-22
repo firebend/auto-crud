@@ -160,5 +160,11 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             ServiceCollectionHooks.Add(action);
             return this;
         }
+
+        public bool HasRegistration(Type type) => Registrations != null && Registrations.ContainsKey(type);
+
+        public bool HasRegistration<TRegistration>() => HasRegistration(typeof(TRegistration));
+
+
     }
 }

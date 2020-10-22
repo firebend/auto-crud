@@ -31,9 +31,11 @@ namespace Firebend.AutoCrud.Web.Sample
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
+                    services
+                        .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
                         .AddMongoPerson().Generate()
                         .UsingEfCrud().AddEfPerson(hostContext.Configuration).Generate()
+                        .AddSampleMassTransit(hostContext.Configuration)
                         .AddRouting()
                         .AddSwaggerGen()
                         .AddControllers()

@@ -60,6 +60,13 @@ jobs:
     - name: Publish Web
       uses: rohith/publish-nuget@v2
       with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.DomainEvents.MassTransit/Firebend.AutoCrud.DomainEvents.MassTransit.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
+
+    - name: Publish Domain Events MassTransit
+      uses: rohith/publish-nuget@v2
+      with:
          PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.Web/Firebend.AutoCrud.Web.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
          TAG_COMMIT: false

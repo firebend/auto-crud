@@ -9,4 +9,8 @@
       <ProjectReference Include="..\Firebend.AutoCrud.Core\Firebend.AutoCrud.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MassTransit" Version="7.0.4" />
+    </ItemGroup>
+
 </Project>

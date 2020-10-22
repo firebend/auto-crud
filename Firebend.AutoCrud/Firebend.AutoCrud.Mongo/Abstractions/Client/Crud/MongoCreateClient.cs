@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoCreateClient<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IEntityDomainEventPublisher _eventPublisher;
 
