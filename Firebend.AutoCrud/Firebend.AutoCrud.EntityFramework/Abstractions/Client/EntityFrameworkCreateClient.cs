@@ -1,9 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.Extensions.Primitives;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -12,11 +14,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
+        private readonly IDomainEventContextProvider _domainEventContextProvider;
 
         public EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider,
-            IEntityDomainEventPublisher domainEventPublisher) : base(provider)
+            IEntityDomainEventPublisher domainEventPublisher,
+            IDomainEventContextProvider domainEventContextProvider) : base(provider)
         {
             _domainEventPublisher = domainEventPublisher;
+            _domainEventContextProvider = domainEventContextProvider;
         }
 
         public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
@@ -34,16 +39,25 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var domainEvent = new EntityAddedDomainEvent<TEntity>
-            {
-                Entity = savedEntity,
-            };
-
-            await _domainEventPublisher
-                .PublishEntityAddEventAsync(domainEvent, cancellationToken)
-                .ConfigureAwait(false);
+            await PublishDomainEventAsync(savedEntity, cancellationToken).ConfigureAwait(false);
 
             return savedEntity;
+        }
+
+        private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
+        {
+            if (!(_domainEventPublisher is DefaultEntityDomainEventPublisher))
+            {
+                var domainEvent = new EntityAddedDomainEvent<TEntity>
+                {
+                    Entity = savedEntity,
+                    EventContext = _domainEventContextProvider.GetContext()
+                };
+
+                return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
+            }
+            
+            return Task.CompletedTask;
         }
     }
 }
