@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             {
                 throw new Exception("Please configure a service bus connection string for Rabbit MQ");
             }
-            
+
             return serviceCollection.AddMassTransit(bus =>
                 {
                     bus.UsingRabbitMq((context, configurator) =>
@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 
                         var domain = match.Groups[3].Value;
                         var uri = $"rabbitmq://{domain}";
-            
+
                         configurator.Host(new Uri(uri), h =>
                         {
                             h.PublisherConfirmation = true;
@@ -41,7 +41,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         configurator.Lazy = true;
                         configurator.AutoDelete = true;
                         configurator.PurgeOnStartup = true;
-                        
+
                         context.AddFirebendAutoCrudDomainEventHandlers(configurator, serviceCollection);
                     });
                 })

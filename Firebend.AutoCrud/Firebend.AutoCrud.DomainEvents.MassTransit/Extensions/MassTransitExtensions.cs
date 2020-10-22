@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Interfaces;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Models.Messages;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 {
@@ -38,9 +40,10 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 
                     re.Consumer(listenerImplementationType, _  =>
                     {
+                        using var serviceScope = busRegistrationContext.CreateScope();
+                        
                         try
                         {
-                            using var serviceScope = busRegistrationContext.CreateScope();
                             
                             var service = serviceScope.ServiceProvider.GetService(serviceType);
 
@@ -51,7 +54,9 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                         }
                         catch (Exception ex)
                         {
-                            
+                            var loggerFactory = serviceScope.ServiceProvider.TryGetService<ILoggerFactory>();
+                            var logger = loggerFactory?.CreateLogger(nameof(MassTransitExtensions));
+                            logger?.LogError($"Could construct consumer {listenerImplementationType?.FullName}", ex);
                         }
 
                         return null;
