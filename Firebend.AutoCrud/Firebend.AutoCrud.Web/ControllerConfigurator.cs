@@ -95,7 +95,7 @@ namespace Firebend.AutoCrud.Web
             CrudBuilder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
-        private ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type, Type typeToCheck, params Type[] genericArgs)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type, Type typeToCheck, params Type[] genericArgs)
         {
             var registrationType = type.MakeGenericType(genericArgs);
             var typeToCheckGeneric = typeToCheck.MakeGenericType(genericArgs);

@@ -1,5 +1,6 @@
 using System;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
+using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
@@ -29,6 +30,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddCrud()
                     .AddControllers(controllers => controllers
                         .WithAllControllers(true)
+                        .WithChangeTrackingControllers()
                         .WithOpenApiGroupName("The Beautiful Mongo People"))
                 );
         }
