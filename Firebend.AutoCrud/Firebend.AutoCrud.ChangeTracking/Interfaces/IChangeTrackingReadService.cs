@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Interfaces
         where TKey: struct
         where TEntity: class, IEntity<TKey>
     {
-        Task<EntityPagedResponse<ChangeTrackingEntity<TKey, TEntity>>> GetChangesByEntityId(ChangeTrackingSearchRequest searchRequest,
+        Task<EntityPagedResponse<ChangeTrackingEntity<TKey, TEntity>>> GetChangesByEntityId(ChangeTrackingSearchRequest<TKey> searchRequest,
             CancellationToken cancellationToken = default);
     }
 }

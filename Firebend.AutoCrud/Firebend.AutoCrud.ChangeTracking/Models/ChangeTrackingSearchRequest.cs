@@ -3,9 +3,8 @@ using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.ChangeTracking.Models
 {
-    public class ChangeTrackingSearchRequest : EntitySearchRequest
+    public class ChangeTrackingSearchRequest<TKey> : EntitySearchRequest
     {
-        [Required(AllowEmptyStrings = false)]
-        public string EntityId { get; set; }
+        public TKey EntityId { get; set; }
     }
 }

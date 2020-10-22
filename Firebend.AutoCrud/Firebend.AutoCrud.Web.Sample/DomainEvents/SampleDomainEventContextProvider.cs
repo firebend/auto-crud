@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
         public DomainEventContext GetContext() => new DomainEventContext
         {
             Source = "My Sample",
-            UserName = "sample@firebend.com"
+            UserEmail = "sample@firebend.com"
         };
     }
 }

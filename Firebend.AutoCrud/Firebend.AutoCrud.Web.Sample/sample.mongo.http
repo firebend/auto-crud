@@ -6,16 +6,16 @@ Content-Type: application/json
     "lastName": "Sample"
 }
 ###
-PUT https://localhost:5001/api/v1/mongo-person/9a627f6c-3fe2-4c18-bec9-08d87431b19f
+PUT https://localhost:5001/api/v1/mongo-person/60fcc388-0829-42a8-a49b-9006ea3d3080
 Content-Type: application/json
 
 {
-    "id": "9a627f6c-3fe2-4c18-bec9-08d87431b19f",
+    "id": "60fcc388-0829-42a8-a49b-9006ea3d3080",
     "firstName": "Simon",
     "lastName": "Sample Updated"
 }
 ###
-PATCH https://localhost:5001/api/v1/mongo-person/23a52f04-a622-42fc-becb-08d87431b19f
+PATCH https://localhost:5001/api/v1/mongo-person/60fcc388-0829-42a8-a49b-9006ea3d3080
 Content-Type: application/json
 
 [

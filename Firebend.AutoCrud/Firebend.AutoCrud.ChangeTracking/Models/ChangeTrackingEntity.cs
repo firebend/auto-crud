@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
         /// <summary>
         /// The time the change tracking record was modified. 
         /// </summary>
-        public DateTime Modified { get; set; }
+        public DateTimeOffset Modified { get; set; }
 
         /// <summary>
         /// An indexable entity id.

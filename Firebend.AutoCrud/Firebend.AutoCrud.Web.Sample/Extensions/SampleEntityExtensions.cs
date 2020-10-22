@@ -1,4 +1,5 @@
 using System;
+using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
@@ -22,6 +23,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                 person.WithDefaultDatabase("Samples")
                     .WithCollection("People")
                     .WithFullTextSearch()
+                    .AddDomainEvents(domainEvents => domainEvents
+                        .WithMongoChangeTracking()
+                        .WithMassTransit())
                     .AddCrud()
                     .AddControllers(controllers => controllers
                         .WithAllControllers(true)
