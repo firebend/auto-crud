@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Interfaces;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Models.Messages;
@@ -30,10 +31,8 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 var genericMessageType = listener.ServiceType.GenericTypeArguments?.FirstOrDefault() ?? listener.ServiceType;
                 var listenerImplementationType = listener.ImplementationType;
                 var serviceType = listener.ServiceType;
-                var queueTypeName = $"{genericMessageType.Name}_{listenerImplementationType?.Name}";
-                var queueName = receiveEndpointPrefix != null ? $"{receiveEndpointPrefix}-" : string.Empty;
-                queueName = $"{queueName}_{queueTypeName}".Replace("`", "");
-                
+                var queueName = GetQueueName(receiveEndpointPrefix, genericMessageType, listenerImplementationType);
+
                 bus.ReceiveEndpoint(queueName, re =>
                 {
                     configureReceiveEndpoint?.Invoke(re);
@@ -64,7 +63,28 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 });
             }
         }
-        
+
+        private static string GetQueueName(string receiveEndpointPrefix, Type genericMessageType, Type listenerImplementationType)
+        {
+            var sb = new StringBuilder();
+
+            if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
+            {
+                sb.Append(receiveEndpointPrefix);
+                sb.Append("-");
+            }
+
+            sb.Append(genericMessageType.Name.Replace("`1", null));
+
+            if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
+            {
+                sb.Append("_");
+                sb.Append(listenerImplementationType.Name.Replace("`1", null));
+            }
+
+            return sb.ToString();
+        }
+
         private static bool IsMessageListener(Type serviceType, Type listenerType, Type messageType)
         {
             if (!serviceType.IsGenericType) return false;
