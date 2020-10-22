@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Mongo
@@ -8,6 +9,15 @@ namespace Firebend.AutoCrud.Mongo
             string connectionString)
         {
             return new MongoEntityCrudGenerator(serviceCollection, connectionString);
+        }
+
+        public static IServiceCollection UsingMongoCrud(this IServiceCollection serviceCollection,
+            string connectionString,
+            Action<MongoEntityCrudGenerator> configure)
+        {
+            var mongo = serviceCollection.UsingMongoCrud(connectionString);
+            configure(mongo);
+            return mongo.Generate();
         }
     }
 }

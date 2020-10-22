@@ -5,7 +5,6 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
-using Microsoft.Extensions.Primitives;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {

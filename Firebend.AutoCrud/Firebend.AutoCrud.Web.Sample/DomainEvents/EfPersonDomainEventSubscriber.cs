@@ -20,8 +20,12 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 
         public Task EntityAddedAsync(EntityAddedDomainEvent<EfPerson> domainEvent, CancellationToken cancellationToken = default)
         {
-            var entity = domainEvent.Entity;
-            _logger.LogInformation($"Person Added! {JsonConvert.SerializeObject(entity)}");
+            var modified = domainEvent.Entity;
+            var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
+            var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
+            
+            _logger.LogInformation($"Person Added! Person: {modifiedJson}. Context: {contextJson}");
+            
             return Task.CompletedTask;
         }
 
@@ -29,8 +33,12 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
         {
             var original = domainEvent.Previous;
             var modified = domainEvent.Modified;
+            var originalJson = JsonConvert.SerializeObject(original, Formatting.Indented);
+            var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
+            var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
             
-            _logger.LogInformation($"Person Updated! {JsonConvert.SerializeObject(original)} {JsonConvert.SerializeObject(modified)}");
+            _logger.LogInformation($"Person Updated! Original: {originalJson}. Modified: {modifiedJson}. Context: {contextJson}");
+            
             return Task.CompletedTask;
         }
     }
