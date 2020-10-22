@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
@@ -33,8 +34,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
+            var domainEvent = new EntityAddedDomainEvent<TEntity>
+            {
+                Entity = savedEntity,
+            };
+
             await _domainEventPublisher
-                .PublishEntityAddEventAsync(savedEntity, cancellationToken)
+                .PublishEntityAddEventAsync(domainEvent, cancellationToken)
                 .ConfigureAwait(false);
 
             return savedEntity;

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
@@ -38,8 +39,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
+            var domainEvent = new EntityUpdatedDomainEvent<TEntity>
+            {
+                Previous = original,
+            };
+
             await _domainEventPublisher
-                .PublishEntityUpdatedEventAsync(original, model, cancellationToken)
+                .PublishEntityUpdatedEventAsync(domainEvent, cancellationToken)
                 .ConfigureAwait(false);
 
             return model;
@@ -63,8 +69,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
+            var domainEvent = new EntityUpdatedDomainEvent<TEntity>
+            {
+                Previous = original,
+            };
+            
             await _domainEventPublisher
-                .PublishEntityUpdatedEventAsync(original, entity, cancellationToken);
+                .PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
 
             return entity;
         }

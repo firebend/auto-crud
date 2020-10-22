@@ -1,12 +1,12 @@
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.DomainEvents.MassTransit.Models.Messages;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
 {
     public class MassTransitEntityAddedDomainEventHandler<TEntity> : 
-        BaseMassTransitDomainEventHandler<EntityAddedDomainEvent<TEntity>>
+        BaseMassTransitDomainEventHandler<EntityAddedDomainEvent<TEntity>> where TEntity : class
     {
         private readonly IEntityAddedDomainEventSubscriber<TEntity> _added;
 
@@ -16,6 +16,6 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
         }
 
         public override Task Consume(ConsumeContext<EntityAddedDomainEvent<TEntity>> context)
-            => _added.EntityAddedAsync(context.Message.Entity, context.CancellationToken);
+            => _added.EntityAddedAsync(context.Message, context.CancellationToken);
     }
 }

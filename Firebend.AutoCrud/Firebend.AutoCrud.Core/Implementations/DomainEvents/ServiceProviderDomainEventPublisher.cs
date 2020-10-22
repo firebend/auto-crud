@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
@@ -17,29 +18,29 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
             _serviceProvider = serviceProvider;
         }
 
-        public async Task PublishEntityAddEventAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
+        public async Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var tasks = GetSubscribers<IEntityAddedDomainEventSubscriber<TEntity>>()
-                .Select(x => x.EntityAddedAsync(entity, cancellationToken));
+                .Select(x => x.EntityAddedAsync(domainEvent, cancellationToken));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        public async Task PublishEntityDeleteEventAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
+        public async Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var tasks = GetSubscribers<IEntityDeletedDomainEventSubscriber<TEntity>>()
-                .Select(x => x.EntityDeletedAsync(entity, cancellationToken));
+                .Select(x => x.EntityDeletedAsync(domainEvent, cancellationToken));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        public async Task PublishEntityUpdatedEventAsync<TEntity>(TEntity original, TEntity modified, CancellationToken cancellationToken = default)
+        public async Task PublishEntityUpdatedEventAsync<TEntity>(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var tasks = GetSubscribers<IEntityUpdatedDomainEventSubscriber<TEntity>>()
-                .Select(x => x.EntityUpdatedAsync(original, modified, cancellationToken));
+                .Select(x => x.EntityUpdatedAsync(domainEvent, cancellationToken));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }

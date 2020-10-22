@@ -1,4 +1,4 @@
-using Firebend.AutoCrud.DomainEvents.MassTransit.Models.Messages;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.Interfaces
 {

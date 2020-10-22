@@ -13,4 +13,8 @@
       <PackageReference Include="MassTransit" Version="7.0.4" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Models\Messages" />
+    </ItemGroup>
+
 </Project>

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
@@ -135,8 +136,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (original != null)
             {
+                var updatedDomainEvent = new EntityUpdatedDomainEvent<TEntity>
+                {
+                    Previous = original
+                };
+                     
                 await _entityDomainEventPublisher
-                    .PublishEntityUpdatedEventAsync(original, entity, cancellationToken)
+                    .PublishEntityUpdatedEventAsync(updatedDomainEvent, cancellationToken)
                     .ConfigureAwait(false);
 
                 return entity;
@@ -144,8 +150,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (doUpsert)
             {
+                var addedDomainEvent = new EntityAddedDomainEvent<TEntity>
+                {
+                    Entity = entity
+                };
+                
                 await _entityDomainEventPublisher
-                    .PublishEntityAddEventAsync(entity, cancellationToken)
+                    .PublishEntityAddEventAsync(addedDomainEvent, cancellationToken)
                     .ConfigureAwait(false);
                 return entity;
             }

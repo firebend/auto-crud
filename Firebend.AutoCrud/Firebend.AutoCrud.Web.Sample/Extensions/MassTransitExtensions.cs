@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 {
     public static class MassTransitExtensions
     {
-        private static readonly Regex _conStringParser = new Regex(
+        private static readonly Regex ConStringParser = new Regex(
             "^rabbitmq://([^:]+):(.+)@([^@]+)$", 
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
         
@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                 {
                     bus.UsingRabbitMq((context, configurator) =>
                     {
-                        var match = _conStringParser.Match(connString);
+                        var match = ConStringParser.Match(connString);
 
                         var domain = match.Groups[3].Value;
                         var uri = $"rabbitmq://{domain}";

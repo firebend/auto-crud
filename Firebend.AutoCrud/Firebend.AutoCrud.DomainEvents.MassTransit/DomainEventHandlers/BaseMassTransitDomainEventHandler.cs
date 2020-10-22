@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Interfaces;
-using Firebend.AutoCrud.DomainEvents.MassTransit.Models.Messages;
 using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers

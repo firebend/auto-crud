@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -28,8 +29,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))
                 .ConfigureAwait(false);
+
+            var domainEvent = new EntityAddedDomainEvent<TEntity>
+            {
+                Entity = entity
+            };
             
-            await _eventPublisher.PublishEntityAddEventAsync(entity, cancellationToken)
+            await _eventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken)
                 .ConfigureAwait(false);
 
             return entity;

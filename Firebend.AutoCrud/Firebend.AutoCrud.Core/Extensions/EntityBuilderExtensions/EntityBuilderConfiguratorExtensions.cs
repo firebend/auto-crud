@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
         public static EntityCrudBuilder<TKey, TEntity> AddDomainEvents<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder,
             Action<DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure)
             where TKey : struct
-            where TEntity : IEntity<TKey>
+            where TEntity : class, IEntity<TKey>
         {
             var config = new DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
             configure(config);
