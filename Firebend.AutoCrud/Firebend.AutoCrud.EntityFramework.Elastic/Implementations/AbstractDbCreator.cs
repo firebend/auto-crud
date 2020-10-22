@@ -22,11 +22,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 
-            if (!string.IsNullOrWhiteSpace(dbName))
-            {
-                connBuilder.InitialCatalog = dbName;
-            }
-
             var key = $"{connBuilder.DataSource}-{dbName}";
             
             var runKey = $"{GetType().FullName}.{key}";

@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoDeleteClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoDeleteClient<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
 

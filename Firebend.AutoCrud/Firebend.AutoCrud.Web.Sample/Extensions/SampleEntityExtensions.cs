@@ -1,5 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Mongo;
@@ -48,9 +49,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithCrud()
                         .WithOrderBy<EfPersonOrder>())
                     .AddDomainEvents(events => events
-                        .WithDomainEventPublisherServiceProvider()
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventSubscriber>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventSubscriber>()
+                        .WithMassTransit()
                     )
                     .AddControllers(controllers => controllers
                         .WithAllControllers(true)

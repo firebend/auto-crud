@@ -18,6 +18,7 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
         }
 
         public async Task PublishEntityAddEventAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
+            where TEntity : class
         {
             var tasks = GetSubscribers<IEntityAddedDomainEventSubscriber<TEntity>>()
                 .Select(x => x.EntityAddedAsync(entity, cancellationToken));
@@ -26,6 +27,7 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
         }
 
         public async Task PublishEntityDeleteEventAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
+            where TEntity : class
         {
             var tasks = GetSubscribers<IEntityDeletedDomainEventSubscriber<TEntity>>()
                 .Select(x => x.EntityDeletedAsync(entity, cancellationToken));
@@ -34,6 +36,7 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
         }
 
         public async Task PublishEntityUpdatedEventAsync<TEntity>(TEntity original, TEntity modified, CancellationToken cancellationToken = default)
+            where TEntity : class
         {
             var tasks = GetSubscribers<IEntityUpdatedDomainEventSubscriber<TEntity>>()
                 .Select(x => x.EntityUpdatedAsync(original, modified, cancellationToken));
