@@ -12,6 +12,8 @@
     <ProjectReference Include="..\Firebend.AutoCrud.DomainEvents.MassTransit\Firebend.AutoCrud.DomainEvents.MassTransit.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.EntityFramework.Elastic\Firebend.AutoCrud.EntityFramework.Elastic.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.EntityFramework\Firebend.AutoCrud.EntityFramework.csproj" />
+    <ProjectReference Include="..\Firebend.AutoCrud.Io.Web\Firebend.AutoCrud.Io.Web.csproj" />
+    <ProjectReference Include="..\Firebend.AutoCrud.Io\Firebend.AutoCrud.Io.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.Mongo\Firebend.AutoCrud.Mongo.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.Web\Firebend.AutoCrud.Web.csproj" />
   </ItemGroup>
