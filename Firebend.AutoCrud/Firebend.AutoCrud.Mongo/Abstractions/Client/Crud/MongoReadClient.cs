@@ -79,8 +79,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             int? count = null;
 
             if (doCount)
+            {
                 count = await CountAsync(search, filter, cancellationToken)
                     .ConfigureAwait(false);
+            }
 
             var queryable = BuildQuery(search, filter, pageNumber, pageSize, orderBys);
 
@@ -121,30 +123,45 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         {
             FilterDefinition<TEntity> firstStageFilter = null;
 
-            if (!string.IsNullOrWhiteSpace(search)) firstStageFilter = Builders<TEntity>.Filter.Text(search);
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                firstStageFilter = Builders<TEntity>.Filter.Text(search);
+            }
 
             var queryable = GetFilteredCollection(firstStageFilter);
 
-            if (filter != null) queryable = queryable.Where(filter);
+            if (filter != null)
+            {
+                queryable = queryable.Where(filter);
+            }
 
             if (orderBys != null)
             {
                 IOrderedMongoQueryable<TEntity> ordered = null;
 
                 foreach (var orderBy in orderBys)
+                {
                     if (orderBy != default)
+                    {
                         ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
                             queryable.OrderByDescending(orderBy.order) :
                             orderBy.ascending ? ordered.ThenBy(orderBy.order) :
                             ordered.ThenByDescending(orderBy.order);
+                    }
+                }
 
-                if (ordered != null) queryable = ordered;
+                if (ordered != null)
+                {
+                    queryable = ordered;
+                }
             }
 
             if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
+            {
                 queryable = queryable
                     .Skip((pageNumber.Value - 1) * pageSize.Value)
                     .Take(pageSize.Value);
+            }
 
             return queryable;
         }

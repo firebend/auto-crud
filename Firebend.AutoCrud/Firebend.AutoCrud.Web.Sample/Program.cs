@@ -1,5 +1,7 @@
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
+using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -32,9 +34,15 @@ namespace Firebend.AutoCrud.Web.Sample
                 .ConfigureServices((hostContext, services) =>
                 {
                     services
-                        .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
-                        .AddMongoPerson().Generate()
-                        .UsingEfCrud().AddEfPerson(hostContext.Configuration).Generate()
+                        .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"), mongo =>
+                        {
+                            mongo.AddMongoPerson();
+                        })
+                        .UsingEfCrud(ef =>
+                        {
+                            ef.AddEfPerson(hostContext.Configuration)
+                                .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
+                        })
                         .AddSampleMassTransit(hostContext.Configuration)
                         .AddRouting()
                         .AddSwaggerGen()

@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
-        <Version>0.0.4</Version>
+        <Version>0.0.5</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,6 +11,10 @@
 
     <ItemGroup>
       <PackageReference Include="MassTransit" Version="7.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Models\Messages" />
     </ItemGroup>
 
 </Project>

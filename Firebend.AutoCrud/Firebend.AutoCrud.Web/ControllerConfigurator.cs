@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection.Emit;
-using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Extensions;
@@ -96,7 +95,7 @@ namespace Firebend.AutoCrud.Web
             CrudBuilder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
-        private ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type, Type typeToCheck, params Type[] genericArgs)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type, Type typeToCheck, params Type[] genericArgs)
         {
             var registrationType = type.MakeGenericType(genericArgs);
             var typeToCheckGeneric = typeToCheck.MakeGenericType(genericArgs);

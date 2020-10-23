@@ -1,12 +1,10 @@
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
-using Firebend.AutoCrud.Core.Implementations.JsonPatch;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Interfaces;
-using Firebend.AutoCrud.DomainEvents.MassTransit.Models.Messages;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 {
@@ -19,16 +17,12 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             where TEntity : class, IEntity<TKey>
         {
             source.WithDomainEventPublisher<MassTransitDomainEventPublisher>();
-
-            var hasAny = false;
             
             if (source.Builder.HasRegistration<IEntityAddedDomainEventSubscriber<TEntity>>())
             {
                 source.Builder.WithRegistration<
                     IMassTransitDomainEventHandler<EntityAddedDomainEvent<TEntity>>,
                     MassTransitEntityAddedDomainEventHandler<TEntity>>();
-
-                hasAny = true;
             }
 
             if (source.Builder.HasRegistration<IEntityUpdatedDomainEventSubscriber<TEntity>>())
@@ -43,11 +37,6 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 source.Builder.WithRegistration<
                     IMassTransitDomainEventHandler<EntityDeletedDomainEvent<TEntity>>,
                     MassTransitEntityDeletedDomainEventHandler<TEntity>>();
-            }
-
-            if (hasAny)
-            {
-                source.Builder.WithRegistration<IJsonPatchDocumentGenerator, JsonPatchDocumentDocumentGenerator>();
             }
 
             return source;

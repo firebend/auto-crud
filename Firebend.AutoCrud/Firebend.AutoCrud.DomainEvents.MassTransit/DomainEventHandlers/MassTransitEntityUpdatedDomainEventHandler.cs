@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.DomainEvents.MassTransit.Interfaces;
-using Firebend.AutoCrud.DomainEvents.MassTransit.Models.Messages;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
@@ -18,6 +17,6 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
         }
 
         public override Task Consume(ConsumeContext<EntityUpdatedDomainEvent<TEntity>> context)
-            => _updated.EntityUpdatedAsync(context.Message.Previous, context.Message.Modified, context.CancellationToken);
+            => _updated.EntityUpdatedAsync(context.Message, context.CancellationToken);
     }
 }

@@ -1,5 +1,10 @@
 using System;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
+using Firebend.AutoCrud.Core.Implementations.JsonPatch;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
@@ -22,6 +27,14 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public Type SearchRequestType { get; set; }
 
         protected abstract void ApplyPlatformTypes();
+
+        public EntityCrudBuilder()
+        {
+            WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
+            WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
+            WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
+            WithRegistration<IJsonPatchDocumentGenerator, JsonPatchDocumentDocumentGenerator>(false);
+        }
 
         protected override void OnBuild()
         {

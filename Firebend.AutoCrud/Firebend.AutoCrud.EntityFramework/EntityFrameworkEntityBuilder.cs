@@ -1,10 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
-using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
@@ -39,8 +36,6 @@ namespace Firebend.AutoCrud.EntityFramework
             WithRegistration<IEntityFrameworkQueryClient<TKey, TEntity>, EntityFrameworkQueryClient<TKey, TEntity>>(false);
             WithRegistration<IEntityFrameworkUpdateClient<TKey, TEntity>, EntityFrameworkUpdateClient<TKey, TEntity>>(false);
             WithRegistration<IEntityFrameworkDeleteClient<TKey,TEntity>, EntityFrameworkDeleteClient<TKey,TEntity>>(false);
-            WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
-            WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
             WithRegistration<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>,DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(false);
         }
 

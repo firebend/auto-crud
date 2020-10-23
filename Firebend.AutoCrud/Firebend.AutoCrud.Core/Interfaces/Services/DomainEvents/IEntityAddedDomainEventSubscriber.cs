@@ -1,10 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents
 {
-    public interface IEntityAddedDomainEventSubscriber<in TEntity>
+    public interface IEntityAddedDomainEventSubscriber<TEntity> where TEntity : class
     {
-        Task EntityAddedAsync(TEntity entity, CancellationToken cancellationToken);
+        Task EntityAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default);
     }
 }

@@ -1,9 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
-using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
@@ -48,8 +45,6 @@ namespace Firebend.AutoCrud.Mongo
             WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
             WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);
             WithRegistration<IConfigureCollection, MongoConfigureCollection<TKey, TEntity>>(false);
-            WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
-            WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
 
             if (EntityKeyType == typeof(Guid))
             {

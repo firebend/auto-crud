@@ -1,7 +1,7 @@
 using Firebend.AutoCrud.Core.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 
-namespace Firebend.AutoCrud.DomainEvents.MassTransit.Models.Messages
+namespace Firebend.AutoCrud.Core.Models.DomainEvents
 {
     public class EntityUpdatedDomainEvent<T> : DomainEventBase where T : class
     {

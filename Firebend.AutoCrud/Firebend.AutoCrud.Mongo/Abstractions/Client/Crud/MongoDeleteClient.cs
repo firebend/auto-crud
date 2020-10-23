@@ -2,8 +2,10 @@ using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -15,13 +17,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TEntity : class, IEntity<TKey>
     {
         private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
+        private readonly IDomainEventContextProvider _domainEventContextProvider;
 
         protected MongoDeleteClient(IMongoClient client,
             ILogger<MongoDeleteClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IEntityDomainEventPublisher entityDomainEventPublisher) : base(client, logger, entityConfiguration)
+            IEntityDomainEventPublisher entityDomainEventPublisher,
+            IDomainEventContextProvider domainEventContextProvider) : base(client, logger, entityConfiguration)
         {
             _entityDomainEventPublisher = entityDomainEventPublisher;
+            _domainEventContextProvider = domainEventContextProvider;
         }
 
         public async Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
@@ -35,12 +40,26 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (result != null)
             {
-                await _entityDomainEventPublisher
-                    .PublishEntityDeleteEventAsync(result, cancellationToken)
-                    .ConfigureAwait(false);
+                await PublishDomainEventAsync(result, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
+        }
+        
+        private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
+        {
+            if (_entityDomainEventPublisher != null && !(_entityDomainEventPublisher is DefaultEntityDomainEventPublisher))
+            {
+                var domainEvent = new EntityDeletedDomainEvent<TEntity>
+                {
+                    Entity = savedEntity,
+                    EventContext = _domainEventContextProvider?.GetContext()
+                };
+
+                return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
+            }
+            
+            return Task.CompletedTask;
         }
     }
 }

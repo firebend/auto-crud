@@ -1,8 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
@@ -13,11 +16,19 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
+        private readonly IDomainEventContextProvider _domainEventContextProvider;
+        private readonly IJsonPatchDocumentGenerator _jsonPatchDocumentGenerator;
+        private readonly bool _isDefaultPublisher;
 
         public EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityDomainEventPublisher domainEventPublisher) : base(contextProvider)
+            IEntityDomainEventPublisher domainEventPublisher,
+            IDomainEventContextProvider domainEventContextProvider,
+            IJsonPatchDocumentGenerator jsonPatchDocumentGenerator) : base(contextProvider)
         {
             _domainEventPublisher = domainEventPublisher;
+            _domainEventContextProvider = domainEventContextProvider;
+            _jsonPatchDocumentGenerator = jsonPatchDocumentGenerator;
+            _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
         public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -38,9 +49,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            await _domainEventPublisher
-                .PublishEntityUpdatedEventAsync(original, model, cancellationToken)
-                .ConfigureAwait(false);
+            JsonPatchDocument<TEntity> jsonPatchDocument = null;
+
+            if (!_isDefaultPublisher)
+            {
+                jsonPatchDocument = _jsonPatchDocumentGenerator.Generate(original, model);
+            }
+            
+            await PublishDomainEventAsync(entity, jsonPatchDocument, cancellationToken);
 
             return model;
         }
@@ -63,10 +79,26 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            await _domainEventPublisher
-                .PublishEntityUpdatedEventAsync(original, entity, cancellationToken);
+            await PublishDomainEventAsync(entity, jsonPatchDocument, cancellationToken);
 
             return entity;
+        }
+
+        private Task PublishDomainEventAsync(TEntity previous, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
+        {
+            if (_domainEventPublisher != null && !_isDefaultPublisher)
+            {
+                var domainEvent = new EntityUpdatedDomainEvent<TEntity>
+                {
+                    Previous = previous,
+                    Patch = patch,
+                    EventContext = _domainEventContextProvider?.GetContext()
+                };
+
+                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
+            }
+            
+            return Task.CompletedTask;
         }
     }
 }

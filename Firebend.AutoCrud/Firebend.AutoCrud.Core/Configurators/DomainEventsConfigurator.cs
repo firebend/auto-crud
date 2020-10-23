@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Core.Configurators
 {
     public class DomainEventsConfigurator<TBuilder, TKey, TEntity> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
-        where TKey : struct where TEntity : IEntity<TKey>
+        where TKey : struct where TEntity : class, IEntity<TKey>
     {
         public DomainEventsConfigurator(TBuilder builder) : base(builder)
         {

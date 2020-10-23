@@ -70,3 +70,24 @@ jobs:
          PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.Web/Firebend.AutoCrud.Web.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
          TAG_COMMIT: false
+
+    - name: Publish Change Tracking
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.ChangeTracking/Firebend.AutoCrud.ChangeTracking.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
+
+    - name: Publish Change Tracking Ef
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.ChangeTracking.EntityFramework/Firebend.AutoCrud.ChangeTracking.EntityFramework.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
+
+    - name: Publish Change Tracking Ef
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.ChangeTracking.Mongo/Firebend.AutoCrud.ChangeTracking.Mongo.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
