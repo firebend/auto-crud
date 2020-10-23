@@ -85,9 +85,23 @@ jobs:
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
          TAG_COMMIT: false
 
-    - name: Publish Change Tracking Ef
+    - name: Publish Change Tracking Mongo
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.ChangeTracking.Mongo/Firebend.AutoCrud.ChangeTracking.Mongo.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
+
+    - name: Publish IO
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.Io/Firebend.AutoCrud.Io.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
+
+    - name: Publish IO Web
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud/Firebend.AutoCrud.Io.Web/Firebend.AutoCrud.Io.Web.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
          TAG_COMMIT: false

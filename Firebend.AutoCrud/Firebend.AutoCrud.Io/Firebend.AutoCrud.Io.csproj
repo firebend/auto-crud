@@ -6,6 +6,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Folder Include="Interfaces" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="ClosedXML" Version="0.95.3" />
+      <PackageReference Include="CsvHelper" Version="15.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Firebend.AutoCrud.Core\Firebend.AutoCrud.Core.csproj" />
     </ItemGroup>
 

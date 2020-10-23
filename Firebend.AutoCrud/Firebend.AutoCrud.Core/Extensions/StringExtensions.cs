@@ -5,6 +5,22 @@ namespace Firebend.AutoCrud.Core.Extensions
 {
     public static class StringExtensions
     {
+        public static T? ParseEnum<T>(this string source)
+            where T : struct
+        {
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                return null;
+            }
+
+            if (Enum.TryParse(source, true, out T outEnum))
+            {
+                return outEnum;
+            }
+
+            return null;
+        }
+        
         public static bool In(this string source, params string[] list)
         {
             return list.Any(x => x.EqualsIgnoreCaseAndWhitespace(source));

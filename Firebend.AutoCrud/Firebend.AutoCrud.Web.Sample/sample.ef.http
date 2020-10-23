@@ -39,3 +39,9 @@ https://localhost:5001/api/v1/ef-person?search=Simon&pageSize=10&pageNumber=1
 
 ###
 http://localhost:5000/api/v1/ef-person/e9c6a857-97e1-4e75-26ab-08d87772274c/changes
+
+###
+http://localhost:5000/api/v1/ef-person/export/csv?filename=export
+
+###
+http://localhost:5000/api/v1/ef-person/export/spreadsheet?filename=export
