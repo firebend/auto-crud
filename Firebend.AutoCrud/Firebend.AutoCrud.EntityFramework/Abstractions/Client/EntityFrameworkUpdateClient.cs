@@ -86,13 +86,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         private Task PublishDomainEventAsync(TEntity previous, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
         {
-            if (!_isDefaultPublisher)
+            if (_domainEventPublisher != null && !_isDefaultPublisher)
             {
                 var domainEvent = new EntityUpdatedDomainEvent<TEntity>
                 {
                     Previous = previous,
                     Patch = patch,
-                    EventContext = _domainEventContextProvider.GetContext()
+                    EventContext = _domainEventContextProvider?.GetContext()
                 };
 
                 return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);

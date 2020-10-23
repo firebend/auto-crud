@@ -70,12 +70,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {
-            if (!(_domainEventPublisher is DefaultEntityDomainEventPublisher))
+            if (_domainEventPublisher != null && !(_domainEventPublisher is DefaultEntityDomainEventPublisher))
             {
                 var domainEvent = new EntityDeletedDomainEvent<TEntity>
                 {
                     Entity = savedEntity,
-                    EventContext = _domainEventContextProvider.GetContext()
+                    EventContext = _domainEventContextProvider?.GetContext()
                 };
 
                 return _domainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);

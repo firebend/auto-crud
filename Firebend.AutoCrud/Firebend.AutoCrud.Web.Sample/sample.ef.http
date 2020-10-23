@@ -15,7 +15,7 @@ Content-Type: application/json
     "lastName": "Sample Updated"
 }
 ###
-PATCH https://localhost:5001/api/v1/ef-person/b1f4ca4d-f72b-4c95-2b0b-08d8761e4e11
+PATCH https://localhost:5001/api/v1/ef-person/e9c6a857-97e1-4e75-26ab-08d87772274c
 Content-Type: application/json
 
 [
@@ -36,3 +36,6 @@ https://localhost:5001/api/v1/ef-person/all
 
 ###
 https://localhost:5001/api/v1/ef-person?search=Simon&pageSize=10&pageNumber=1
+
+###
+http://localhost:5000/api/v1/ef-person/e9c6a857-97e1-4e75-26ab-08d87772274c/changes

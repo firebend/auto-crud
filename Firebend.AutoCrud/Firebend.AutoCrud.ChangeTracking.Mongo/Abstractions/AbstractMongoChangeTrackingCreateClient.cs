@@ -21,14 +21,12 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
     {
         public AbstractMongoChangeTrackingCreateClient(IMongoClient client,
             ILogger<MongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>> logger,
-            IMongoEntityConfiguration<TEntityKey, TEntity> entityConfiguration,
-            IEntityDomainEventPublisher eventPublisher,
-            IDomainEventContextProvider domainEventContextProvider) : 
+            IMongoEntityConfiguration<TEntityKey, TEntity> entityConfiguration) : 
             base(client,
                 logger,
                 new MongoChangeTrackingEntityConfiguration<TEntityKey, TEntity>(entityConfiguration),
-                eventPublisher,
-                domainEventContextProvider)
+                null,
+                null)
         {
         }
     }

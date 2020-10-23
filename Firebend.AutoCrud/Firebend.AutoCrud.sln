@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.ChangeTra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.ChangeTracking.Web", "Firebend.AutoCrud.ChangeTracking.Web\Firebend.AutoCrud.ChangeTracking.Web.csproj", "{1F159E68-FCDA-4429-95F2-843A68A92527}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.ChangeTracking.EntityFramework", "Firebend.AutoCrud.ChangeTracking.EntityFramework\Firebend.AutoCrud.ChangeTracking.EntityFramework.csproj", "{BB8D8B80-5751-4B26-8447-34F68F8B66B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,5 +93,9 @@ Global
 		{1F159E68-FCDA-4429-95F2-843A68A92527}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F159E68-FCDA-4429-95F2-843A68A92527}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F159E68-FCDA-4429-95F2-843A68A92527}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB8D8B80-5751-4B26-8447-34F68F8B66B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB8D8B80-5751-4B26-8447-34F68F8B66B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB8D8B80-5751-4B26-8447-34F68F8B66B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB8D8B80-5751-4B26-8447-34F68F8B66B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

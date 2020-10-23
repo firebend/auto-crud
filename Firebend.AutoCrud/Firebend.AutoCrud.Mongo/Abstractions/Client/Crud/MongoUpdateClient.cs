@@ -208,13 +208,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         
         private Task PublishUpdatedDomainEventAsync(TEntity previous, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
         {
-            if (!_isDefaultPublisher)
+            if (_domainEventPublisher != null && !_isDefaultPublisher)
             {
                 var domainEvent = new EntityUpdatedDomainEvent<TEntity>
                 {
                     Previous = previous,
                     Patch = patch,
-                    EventContext = _domainEventContextProvider.GetContext()
+                    EventContext = _domainEventContextProvider?.GetContext()
                 };
 
                 return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
@@ -225,12 +225,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         
         private Task PublishAddedDomainEventAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            if (!_isDefaultPublisher)
+            if (_domainEventPublisher != null && !_isDefaultPublisher)
             {
                 var domainEvent = new EntityAddedDomainEvent<TEntity>
                 {
                     Entity = entity,
-                    EventContext = _domainEventContextProvider.GetContext()
+                    EventContext = _domainEventContextProvider?.GetContext()
                 };
 
                 return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);

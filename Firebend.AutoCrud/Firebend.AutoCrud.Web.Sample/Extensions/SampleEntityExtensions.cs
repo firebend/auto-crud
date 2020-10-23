@@ -1,4 +1,5 @@
 using System;
+using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
@@ -55,13 +56,13 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithCrud()
                         .WithOrderBy<EfPersonOrder>())
                     .AddDomainEvents(events => events
-                        .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventSubscriber>()
-                        .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventSubscriber>()
+                        .WithEfChangeTracking()
                         .WithMassTransit()
                     )
                     .AddControllers(controllers => controllers
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
+                        .WithChangeTrackingControllers()
                     ));
         }
     }

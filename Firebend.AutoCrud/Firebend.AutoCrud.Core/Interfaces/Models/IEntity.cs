@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models
         TKey Id { get; set; }
     }
 
-    public abstract class FooEntity : IEntity<Guid>
+    public class FooEntity : IEntity<Guid>
     {
         public Guid Id { get; set; }
     }

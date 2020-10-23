@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking.EntityFramework\Firebend.AutoCrud.ChangeTracking.EntityFramework.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking.Mongo\Firebend.AutoCrud.ChangeTracking.Mongo.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking.Web\Firebend.AutoCrud.ChangeTracking.Web.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking\Firebend.AutoCrud.ChangeTracking.csproj" />
