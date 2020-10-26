@@ -5,11 +5,8 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
-using Firebend.AutoCrud.EntityFramework.Abstractions;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
-using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions

@@ -10,12 +10,9 @@ using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
-using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
-using Firebend.AutoCrud.Web.Sample.Filtering;
 using Firebend.AutoCrud.Web.Sample.Io;
 using Firebend.AutoCrud.Web.Sample.Models;
-using Firebend.AutoCrud.Web.Sample.Ordering;
 using Microsoft.Extensions.Configuration;
 
 namespace Firebend.AutoCrud.Web.Sample.Extensions
@@ -31,7 +28,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
                         .WithMassTransit())
-                    .AddCrud()
+                    .AddCrud(x => x.WithCrud().WithOrderBy(m => m.LastName))
                     .AddControllers(controllers => controllers
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
@@ -44,7 +41,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
         {
             return generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithSearchFilter<EfPersonFilter>()
+                    .WithSearchFilter((efPerson, s) => efPerson.LastName.Contains(s) || efPerson.FirstName.Contains(s))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -57,7 +54,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     )
                     .AddCrud(crud => crud
                         .WithCrud()
-                        .WithOrderBy<EfPersonOrder>())
+                        .WithOrderBy(efPerson => efPerson.LastName))
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()

@@ -5,10 +5,20 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Indexing
 {
-    public abstract class DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity> : IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>
+    public class DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity> : IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        public virtual Expression<Func<TEntity, string, bool>> Filter { get; } = null;
+        public DefaultEntityFrameworkFullTextExpressionProvider()
+        {
+            
+        }
+
+        public DefaultEntityFrameworkFullTextExpressionProvider(Expression<Func<TEntity, string, bool>> filter)
+        {
+            Filter = filter;
+        }
+        
+        public virtual Expression<Func<TEntity, string, bool>> Filter { get; }
     }
 }

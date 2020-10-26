@@ -119,6 +119,11 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         {
             return WithRegistrationInstance(typeof(TInstance), instance);
         }
+        
+        public BaseBuilder WithRegistrationInstance<TInstance>(object instance)
+        {
+            return WithRegistrationInstance(typeof(TInstance), instance);
+        }
 
         public BaseBuilder WithDynamicClass(Type type, DynamicClassRegistration classRegistration)
         {

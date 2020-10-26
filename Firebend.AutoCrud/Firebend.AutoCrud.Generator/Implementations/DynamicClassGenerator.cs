@@ -191,12 +191,35 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
             return customAttributes.Select(attribute =>
             {
-                var attributeArgs = attribute.ConstructorArguments.Select(a => a.Value).ToArray();
-                var namedPropertyInfos = attribute.NamedArguments?.Select(a => a.MemberInfo).OfType<PropertyInfo>().ToArray();
-                var namedPropertyValues = attribute.NamedArguments?.Where(a => a.MemberInfo is PropertyInfo).Select(a => a.TypedValue.Value).ToArray();
-                var namedFieldInfos = attribute.NamedArguments?.Select(a => a.MemberInfo).OfType<FieldInfo>().ToArray();
-                var namedFieldValues = attribute.NamedArguments?.Where(a => a.MemberInfo is FieldInfo).Select(a => a.TypedValue.Value).ToArray();
-                return new CustomAttributeBuilder(attribute.Constructor, attributeArgs, namedPropertyInfos, namedPropertyValues, namedFieldInfos,
+                var attributeArgs = attribute.ConstructorArguments
+                    .Select(a => a.Value)
+                    .ToArray();
+                
+                var namedPropertyInfos = attribute.NamedArguments
+                    ?.Select(a => a.MemberInfo)
+                    .OfType<PropertyInfo>()
+                    .ToArray();
+                
+                var namedPropertyValues = attribute.NamedArguments
+                    ?.Where(a => a.MemberInfo is PropertyInfo)
+                    .Select(a => a.TypedValue.Value)
+                    .ToArray();
+                
+                var namedFieldInfos = attribute.NamedArguments
+                    ?.Select(a => a.MemberInfo)
+                    .OfType<FieldInfo>()
+                    .ToArray();
+                
+                var namedFieldValues = attribute.NamedArguments
+                    ?.Where(a => a.MemberInfo is FieldInfo)
+                    .Select(a => a.TypedValue.Value)
+                    .ToArray();
+                
+                return new CustomAttributeBuilder(attribute.Constructor,
+                    attributeArgs,
+                    namedPropertyInfos,
+                    namedPropertyValues,
+                    namedFieldInfos,
                     namedFieldValues);
             }).ToArray();
         }

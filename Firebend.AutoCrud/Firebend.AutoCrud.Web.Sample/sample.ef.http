@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
     "firstName": "Simon",
-    "lastName": "Sample"
+    "lastName": "z"
 }
 ###
 PUT https://localhost:5001/api/v1/ef-person/9a627f6c-3fe2-4c18-bec9-08d87431b19f
