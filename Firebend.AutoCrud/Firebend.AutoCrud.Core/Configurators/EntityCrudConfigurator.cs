@@ -2,12 +2,10 @@ using System;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Models;
-using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.Core.Models.Searching;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Configurators
 {
@@ -91,27 +89,11 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithOrderBy(typeof(T));
         }
 
-        // ReSharper disable once UnusedMember.Local
-        private EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy((Expression<Func<TEntity, object>>, bool ascending) orderBy)
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy(Expression<Func<TEntity, object>> expression, bool isAscending = true)
         {
-            var signature = $"{Builder.SignatureBase}_OrderBy";
+            var instance = new DefaultEntityDefaultOrderByProvider<TKey, TEntity>((expression, isAscending));
 
-            var iFaceType = typeof(IEntityDefaultOrderByProvider<TKey, TEntity>);
-
-            var propertySet = new PropertySet<(Expression<Func<TEntity, object>>, bool ascending)>
-            {
-                Name = nameof(IEntityDefaultOrderByProvider<Guid, FooEntity>.OrderBy),
-                Value = orderBy,
-                Override = true
-            };
-
-            Builder.WithDynamicClass(iFaceType, new DynamicClassRegistration
-            {
-                Interface = iFaceType,
-                Properties = new[] {propertySet},
-                Signature = signature,
-                Lifetime = ServiceLifetime.Singleton
-            });
+            Builder.WithRegistrationInstance<IEntityDefaultOrderByProvider<TKey, TEntity>>(instance);
 
             return this;
         }

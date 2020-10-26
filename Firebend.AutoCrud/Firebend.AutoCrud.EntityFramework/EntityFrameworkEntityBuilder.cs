@@ -2,13 +2,10 @@ using System;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Models;
-using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
@@ -68,27 +65,10 @@ namespace Firebend.AutoCrud.EntityFramework
             return WithSearchFilter(typeof(T));
         }
 
-        // ReSharper disable once UnusedMember.Local
-        private EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Expression<Func<string, TEntity, bool>> filter)
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Expression<Func<TEntity, string, bool>> filter)
         {
-            var signature = $"{SignatureBase}_SearchFilter";
-
-            var iFaceType = typeof(IEntityFrameworkFullTextExpressionProvider<TKey,TEntity>);
-            
-            var propertySet = new PropertySet<Expression<Func<string, TEntity, bool>>>
-            {
-                Name = nameof(IEntityFrameworkFullTextExpressionProvider<Guid, FooEntity>.Filter),
-                Value = filter,
-                Override = true
-            };
-
-            WithDynamicClass(iFaceType, new DynamicClassRegistration
-            {
-                Interface = iFaceType,
-                Properties = new [] { propertySet },
-                Signature = signature,
-                Lifetime = ServiceLifetime.Singleton
-            });
+            WithRegistrationInstance<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(
+                new DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>(filter));
 
             return this;
         }

@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
+using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
@@ -23,8 +24,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public abstract Type DeleteType { get; }
 
         public abstract Type SoftDeleteType { get; }
-        
-        public Type SearchRequestType { get; set; }
+
+        public Type SearchRequestType { get; set; } = typeof(EntitySearchRequest);
 
         protected abstract void ApplyPlatformTypes();
 
