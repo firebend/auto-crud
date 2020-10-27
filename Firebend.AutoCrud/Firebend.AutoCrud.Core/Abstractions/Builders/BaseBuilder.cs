@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public bool IsBuilt { get; private set; }
 
-        public IDictionary<Type, Registration> Registrations { get; set; }
+        public IDictionary<Type, List<Registration>> Registrations { get; set; }
 
         public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
         
@@ -37,13 +37,13 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         {
         }
         
-        public BaseBuilder WithRegistration(Type type, Registration registration, bool replace = true)
+        public BaseBuilder WithRegistration(Type type, Registration registration, bool replace = true, bool allowMany = false)
         {
             if (Registrations == null)
             {
-                Registrations = new Dictionary<Type, Registration>
+                Registrations = new Dictionary<Type, List<Registration>>
                 {
-                    { type, registration }
+                    { type, new List<Registration> { registration } }
                 };
 
                 return this;
@@ -51,15 +51,20 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
             if (Registrations.ContainsKey(type))
             {
-                if (replace)
+                if (allowMany)
                 {
-                    Registrations[type] = registration;
+                    Registrations[type] = Registrations[type] ?? new List<Registration>();
+                    Registrations[type].Add(registration);
+                }
+                else if (replace)
+                {
+                    Registrations[type] = new List<Registration> { registration };
                 }
 
                 return this;
             }
             
-            Registrations.Add(type, registration);
+            Registrations.Add(type, new List<Registration> { registration });
 
             return this;
         }

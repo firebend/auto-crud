@@ -53,9 +53,8 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         protected virtual void Generate(IServiceCollection serviceCollection, BaseBuilder builder)
         {
+            builder.Build();
             RegisterRegistrations(serviceCollection, builder);
-            RegisterInstances(serviceCollection, builder);
-            RegisterDynamicClasses(serviceCollection, builder);
             CallServiceCollectionHooks(serviceCollection, builder);
         }
 
@@ -72,40 +71,59 @@ namespace Firebend.AutoCrud.Generator.Implementations
             }
         }
 
-        private void RegisterDynamicClasses(IServiceCollection serviceCollection, BaseBuilder builder)
+        private void RegisterRegistrations(IServiceCollection serviceCollection, BaseBuilder builder)
         {
-            foreach (var reg in builder
-                .Registrations
-                .Where(x => x.Value is DynamicClassRegistration))
+            var services = new Dictionary<Type, List<ServiceRegistration>>();
+            
+            foreach (var (type, registrations) in builder.Registrations)
             {
-                var classRegistration = reg.Value as DynamicClassRegistration;
+                if (registrations == null) continue;
 
-                if (classRegistration == null)
+                foreach (var reg in registrations)
                 {
-                    continue;
-                }
-                
-                var instance = _classGenerator
-                    .ImplementInterface(classRegistration.Interface, classRegistration.Signature, classRegistration.Properties.ToArray());
+                    switch (reg)
+                    {
+                        case DynamicClassRegistration classRegistration:
+                        {
+                            var instance = _classGenerator.ImplementInterface(
+                                classRegistration.Interface,
+                                classRegistration.Signature,
+                                classRegistration.Properties.ToArray());
 
-                serviceCollection.AddSingleton(classRegistration.Interface, instance);
+                            serviceCollection.AddSingleton(classRegistration.Interface, instance);
+                            break;
+                        }
+                        case InstanceRegistration instanceRegistration:
+                            serviceCollection.AddSingleton(type, instanceRegistration.Instance);
+                            break;
+                        case ServiceRegistration serviceRegistration:
+                            if (services.ContainsKey(type))
+                            {
+                                services[type] = services[type] ?? new List<ServiceRegistration>();
+                                services[type].Add(serviceRegistration);
+                            }
+                            else
+                            {
+                                services.Add(type, new List<ServiceRegistration>{ serviceRegistration});
+                            }
+                            break;
+                    }
+                }
             }
             
+            RegisterServiceRegistrations(serviceCollection, builder, services);
         }
 
-        private void RegisterRegistrations(IServiceCollection serviceCollection, BaseBuilder builder)
+        private void RegisterServiceRegistrations(IServiceCollection serviceCollection, BaseBuilder builder,
+            IDictionary<Type, List<ServiceRegistration>> serviceRegistrations)
         {
             var signatureBase = builder.SignatureBase;
             var implementedTypes = new List<Type>();
 
-            builder.Build();
-
-            var serviceRegistrations = builder.Registrations.Where(x => x.Value is ServiceRegistration)
-                .ToDictionary(x => x.Key, x => (ServiceRegistration) x.Value);
-
             var extraInterfaces = GetCustomImplementations(serviceRegistrations);
+            var ordered = OrderByDependencies(serviceRegistrations).Distinct().ToArray();
 
-            foreach (var (key, value) in OrderByDependencies(serviceRegistrations))
+            foreach (var (key, value) in ordered)
             {
                 var typeToImplement = value;
                 var interfaceImplementations = extraInterfaces.FindAll(x =>
@@ -138,20 +156,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
             }
         }
 
-        private static void RegisterInstances(IServiceCollection serviceCollection, BaseBuilder builder)
-        {
-            foreach (var (key, value) in builder.Registrations
-                .Where(x => x.Value is InstanceRegistration))
-            {
-                var instance = (value as InstanceRegistration)?.Instance;
-
-                if (instance != null)
-                {
-                    serviceCollection.AddSingleton(key, instance);
-                }
-            }
-        }
-
         private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CrudBuilderAttributeModel>> builderAttributes)
         {
             if (builderAttributes == null)
@@ -179,7 +183,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return null;
         }
 
-        private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, ServiceRegistration> source)
+        private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, List<ServiceRegistration>> source)
         {
             var orderedTypes = new List<KeyValuePair<Type, Type>>();
 
@@ -188,7 +192,8 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 var maxVisits = source.Count;
 
                 var typesToAdd = source
-                    .ToDictionary(x => x.Key, x => x.Value.ServiceType);
+                    .SelectMany(x => x.Value, (pair, registration) => new KeyValuePair<Type, Type>(pair.Key, registration.ServiceType))
+                    .ToList();
 
                 while (typesToAdd.Count > 0)
                 {
@@ -197,7 +202,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                         if (CanAddType(type, typesToAdd))
                         {
                             orderedTypes.Add(type);
-                            typesToAdd.Remove(type.Key);
+                            typesToAdd.Remove(type);
                         }
                     }
 
@@ -210,31 +215,34 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return orderedTypes;
         }
 
-        private static bool CanAddType(KeyValuePair<Type, Type> type, IDictionary<Type, Type> typesToAdd)
+        private static bool CanAddType(KeyValuePair<Type, Type> type, List<KeyValuePair<Type, Type>> typesToAdd)
         {
             return type.Value.GetConstructors(
                     BindingFlags.Public |
                     BindingFlags.NonPublic |
                     BindingFlags.Instance)
                 .All(
-                    info => info.GetParameters().All(parameterInfo =>
-                        !typesToAdd.ContainsKey(parameterInfo.ParameterType) &&
-                        typesToAdd
-                            .All(types => !parameterInfo.ParameterType.IsAssignableFrom(types.Key))
-                    )
+                    info => info
+                        .GetParameters()
+                        .All(parameterInfo => 
+                            typesToAdd.All(t => t.Key != parameterInfo.ParameterType)
+                            && typesToAdd.All(types => !parameterInfo.ParameterType.IsAssignableFrom(types.Key))
+                        )
                 );
         }
 
-        private static List<Type> GetCustomImplementations(IDictionary<Type, ServiceRegistration> configureRegistrations)
+        private static List<Type> GetCustomImplementations(IDictionary<Type, List<ServiceRegistration>> configureRegistrations)
         {
             var extraInterfaces = new List<Type>();
 
-            if (configureRegistrations != null)
-                
-                foreach (var (key, reg) in configureRegistrations.ToArray())
+            if (configureRegistrations == null) return extraInterfaces;
+            
+            foreach (var (key, regs) in configureRegistrations.ToArray())
+            {
+                foreach (var reg in regs.ToArray())
                 {
                     var value = reg.ServiceType;
-                    
+
                     if (!key.IsAssignableFrom(value))
                     {
                         throw new InvalidCastException($"Cannot use custom configuration {value.Name} to implement {key.Name}");
@@ -248,13 +256,15 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                     if (configureRegistrations.ContainsKey(key))
                     {
-                        configureRegistrations[key] = reg;
+                        configureRegistrations[key]??= new List<ServiceRegistration>();
+                        configureRegistrations[key].Add(reg);
                     }
                     else
                     {
-                        configureRegistrations.Add(key, reg);
+                        configureRegistrations.Add(key, new List<ServiceRegistration> { reg });
                     }
                 }
+            }
 
             return extraInterfaces;
         }

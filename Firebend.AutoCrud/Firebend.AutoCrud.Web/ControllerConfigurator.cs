@@ -117,8 +117,13 @@ namespace Firebend.AutoCrud.Web
         {
             CrudBuilder
                 .Registrations
-                .Where(x => x.Value is ServiceRegistration)
-                .Where(x => typeof(ControllerBase).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType))
+                .SelectMany(x => x.Value, (pair, registration) => new
+                {
+                    pair.Key,
+                    registration
+                })
+                .Where(x => x.registration is ServiceRegistration)
+                .Where(x => typeof(ControllerBase).IsAssignableFrom((x.registration as ServiceRegistration)?.ServiceType))
                 .ToList()
                 .ForEach(x => { CrudBuilder.WithAttribute(x.Key, attributeType, attributeBuilder); });
         }
