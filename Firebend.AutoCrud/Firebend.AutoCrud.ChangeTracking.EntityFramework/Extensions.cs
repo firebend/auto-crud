@@ -6,7 +6,6 @@ using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.EntityFramework;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework

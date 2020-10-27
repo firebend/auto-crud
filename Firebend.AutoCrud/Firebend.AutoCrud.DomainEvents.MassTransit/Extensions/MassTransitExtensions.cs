@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;
 using MassTransit;
-using MassTransit.Internals.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
