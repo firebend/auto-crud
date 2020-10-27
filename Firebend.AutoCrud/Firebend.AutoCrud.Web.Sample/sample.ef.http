@@ -6,11 +6,11 @@ Content-Type: application/json
     "lastName": "z"
 }
 ###
-PUT https://localhost:5001/api/v1/ef-person/9a627f6c-3fe2-4c18-bec9-08d87431b19f
+PUT https://localhost:5001/api/v1/ef-person/b60b0fcd-fd29-4e05-8a29-08d87ac43f8e
 Content-Type: application/json
 
 {
-    "id": "9a627f6c-3fe2-4c18-bec9-08d87431b19f",
+    "id": "b60b0fcd-fd29-4e05-8a29-08d87ac43f8e",
     "firstName": "Simon",
     "lastName": "Sample Updated"
 }
@@ -26,7 +26,7 @@ Content-Type: application/json
     }
 ]
 ###
-DELETE https://localhost:5001/api/v1/ef-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
+DELETE https://localhost:5001/api/v1/ef-person/b60b0fcd-fd29-4e05-8a29-08d87ac43f8e
 
 ###
 https://localhost:5001/api/v1/ef-person/9a627f6c-3fe2-4c18-bec9-08d87431b19f
