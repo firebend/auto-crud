@@ -2,7 +2,12 @@ using System;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Models
 {
-    public interface IEntity<TKey>
+    public interface IEntity
+    {
+        
+    }
+    
+    public interface IEntity<TKey> : IEntity
         where TKey : struct
     {
         TKey Id { get; set; }

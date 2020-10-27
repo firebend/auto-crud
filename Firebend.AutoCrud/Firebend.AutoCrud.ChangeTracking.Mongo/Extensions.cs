@@ -41,14 +41,9 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
             configurator.Builder.WithRegistration<IChangeTrackingService<TKey, TEntity>,
                 AbstractMongoChangeTrackingService<TKey, TEntity>>();
 
-            configurator.Builder.WithRegistration<IEntityAddedDomainEventSubscriber<TEntity>,
-                AbstractChangeTrackingDomainEventHandler<TKey, TEntity>>();
-
-            configurator.Builder.WithRegistration<IEntityUpdatedDomainEventSubscriber<TEntity>,
-                AbstractChangeTrackingDomainEventHandler<TKey, TEntity>>();
-
-            configurator.Builder.WithRegistration<IEntityDeletedDomainEventSubscriber<TEntity>,
-                AbstractChangeTrackingDomainEventHandler<TKey, TEntity>>();
+            configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
+            configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
+            configurator.WithDomainEventEntityDeletedSubscriber<AbstractChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
             
             return configurator;
         }

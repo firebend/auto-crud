@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
-using Firebend.AutoCrud.DomainEvents.MassTransit.Interfaces;
+using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;
 using MassTransit;
+using MassTransit.Internals.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -19,35 +23,54 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             string receiveEndpointPrefix = null,
             Action<IReceiveEndpointConfigurator> configureReceiveEndpoint = null)
         {
-            var listenerType = typeof(IMassTransitDomainEventHandler<>);
-            var messageType = typeof(DomainEventBase);
-
             var listeners = serviceCollection
-                .Where(x => IsMessageListener(x.ServiceType, listenerType, messageType))
+                .Where(x => IsMessageListener(x.ServiceType))
                 .ToArray();
+            
+            var queueNames = new List<string>();
             
             foreach (var listener in listeners)
             {
                 var genericMessageType = listener.ServiceType.GenericTypeArguments?.FirstOrDefault() ?? listener.ServiceType;
                 var listenerImplementationType = listener.ImplementationType;
                 var serviceType = listener.ServiceType;
-                var queueName = GetQueueName(receiveEndpointPrefix, genericMessageType, listenerImplementationType);
+                var queueName = GetQueueName(queueNames, receiveEndpointPrefix, genericMessageType, listenerImplementationType);
+                var entity = serviceType.GenericTypeArguments[0];
 
+                Type handlerType = null;
+
+                if (typeof(IEntityAddedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
+                {
+                    handlerType = typeof(MassTransitEntityAddedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                }
+                else if (typeof(IEntityUpdatedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
+                {
+                    handlerType = typeof(MassTransitEntityUpdatedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                }
+                else if (typeof(IEntityDeletedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
+                {
+                    handlerType = typeof(MassTransitEntityDeletedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                }
+                
                 bus.ReceiveEndpoint(queueName, re =>
                 {
                     configureReceiveEndpoint?.Invoke(re);
 
-                    re.Consumer(listenerImplementationType, _  =>
+                    re.Consumer(handlerType, _  =>
                     {
                         using var serviceScope = busRegistrationContext.CreateScope();
                         
                         try
                         {
-                            
-                            var service = serviceScope.ServiceProvider.GetService(serviceType);
+                            var handler = serviceScope
+                                .ServiceProvider
+                                .GetServices(serviceType)
+                                .FirstOrDefault(x => x.GetType() == listenerImplementationType);
 
-                            if (service is IConsumer consumer)
+                            if (handlerType != null)
                             {
+                                var consumer = Activator.CreateInstance(handlerType, handler);
+                                
                                 return consumer;
                             }
                         }
@@ -64,7 +87,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             }
         }
 
-        private static string GetQueueName(string receiveEndpointPrefix, Type genericMessageType, Type listenerImplementationType)
+        private static string GetQueueName(List<string> queueNames, string receiveEndpointPrefix, Type genericMessageType, Type listenerImplementationType)
         {
             var sb = new StringBuilder();
 
@@ -74,31 +97,40 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 sb.Append("-");
             }
 
-            sb.Append(genericMessageType.Name.Replace("`1", null));
+            sb.Append(genericMessageType.Name);
 
             if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
             {
                 sb.Append("_");
-                sb.Append(listenerImplementationType.Name.Replace("`1", null));
+                sb.Append(listenerImplementationType.Name);
             }
 
-            return sb.ToString();
+            var queueName = sb.ToString().Replace("`1", null).Replace("`2", null);
+
+            while (queueNames.Contains(queueName))
+            {
+                var last = queueName.Last();
+                var iteration = char.IsDigit(last) ? int.Parse(last.ToString()) : 0;
+                iteration++;
+                queueName += iteration;
+            }
+            
+            queueNames.Add(queueName);
+
+            return queueName;
         }
 
-        private static bool IsMessageListener(Type serviceType, Type listenerType, Type messageType)
+        private static bool IsMessageListener(Type serviceType)
         {
             if (!serviceType.IsGenericType) return false;
-            
+
             var args = serviceType.GetGenericArguments();
 
-            if (args.Length != 1) return false;
-                
-            if (!messageType.IsAssignableFrom(args[0])) return false;
-                
-            var isListener = listenerType.MakeGenericType(args).IsAssignableFrom(serviceType);
+            if (args.Length != 1 && !args[0].IsClass) return false;
 
-            return isListener;
-            
+            if (!typeof(IDomainEventSubscriber).IsAssignableFrom(serviceType)) return false;
+
+            return true;
         }
     }
 }

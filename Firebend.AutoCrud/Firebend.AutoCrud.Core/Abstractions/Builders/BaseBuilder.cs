@@ -71,30 +71,32 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public BaseBuilder WithRegistration(Type registrationType,
             Type serviceType,
-            bool replace = true)
+            bool replace = true,
+            bool allowMany = false)
         {
             var registration = new ServiceRegistration
             {
                 ServiceType = serviceType
             };
 
-            return WithRegistration(registrationType, registration, replace);
+            return WithRegistration(registrationType, registration, replace, allowMany);
         }
 
-        public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true)
+        public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true, bool allowMany = false)
         {
-            return WithRegistration(typeof(TRegistration), typeof(TService), replace);
+            return WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany);
         }
 
-        public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true)
+        public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true, bool allowMany = false)
         {
-            return WithRegistration(typeof(TRegistration), type, replace);
+            return WithRegistration(typeof(TRegistration), type, replace, allowMany);
         }
 
         public BaseBuilder WithRegistration(Type registrationType,
             Type serviceType,
             Type typeToCheck,
-            bool replace = true)
+            bool replace = true,
+            bool allowMany = false)
         {
             if (!typeToCheck.IsAssignableFrom(serviceType))
             {
@@ -106,7 +108,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
             }
 
-            return WithRegistration(registrationType, serviceType, replace);
+            return WithRegistration(registrationType, serviceType, replace, allowMany);
         }
 
         public BaseBuilder WithRegistrationInstance(Type registrationType, object instance)

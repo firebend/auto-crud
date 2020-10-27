@@ -18,26 +18,26 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
         {
             source.WithDomainEventPublisher<MassTransitDomainEventPublisher>();
             
-            if (source.Builder.HasRegistration<IEntityAddedDomainEventSubscriber<TEntity>>())
-            {
-                source.Builder.WithRegistration<
-                    IMassTransitDomainEventHandler<EntityAddedDomainEvent<TEntity>>,
-                    MassTransitEntityAddedDomainEventHandler<TEntity>>();
-            }
-
-            if (source.Builder.HasRegistration<IEntityUpdatedDomainEventSubscriber<TEntity>>())
-            {
-                source.Builder.WithRegistration<
-                    IMassTransitDomainEventHandler<EntityUpdatedDomainEvent<TEntity>>,
-                    MassTransitEntityUpdatedDomainEventHandler<TEntity>>();
-            }
-
-            if (source.Builder.HasRegistration<IEntityDeletedDomainEventSubscriber<TEntity>>())
-            {
-                source.Builder.WithRegistration<
-                    IMassTransitDomainEventHandler<EntityDeletedDomainEvent<TEntity>>,
-                    MassTransitEntityDeletedDomainEventHandler<TEntity>>();
-            }
+            // if (source.Builder.HasRegistration<IEntityAddedDomainEventSubscriber<TEntity>>())
+            // {
+            //     source.Builder.WithRegistration<
+            //         IMassTransitDomainEventHandler<EntityAddedDomainEvent<TEntity>>,
+            //         MassTransitEntityAddedDomainEventHandler<TEntity>>();
+            // }
+            //
+            // if (source.Builder.HasRegistration<IEntityUpdatedDomainEventSubscriber<TEntity>>())
+            // {
+            //     source.Builder.WithRegistration<
+            //         IMassTransitDomainEventHandler<EntityUpdatedDomainEvent<TEntity>>,
+            //         MassTransitEntityUpdatedDomainEventHandler<TEntity>>();
+            // }
+            //
+            // if (source.Builder.HasRegistration<IEntityDeletedDomainEventSubscriber<TEntity>>())
+            // {
+            //     source.Builder.WithRegistration<
+            //         IMassTransitDomainEventHandler<EntityDeletedDomainEvent<TEntity>>,
+            //         MassTransitEntityDeletedDomainEventHandler<TEntity>>();
+            // }
 
             return source;
         }

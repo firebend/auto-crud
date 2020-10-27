@@ -10,6 +10,7 @@ using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
+using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Io;
 using Firebend.AutoCrud.Web.Sample.Models;
@@ -58,6 +59,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()
+                        .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventSubscriber>()
+                        .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventSubscriber>()
                     )
                     .AddIo( io => io.WithMapper<EfPersonExport, EfPersonMapper>())
                     .AddControllers(controllers => controllers

@@ -17,7 +17,9 @@ namespace Firebend.AutoCrud.Core.Configurators
         
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventPublisher(Type type)
         {
-            Builder.WithRegistration(typeof(IEntityDomainEventPublisher), type, typeof(IEntityDomainEventPublisher));
+            Builder.WithRegistration(typeof(IEntityDomainEventPublisher),
+                type,
+                typeof(IEntityDomainEventPublisher));
 
             return this;
         }
@@ -37,7 +39,9 @@ namespace Firebend.AutoCrud.Core.Configurators
         {
             Builder.WithRegistration(typeof(IEntityAddedDomainEventSubscriber<TEntity>),
                 type,
-                typeof(IEntityAddedDomainEventSubscriber<TEntity>));
+                typeof(IEntityAddedDomainEventSubscriber<TEntity>),
+                false,
+                true);
 
             return this;
         }
@@ -45,7 +49,8 @@ namespace Firebend.AutoCrud.Core.Configurators
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventEntityAddedSubscriber<TSubscriber>()
             where TSubscriber : IEntityAddedDomainEventSubscriber<TEntity>
         {
-            Builder.WithRegistration<IEntityAddedDomainEventSubscriber<TEntity>, TSubscriber>();
+            Builder.WithRegistration<IEntityAddedDomainEventSubscriber<TEntity>, TSubscriber>(false, true);
+            
             return this;
         }
 
@@ -53,7 +58,9 @@ namespace Firebend.AutoCrud.Core.Configurators
         {
             Builder.WithRegistration(typeof(IEntityUpdatedDomainEventSubscriber<TEntity>),
                 type,
-                typeof(IEntityUpdatedDomainEventSubscriber<TEntity>));
+                typeof(IEntityUpdatedDomainEventSubscriber<TEntity>),
+                false,
+                true);
 
             return this;
         }
@@ -67,7 +74,9 @@ namespace Firebend.AutoCrud.Core.Configurators
         {
             Builder.WithRegistration(typeof(IEntityDeletedDomainEventSubscriber<TEntity>),
                 type,
-                typeof(IEntityDeletedDomainEventSubscriber<TEntity>));
+                typeof(IEntityDeletedDomainEventSubscriber<TEntity>),
+                false,
+                true);
 
             return this;
         }

@@ -35,15 +35,10 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
 
             configurator.Builder.WithRegistration<IChangeTrackingService<TKey, TEntity>,
                 AbstractEntityFrameworkChangeTrackingService<TKey, TEntity>>();
-            
-            configurator.Builder.WithRegistration<IEntityAddedDomainEventSubscriber<TEntity>,
-                AbstractChangeTrackingDomainEventHandler<TKey, TEntity>>();
 
-            configurator.Builder.WithRegistration<IEntityUpdatedDomainEventSubscriber<TEntity>,
-                AbstractChangeTrackingDomainEventHandler<TKey, TEntity>>();
-
-            configurator.Builder.WithRegistration<IEntityDeletedDomainEventSubscriber<TEntity>,
-                AbstractChangeTrackingDomainEventHandler<TKey, TEntity>>();
+            configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
+            configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
+            configurator.WithDomainEventEntityDeletedSubscriber<AbstractChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
             
             return configurator;
         }
