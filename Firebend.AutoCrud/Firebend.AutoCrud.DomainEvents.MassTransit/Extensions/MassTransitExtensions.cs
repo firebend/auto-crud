@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
@@ -28,17 +30,24 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             
             foreach (var listener in listeners)
             {
-                var genericMessageType = listener.ServiceType.GenericTypeArguments?.FirstOrDefault() ?? listener.ServiceType;
                 var listenerImplementationType = listener.ImplementationType;
                 var serviceType = listener.ServiceType;
-                var queueName = GetQueueName(queueNames, receiveEndpointPrefix, genericMessageType, listenerImplementationType);
                 var entity = serviceType.GenericTypeArguments[0];
                 var handlerType =  GetHandlerType(entity, serviceType, listenerImplementationType);
 
-                if (handlerType == null)
+                if (handlerType == default || handlerType.type == null)
                 {
                     continue;
                 }
+                
+                var genericMessageType = listener.ServiceType.GenericTypeArguments?.FirstOrDefault() ?? listener.ServiceType;
+                
+                var queueName = GetQueueName(queueNames,
+                    receiveEndpointPrefix,
+                    genericMessageType,
+                    listenerImplementationType,
+                    handlerType.desc);
+
 
                 object ConsumerFactory(Type _)
                 {
@@ -53,7 +62,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 
                         if (handler != null)
                         {
-                            var consumer = Activator.CreateInstance(handlerType, handler);
+                            var consumer = Activator.CreateInstance(handlerType.type, handler);
 
                             return consumer;
                         }
@@ -72,32 +81,40 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 {
                     configureReceiveEndpoint?.Invoke(re);
 
-                    re.Consumer(handlerType, ConsumerFactory);
+                    re.Consumer(handlerType.type, ConsumerFactory);
                 });
             }
         }
 
-        private static Type GetHandlerType(Type entity, Type serviceType, Type listenerImplementationType)
+        private static (Type type, string desc) GetHandlerType(Type entity, Type serviceType, Type listenerImplementationType)
         {
             Type handlerType = null;
+            string description = null;
             
             if (typeof(IEntityAddedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
             {
                 handlerType = typeof(MassTransitEntityAddedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                description = "EntityAdded";
             }
             else if (typeof(IEntityUpdatedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
             {
                 handlerType = typeof(MassTransitEntityUpdatedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                description = "EntityUpdated";
             }
             else if (typeof(IEntityDeletedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
             {
                 handlerType = typeof(MassTransitEntityDeletedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                description = "EntityDeleted";
             }
 
-            return handlerType;
+            return (handlerType, description);
         }
 
-        private static string GetQueueName(ICollection<string> queueNames, string receiveEndpointPrefix, Type genericMessageType, Type listenerImplementationType)
+        private static string GetQueueName(ICollection<string> queueNames,
+            string receiveEndpointPrefix,
+            MemberInfo genericMessageType,
+            MemberInfo listenerImplementationType,
+            string handlerTypeDesc)
         {
             var sb = new StringBuilder();
 
@@ -112,8 +129,11 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
             {
                 sb.Append("_");
-                sb.Append(listenerImplementationType.Name);
+                sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
             }
+
+            sb.Append("_");
+            sb.Append(handlerTypeDesc);
 
             var queueName = sb.ToString().Replace("`1", null).Replace("`2", null);
 

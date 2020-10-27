@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
@@ -7,6 +8,7 @@ using Firebend.AutoCrud.Core.Models.DomainEvents;
 
 namespace Firebend.AutoCrud.ChangeTracking.Abstractions
 {
+    [DisplayName("ChangeTracking")]
     public abstract class AbstractChangeTrackingDeleteDomainEventHandler<TKey, TEntity> :
         IEntityDeletedDomainEventSubscriber<TEntity>
         where TEntity : class, IEntity<TKey>
