@@ -7,7 +7,6 @@ using Firebend.AutoCrud.ChangeTracking.Mongo.Interfaces;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Mongo.Interfaces;
 

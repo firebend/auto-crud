@@ -36,58 +36,71 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 var serviceType = listener.ServiceType;
                 var queueName = GetQueueName(queueNames, receiveEndpointPrefix, genericMessageType, listenerImplementationType);
                 var entity = serviceType.GenericTypeArguments[0];
+                var handlerType =  GetHandlerType(entity, serviceType, listenerImplementationType);
 
-                Type handlerType = null;
+                if (handlerType == null)
+                {
+                    continue;
+                }
 
-                if (typeof(IEntityAddedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
+                object ConsumerFactory(Type _)
                 {
-                    handlerType = typeof(MassTransitEntityAddedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                    using var serviceScope = busRegistrationContext.CreateScope();
+
+                    try
+                    {
+                        var handler = serviceScope
+                            .ServiceProvider
+                            .GetServices(serviceType)
+                            .FirstOrDefault(x => x.GetType() == listenerImplementationType);
+
+                        if (handler != null)
+                        {
+                            var consumer = Activator.CreateInstance(handlerType, handler);
+
+                            return consumer;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        var loggerFactory = serviceScope.ServiceProvider.TryGetService<ILoggerFactory>();
+                        var logger = loggerFactory?.CreateLogger(nameof(MassTransitExtensions));
+                        logger?.LogError($"Could construct consumer {listenerImplementationType?.FullName}", ex);
+                    }
+
+                    return null;
                 }
-                else if (typeof(IEntityUpdatedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
-                {
-                    handlerType = typeof(MassTransitEntityUpdatedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
-                }
-                else if (typeof(IEntityDeletedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
-                {
-                    handlerType = typeof(MassTransitEntityDeletedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
-                }
-                
+
                 bus.ReceiveEndpoint(queueName, re =>
                 {
                     configureReceiveEndpoint?.Invoke(re);
 
-                    re.Consumer(handlerType, _  =>
-                    {
-                        using var serviceScope = busRegistrationContext.CreateScope();
-                        
-                        try
-                        {
-                            var handler = serviceScope
-                                .ServiceProvider
-                                .GetServices(serviceType)
-                                .FirstOrDefault(x => x.GetType() == listenerImplementationType);
-
-                            if (handlerType != null)
-                            {
-                                var consumer = Activator.CreateInstance(handlerType, handler);
-                                
-                                return consumer;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            var loggerFactory = serviceScope.ServiceProvider.TryGetService<ILoggerFactory>();
-                            var logger = loggerFactory?.CreateLogger(nameof(MassTransitExtensions));
-                            logger?.LogError($"Could construct consumer {listenerImplementationType?.FullName}", ex);
-                        }
-
-                        return null;
-                    });
+                    re.Consumer(handlerType, ConsumerFactory);
                 });
             }
         }
 
-        private static string GetQueueName(List<string> queueNames, string receiveEndpointPrefix, Type genericMessageType, Type listenerImplementationType)
+        private static Type GetHandlerType(Type entity, Type serviceType, Type listenerImplementationType)
+        {
+            Type handlerType = null;
+            
+            if (typeof(IEntityAddedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
+            {
+                handlerType = typeof(MassTransitEntityAddedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+            }
+            else if (typeof(IEntityUpdatedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
+            {
+                handlerType = typeof(MassTransitEntityUpdatedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+            }
+            else if (typeof(IEntityDeletedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
+            {
+                handlerType = typeof(MassTransitEntityDeletedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+            }
+
+            return handlerType;
+        }
+
+        private static string GetQueueName(ICollection<string> queueNames, string receiveEndpointPrefix, Type genericMessageType, Type listenerImplementationType)
         {
             var sb = new StringBuilder();
 
@@ -128,9 +141,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 
             if (args.Length != 1 && !args[0].IsClass) return false;
 
-            if (!typeof(IDomainEventSubscriber).IsAssignableFrom(serviceType)) return false;
-
-            return true;
+            return typeof(IDomainEventSubscriber).IsAssignableFrom(serviceType);
         }
     }
 }
