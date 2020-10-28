@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public bool IsBuilt { get; private set; }
 
-        public IDictionary<Type, Registration> Registrations { get; set; }
+        public IDictionary<Type, List<Registration>> Registrations { get; set; }
 
         public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
         
@@ -37,13 +37,13 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         {
         }
         
-        public BaseBuilder WithRegistration(Type type, Registration registration, bool replace = true)
+        public BaseBuilder WithRegistration(Type type, Registration registration, bool replace = true, bool allowMany = false)
         {
             if (Registrations == null)
             {
-                Registrations = new Dictionary<Type, Registration>
+                Registrations = new Dictionary<Type, List<Registration>>
                 {
-                    { type, registration }
+                    { type, new List<Registration> { registration } }
                 };
 
                 return this;
@@ -51,45 +51,52 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
             if (Registrations.ContainsKey(type))
             {
-                if (replace)
+                if (allowMany)
                 {
-                    Registrations[type] = registration;
+                    Registrations[type] = Registrations[type] ?? new List<Registration>();
+                    Registrations[type].Add(registration);
+                }
+                else if (replace)
+                {
+                    Registrations[type] = new List<Registration> { registration };
                 }
 
                 return this;
             }
             
-            Registrations.Add(type, registration);
+            Registrations.Add(type, new List<Registration> { registration });
 
             return this;
         }
 
         public BaseBuilder WithRegistration(Type registrationType,
             Type serviceType,
-            bool replace = true)
+            bool replace = true,
+            bool allowMany = false)
         {
             var registration = new ServiceRegistration
             {
                 ServiceType = serviceType
             };
 
-            return WithRegistration(registrationType, registration, replace);
+            return WithRegistration(registrationType, registration, replace, allowMany);
         }
 
-        public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true)
+        public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true, bool allowMany = false)
         {
-            return WithRegistration(typeof(TRegistration), typeof(TService), replace);
+            return WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany);
         }
 
-        public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true)
+        public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true, bool allowMany = false)
         {
-            return WithRegistration(typeof(TRegistration), type, replace);
+            return WithRegistration(typeof(TRegistration), type, replace, allowMany);
         }
 
         public BaseBuilder WithRegistration(Type registrationType,
             Type serviceType,
             Type typeToCheck,
-            bool replace = true)
+            bool replace = true,
+            bool allowMany = false)
         {
             if (!typeToCheck.IsAssignableFrom(serviceType))
             {
@@ -101,7 +108,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
             }
 
-            return WithRegistration(registrationType, serviceType, replace);
+            return WithRegistration(registrationType, serviceType, replace, allowMany);
         }
 
         public BaseBuilder WithRegistrationInstance(Type registrationType, object instance)

@@ -5,17 +5,19 @@ using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
 {
-    public class MassTransitEntityAddedDomainEventHandler<TEntity> : 
-        BaseMassTransitDomainEventHandler<EntityAddedDomainEvent<TEntity>> where TEntity : class
+    public class MassTransitEntityAddedDomainEventHandler<TSubscriber, TEntity> :
+        IConsumer<EntityAddedDomainEvent<TEntity>>
+        where TEntity : class
+        where TSubscriber : IEntityAddedDomainEventSubscriber<TEntity>
     {
-        private readonly IEntityAddedDomainEventSubscriber<TEntity> _added;
+        private readonly TSubscriber  _added;
 
-        public MassTransitEntityAddedDomainEventHandler(IEntityAddedDomainEventSubscriber<TEntity> added)
+        public MassTransitEntityAddedDomainEventHandler(TSubscriber added)
         {
             _added = added;
         }
 
-        public override Task Consume(ConsumeContext<EntityAddedDomainEvent<TEntity>> context)
+        public Task Consume(ConsumeContext<EntityAddedDomainEvent<TEntity>> context)
             => _added.EntityAddedAsync(context.Message, context.CancellationToken);
     }
 }

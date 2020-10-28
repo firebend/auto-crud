@@ -4,7 +4,8 @@ using Firebend.AutoCrud.Core.Models.DomainEvents;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents
 {
-    public interface IEntityDeletedDomainEventSubscriber<TEntity> where TEntity : class
+    public interface IEntityDeletedDomainEventSubscriber<TEntity> : IDomainEventSubscriber
+        where TEntity : class
     {
         Task EntityDeletedAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default);
     }
