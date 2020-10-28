@@ -2,7 +2,18 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
-        <Version>0.0.6</Version>
+        <Version>0.0.7</Version>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <AssemblyTitle>Firebend Auto Crud Change Tracking</AssemblyTitle>
+      <Description>Firebend Auto Crud extension pack for tracking changes to entities.</Description>
+      <PackageTags>firebend;autocrud;crud;entity;change;tracking;auditing</PackageTags>
+      <Authors>Firebend</Authors>
+      <RepositoryUrl>https://github.com/firebend/auto-crud</RepositoryUrl>
+      <PackageLicenseUrl>https://github.com/firebend/auto-crud/blob/main/LICENSE</PackageLicenseUrl>
+      <PackageProjectUrl>https://github.com/firebend/auto-crud</PackageProjectUrl>
+      <PackageIconUrl>https://github.com/firebend/auto-crud/blob/main/nuget-image.png?raw=true</PackageIconUrl>
     </PropertyGroup>
 
     <ItemGroup>
