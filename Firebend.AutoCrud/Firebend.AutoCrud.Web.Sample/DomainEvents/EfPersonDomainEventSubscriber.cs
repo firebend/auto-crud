@@ -25,6 +25,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
             
             _logger.LogInformation($"Person Added! Person: {modifiedJson}. Context: {contextJson}");
+            _logger.LogInformation($"Catch Phrase: {domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase}");
             
             return Task.CompletedTask;
         }
@@ -38,7 +39,8 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
             
             _logger.LogInformation($"Person Updated! Original: {originalJson}. Modified: {modifiedJson}. Context: {contextJson}");
-            
+            _logger.LogInformation($"Catch Phrase: {domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase}");
+
             return Task.CompletedTask;
         }
     }
