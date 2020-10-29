@@ -56,7 +56,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 jsonPatchDocument = _jsonPatchDocumentGenerator.Generate(original, model);
             }
             
-            await PublishDomainEventAsync(entity, jsonPatchDocument, cancellationToken);
+            await PublishDomainEventAsync(original, jsonPatchDocument, cancellationToken);
 
             return model;
         }
@@ -73,13 +73,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var original = entity.Clone();
 
-            jsonPatchDocument.ApplyTo(original);
+            jsonPatchDocument.ApplyTo(entity);
 
             await context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            await PublishDomainEventAsync(entity, jsonPatchDocument, cancellationToken);
+            await PublishDomainEventAsync(original, jsonPatchDocument, cancellationToken);
 
             return entity;
         }

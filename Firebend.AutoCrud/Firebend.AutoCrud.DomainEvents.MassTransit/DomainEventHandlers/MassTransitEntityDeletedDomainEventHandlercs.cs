@@ -5,19 +5,16 @@ using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
 {
-    public class MassTransitEntityDeletedDomainEventHandler<TSubscriber, TEntity> :
-        IConsumer<EntityDeletedDomainEvent<TEntity>>
+    public class MassTransitEntityDeletedDomainEventHandler<TDomainEventHandler, TEntity> :
+        AbstractMassTransitDomainEventHandler<EntityDeletedDomainEvent<TEntity>, TDomainEventHandler>
         where TEntity : class
-        where TSubscriber : IEntityDeletedDomainEventSubscriber<TEntity>
+        where TDomainEventHandler : IEntityDeletedDomainEventSubscriber<TEntity>
     {
-        private readonly TSubscriber _deleted;
-
-        public MassTransitEntityDeletedDomainEventHandler(TSubscriber deleted)
+        public MassTransitEntityDeletedDomainEventHandler(TDomainEventHandler deleted) : base(deleted)
         {
-            _deleted = deleted;
         }
 
-        public Task Consume(ConsumeContext<EntityDeletedDomainEvent<TEntity>> context)
-            => _deleted.EntityDeletedAsync(context.Message, context.CancellationToken);
+        public override Task Consume(ConsumeContext<EntityDeletedDomainEvent<TEntity>> context)
+            => Handler.EntityDeletedAsync(context.Message, context.CancellationToken);
     }
 }
