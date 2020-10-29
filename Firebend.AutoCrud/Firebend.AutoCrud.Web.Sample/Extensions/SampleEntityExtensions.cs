@@ -59,8 +59,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()
-                        .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventSubscriber>()
-                        .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventSubscriber>()
+                        .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
+                        .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
                     )
                     .AddIo( io => io.WithMapper<EfPersonExport, EfPersonMapper>())
                     .AddControllers(controllers => controllers

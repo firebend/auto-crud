@@ -12,17 +12,17 @@ Content-Type: application/json
 {
     "id": "b60b0fcd-fd29-4e05-8a29-08d87ac43f8e",
     "firstName": "Simon",
-    "lastName": "Sample Updated"
+    "lastName": "Bobby"
 }
 ###
-PATCH https://localhost:5001/api/v1/ef-person/e9c6a857-97e1-4e75-26ab-08d87772274c
+PATCH https://localhost:5001/api/v1/ef-person/7d963ef7-a42d-40c8-449d-08d87a83025c
 Content-Type: application/json
 
 [
     {
         "op": "replace",
         "path": "/lastName",
-        "value": "Sample Patch"
+        "value": "Robinson"
     }
 ]
 ###
