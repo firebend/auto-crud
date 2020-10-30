@@ -13,7 +13,7 @@ A framework that provides Create Read Update Delete (CRUD) dotnet core services.
   * Service bus operations using [MassTransit](https://masstransit-project.com/)
 - Change Tracking ( Entity Change Audits )
   * Ability to persist entity changes to mongo db or an entity framework context
-- Exporting entities to csv and spreasheets
+- Exporting entities to csv and spreadsheets
   * Uses [CsvHelper](https://joshclose.github.io/CsvHelper/) and [ClosedXml](https://github.com/ClosedXML/ClosedXML)
 
 # Firebend Nuget Page
