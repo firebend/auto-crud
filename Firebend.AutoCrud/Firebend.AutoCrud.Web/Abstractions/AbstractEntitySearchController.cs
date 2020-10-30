@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
@@ -26,7 +27,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Searches for entities")]
         [SwaggerResponse(200, "All the entities that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.")]
-        public virtual async Task<IActionResult> Search([FromQuery] TSearch searchRequest,
+        public virtual async Task<IActionResult> Search(
+            [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
         {
             if (searchRequest == null)
@@ -40,14 +42,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), "Page number must have a value");
 
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
             if (!searchRequest.PageSize.GetValueOrDefault().IsBetween(1, 100))
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), "Page size must be between 1 and 100");
 
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
             searchRequest.DoCount ??= true;

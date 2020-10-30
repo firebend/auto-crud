@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.Web.Implementations
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        public TKey ParseKey(string key)
+        public TKey? ParseKey(string key)
         {
             var tKeyType = typeof(TKey);
 
@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.Web.Implementations
                 return (TKey) Convert.ChangeType(key, typeof(string));
             }
 
-            throw new Exception("Could not parse key");
+            return null;
         }
     }
 }

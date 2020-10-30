@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -9,18 +10,16 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityReadController<TKey, TEntity> : ControllerBase
+    public abstract class AbstractEntityReadController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IEntityKeyParser<TKey, TEntity> _entityKeyParser;
         private readonly IEntityReadService<TKey, TEntity> _readService;
 
         protected AbstractEntityReadController(IEntityReadService<TKey, TEntity> readService,
-            IEntityKeyParser<TKey, TEntity> entityKeyParser)
+            IEntityKeyParser<TKey, TEntity> entityKeyParser) : base(entityKeyParser)
         {
             _readService = readService;
-            _entityKeyParser = entityKeyParser;
         }
 
         [HttpGet("{id}")]
@@ -28,13 +27,19 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(200, "An entity with the given key.")]
         [SwaggerResponse(404, "The entity with the given key is not found.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> GetById([FromRoute] string id,
+        public virtual async Task<IActionResult> GetById(
+            [Required] [FromRoute] string id,
             CancellationToken cancellationToken)
         {
-            var key = _entityKeyParser.ParseKey(id);
+            var key = GetKey(id);
+            
+            if (!key.HasValue)
+            {
+                return BadRequest(ModelState);
+            }
 
             var entity = await _readService
-                .GetByKeyAsync(key, cancellationToken)
+                .GetByKeyAsync(key.Value, cancellationToken)
                 .ConfigureAwait(false);
 
             if (entity == null)
