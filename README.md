@@ -30,7 +30,7 @@ public class Person : IEntity<Guid>
 
     public string FirstName { get; set; }
 
-    public string LasName { get; set;}
+    public string LastName { get; set;}
 }
 ```
 
