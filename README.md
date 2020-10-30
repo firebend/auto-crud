@@ -8,7 +8,7 @@ A framework that provides Cread Read Update Delete (CRUD) dotnet core services.
 - Mongo DB
 - Sharded entity framework sql server contexts
 - Aspnet core controllers
-  * HTTP GET, PUT, POST, PATCH RESfFul service endpoints
+  * HTTP GET, PUT, POST, PATCH RESTFul service endpoints
 - Domain Events
   * Service bus operations using [MassTransit](https://masstransit-project.com/)
 - Change Tracking ( Entity Change Audits )
