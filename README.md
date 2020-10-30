@@ -1,7 +1,7 @@
 ![Build, Test, and Release](https://github.com/firebend/auto-crud/workflows/Build,%20Test,%20and%20Release/badge.svg)
 
 # Firebend.AutoCrud
-A framework that provides Cread Read Update Delete (CRUD) dotnet core services.
+A framework that provides Create Read Update Delete (CRUD) dotnet core services.
 
 "Extension Packs" are provided to support:
 - Entity Framework
