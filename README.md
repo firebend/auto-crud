@@ -64,10 +64,11 @@ return Host.CreateDefaultBuilder(args)
                   person.WithDefaultDatabase("MyMongoDb")
                       .WithCollection("MyPersonCollection")
                       .WithFullTextSearch()
-                      .AddCrud(x =>
+                      .AddCrud(crud =>
                       {
-                          x.WithCrud()
-                          .WithOrderBy(m => m.LastName));
+                          crud
+                            .WithCrud()
+                            .WithOrderBy(m => m.LastName));
                       })
                       .AddControllers(controllers => 
                       {
@@ -75,8 +76,8 @@ return Host.CreateDefaultBuilder(args)
                             .WithAllControllers(true)
                             .WithOpenApiGroupName("People");
                       });
-              })
-          })
+              });
+          });
   }
 ```
 
