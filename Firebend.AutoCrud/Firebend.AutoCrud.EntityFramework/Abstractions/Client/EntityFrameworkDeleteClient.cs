@@ -48,9 +48,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 }
                 else
                 {
-                    set.Attach(entity);
-                    entry.State = EntityState.Deleted;
-                    entity = entry.Entity;
+                    return null;
                 }
             }
             else

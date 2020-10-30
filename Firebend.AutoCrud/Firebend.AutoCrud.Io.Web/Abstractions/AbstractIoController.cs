@@ -27,15 +27,40 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         public virtual async Task<IActionResult> Search(
             [Required] [FromRoute] string exportType,
-            [FromQuery] TSearch searchRequest,
             [Required] [FromQuery] string filename,
+            [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(filename))
+            {
+                ModelState.AddModelError(nameof(filename), $"{nameof(filename)} is invalid.");
+                return BadRequest(ModelState);
+            }
+
+            if (string.IsNullOrWhiteSpace(exportType))
+            {
+                ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is required.");
+                return BadRequest(ModelState);
+            }
+            
             var entityExportType = exportType.ParseEnum<EntityFileType>();
 
-            if (!entityExportType.HasValue)
+            if (!entityExportType.HasValue || entityExportType.Value == EntityFileType.Unknown)
             {
-                return BadRequest($"The provided export type is invalid");
+                ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is invalid");
+                return BadRequest(ModelState);
+            }
+
+            if (searchRequest.PageNumber.HasValue && searchRequest.PageNumber <= 0)
+            {
+                ModelState.AddModelError(nameof(searchRequest.PageNumber), $"{nameof(searchRequest.PageNumber)} must be greater than zero.");
+                return BadRequest(ModelState);
+            }
+
+            if (searchRequest.PageSize.HasValue && searchRequest.PageSize <= 0)
+            {
+                ModelState.AddModelError(nameof(searchRequest.PageSize), $"{nameof(searchRequest.PageSize)} must be greater than zero.");
+                return BadRequest(ModelState);
             }
 
             var fileResult = await _exportService.ExportEntitiesAsync(

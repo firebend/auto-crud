@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -29,20 +30,34 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(201, "Creates an entity.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> Post([FromBody] TEntity body,
+        public virtual async Task<IActionResult> Post(
+            [FromBody] TEntity body,
             CancellationToken cancellationToken)
         {
+            if (body == null)
+            {
+                ModelState.AddModelError("body", "A body is required");
+                return BadRequest(ModelState);
+            }
+            
             var isValid = await _entityValidationService
                 .ValidateAsync(body, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!isValid.WasSuccessful)
             {
-                foreach (var modelError in isValid.Errors) ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+                foreach (var modelError in isValid.Errors)
+                {
+                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+                }
+                
                 return BadRequest(ModelState);
             }
 
-            if (isValid.Model != null) body = isValid.Model;
+            if (isValid.Model != null)
+            {
+                body = isValid.Model;
+            }
 
             var entity = await _createService
                 .CreateAsync(body, cancellationToken)
@@ -57,9 +72,16 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(201, "Multiple entities created.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> PostMultiple([FromBody] TEntity[] body,
+        public virtual async Task<IActionResult> PostMultiple(
+            [FromBody] TEntity[] body,
             CancellationToken cancellationToken)
         {
+            if (body == null || body.Length <= 0)
+            {
+                ModelState.AddModelError("body", "A body is required");
+                return BadRequest(ModelState);
+            }
+            
             var createdEntities = new List<TEntity>();
             var errorEntities = new List<ModelStateResult<TEntity>>();
 
@@ -76,7 +98,10 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     errorEntities.Add(isValid);
                 }
 
-                if (isValid.Model != null) entityToCreate = isValid.Model;
+                if (isValid.Model != null)
+                {
+                    entityToCreate = isValid.Model;
+                }
 
                 var entity = await _createService
                     .CreateAsync(entityToCreate, cancellationToken)
@@ -85,9 +110,22 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 createdEntities.Add(entity);
             }
 
-            if (createdEntities.Count > 0) return Ok(new {created = createdEntities, errors = errorEntities});
+            if (createdEntities.Count > 0)
+            {
+                return Ok(new
+                {
+                    created = createdEntities,
+                    errors = errorEntities
+                });
+            }
 
-            if (errorEntities.Count > 0) return BadRequest(new {errors = errorEntities});
+            if (errorEntities.Count > 0)
+            {
+                return BadRequest(new
+                {
+                    errors = errorEntities
+                });
+            }
 
             return BadRequest();
         }

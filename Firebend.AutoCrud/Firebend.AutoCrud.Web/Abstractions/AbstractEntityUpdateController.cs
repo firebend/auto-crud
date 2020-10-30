@@ -11,11 +11,10 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public abstract class AbstractEntityUpdateController<TKey, TEntity> : ControllerBase
+    public abstract class AbstractEntityUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
-        private readonly IEntityKeyParser<TKey, TEntity> _entityKeyParser;
         private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
@@ -23,11 +22,10 @@ namespace Firebend.AutoCrud.Web.Abstractions
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IEntityValidationService<TKey, TEntity> entityValidationService)
+            IEntityValidationService<TKey, TEntity> entityValidationService) : base(entityKeyParser)
         {
             _updateService = updateService;
             _readService = readService;
-            _entityKeyParser = entityKeyParser;
             _entityValidationService = entityValidationService;
         }
 
@@ -37,25 +35,25 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(404, "The entity with the given key is not found.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> Put([FromRoute] string id,
-            [FromBody] TEntity body,
+        public virtual async Task<IActionResult> Put(
+            [Required] [FromRoute] string id,
+            [Required] [FromBody] TEntity body,
             CancellationToken cancellationToken)
         {
-            var key = _entityKeyParser.ParseKey(id);
+            var key = GetKey(id);
 
-            if (key.Equals(default) || key.Equals(null))
+            if (!key.HasValue)
             {
-                ModelState.AddModelError(nameof(id), "An id is required");
                 return BadRequest(ModelState);
             }
 
-            if (body == null || body.Id.Equals(default) || body.Id.Equals(null))
+            if (body == null || body.Id.Equals(default(TKey)) || body.Id.Equals(null))
             {
                 ModelState.AddModelError(nameof(body), "The entity body has no id provided.");
                 return BadRequest(ModelState);
             }
 
-            if (!key.Equals(body.Id))
+            if (!key.Value.Equals(body.Id))
             {
                 ModelState.AddModelError(nameof(id), "The id provided in the url does not match the id in the body.");
                 return BadRequest(ModelState);
@@ -81,7 +79,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (entity == null)
             {
-                return NotFound(new {key = id});
+                return NotFound(new { id });
             }
 
             return Ok(entity);
@@ -93,8 +91,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(404, "The entity with the given key is not found.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> Patch([FromRoute] string id,
-            [FromBody] [Required] JsonPatchDocument<TEntity> patch,
+        public virtual async Task<IActionResult> Patch(
+            [Required] [FromRoute] string id,
+            [Required] [FromBody] JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken)
         {
             if (patch == null)
@@ -104,22 +103,20 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            var key = _entityKeyParser.ParseKey(id);
-
-            if (key.Equals(default) || key.Equals(null))
+            var key = GetKey(id);
+            
+            if (!key.HasValue)
             {
-                ModelState.AddModelError(nameof(id), "An id is required");
-
                 return BadRequest(ModelState);
             }
 
             var entity = await _readService
-                .GetByKeyAsync(key, cancellationToken)
+                .GetByKeyAsync(key.Value, cancellationToken)
                 .ConfigureAwait(false);
 
             if (entity == null)
             {
-                return NotFound(new {id});
+                return NotFound(new { id });
             }
 
             var original = entity.Clone();
@@ -159,7 +156,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return Ok(update);
             }
 
-            return NotFound(new {id});
+            return NotFound(new { id });
         }
     }
 }

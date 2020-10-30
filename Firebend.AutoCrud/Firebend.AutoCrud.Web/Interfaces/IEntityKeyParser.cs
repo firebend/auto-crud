@@ -7,6 +7,6 @@ namespace Firebend.AutoCrud.Web.Interfaces
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        TKey ParseKey(string key);
+        TKey? ParseKey(string key);
     }
 }
