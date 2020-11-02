@@ -32,7 +32,7 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCrud()
         {
-            return WithCrud<EntitySearchRequest>();
+            return Builder.IsActiveEntity ? WithCrud<ActiveEntitySearchRequest>() : WithCrud<EntitySearchRequest>();
         }
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate(Type serviceType)
@@ -68,12 +68,8 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete()
         {
-            var deleteType = typeof(IActiveEntity).IsAssignableFrom(Builder.EntityType)
-                ? Builder.SoftDeleteType
-                : Builder.DeleteType;
-
-            var serviceType = deleteType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
-
+            var serviceType = Builder.DeleteType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+            
             return WithDelete(serviceType);
         }
 
