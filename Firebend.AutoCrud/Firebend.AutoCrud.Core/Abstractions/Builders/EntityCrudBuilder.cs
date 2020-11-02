@@ -13,6 +13,17 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        private bool? _isActiveEntity;
+
+        public bool IsActiveEntity 
+        {
+            get
+            { 
+                _isActiveEntity ??= typeof(IActiveEntity).IsAssignableFrom(EntityType);
+                return _isActiveEntity.Value;
+            }
+        }
+        
         public abstract Type CreateType { get; }
 
         public abstract Type ReadType { get; }
@@ -23,14 +34,14 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public abstract Type DeleteType { get; }
 
-        public abstract Type SoftDeleteType { get; }
-
-        public Type SearchRequestType { get; set; } = typeof(EntitySearchRequest);
+        public Type SearchRequestType { get; set; }
 
         protected abstract void ApplyPlatformTypes();
 
         public EntityCrudBuilder()
         {
+            SearchRequestType = IsActiveEntity ? typeof(ActiveEntitySearchRequest) : typeof(EntitySearchRequest);
+            
             WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
             WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
             WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);

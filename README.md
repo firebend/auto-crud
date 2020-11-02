@@ -77,7 +77,7 @@ return Host.CreateDefaultBuilder(args)
                             .WithOpenApiGroupName("People");
                       });
               });
-          });
+          })
   }
 ```
 

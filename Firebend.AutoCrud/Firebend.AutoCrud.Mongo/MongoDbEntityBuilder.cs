@@ -17,17 +17,30 @@ namespace Firebend.AutoCrud.Mongo
         where TKey : struct 
         where TEntity : class, IEntity<TKey>
     {
-        public override Type CreateType { get; } = typeof(MongoEntityCreateService<,>);
+        public MongoDbEntityBuilder()
+        {
+            CreateType = typeof(MongoEntityCreateService<,>); 
+            ReadType = typeof(MongoEntityReadService<,>);
+            UpdateType = typeof(MongoEntityUpdateService<,>);
+            
+            SearchType = IsActiveEntity ?
+                typeof(MongoActiveEntitySearchService<,,>):
+                typeof(MongoEntitySearchService<,,>);
+            
+            DeleteType = IsActiveEntity ?
+                typeof(MongoEntitySoftDeleteService<,>):
+                typeof(MongoEntityDeleteService<,>);
+        }
 
-        public override Type ReadType { get; } = typeof(MongoEntityReadService<,>);
+        public override Type CreateType { get; }
 
-        public override Type SearchType { get; } = typeof(MongoEntitySearchService<,,>);
+        public override Type ReadType { get; }
 
-        public override Type UpdateType { get; } = typeof(MongoEntityUpdateService<,>);
+        public override Type SearchType { get; }
 
-        public override Type DeleteType { get; } = typeof(MongoEntityDeleteService<,>);
+        public override Type UpdateType { get; }
 
-        public override Type SoftDeleteType { get; } = typeof(MongoEntitySoftDeleteService<,>);
+        public override Type DeleteType { get; }
 
         public string CollectionName { get; set; }
 

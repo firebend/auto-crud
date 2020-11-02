@@ -13,17 +13,30 @@ namespace Firebend.AutoCrud.EntityFramework
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        public override Type CreateType { get; } = typeof(EntityFrameworkEntityCreateService<,>);
+        public EntityFrameworkEntityBuilder()
+        {
+            CreateType = typeof(EntityFrameworkEntityCreateService<,>);
+            ReadType = typeof(EntityFrameworkEntityReadService<,>);
+            UpdateType = typeof(EntityFrameworkEntityUpdateService<,>);
+            
+            DeleteType = IsActiveEntity ?
+                typeof(EntityFrameworkEntitySoftDeleteService<,>) :
+                typeof(EntityFrameworkEntityDeleteService<,>);
+            
+            SearchType = IsActiveEntity ?
+                typeof(EntityFrameworkActiveEntitySearchService<,,>) :
+                typeof(EntityFrameworkEntitySearchService<,,>);
+        }
 
-        public override Type ReadType { get; } = typeof(EntityFrameworkEntityReadService<,>);
+        public override Type CreateType { get; }
 
-        public override Type SearchType { get; } = typeof(EntityFrameworkEntitySearchService<,,>);
+        public override Type ReadType { get; }
 
-        public override Type UpdateType { get; } = typeof(EntityFrameworkEntityUpdateService<,>);
+        public override Type SearchType { get; }
 
-        public override Type DeleteType { get; } = typeof(EntityFrameworkEntityDeleteService<,>);
+        public override Type UpdateType { get; }
 
-        public override Type SoftDeleteType { get; } = typeof(EntityFrameworkEntitySoftDeleteService<,>);
+        public override Type DeleteType { get; }
 
         public Type DbContextType { get; set; }
 
