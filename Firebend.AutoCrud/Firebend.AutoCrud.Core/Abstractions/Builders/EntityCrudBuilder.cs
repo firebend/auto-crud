@@ -1,4 +1,5 @@
 using System;
+using System.Reflection.Metadata;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Implementations.JsonPatch;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -24,6 +25,17 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             }
         }
         
+        private bool? _isModifiedEntity;
+
+        public bool IsModifiedEntity 
+        {
+            get
+            { 
+                _isModifiedEntity ??= typeof(IModifiedEntity).IsAssignableFrom(EntityType);
+                return _isModifiedEntity.Value;
+            }
+        }
+        
         public abstract Type CreateType { get; }
 
         public abstract Type ReadType { get; }
@@ -41,8 +53,17 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public EntityCrudBuilder()
         {
             SearchRequestType = IsActiveEntity ? typeof(ActiveEntitySearchRequest) : typeof(EntitySearchRequest);
+
+            if (IsModifiedEntity)
+            {
+                var orderType = typeof(DefaultModifiedEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType);
+                WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>>(orderType, false);
+            }
+            else
+            {
+                WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
+            }
             
-            WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
             WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
             WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
             WithRegistration<IJsonPatchDocumentGenerator, JsonPatchDocumentDocumentGenerator>(false);

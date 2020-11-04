@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Mongo
 {
     public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct 
-        where TEntity : class, IEntity<TKey>
+        where TEntity : class, IEntity<TKey>, new()
     {
         public MongoDbEntityBuilder()
         {
@@ -58,6 +58,16 @@ namespace Firebend.AutoCrud.Mongo
             WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
             WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);
             WithRegistration<IConfigureCollection, MongoConfigureCollection<TKey, TEntity>>(false);
+
+            if (IsModifiedEntity)
+            {
+                var type = typeof(ModifiedIndexProvider<>).MakeGenericType(EntityType);
+                WithRegistration<IMongoIndexProvider<TEntity>>(type, false);
+            }
+            else
+            {
+                WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
+            }
 
             if (EntityKeyType == typeof(Guid))
             {
@@ -146,7 +156,16 @@ namespace Firebend.AutoCrud.Mongo
 
         public MongoDbEntityBuilder<TKey, TEntity> WithFullTextSearch()
         {
-            WithRegistration<IMongoIndexProvider<TEntity>, FullTextIndexProvider<TEntity>>();
+            if (IsModifiedEntity)
+            {
+                var type = typeof(ModifiedFullTextIndexProvider<>).MakeGenericType(EntityType);
+                WithRegistration<IMongoIndexProvider<TEntity>>(type);
+            }
+            else
+            {
+                WithRegistration<IMongoIndexProvider<TEntity>, FullTextIndexProvider<TEntity>>();
+            }
+
             return this;
         }
     }

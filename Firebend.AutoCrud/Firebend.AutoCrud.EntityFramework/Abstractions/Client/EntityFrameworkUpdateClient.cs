@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
@@ -8,6 +9,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -45,6 +47,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var original = model.Clone();
             model = entity.CopyPropertiesTo(model);
 
+            if (model is IModifiedEntity modified)
+            {
+                modified.ModifiedDate = DateTimeOffset.Now;
+            }
+            
             await context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -72,6 +79,15 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             }
 
             var original = entity.Clone();
+
+            if (entity is IModifiedEntity modified)
+            {
+                jsonPatchDocument.Operations.Add(new Operation<TEntity>(
+                    "replace",
+                    $"/{nameof(IModifiedEntity.ModifiedDate)}",
+                    from: null,
+                    value: DateTimeOffset.Now));
+            }
 
             jsonPatchDocument.ApplyTo(entity);
 

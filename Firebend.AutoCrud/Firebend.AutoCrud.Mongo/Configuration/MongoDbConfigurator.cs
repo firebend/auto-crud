@@ -27,8 +27,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
                 BsonSerializer.RegisterSerializer(typeof(Guid), new GuidSerializer(BsonType.String));
                 BsonSerializer.RegisterSerializer(typeof(decimal), new DecimalSerializer(BsonType.Decimal128));
                 BsonSerializer.RegisterSerializer(typeof(decimal?), new NullableSerializer<decimal>(new DecimalSerializer(BsonType.Decimal128)));
-
-                BsonTypeMapper.RegisterCustomTypeMapper(typeof(DateTimeOffset), new MongoDateTimeOffsetBsonTypeMapper());
+                BsonSerializer.RegisterSerializer(typeof(DateTimeOffset), new DateTimeOffsetSerializer(BsonType.String));
 
                 var pack = new ConventionPack
                 {
