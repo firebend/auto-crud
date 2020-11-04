@@ -5,7 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class MongoPerson : IEntity<Guid>, IActiveEntity
+    public class MongoPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity
     {
         public string FirstName { get; set; }
 
@@ -13,6 +13,8 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public Guid Id { get; set; }
         
         public bool IsDeleted { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 
     [Table("EfPeople")]
