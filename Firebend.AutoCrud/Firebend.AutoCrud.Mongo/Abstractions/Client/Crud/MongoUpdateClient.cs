@@ -131,12 +131,18 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             JsonPatchDocument<TEntity> patchDocument = null)
         {
             var filters = BuildFilters(filter);
-
+            var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
             var mongoCollection = GetCollection();
 
+            var now = DateTimeOffset.Now;
+            if (entity is IModifiedEntity modified)
+            {
+                modified.ModifiedDate = now;
+            }
+            
             var original = await RetryErrorAsync(() =>
                 mongoCollection.FindOneAndReplaceAsync(
-                    Builders<TEntity>.Filter.Where(filters),
+                    filtersDefinition,
                     entity,
                     new FindOneAndReplaceOptions<TEntity, TEntity>
                     {
@@ -156,6 +162,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (doUpsert)
             {
+                if (entity is IModifiedEntity created)
+                { 
+                    var update = Builders<TEntity>.Update.Set(nameof(IModifiedEntity.CreatedDate), now);
+                    
+                    created.CreatedDate = now;
+                    await mongoCollection.UpdateOneAsync(filtersDefinition, update, new UpdateOptions(), cancellationToken).ConfigureAwait(false);
+                }
+                
                 await PublishAddedDomainEventAsync(entity, cancellationToken).ConfigureAwait(false);
                 
                 return entity;
@@ -181,10 +195,24 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     .FirstOrDefaultAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                if (id.Equals(default)) id = await _keyGenerator.GenerateKeyAsync(cancellationToken);
+                var isCreating = false;
+                if (id.Equals(default))
+                {
+                    id = await _keyGenerator.GenerateKeyAsync(cancellationToken).ConfigureAwait(false);
+                    isCreating = true;
+                }
 
                 entityUpdate.Entity.Id = id;
-
+                if (entityUpdate.Entity is IModifiedEntity modified)
+                {
+                    var now = DateTimeOffset.Now;
+                    if (isCreating)
+                    {
+                        modified.CreatedDate = now;
+                    }
+                    
+                    modified.ModifiedDate = now;
+                }
                 ids.Add(id);
             }
 

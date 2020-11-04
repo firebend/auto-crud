@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
@@ -30,6 +31,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
+
+            if (entity is IModifiedEntity modified)
+            {
+                modified.CreatedDate = DateTimeOffset.Now;
+                modified.ModifiedDate = DateTimeOffset.Now;
+            }
 
             await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))
                 .ConfigureAwait(false);

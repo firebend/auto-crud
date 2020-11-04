@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
@@ -27,7 +28,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             var set = GetDbSet(context);
-                
+
+            if (entity is IModifiedEntity modified)
+            {
+                modified.CreatedDate = DateTimeOffset.Now;
+                modified.ModifiedDate = DateTimeOffset.Now;
+            }
+            
             var entry = await set
                 .AddAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
