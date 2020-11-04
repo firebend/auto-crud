@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Mongo
 {
     public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct 
-        where TEntity : class, IEntity<TKey>
+        where TEntity : class, IEntity<TKey>, new()
     {
         public MongoDbEntityBuilder()
         {

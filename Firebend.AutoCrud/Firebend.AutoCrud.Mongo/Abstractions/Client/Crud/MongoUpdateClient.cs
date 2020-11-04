@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
@@ -20,7 +21,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoUpdateClient<TKey, TEntity>
         where TKey : struct
-        where TEntity : class, IEntity<TKey>
+        where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
@@ -135,44 +136,52 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             var mongoCollection = GetCollection();
 
             var now = DateTimeOffset.Now;
-            if (entity is IModifiedEntity modified)
+            if (entity is IModifiedEntity modifiedEntity)
             {
-                modified.ModifiedDate = now;
+                modifiedEntity.ModifiedDate = now;
+            }
+
+            TEntity original = null;
+
+            if (doUpsert)
+            {
+                original = await RetryErrorAsync(() =>
+                    mongoCollection.Find(filtersDefinition).SingleOrDefaultAsync(cancellationToken));
+            }
+
+            var modified = original == null ? new TEntity() : original.Clone();
+
+            entity.CopyPropertiesTo(modified, new [] { nameof(IModifiedEntity.CreatedDate)});
+            if (original == null && modified is IModifiedEntity mod)
+            {
+                mod.CreatedDate = now;
             }
             
-            var original = await RetryErrorAsync(() =>
+            var result = await RetryErrorAsync(() =>
                 mongoCollection.FindOneAndReplaceAsync(
                     filtersDefinition,
-                    entity,
+                    modified,
                     new FindOneAndReplaceOptions<TEntity, TEntity>
                     {
-                        ReturnDocument = ReturnDocument.Before,
+                        ReturnDocument = ReturnDocument.After,
                         IsUpsert = doUpsert
                     },
                     cancellationToken));
 
             if (original != null)
             {
-                patchDocument ??= _jsonPatchDocumentGenerator.Generate(original, entity);
+                patchDocument ??= _jsonPatchDocumentGenerator.Generate(original, modified);
 
                 await PublishUpdatedDomainEventAsync(original, patchDocument, cancellationToken).ConfigureAwait(false);
 
-                return entity;
+                return result;
             }
 
             if (doUpsert)
             {
-                if (entity is IModifiedEntity created)
-                { 
-                    var update = Builders<TEntity>.Update.Set(nameof(IModifiedEntity.CreatedDate), now);
-                    
-                    created.CreatedDate = now;
-                    await mongoCollection.UpdateOneAsync(filtersDefinition, update, new UpdateOptions(), cancellationToken).ConfigureAwait(false);
-                }
+                await PublishAddedDomainEventAsync(result, cancellationToken).ConfigureAwait(false);
                 
-                await PublishAddedDomainEventAsync(entity, cancellationToken).ConfigureAwait(false);
-                
-                return entity;
+                return result;
             }
 
             return null;

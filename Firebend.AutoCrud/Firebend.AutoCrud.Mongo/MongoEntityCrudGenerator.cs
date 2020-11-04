@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Mongo
 
         public MongoEntityCrudGenerator AddEntity<TKey, TEntity>(Action<MongoDbEntityBuilder<TKey, TEntity>> configure)
             where TKey : struct
-            where TEntity : class, IEntity<TKey>
+            where TEntity : class, IEntity<TKey>, new()
         {
             var builder = new MongoDbEntityBuilder<TKey, TEntity>();
             configure(builder);

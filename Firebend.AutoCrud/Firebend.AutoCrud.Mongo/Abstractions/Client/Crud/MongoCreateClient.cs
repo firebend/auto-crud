@@ -34,8 +34,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (entity is IModifiedEntity modified)
             {
-                modified.CreatedDate = DateTimeOffset.Now;
-                modified.ModifiedDate = DateTimeOffset.Now;
+                var now = DateTimeOffset.Now;
+                modified.CreatedDate = now;
+                modified.ModifiedDate = now;
             }
 
             await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))

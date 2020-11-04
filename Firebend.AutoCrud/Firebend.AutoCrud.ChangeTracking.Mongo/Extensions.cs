@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
         public static DomainEventsConfigurator<TBuilder, TKey, TEntity> WithMongoChangeTracking<TBuilder, TKey, TEntity>(
             this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator)
             where TKey : struct
-            where TEntity : class, IEntity<TKey>
+            where TEntity : class, IEntity<TKey>, new()
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
         {
             if (!(configurator.Builder is MongoDbEntityBuilder<TKey, TEntity>))
