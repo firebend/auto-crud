@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -12,7 +13,7 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public abstract class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> : IEntitySearchService<TKey, TEntity, TSearch>
+    public abstract class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySearchService<TEntity, TSearch>, IEntitySearchService<TKey, TEntity, TSearch>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
@@ -37,7 +38,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
         {
             return _searchClient.PageAsync(request?.Search,
-                BuildSearchFilter(request),
+                BuildSearchExpression(request),
                 request?.PageNumber,
                 request?.PageSize,
                 request?.DoCount ?? false,
@@ -53,33 +54,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 
         protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search)
         {
-
-            var functions = new List<Expression<Func<TEntity, bool>>>();
-
-            if (search is IActiveEntitySearchRequest activeEntitySearchRequest) {
-                if (!activeEntitySearchRequest.IsDeleted.HasValue) {
-                    var expression = (Expression<Func<IActiveEntity, bool>>)(x => x.IsDeleted == activeEntitySearchRequest.IsDeleted);
-                    functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
-                }
-            }
-
-            var customFilter = BuildSearchFilter(search);
-
-            if (customFilter != null) {
-                functions.Add(customFilter);
-            }
-
-            Expression<Func<TEntity, bool>> filters = null;
-
-            for (int i = 0; i < functions.Count; i++) {
-                if (i == 0) {
-                    filters = functions[i];
-                } else {
-                    filters = filters.AndAlso(functions[i]);
-                }
-            }
-
-            return filters;
+            return GetSearchExpression(BuildSearchFilter(search), search);
         }
 
         private IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> GetOrderByGroups(TSearch search)

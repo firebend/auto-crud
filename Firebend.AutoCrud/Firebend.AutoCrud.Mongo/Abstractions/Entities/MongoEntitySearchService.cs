@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -12,7 +13,7 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public abstract class MongoEntitySearchService<TKey, TEntity, TSearch> : IEntitySearchService<TKey, TEntity, TSearch>
+    public abstract class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySearchService<TEntity, TSearch>, IEntitySearchService<TKey, TEntity, TSearch>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
@@ -37,7 +38,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
         {
             return _readClient.PageAsync(request?.Search,
-                BuildSearchFilter(request),
+                BuildSearchExpression(request),
                 request?.PageNumber,
                 request?.PageSize,
                 request?.DoCount ?? false,
@@ -69,6 +70,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         protected virtual Expression<Func<TEntity, bool>> BuildSearchFilter(TSearch search)
         {
             return null;
+        }
+
+         protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search)
+        {
+            return GetSearchExpression(BuildSearchFilter(search), search);
         }
     }
 }

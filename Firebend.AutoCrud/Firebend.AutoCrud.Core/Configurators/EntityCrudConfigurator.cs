@@ -32,7 +32,13 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCrud()
         {
-            return Builder.IsActiveEntity ? WithCrud<ActiveEntitySearchRequest>() : WithCrud<EntitySearchRequest>();
+            WithCreate();
+            WithRead();
+            WithUpdate();
+            WithDelete();
+            WithSearch(Builder.SearchType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchRequestType), Builder.SearchRequestType);
+
+            return this;
         }
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate(Type serviceType)
