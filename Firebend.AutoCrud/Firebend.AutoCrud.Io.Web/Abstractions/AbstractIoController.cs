@@ -20,10 +20,9 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             _exportService = exportService;
         }
 
-
         [HttpGet("export/{exportType}")]
-        [SwaggerOperation("Exports entities to a file.")]
-        [SwaggerResponse(200, "A file with all the matched entities.")]
+        [SwaggerOperation("Exports {entityNamePlural} to a file.")]
+        [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.")]
         [SwaggerResponse(400, "The request is invalid.")]
         public virtual async Task<IActionResult> Search(
             [Required] [FromRoute] string exportType,

@@ -23,9 +23,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
         }
 
         [HttpGet("{id}")]
-        [SwaggerOperation("Gets a specific entity")]
-        [SwaggerResponse(200, "An entity with the given key.")]
-        [SwaggerResponse(404, "The entity with the given key is not found.")]
+        [SwaggerOperation("Gets a specific {entityName}.")]
+        [SwaggerResponse(200, "The {entityName} with the given key.")]
+        [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> GetById(
             [Required] [FromRoute] string id,

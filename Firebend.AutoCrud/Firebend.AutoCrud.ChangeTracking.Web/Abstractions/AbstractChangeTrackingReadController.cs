@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
         }
 
         [HttpGet("{entityId}/changes")]
-        [SwaggerOperation("Gets change tracking history for a specific entity")]
+        [SwaggerOperation("Gets change tracking history for a specific {entityName}")]
         [SwaggerResponse(200, "Change tracking history for the given entity key")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> GetByEntityId(

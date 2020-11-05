@@ -77,7 +77,10 @@ namespace Firebend.AutoCrud.Generator.Implementations
             
             foreach (var (type, registrations) in builder.Registrations)
             {
-                if (registrations == null) continue;
+                if (registrations == null)
+                {
+                    continue;
+                }
 
                 foreach (var reg in registrations)
                 {
@@ -129,7 +132,10 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 var interfaceImplementations = extraInterfaces.FindAll(x =>
                     x.IsAssignableFrom(typeToImplement) && x.Name == $"I{typeToImplement.Name}");
 
-                if (!key.IsAssignableFrom(typeToImplement)) throw new InvalidCastException($"Cannot use {typeToImplement.Name} to implement {key.Name}");
+                if (!key.IsAssignableFrom(typeToImplement))
+                {
+                    throw new InvalidCastException($"Cannot use {typeToImplement.Name} to implement {key.Name}");
+                }
 
                 var signature = $"{signatureBase}_{typeToImplement.Name}";
 
@@ -148,9 +154,15 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     interfaceImplementations.ToArray(),
                     GetAttributes(typeToImplement, builder.Attributes));
 
-                interfaceImplementations.ForEach(iFace => { serviceCollection.AddScoped(iFace, implementedType); });
+                interfaceImplementations.ForEach(iFace =>
+                {
+                    serviceCollection.AddScoped(iFace, implementedType);
+                });
 
-                if (interfaceImplementations.Count == 0) serviceCollection.AddScoped(implementedType);
+                if (interfaceImplementations.Count == 0)
+                {
+                    serviceCollection.AddScoped(implementedType);
+                }
 
                 implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
             }
@@ -208,7 +220,10 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                     maxVisits--;
 
-                    if (maxVisits < 0) throw new ApplicationException("Cannot resolve dependencies for DefaultCrud (do you have a circular reference?)");
+                    if (maxVisits < 0)
+                    {
+                        throw new ApplicationException("Cannot resolve dependencies for DefaultCrud (do you have a circular reference?)");
+                    }
                 }
             }
 
@@ -235,7 +250,10 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
             var extraInterfaces = new List<Type>();
 
-            if (configureRegistrations == null) return extraInterfaces;
+            if (configureRegistrations == null)
+            {
+                return extraInterfaces;
+            }
             
             foreach (var (key, regs) in configureRegistrations.ToArray())
             {
@@ -249,10 +267,12 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     }
 
                     var implementedInterfaces = value.GetInterfaces();
-                    var matchingInterface =
-                        implementedInterfaces.FirstOrDefault(x => x.Name == $"I{value.Name}");
+                    var matchingInterface =  implementedInterfaces.FirstOrDefault(x => x.Name == $"I{value.Name}");
 
-                    if (matchingInterface != null) extraInterfaces.Add(matchingInterface);
+                    if (matchingInterface != null)
+                    {
+                        extraInterfaces.Add(matchingInterface);
+                    }
 
                     if (configureRegistrations.ContainsKey(key))
                     {

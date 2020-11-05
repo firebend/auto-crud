@@ -30,9 +30,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
         }
 
         [HttpPut("{id}")]
-        [SwaggerOperation("Updates an entity")]
-        [SwaggerResponse(200, "Updates the entity with a given key.")]
-        [SwaggerResponse(404, "The entity with the given key is not found.")]
+        [SwaggerOperation("Updates {entityNamePlural}")]
+        [SwaggerResponse(200, "The {entityName} with a given key was updated.")]
+        [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Put(
@@ -86,9 +86,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
         }
 
         [HttpPatch("{id}")]
-        [SwaggerOperation("Updates an entity using a JSON Patch Document")]
-        [SwaggerResponse(200, "An entity with the given key.")]
-        [SwaggerResponse(404, "The entity with the given key is not found.")]
+        [SwaggerOperation("Updates {entityNamePlural} using a JSON Patch Document")]
+        [SwaggerResponse(200, "The {entityName} with the given key was updated.")]
+        [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Patch(

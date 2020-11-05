@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -14,6 +13,7 @@ using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations;
 using Firebend.AutoCrud.Web.Implementations.Options;
 using Firebend.AutoCrud.Web.Interfaces;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,12 +48,15 @@ namespace Firebend.AutoCrud.Web
 
             CrudBuilder = builder;
 
-            var name = string.IsNullOrWhiteSpace(CrudBuilder.EntityName)
+            var name = (string.IsNullOrWhiteSpace(CrudBuilder.EntityName)
                 ? CrudBuilder.EntityType.Name
-                : CrudBuilder.EntityName;
+                : CrudBuilder.EntityName).Humanize(LetterCasing.Title);
 
-            WithRoute($"/api/v1/{name.ToKebabCase()}");
-            WithOpenApiGroupName(name.ToSentenceCase());
+            OpenApiEntityName = name;
+            OpenApiEntityNamePlural = name.Pluralize();
+
+            WithRoute($"/api/v1/{name.Kebaberize()}");
+            WithOpenApiGroupName(name);
 
             CrudBuilder.WithRegistration<IEntityValidationService<TKey, TEntity>, DefaultEntityValidationService<TKey, TEntity>>(false);
             CrudBuilder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
@@ -64,15 +67,23 @@ namespace Firebend.AutoCrud.Web
         public string Route { get; private set; }
 
         public string OpenApiGroupName { get; private set; }
+        
+        public string OpenApiEntityName { get; private set; }
+        
+        public string OpenApiEntityNamePlural { get; private set; }
 
         private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetRouteAttributeInfo()
         {
             var routeType = typeof(RouteAttribute);
             var routeCtor = routeType.GetConstructor(new[] {typeof(string)});
 
-            if (routeCtor == null) return default;
+            if (routeCtor == null)
+            {
+                return default;
+            }
 
             var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] {Route});
+            
             return (routeType, attributeBuilder);
         }
 
@@ -88,9 +99,36 @@ namespace Firebend.AutoCrud.Web
             var attributeType = typeof(OpenApiGroupNameAttribute);
             var attributeCtor = attributeType.GetConstructor(new[] {typeof(string)});
 
-            if (attributeCtor == null) return default;
+            if (attributeCtor == null)
+            {
+                return default;
+            }
 
             var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] {OpenApiGroupName});
+
+            return (attributeType, attributeBuilder);
+        }
+
+        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiEntityNameAttribute()
+        {
+            var attributeType = typeof(OpenApiEntityNameAttribute);
+            
+            var attributeCtor = attributeType.GetConstructor(new[]
+            {
+                typeof(string),
+                typeof(string)
+            });
+
+            if (attributeCtor == null)
+            {
+                return default;
+            }
+
+            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[]
+            {
+                OpenApiEntityName,
+                OpenApiEntityNamePlural
+            });
 
             return (attributeType, attributeBuilder);
         }
@@ -98,6 +136,12 @@ namespace Firebend.AutoCrud.Web
         private void AddOpenApiGroupNameAttribute(Type controllerType)
         {
             var (attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo();
+            CrudBuilder.WithAttribute(controllerType, attributeType, attributeBuilder);
+        }
+
+        private void AddOpenApiEntityNameAttribute(Type controllerType)
+        {
+            var (attributeType, attributeBuilder) = GetOpenApiEntityNameAttribute();
             CrudBuilder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
@@ -137,6 +181,7 @@ namespace Firebend.AutoCrud.Web
 
             AddRouteAttribute(registrationType);
             AddOpenApiGroupNameAttribute(registrationType);
+            AddOpenApiEntityNameAttribute(registrationType);
 
             if (HasDefaultAuthorizationPolicy)
             {
@@ -146,9 +191,9 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TypeCheck>(Type type)
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TTypeCheck>(Type type)
         {
-            return WithController(type, typeof(TypeCheck));
+            return WithController(type, typeof(TTypeCheck));
         }
 
         private void AddAttributeToAllControllers(Type attributeType, CustomAttributeBuilder attributeBuilder)
@@ -174,6 +219,17 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        private void AddSwaggenGenOptionConfiguration()
+        {
+            Run.Once($"{GetType().FullName}.SwaggerGenOptions",() =>
+            {
+                Builder.WithServiceCollectionHook(sc =>
+                {
+                    sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
+                });
+            });
+        }
+
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiGroupName(string openApiGroupName)
         {
             OpenApiGroupName = openApiGroupName;
@@ -182,14 +238,22 @@ namespace Firebend.AutoCrud.Web
             
             AddAttributeToAllControllers(aType, aBuilder);
             
-            Run.Once($"{GetType().FullName}.SwaggerGenOptions",() =>
-            {
-                Builder.WithServiceCollectionHook(sc =>
-                {
-                    sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
-                });
-            });
+            AddSwaggenGenOptionConfiguration();
+
+            return this;
+        }
+        
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiEntityName(string name, string plural = null)
+        {
+            OpenApiEntityName = name;
+            OpenApiEntityNamePlural = plural ?? name.Pluralize();
             
+            var (aType, aBuilder) = GetOpenApiEntityNameAttribute();
+            
+            AddAttributeToAllControllers(aType, aBuilder);
+            
+            AddSwaggenGenOptionConfiguration();
+
             return this;
         }
 

@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
@@ -24,8 +23,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         }
 
         [HttpGet]
-        [SwaggerOperation("Searches for entities")]
-        [SwaggerResponse(200, "All the entities that match the search criteria.")]
+        [SwaggerOperation("Searches for {entityNamePlural}")]
+        [SwaggerResponse(200, "All the {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.")]
         public virtual async Task<IActionResult> Search(
             [FromQuery] TSearch searchRequest,
