@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -26,8 +25,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         }
 
         [HttpPost]
-        [SwaggerOperation("Creates an entity")]
-        [SwaggerResponse(201, "Creates an entity.")]
+        [SwaggerOperation("Creates {entityNamePlural}")]
+        [SwaggerResponse(201, "A {entityName} was created successfully..")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Post(
@@ -66,10 +65,12 @@ namespace Firebend.AutoCrud.Web.Abstractions
             return Created($"{Request.Path.Value}/{entity.Id}", entity);
         }
 
+        public const string EntityName = "entity";
+        
         [HttpPost]
         [Route("multiple")]
-        [SwaggerOperation("Creates multiple entities")]
-        [SwaggerResponse(201, "Multiple entities created.")]
+        [SwaggerOperation("Creates multiple {entityNamePlural}")]
+        [SwaggerResponse(201, "Multiple {entityNamePlural} were created successfully.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> PostMultiple(

@@ -20,8 +20,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         }
 
         [HttpGet("all")]
-        [SwaggerOperation("Gets all entities")]
-        [SwaggerResponse(200, "All the entities.")]
+        [SwaggerOperation("Gets all {entityNamePlural}")]
+        [SwaggerResponse(200, "All the {entityNamePlural}.")]
         [SwaggerResponse(400, "The request is invalid.")]
         public virtual async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {

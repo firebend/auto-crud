@@ -23,9 +23,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
         }
 
         [HttpDelete("{id}")]
-        [SwaggerOperation("Deletes an entity.")]
-        [SwaggerResponse(200, "An entity with the given key.")]
-        [SwaggerResponse(404, "The entity with the given key is not found.")]
+        [SwaggerOperation("Deletes {entityNamePlural}.")]
+        [SwaggerResponse(200, "A {entityName} with the given key was deleted.")]
+        [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Delete(
