@@ -52,7 +52,15 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public EntityCrudBuilder()
         {
-            SearchRequestType = IsActiveEntity ? typeof(ActiveEntitySearchRequest) : typeof(EntitySearchRequest);
+            if (IsActiveEntity && IsModifiedEntity) {
+                SearchRequestType = typeof(ActiveModifiedEntitySearchRequest);
+            } else if (IsActiveEntity) {
+                SearchRequestType = typeof(ActiveEntitySearchRequest);
+            } else if (IsModifiedEntity) {
+                SearchRequestType = typeof(ModifiedEntitySearchRequest);
+            } else {
+                SearchRequestType = typeof(EntitySearchRequest);
+            }
 
             if (IsModifiedEntity)
             {

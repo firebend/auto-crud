@@ -23,7 +23,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
             {
             }
 
-            Console.WriteLine("Quiting....");
+            Console.WriteLine("Quitting....");
             cancellationToken.Cancel();
             Console.WriteLine("Done!");
         }

@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
             {
             }
 
-            Console.WriteLine("Quiting....");
+            Console.WriteLine("Quitting....");
             cancellationToken.Cancel();
             Console.WriteLine("Done!");
         }

@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
     }
 
     [Table("EfPeople")]
-    public class EfPerson : IEntity<Guid>, IActiveEntity
+    public class EfPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity
     {
         [StringLength(250)]
         public string FirstName { get; set; }
@@ -32,5 +32,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string NickName { get; set; }
 
         public bool IsDeleted { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 }

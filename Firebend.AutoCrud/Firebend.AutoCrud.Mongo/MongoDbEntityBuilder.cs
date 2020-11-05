@@ -23,9 +23,7 @@ namespace Firebend.AutoCrud.Mongo
             ReadType = typeof(MongoEntityReadService<,>);
             UpdateType = typeof(MongoEntityUpdateService<,>);
             
-            SearchType = IsActiveEntity ?
-                typeof(MongoActiveEntitySearchService<,,>):
-                typeof(MongoEntitySearchService<,,>);
+            SearchType = typeof(MongoEntitySearchService<,,>);
             
             DeleteType = IsActiveEntity ?
                 typeof(MongoEntitySoftDeleteService<,>):

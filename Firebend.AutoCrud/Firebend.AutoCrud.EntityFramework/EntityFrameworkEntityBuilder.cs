@@ -23,9 +23,7 @@ namespace Firebend.AutoCrud.EntityFramework
                 typeof(EntityFrameworkEntitySoftDeleteService<,>) :
                 typeof(EntityFrameworkEntityDeleteService<,>);
             
-            SearchType = IsActiveEntity ?
-                typeof(EntityFrameworkActiveEntitySearchService<,,>) :
-                typeof(EntityFrameworkEntitySearchService<,,>);
+            SearchType = typeof(EntityFrameworkEntitySearchService<,,>);
         }
 
         public override Type CreateType { get; }
