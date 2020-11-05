@@ -52,9 +52,6 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public EntityCrudBuilder()
         {
-            
-            System.Console.WriteLine("!!!!!!!" + IsActiveEntity + IsModifiedEntity);
-
             if (IsActiveEntity && IsModifiedEntity) {
                 SearchRequestType = typeof(ActiveModifiedEntitySearchRequest);
             } else if (IsActiveEntity) {
