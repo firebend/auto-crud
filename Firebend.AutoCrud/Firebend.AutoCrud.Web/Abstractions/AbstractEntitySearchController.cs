@@ -51,6 +51,32 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
+            if (searchRequest is IModifiedEntitySearchRequest modifiedEntitySearchRequest) {
+                if (modifiedEntitySearchRequest.CreatedStartDate.HasValue && modifiedEntitySearchRequest.ModifiedStartDate.HasValue) {
+                    if (modifiedEntitySearchRequest.CreatedStartDate.Value > modifiedEntitySearchRequest.ModifiedStartDate.Value) {
+                        ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.CreatedStartDate), "Created date cannot be after modified date.");
+
+                        return BadRequest(ModelState);
+                    }
+                }
+
+                if (modifiedEntitySearchRequest.CreatedStartDate.HasValue && modifiedEntitySearchRequest.CreatedEndDate.HasValue) {
+                    if (modifiedEntitySearchRequest.CreatedStartDate.Value > modifiedEntitySearchRequest.CreatedEndDate.Value) {
+                        ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.CreatedStartDate), "Created start date must be before end date.");
+
+                        return BadRequest(ModelState);
+                    }
+                }
+
+                if (modifiedEntitySearchRequest.ModifiedEndDate.HasValue && modifiedEntitySearchRequest.ModifiedStartDate.HasValue) {
+                    if (modifiedEntitySearchRequest.ModifiedStartDate.Value > modifiedEntitySearchRequest.ModifiedEndDate.Value) {
+                        ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.ModifiedStartDate), "Modified start date must be before end date.");
+                    
+                        return BadRequest(ModelState);
+                    }
+                } 
+            }
+
             searchRequest.DoCount ??= true;
 
             var entities = await _searchService

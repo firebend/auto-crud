@@ -51,6 +51,37 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
             return null;
         }
 
+        protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search)
+        {
+
+            var functions = new List<Expression<Func<TEntity, bool>>>();
+
+            if (search is IActiveEntitySearchRequest activeEntitySearchRequest) {
+                if (!activeEntitySearchRequest.IsDeleted.HasValue) {
+                    var expression = (Expression<Func<IActiveEntity, bool>>)(x => x.IsDeleted == activeEntitySearchRequest.IsDeleted);
+                    functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
+                }
+            }
+
+            var customFilter = BuildSearchFilter(search);
+
+            if (customFilter != null) {
+                functions.Add(customFilter);
+            }
+
+            Expression<Func<TEntity, bool>> filters = null;
+
+            for (int i = 0; i < functions.Count; i++) {
+                if (i == 0) {
+                    filters = functions[i];
+                } else {
+                    filters = filters.AndAlso(functions[i]);
+                }
+            }
+
+            return filters;
+        }
+
         private IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> GetOrderByGroups(TSearch search)
         {
             var orderByGroups = search?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList();
