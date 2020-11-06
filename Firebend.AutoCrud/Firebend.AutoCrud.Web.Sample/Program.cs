@@ -1,8 +1,10 @@
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Extensions;
+using Firebend.AutoCrud.Web.Sample.Tenant;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +36,7 @@ namespace Firebend.AutoCrud.Web.Sample
                 .ConfigureServices((hostContext, services) =>
                 {
                     services
+                        .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
                         .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"), mongo =>
                         {
                             mongo.AddMongoPerson();

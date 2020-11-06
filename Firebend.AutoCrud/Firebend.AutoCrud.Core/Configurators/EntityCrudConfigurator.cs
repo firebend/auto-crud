@@ -55,7 +55,7 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate()
         {
-            var serviceType = Builder.CreateType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+            var serviceType = Builder.CreateType;
 
             return WithCreate(serviceType);
         }

@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Reflection.Metadata;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Implementations.JsonPatch;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -24,8 +26,36 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 return _isActiveEntity.Value;
             }
         }
-        
+
+        private bool? _isTenantEntity;
+        public bool IsTenantEntity
+        {
+            get
+            {
+                _isTenantEntity ??= EntityType.IsAssignableToGenericType(typeof(ITenantEntity<>));
+                return _isTenantEntity.Value;
+            }
+        }
+        private Type _tenantEntityKeyType;
+        public Type TenantEntityKeyType { 
+            get
+            {
+                if (_tenantEntityKeyType != null)
+                    return _tenantEntityKeyType;
+
+                if (!IsTenantEntity)
+                {
+                    return null;
+                }
+
+                _tenantEntityKeyType = EntityType.GetProperty(nameof(ITenantEntity<int>.TenantId))?.PropertyType;
+                return _tenantEntityKeyType;
+                
+            }
+        }
+
         private bool? _isModifiedEntity;
+        
 
         public bool IsModifiedEntity 
         {

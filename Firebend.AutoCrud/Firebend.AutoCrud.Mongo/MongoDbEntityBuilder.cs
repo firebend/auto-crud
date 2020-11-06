@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.Mongo
     {
         public MongoDbEntityBuilder()
         {
-            CreateType = typeof(MongoEntityCreateService<,>); 
+            CreateType = typeof(MongoEntityCreateService<TKey,TEntity>); 
             ReadType = typeof(MongoEntityReadService<,>);
             UpdateType = typeof(MongoEntityUpdateService<,>);
             
