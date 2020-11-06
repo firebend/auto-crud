@@ -15,7 +15,10 @@ namespace Firebend.AutoCrud.EntityFramework
     {
         public EntityFrameworkEntityBuilder()
         {
-            CreateType = typeof(EntityFrameworkEntityCreateService<,>);
+            CreateType = IsTenantEntity ? 
+                typeof(EntityFrameworkTenantEntityCreateService<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType) :
+                typeof(EntityFrameworkEntityCreateService<TKey,TEntity>);
+
             ReadType = typeof(EntityFrameworkEntityReadService<,>);
             UpdateType = typeof(EntityFrameworkEntityUpdateService<,>);
             
