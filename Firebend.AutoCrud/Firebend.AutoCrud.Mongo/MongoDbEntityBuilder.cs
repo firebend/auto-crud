@@ -20,14 +20,14 @@ namespace Firebend.AutoCrud.Mongo
         public MongoDbEntityBuilder()
         {
             CreateType = typeof(MongoEntityCreateService<TKey,TEntity>); 
-            ReadType = typeof(MongoEntityReadService<,>);
-            UpdateType = typeof(MongoEntityUpdateService<,>);
+            ReadType = typeof(MongoEntityReadService<TKey,TEntity>);
+            UpdateType = typeof(MongoEntityUpdateService<TKey,TEntity>);
             
             SearchType = typeof(MongoEntitySearchService<,,>);
             
             DeleteType = IsActiveEntity ?
-                typeof(MongoEntitySoftDeleteService<,>):
-                typeof(MongoEntityDeleteService<,>);
+                typeof(MongoEntitySoftDeleteService<,>).MakeGenericType(EntityKeyType, EntityType):
+                typeof(MongoEntityDeleteService<TKey,TEntity>);
         }
 
         public override Type CreateType { get; }

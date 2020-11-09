@@ -38,8 +38,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var set = context.Set<TEntity>();
-            var list = await set.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var queryable = await GetFilteredQueryableAsync(context, null, cancellationToken).ConfigureAwait(false);
+            var list = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
+            
             return list;
         }
 
@@ -156,7 +157,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
             CancellationToken cancellationToken = default)
         {
-            var queryable = await GetFilteredQueryable(context);
+            var queryable = await GetFilteredQueryableAsync(context);
 
             if (!string.IsNullOrWhiteSpace(search))
             {

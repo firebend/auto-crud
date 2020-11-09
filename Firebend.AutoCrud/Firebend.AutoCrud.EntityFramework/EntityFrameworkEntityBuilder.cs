@@ -16,13 +16,12 @@ namespace Firebend.AutoCrud.EntityFramework
         public EntityFrameworkEntityBuilder()
         {
             CreateType = typeof(EntityFrameworkEntityCreateService<TKey,TEntity>);
-
-            ReadType = typeof(EntityFrameworkEntityReadService<,>);
-            UpdateType = typeof(EntityFrameworkEntityUpdateService<,>);
+            ReadType = typeof(EntityFrameworkEntityReadService<TKey, TEntity>);
+            UpdateType = typeof(EntityFrameworkEntityUpdateService<TKey, TEntity>);
             
             DeleteType = IsActiveEntity ?
-                typeof(EntityFrameworkEntitySoftDeleteService<,>) :
-                typeof(EntityFrameworkEntityDeleteService<,>);
+                typeof(EntityFrameworkEntitySoftDeleteService<,>).MakeGenericType(EntityKeyType, EntityType) :
+                typeof(EntityFrameworkEntityDeleteService<TKey, TEntity>);
             
             SearchType = typeof(EntityFrameworkEntitySearchService<,,>);
         }
