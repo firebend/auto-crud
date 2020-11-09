@@ -41,30 +41,30 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             return context.Set<TEntity>();
         }
 
-        protected Task<TEntity> GetByKeyAsync(IDbContext context, TKey key, CancellationToken cancellationToken)
+        protected async Task<TEntity> GetByKeyAsync(IDbContext context, TKey key, CancellationToken cancellationToken)
         {
-            return GetFilteredQueryableAsync(context).FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
+            return await ((await GetFilteredQueryableAsync(context, cancellationToken: cancellationToken)).FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken));
         }
 
-        protected IQueryable<TEntity> GetFilteredQueryableAsync(
+        protected async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
             IDbContext context,
             Expression<Func<TEntity, bool>> firstStageFilters = null,
             CancellationToken cancellationToken = default)
         {
             var set = GetDbSet(context);
-            
+
             var queryable = set.AsQueryable();
 
             if (firstStageFilters != null) queryable = queryable.Where(firstStageFilters);
 
-            var filters = BuildFilters();
+            var filters = await BuildFilters(cancellationToken: cancellationToken);
 
             return filters == null ? queryable : queryable.Where(filters);
         }
 
-        protected Expression<Func<TEntity, bool>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null)
+        protected async Task<Expression<Func<TEntity, bool>>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null, CancellationToken cancellationToken = default)
         {
-            var securityFilters = GetSecurityFilters() ?? new List<Expression<Func<TEntity, bool>>>();
+            var securityFilters = await GetSecurityFiltersAsync(cancellationToken) ?? new List<Expression<Func<TEntity, bool>>>();
 
             var filters = securityFilters
                 .Where(x => x != null)
@@ -78,9 +78,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
                 (aggregate, filter) => aggregate.AndAlso(filter));
         }
 
-        protected virtual IEnumerable<Expression<Func<TEntity, bool>>> GetSecurityFilters()
+        protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
         {
-            return null;
+            return Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
         }
     }
 }

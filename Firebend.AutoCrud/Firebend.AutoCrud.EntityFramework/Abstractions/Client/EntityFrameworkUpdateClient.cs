@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
-        public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             
@@ -68,7 +68,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return model;
         }
 
-        public async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        public virtual  async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             var entity = await GetByKeyAsync(context, key, cancellationToken).ConfigureAwait(false);
@@ -80,7 +80,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var original = entity.Clone();
 
-            if (entity is IModifiedEntity modified)
+            if (entity is IModifiedEntity)
             {
                 jsonPatchDocument.Operations.Add(new Operation<TEntity>(
                     "replace",

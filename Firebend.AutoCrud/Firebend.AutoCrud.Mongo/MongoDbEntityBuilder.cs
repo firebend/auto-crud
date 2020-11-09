@@ -19,15 +19,15 @@ namespace Firebend.AutoCrud.Mongo
     {
         public MongoDbEntityBuilder()
         {
-            CreateType = typeof(MongoEntityCreateService<,>); 
-            ReadType = typeof(MongoEntityReadService<,>);
-            UpdateType = typeof(MongoEntityUpdateService<,>);
+            CreateType = typeof(MongoEntityCreateService<TKey,TEntity>); 
+            ReadType = typeof(MongoEntityReadService<TKey,TEntity>);
+            UpdateType = typeof(MongoEntityUpdateService<TKey,TEntity>);
             
             SearchType = typeof(MongoEntitySearchService<,,>);
             
             DeleteType = IsActiveEntity ?
-                typeof(MongoEntitySoftDeleteService<,>):
-                typeof(MongoEntityDeleteService<,>);
+                typeof(MongoEntitySoftDeleteService<,>).MakeGenericType(EntityKeyType, EntityType):
+                typeof(MongoEntityDeleteService<TKey,TEntity>);
         }
 
         public override Type CreateType { get; }
@@ -48,10 +48,28 @@ namespace Firebend.AutoCrud.Mongo
         {
             RegisterEntityConfiguration();
 
-            WithRegistration<IMongoCreateClient<TKey, TEntity>, MongoCreateClient<TKey, TEntity>>(false);
-            WithRegistration<IMongoReadClient<TKey, TEntity>, MongoReadClient<TKey, TEntity>>(false);
-            WithRegistration<IMongoUpdateClient<TKey, TEntity>, MongoUpdateClient<TKey, TEntity>>(false);
-            WithRegistration<IMongoDeleteClient<TKey, TEntity>, MongoDeleteClient<TKey, TEntity>>(false);
+            if (IsTenantEntity)
+            {
+                WithRegistration<IMongoCreateClient<TKey, TEntity>>(
+                    typeof(MongoTenantCreateClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+                
+                WithRegistration<IMongoReadClient<TKey, TEntity>>(
+                    typeof(MongoTenantReadClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+
+                WithRegistration<IMongoUpdateClient<TKey, TEntity>>(
+                    typeof(MongoTenantUpdateClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+
+                WithRegistration<IMongoDeleteClient<TKey, TEntity>>(
+                    typeof(MongoTenantDeleteClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+            }
+            else
+            {
+                WithRegistration<IMongoCreateClient<TKey, TEntity>, MongoCreateClient<TKey, TEntity>>(false);
+                WithRegistration<IMongoReadClient<TKey, TEntity>, MongoReadClient<TKey, TEntity>>(false);
+                WithRegistration<IMongoUpdateClient<TKey, TEntity>, MongoUpdateClient<TKey, TEntity>>(false);
+                WithRegistration<IMongoDeleteClient<TKey, TEntity>, MongoDeleteClient<TKey, TEntity>>(false);
+            }
+            
             WithRegistration<IMongoIndexClient<TKey, TEntity>, MongoIndexClient<TKey, TEntity>>(false);
             WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
             WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);

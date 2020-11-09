@@ -38,8 +38,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var set = context.Set<TEntity>();
-            var list = await set.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var queryable = await GetFilteredQueryableAsync(context, null, cancellationToken).ConfigureAwait(false);
+            var list = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
+            
             return list;
         }
 
@@ -61,7 +62,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     .ConfigureAwait(false);
             }
 
-            var queryable = BuildQuery(context, search, filter, pageNumber, pageSize, orderBys);
+            var queryable = await BuildQueryAsync(context, search, filter, pageNumber, pageSize, orderBys, cancellationToken);
 
             var data = await queryable.ToListAsync(cancellationToken);
 
@@ -93,7 +94,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     .ConfigureAwait(false);
             }
 
-            var queryable = BuildQuery(context, search, filter, pageNumber, pageSize, orderBys);
+            var queryable = await BuildQueryAsync(context, search, filter, pageNumber, pageSize, orderBys, cancellationToken);
 
             var project = queryable.Select(projection);
 
@@ -125,7 +126,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 dbContext = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            var queryable = BuildQuery(dbContext, search, expression);
+            var queryable = await BuildQueryAsync(dbContext, search, expression, cancellationToken: cancellationToken);
 
             var count = await queryable
                 .CountAsync(cancellationToken)
@@ -138,7 +139,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var queryable = BuildQuery(context, filter: filter);
+            var queryable = await BuildQueryAsync(context, filter: filter);
 
             var exists = await queryable
                 .AnyAsync(cancellationToken)
@@ -147,15 +148,16 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return exists;
         }
         
-        protected IQueryable<TEntity> BuildQuery(
+        protected async  Task<IQueryable<TEntity>> BuildQueryAsync(
             IDbContext context,
             string search = null,
             Expression<Func<TEntity, bool>> filter = null,
             int? pageNumber = null,
             int? pageSize = null,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null)
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
+            CancellationToken cancellationToken = default)
         {
-            var queryable = GetFilteredQueryableAsync(context);
+            var queryable = await GetFilteredQueryableAsync(context, null, cancellationToken);
 
             if (!string.IsNullOrWhiteSpace(search))
             {

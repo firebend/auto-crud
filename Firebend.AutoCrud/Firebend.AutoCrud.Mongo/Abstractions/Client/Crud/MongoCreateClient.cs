@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public async virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
 

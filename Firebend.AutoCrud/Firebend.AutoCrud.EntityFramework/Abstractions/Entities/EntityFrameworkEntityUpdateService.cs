@@ -18,14 +18,33 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
             _updateClient = updateClient;
         }
 
-        public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             return _updateClient.UpdateAsync(entity, cancellationToken);
         }
 
-        public Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        public virtual Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
             return _updateClient.UpdateAsync(key, jsonPatchDocument, cancellationToken);
+        }
+    }
+
+    public abstract class EntityFrameworkTenantEntityUpdateService<TKey, TEntity, TTenantKey> : EntityFrameworkEntityUpdateService<TKey, TEntity>
+       where TKey : struct
+       where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>
+        where TTenantKey : struct
+    {
+        private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
+
+        protected EntityFrameworkTenantEntityUpdateService(IEntityFrameworkUpdateClient<TKey, TEntity> updateClient, ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(updateClient)
+        {
+            _tenantEntityProvider = tenantEntityProvider;
+        }
+
+        public override Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        {
+            jsonPatchDocument.Operations.RemoveAll(x => x.path == "/tenantId");
+            return base.PatchAsync(key, jsonPatchDocument, cancellationToken);
         }
     }
 }

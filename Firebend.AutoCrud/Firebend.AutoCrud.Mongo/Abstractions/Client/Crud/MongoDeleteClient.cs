@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
         public async Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
         {
-            filter = BuildFilters(filter);
+            filter = await BuildFiltersAsync(filter, cancellationToken);
 
             var mongoCollection = GetCollection();
 
