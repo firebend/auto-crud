@@ -24,10 +24,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
+        public virtual async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            
+
             var entity = new TEntity
             {
                 Id = key
@@ -65,7 +65,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             return entity;
         }
-        
+
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher != null && !(_domainEventPublisher is DefaultEntityDomainEventPublisher))
@@ -78,7 +78,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
                 return _domainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
             }
-            
+
             return Task.CompletedTask;
         }
     }

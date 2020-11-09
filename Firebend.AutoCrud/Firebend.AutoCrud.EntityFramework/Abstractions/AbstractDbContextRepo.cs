@@ -43,10 +43,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected async Task<TEntity> GetByKeyAsync(IDbContext context, TKey key, CancellationToken cancellationToken)
         {
-            return await ((await GetFilteredQueryable(context, cancellationToken: cancellationToken)).FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken));
+            return await ((await GetFilteredQueryableAsync(context, cancellationToken: cancellationToken)).FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken));
         }
 
-        protected async Task<IQueryable<TEntity>> GetFilteredQueryable(
+        protected async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
             IDbContext context,
             Expression<Func<TEntity, bool>> firstStageFilters = null,
             CancellationToken cancellationToken = default)
