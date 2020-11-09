@@ -24,7 +24,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
+        public virtual async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             var set = GetDbSet(context);

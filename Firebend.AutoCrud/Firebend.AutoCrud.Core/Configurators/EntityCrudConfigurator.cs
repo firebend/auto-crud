@@ -74,7 +74,7 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete()
         {
-            var serviceType = Builder.DeleteType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+            var serviceType = Builder.DeleteType;
             
             return WithDelete(serviceType);
         }
@@ -93,7 +93,13 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy(Expression<Func<TEntity, object>> expression, bool isAscending = true)
         {
-            var instance = new DefaultEntityDefaultOrderByProvider<TKey, TEntity>((expression, isAscending));
+            var instance = new DefaultEntityDefaultOrderByProvider<TKey, TEntity>
+            {
+                OrderBy = (
+                    expression,
+                    isAscending
+                )
+            };
 
             Builder.WithRegistrationInstance<IEntityDefaultOrderByProvider<TKey, TEntity>>(instance);
 
@@ -114,7 +120,7 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithRead()
         {
-            var serviceType = Builder.ReadType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+            var serviceType = Builder.ReadType;
 
             return WithRead(serviceType);
         }
@@ -167,7 +173,7 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithUpdate()
         {
-            var serviceType = Builder.UpdateType.MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+            var serviceType = Builder.UpdateType;
 
             return WithUpdate(serviceType);
         }

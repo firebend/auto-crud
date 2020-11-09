@@ -107,11 +107,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new List<TOut>();
         }
 
-        public async Task<TEntity> UpdateAsync(TKey id, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> UpdateAsync(TKey id, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
 
-            var filter = BuildFilters(x => x.Id.Equals(id));
+            var filter = await BuildFiltersAsync(x => x.Id.Equals(id), cancellationToken);
 
             var entity = await mongoCollection
                 .AsQueryable()
@@ -131,7 +131,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             CancellationToken cancellationToken,
             JsonPatchDocument<TEntity> patchDocument = null)
         {
-            var filters = BuildFilters(filter);
+            var filters = await BuildFiltersAsync(filter, cancellationToken);
             var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
             var mongoCollection = GetCollection();
 
@@ -141,14 +141,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 modifiedEntity.ModifiedDate = now;
             }
 
-            TEntity original = null;
-
-            if (doUpsert)
-            {
-                original = await RetryErrorAsync(() =>
-                    mongoCollection.Find(filtersDefinition).SingleOrDefaultAsync(cancellationToken));
-            }
-
+            var original = await RetryErrorAsync(() =>
+                mongoCollection.Find(filtersDefinition).SingleOrDefaultAsync(cancellationToken));
+            
             var modified = original == null ? new TEntity() : original.Clone();
 
             entity.CopyPropertiesTo(modified, new [] { nameof(IModifiedEntity.CreatedDate)});
