@@ -29,14 +29,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         }
     }
 
-    public abstract class EntityFrameworkEntityUpdateService<TKey, TEntity, TTenantKey> : EntityFrameworkEntityUpdateService<TKey, TEntity>
+    public abstract class EntityFrameworkTenantEntityUpdateService<TKey, TEntity, TTenantKey> : EntityFrameworkEntityUpdateService<TKey, TEntity>
        where TKey : struct
        where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>
         where TTenantKey : struct
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
-        protected EntityFrameworkEntityUpdateService(IEntityFrameworkUpdateClient<TKey, TEntity> updateClient, ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(updateClient)
+        protected EntityFrameworkTenantEntityUpdateService(IEntityFrameworkUpdateClient<TKey, TEntity> updateClient, ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(updateClient)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }
