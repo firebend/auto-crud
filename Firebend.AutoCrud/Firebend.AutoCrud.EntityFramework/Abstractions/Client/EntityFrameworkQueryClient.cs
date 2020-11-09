@@ -157,7 +157,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
             CancellationToken cancellationToken = default)
         {
-            var queryable = await GetFilteredQueryableAsync(context);
+            var queryable = await GetFilteredQueryableAsync(context, cancellationToken);
 
             if (!string.IsNullOrWhiteSpace(search))
             {
