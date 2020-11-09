@@ -113,7 +113,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     }
                 }
             }
-            
             RegisterServiceRegistrations(serviceCollection, builder, services);
         }
 
@@ -147,24 +146,33 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                 interfaceImplementations = interfaceImplementations.Distinct().ToList();
 
-                var implementedType = _classGenerator.GenerateDynamicClass(
-                    typeToImplement,
-                    signature,
-                    implementedTypes,
-                    interfaceImplementations.ToArray(),
-                    GetAttributes(typeToImplement, builder.Attributes));
-
-                interfaceImplementations.ForEach(iFace =>
+                try
                 {
-                    serviceCollection.AddScoped(iFace, implementedType);
-                });
+                    var implementedType = _classGenerator.GenerateDynamicClass(
+                        typeToImplement,
+                        signature,
+                        implementedTypes,
+                        interfaceImplementations.ToArray(),
+                        GetAttributes(typeToImplement, builder.Attributes));
+                
 
-                if (interfaceImplementations.Count == 0)
-                {
-                    serviceCollection.AddScoped(implementedType);
+                    interfaceImplementations.ForEach(iFace =>
+                    {
+                        serviceCollection.AddScoped(iFace, implementedType);
+                    });
+
+                    if (interfaceImplementations.Count == 0)
+                    {
+                        serviceCollection.AddScoped(implementedType);
+                    }
+
+                    implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
                 }
-
-                implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
         }
 

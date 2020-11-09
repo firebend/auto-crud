@@ -141,14 +141,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 modifiedEntity.ModifiedDate = now;
             }
 
-            TEntity original = null;
-
-            if (doUpsert)
-            {
-                original = await RetryErrorAsync(() =>
-                    mongoCollection.Find(filtersDefinition).SingleOrDefaultAsync(cancellationToken));
-            }
-
+            var original = await RetryErrorAsync(() =>
+                mongoCollection.Find(filtersDefinition).SingleOrDefaultAsync(cancellationToken));
+            
             var modified = original == null ? new TEntity() : original.Clone();
 
             entity.CopyPropertiesTo(modified, new [] { nameof(IModifiedEntity.CreatedDate)});
