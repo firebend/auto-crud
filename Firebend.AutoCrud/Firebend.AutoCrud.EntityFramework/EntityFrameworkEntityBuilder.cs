@@ -15,9 +15,7 @@ namespace Firebend.AutoCrud.EntityFramework
     {
         public EntityFrameworkEntityBuilder()
         {
-            CreateType = IsTenantEntity ? 
-                typeof(EntityFrameworkTenantEntityCreateService<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType) :
-                typeof(EntityFrameworkEntityCreateService<TKey,TEntity>);
+            CreateType = typeof(EntityFrameworkEntityCreateService<TKey,TEntity>);
 
             ReadType = typeof(EntityFrameworkEntityReadService<,>);
             UpdateType = typeof(EntityFrameworkEntityUpdateService<,>);
@@ -43,10 +41,28 @@ namespace Firebend.AutoCrud.EntityFramework
 
         protected override void ApplyPlatformTypes()
         {
-            WithRegistration<IEntityFrameworkCreateClient<TKey, TEntity>, EntityFrameworkCreateClient<TKey, TEntity>>(false);
-            WithRegistration<IEntityFrameworkQueryClient<TKey, TEntity>, EntityFrameworkQueryClient<TKey, TEntity>>(false);
-            WithRegistration<IEntityFrameworkUpdateClient<TKey, TEntity>, EntityFrameworkUpdateClient<TKey, TEntity>>(false);
-            WithRegistration<IEntityFrameworkDeleteClient<TKey,TEntity>, EntityFrameworkDeleteClient<TKey,TEntity>>(false);
+            if (IsTenantEntity)
+            {
+                WithRegistration<IEntityFrameworkCreateClient<TKey, TEntity>>(
+                    typeof(EntityFrameworkTenantCreateClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+
+                WithRegistration<IEntityFrameworkQueryClient<TKey, TEntity>>(
+                    typeof(EntityFrameworkTenantQueryClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+
+                WithRegistration<IEntityFrameworkUpdateClient<TKey, TEntity>>(
+                    typeof(EntityFrameworkTenantUpdateClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+
+                WithRegistration<IEntityFrameworkDeleteClient<TKey, TEntity>>(
+                    typeof(EntityFrameworkTenantDeleteClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+            }
+            else
+            {
+                WithRegistration<IEntityFrameworkCreateClient<TKey, TEntity>, EntityFrameworkCreateClient<TKey, TEntity>>(false);
+                WithRegistration<IEntityFrameworkQueryClient<TKey, TEntity>, EntityFrameworkQueryClient<TKey, TEntity>>(false);
+                WithRegistration<IEntityFrameworkUpdateClient<TKey, TEntity>, EntityFrameworkUpdateClient<TKey, TEntity>>(false);
+                WithRegistration<IEntityFrameworkDeleteClient<TKey, TEntity>, EntityFrameworkDeleteClient<TKey, TEntity>>(false);
+            }
+
             WithRegistration<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>,DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(false);
         }
 
