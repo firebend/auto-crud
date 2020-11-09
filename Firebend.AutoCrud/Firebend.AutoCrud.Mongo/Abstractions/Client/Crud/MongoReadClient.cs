@@ -21,20 +21,19 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }
-
-
-        public Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        
+        public async Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
         {
-            var queryable = BuildQuery(filter: filter);
+            var queryable = await BuildQueryAsync(filter: filter, cancellationToken: cancellationToken);
 
-            return RetryErrorAsync(() => queryable.SingleOrDefaultAsync(cancellationToken));
+            return await RetryErrorAsync(() => queryable.SingleOrDefaultAsync(cancellationToken));
         }
 
-        public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            var queryable = BuildQuery();
+            var queryable = await BuildQueryAsync(cancellationToken: cancellationToken);
 
-            return RetryErrorAsync(() => queryable.ToListAsync(cancellationToken));
+            return await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken));
         }
 
         public async Task<EntityPagedResponse<TEntity>> PageAsync(
@@ -52,7 +51,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 count = await CountAsync(search, filter, cancellationToken)
                     .ConfigureAwait(false);
 
-            var queryable = BuildQuery(search, filter, pageNumber, pageSize, orderBys);
+            var queryable = await BuildQueryAsync(search, filter, pageNumber, pageSize, orderBys, cancellationToken);
 
             var data = await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken))
                 .ConfigureAwait(false);
@@ -84,7 +83,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     .ConfigureAwait(false);
             }
 
-            var queryable = BuildQuery(search, filter, pageNumber, pageSize, orderBys);
+            var queryable = await BuildQueryAsync(search, filter, pageNumber, pageSize, orderBys, cancellationToken);
 
             var project = queryable.Select(projection);
 
@@ -100,26 +99,26 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             };
         }
 
-        public Task<int> CountAsync(string search, Expression<Func<TEntity, bool>> expression, CancellationToken cancellationToken = default)
+        public async Task<int> CountAsync(string search, Expression<Func<TEntity, bool>> expression, CancellationToken cancellationToken = default)
         {
-            var queryable = BuildQuery(search, expression);
+            var queryable = await BuildQueryAsync(search, expression, cancellationToken: cancellationToken);
 
-            return RetryErrorAsync(() => queryable.CountAsync(cancellationToken));
+            return await RetryErrorAsync(() => queryable.CountAsync(cancellationToken));
         }
 
-        public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
         {
-            var queryable = BuildQuery(filter: filter);
+            var queryable = await BuildQueryAsync(filter: filter, cancellationToken: cancellationToken);
 
-            return RetryErrorAsync(() => queryable.AnyAsync(cancellationToken));
+            return await RetryErrorAsync(() => queryable.AnyAsync(cancellationToken));
         }
 
-        protected IMongoQueryable<TEntity> BuildQuery(
+        protected async Task<IMongoQueryable<TEntity>> BuildQueryAsync(
             string search = null,
             Expression<Func<TEntity, bool>> filter = null,
             int? pageNumber = null,
             int? pageSize = null,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null)
+            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null, CancellationToken cancellationToken = default)
         {
             FilterDefinition<TEntity> firstStageFilter = null;
 
@@ -128,7 +127,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 firstStageFilter = Builders<TEntity>.Filter.Text(search);
             }
 
-            var queryable = GetFilteredCollection(firstStageFilter);
+            var queryable = await GetFilteredCollectionAsync(firstStageFilter, cancellationToken);
 
             if (filter != null)
             {

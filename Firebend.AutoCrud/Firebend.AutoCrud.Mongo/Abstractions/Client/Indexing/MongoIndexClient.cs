@@ -94,9 +94,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             }
         }
 
-        protected override IEnumerable<Expression<Func<TEntity, bool>>> GetSecurityFilters()
+        protected override Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken)
         {
-            return Enumerable.Empty<Expression<Func<TEntity, bool>>>();
+            return Task.FromResult(Enumerable.Empty<Expression<Func<TEntity, bool>>>());
         }
     }
 }
