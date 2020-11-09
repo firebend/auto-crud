@@ -3,6 +3,7 @@ using System.Threading;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Sample.Models;
+using Firebend.AutoCrud.Mongo.Sample.Tenant;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,7 +38,9 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
+                    services
+                        .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
+                        .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
                         .AddEntity<Guid, Person>(person => 
                             person.WithDefaultDatabase("Samples")
                                 .WithCollection("People")
