@@ -10,8 +10,20 @@ jobs:
   dotnet-format:
     runs-on: ubuntu-latest
     steps:
-      - name: dotnet-format
-        uses: xt0rted/dotnet-format@v1.0.1
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Add dotnet-format problem matcher
+        uses: xt0rted/dotnet-format-problem-matcher@v1
+
+      - name: Restore dotnet tools
+        uses: xt0rted/dotnet-tool-restore@v1
+
+      - name: Run dotnet format
+        uses: xt0rted/dotnet-format@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          only-changed-files: "true"
 
   build_and_test:
     name: Build and test
