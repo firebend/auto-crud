@@ -9,6 +9,9 @@ on:
 jobs:
   dotnet-format:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Firebend.AutoCrud
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
