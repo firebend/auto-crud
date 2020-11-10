@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            
+
             var model = await GetByKeyAsync(context, entity.Id, cancellationToken).ConfigureAwait(false);
 
             if (model == null)
@@ -45,13 +45,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             }
 
             var original = model.Clone();
-            model = entity.CopyPropertiesTo(model);
+
+            model = entity.CopyPropertiesTo(model, nameof(IModifiedEntity.CreatedDate));
 
             if (model is IModifiedEntity modified)
             {
                 modified.ModifiedDate = DateTimeOffset.Now;
             }
-            
+
             await context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -62,7 +63,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             {
                 jsonPatchDocument = _jsonPatchDocumentGenerator.Generate(original, model);
             }
-            
+
             await PublishDomainEventAsync(original, jsonPatchDocument, cancellationToken);
 
             return model;
@@ -113,7 +114,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
                 return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
             }
-            
+
             return Task.CompletedTask;
         }
     }
