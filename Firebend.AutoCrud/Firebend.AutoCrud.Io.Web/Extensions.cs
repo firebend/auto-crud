@@ -9,11 +9,12 @@ namespace Firebend.AutoCrud.Io.Web
 {
     public static class Extensions
     {
-        public static ControllerConfigurator<TBuilder, TKey, TEntity> WithIoControllers<TBuilder, TKey, TEntity>(
-            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
+        public static ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithIoControllers<TBuilder, TKey, TEntity, TViewModel>(
+            this ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> configurator)
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
             where TKey : struct
             where TEntity : class, IEntity<TKey>
+            where TViewModel : class
         {
             if (configurator?.Builder?.SearchRequestType == null)
             {
@@ -24,7 +25,7 @@ namespace Firebend.AutoCrud.Io.Web
             {
                 throw new ArgumentException("No export type configured for this controller configurator. Use IoConfigurator to set mappings.");
             }
-            
+
             var controllerType = typeof(AbstractIoController<>);
             var iface = typeof(IEntityExportControllerService<>).MakeGenericType(configurator.Builder.SearchRequestType);
             var impl = typeof(AbstractEntityExportControllerService<,,,>).MakeGenericType(configurator.Builder.EntityKeyType,
@@ -33,7 +34,7 @@ namespace Firebend.AutoCrud.Io.Web
                 configurator.Builder.ExportType);
 
             configurator.Builder.WithRegistration(iface, impl, iface);
-            
+
             return configurator.WithController(controllerType, controllerType, configurator.Builder.SearchRequestType);
         }
     }

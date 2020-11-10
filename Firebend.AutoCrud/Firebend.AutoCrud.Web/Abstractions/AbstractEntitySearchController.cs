@@ -9,17 +9,24 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
+    using System.Linq;
+    using Interfaces;
+
     [ApiController]
-    public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch> : ControllerBase
+    public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch, TViewModel> : ControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
+        where TViewModel : class
     {
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
 
-        protected AbstractEntitySearchController(IEntitySearchService<TKey, TEntity, TSearch> searchService)
+        protected AbstractEntitySearchController(IEntitySearchService<TKey, TEntity, TSearch> searchService,
+            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper)
         {
             _searchService = searchService;
+            _viewModelMapper = viewModelMapper;
         }
 
         [HttpGet]
@@ -51,30 +58,37 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            if (searchRequest is IModifiedEntitySearchRequest modifiedEntitySearchRequest) {
-                if (modifiedEntitySearchRequest.CreatedStartDate.HasValue && modifiedEntitySearchRequest.ModifiedStartDate.HasValue) {
-                    if (modifiedEntitySearchRequest.CreatedStartDate.Value > modifiedEntitySearchRequest.ModifiedStartDate.Value) {
+            if (searchRequest is IModifiedEntitySearchRequest modifiedEntitySearchRequest)
+            {
+                if (modifiedEntitySearchRequest.CreatedStartDate.HasValue && modifiedEntitySearchRequest.ModifiedStartDate.HasValue)
+                {
+                    if (modifiedEntitySearchRequest.CreatedStartDate.Value > modifiedEntitySearchRequest.ModifiedStartDate.Value)
+                    {
                         ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.CreatedStartDate), "Created date cannot be after modified date.");
 
                         return BadRequest(ModelState);
                     }
                 }
 
-                if (modifiedEntitySearchRequest.CreatedStartDate.HasValue && modifiedEntitySearchRequest.CreatedEndDate.HasValue) {
-                    if (modifiedEntitySearchRequest.CreatedStartDate.Value > modifiedEntitySearchRequest.CreatedEndDate.Value) {
+                if (modifiedEntitySearchRequest.CreatedStartDate.HasValue && modifiedEntitySearchRequest.CreatedEndDate.HasValue)
+                {
+                    if (modifiedEntitySearchRequest.CreatedStartDate.Value > modifiedEntitySearchRequest.CreatedEndDate.Value)
+                    {
                         ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.CreatedStartDate), "Created start date must be before end date.");
 
                         return BadRequest(ModelState);
                     }
                 }
 
-                if (modifiedEntitySearchRequest.ModifiedEndDate.HasValue && modifiedEntitySearchRequest.ModifiedStartDate.HasValue) {
-                    if (modifiedEntitySearchRequest.ModifiedStartDate.Value > modifiedEntitySearchRequest.ModifiedEndDate.Value) {
+                if (modifiedEntitySearchRequest.ModifiedEndDate.HasValue && modifiedEntitySearchRequest.ModifiedStartDate.HasValue)
+                {
+                    if (modifiedEntitySearchRequest.ModifiedStartDate.Value > modifiedEntitySearchRequest.ModifiedEndDate.Value)
+                    {
                         ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.ModifiedStartDate), "Modified start date must be before end date.");
-                    
+
                         return BadRequest(ModelState);
                     }
-                } 
+                }
             }
 
             searchRequest.DoCount ??= true;
@@ -83,7 +97,25 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 .PageAsync(searchRequest, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Ok(entities);
+            if (!(entities?.Data?.Any() ?? false))
+            {
+                return Ok(entities);
+            }
+
+            var mapped = await _viewModelMapper
+                .ToAsync(entities.Data, cancellationToken)
+                .ConfigureAwait(false);
+
+            var result = new EntityPagedResponse<TViewModel>
+            {
+                Data = mapped,
+                CurrentPage = entities.CurrentPage,
+                TotalRecords = entities.TotalRecords,
+                CurrentPageSize = entities.CurrentPageSize
+            };
+
+            return Ok(result);
+
         }
     }
 }
