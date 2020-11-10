@@ -7,24 +7,41 @@ on:
   pull_request:
 
 jobs:
+  dotnet-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Add dotnet-format problem matcher
+        uses: xt0rted/dotnet-format-problem-matcher@v1
+
+      - name: Restore dotnet tools
+        uses: xt0rted/dotnet-tool-restore@v1
+
+      - name: Run dotnet format
+        uses: xt0rted/dotnet-format@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          only-changed-files: "true"
+          
   build_and_test:
     name: Build and test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    # - name: Lint Code Base
-    #   uses: github/super-linter@v3
-    #   env:
-    #     VALIDATE_ALL_CODEBASE: false
-    #     DEFAULT_BRANCH: main
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name : Checkout Repo
+      uses: actions/checkout@v2
+
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.301
+
     - name: Install dependencies
       run: dotnet restore Firebend.AutoCrud/Firebend.AutoCrud.sln
+
     - name: Build
       run: dotnet build Firebend.AutoCrud/Firebend.AutoCrud.sln --configuration Release --no-restore
+
     - name: Test
       run: dotnet test Firebend.AutoCrud/Firebend.AutoCrud.sln --logger GitHubActions --no-restore --verbosity normal
