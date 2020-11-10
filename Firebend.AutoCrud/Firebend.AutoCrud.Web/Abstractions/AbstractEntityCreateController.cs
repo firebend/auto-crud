@@ -9,19 +9,25 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
+    using Interfaces;
+
     [ApiController]
-    public abstract class AbstractEntityCreateController<TKey, TEntity> : ControllerBase
+    public abstract class AbstractEntityCreateController<TKey, TEntity, TViewModel> : ControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TViewModel : class
     {
         private readonly IEntityCreateService<TKey, TEntity> _createService;
         private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _mapper;
 
         public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
-            IEntityValidationService<TKey, TEntity> entityValidationService)
+            IEntityValidationService<TKey, TEntity> entityValidationService,
+            IViewModelMapper<TKey, TEntity, TViewModel> mapper)
         {
             _createService = createService;
             _entityValidationService = entityValidationService;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -30,7 +36,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Post(
-            [FromBody] TEntity body,
+            [FromBody] TViewModel body,
             CancellationToken cancellationToken)
         {
             if (body == null)
@@ -38,9 +44,17 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 ModelState.AddModelError("body", "A body is required");
                 return BadRequest(ModelState);
             }
-            
+
+            var entity = await _mapper.FromAsync(body, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!TryValidateModel(entity))
+            {
+                return BadRequest(ModelState);
+            }
+
             var isValid = await _entityValidationService
-                .ValidateAsync(body, cancellationToken)
+                .ValidateAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!isValid.WasSuccessful)
@@ -49,24 +63,26 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 {
                     ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
                 }
-                
+
                 return BadRequest(ModelState);
             }
 
             if (isValid.Model != null)
             {
-                body = isValid.Model;
+                entity = isValid.Model;
             }
 
-            var entity = await _createService
-                .CreateAsync(body, cancellationToken)
+            var created = await _createService
+                .CreateAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Created($"{Request.Path.Value}/{entity.Id}", entity);
+            var createdViewModel = await _mapper
+                .ToAsync(created, cancellationToken)
+                .ConfigureAwait(false);
+
+            return Created($"{Request.Path.Value}/{created.Id}", createdViewModel);
         }
 
-        public const string EntityName = "entity";
-        
         [HttpPost]
         [Route("multiple")]
         [SwaggerOperation("Creates multiple {entityNamePlural}")]
@@ -74,7 +90,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> PostMultiple(
-            [FromBody] TEntity[] body,
+            [FromBody] TViewModel[] body,
             CancellationToken cancellationToken)
         {
             if (body == null || body.Length <= 0)
@@ -82,20 +98,23 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 ModelState.AddModelError("body", "A body is required");
                 return BadRequest(ModelState);
             }
-            
-            var createdEntities = new List<TEntity>();
+
+            var createdEntities = new List<TViewModel>();
             var errorEntities = new List<ModelStateResult<TEntity>>();
 
             foreach (var toCreate in body)
             {
-                var entityToCreate = toCreate;
+                var entityToCreate = await _mapper
+                    .FromAsync(toCreate, cancellationToken)
+                    .ConfigureAwait(false);
+
                 var isValid = await _entityValidationService
                     .ValidateAsync(entityToCreate, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (!isValid.WasSuccessful)
                 {
-                    isValid.Model = toCreate;
+                    isValid.Model = entityToCreate;
                     errorEntities.Add(isValid);
                 }
 
@@ -108,7 +127,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     .CreateAsync(entityToCreate, cancellationToken)
                     .ConfigureAwait(false);
 
-                createdEntities.Add(entity);
+                var mappedEntity = await _mapper
+                    .ToAsync(entity, cancellationToken)
+                    .ConfigureAwait(false);
+
+                createdEntities.Add(mappedEntity);
             }
 
             if (createdEntities.Count > 0)

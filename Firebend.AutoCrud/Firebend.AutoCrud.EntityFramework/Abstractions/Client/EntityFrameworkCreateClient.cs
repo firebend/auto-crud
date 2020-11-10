@@ -31,16 +31,18 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (entity is IModifiedEntity modified)
             {
-                modified.CreatedDate = DateTimeOffset.Now;
-                modified.ModifiedDate = DateTimeOffset.Now;
+                var now = DateTimeOffset.Now;
+
+                modified.CreatedDate = now;
+                modified.ModifiedDate = now;
             }
-            
+
             var entry = await set
                 .AddAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
 
             var savedEntity = entry.Entity;
-            
+
             await context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -62,7 +64,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
                 return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
             }
-            
+
             return Task.CompletedTask;
         }
     }

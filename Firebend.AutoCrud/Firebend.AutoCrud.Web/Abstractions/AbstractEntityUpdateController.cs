@@ -11,22 +11,26 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public abstract class AbstractEntityUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractEntityUpdateController<TKey, TEntity, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
+        where TViewModel : class
     {
         private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IEntityValidationService<TKey, TEntity> entityValidationService) : base(entityKeyParser)
+            IEntityValidationService<TKey, TEntity> entityValidationService,
+            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(entityKeyParser)
         {
             _updateService = updateService;
             _readService = readService;
             _entityValidationService = entityValidationService;
+            _viewModelMapper = viewModelMapper;
         }
 
         [HttpPut("{id}")]
@@ -82,7 +86,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return NotFound(new { id });
             }
 
-            return Ok(entity);
+            var mapped = await _viewModelMapper
+                .ToAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
+
+            return Ok(mapped);
         }
 
         [HttpPatch("{id}")]
@@ -104,7 +112,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             }
 
             var key = GetKey(id);
-            
+
             if (!key.HasValue)
             {
                 return BadRequest(ModelState);
@@ -153,7 +161,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (update != null)
             {
-                return Ok(update);
+                var mapped = await _viewModelMapper
+                    .ToAsync(update, cancellationToken)
+                    .ConfigureAwait(false);
+
+                return Ok(mapped);
             }
 
             return NotFound(new { id });

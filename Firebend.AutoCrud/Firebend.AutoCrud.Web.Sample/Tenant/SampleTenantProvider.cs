@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Web.Sample.Tenant
     {
         public Task<TenantEntityResult<int>> GetTenantAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(new TenantEntityResult<int>() { TenantId = 100 });
+            return Task.FromResult(new TenantEntityResult<int> { TenantId = 100 });
         }
     }
 }

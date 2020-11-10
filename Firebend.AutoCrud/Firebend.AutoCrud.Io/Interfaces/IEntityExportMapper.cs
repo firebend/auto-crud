@@ -6,12 +6,4 @@ namespace Firebend.AutoCrud.Io.Interfaces
     {
         TOut Map(TEntity entity);
     }
-
-    public abstract class DefaultEntityExportMapper<T> : IEntityExportMapper<T, T> where T : class
-    {
-        public T Map(T entity)
-        {
-            return entity;
-        }
-    }
 }

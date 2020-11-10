@@ -7,16 +7,23 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
+    using System.Linq;
+    using Interfaces;
+
     [ApiController]
-    public abstract class AbstractEntityReadAllController<TKey, TEntity> : ControllerBase
+    public abstract class AbstractEntityReadAllController<TKey, TEntity, TViewModel> : ControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TViewModel : class
     {
         private readonly IEntityReadService<TKey, TEntity> _readService;
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
-        protected AbstractEntityReadAllController(IEntityReadService<TKey, TEntity> readService)
+        protected AbstractEntityReadAllController(IEntityReadService<TKey, TEntity> readService,
+            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper)
         {
             _readService = readService;
+            _viewModelMapper = viewModelMapper;
         }
 
         [HttpGet("all")]
@@ -29,7 +36,16 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 .GetAllAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            return Ok(entities);
+            if (entities == null || !entities.Any())
+            {
+                return Ok();
+            }
+
+            var mapped = await _viewModelMapper
+                .ToAsync(entities, cancellationToken)
+                .ConfigureAwait(false);
+
+            return Ok(mapped);
         }
     }
 }

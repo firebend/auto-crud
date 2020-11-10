@@ -143,15 +143,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var original = await RetryErrorAsync(() =>
                 mongoCollection.Find(filtersDefinition).SingleOrDefaultAsync(cancellationToken));
-            
+
             var modified = original == null ? new TEntity() : original.Clone();
 
-            entity.CopyPropertiesTo(modified, new [] { nameof(IModifiedEntity.CreatedDate)});
+            entity.CopyPropertiesTo(modified, nameof(IModifiedEntity.CreatedDate));
+
             if (original == null && modified is IModifiedEntity mod)
             {
                 mod.CreatedDate = now;
             }
-            
+
             var result = await RetryErrorAsync(() =>
                 mongoCollection.FindOneAndReplaceAsync(
                     filtersDefinition,
@@ -175,7 +176,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             if (doUpsert)
             {
                 await PublishAddedDomainEventAsync(result, cancellationToken).ConfigureAwait(false);
-                
+
                 return result;
             }
 
@@ -214,7 +215,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     {
                         modified.CreatedDate = now;
                     }
-                    
+
                     modified.ModifiedDate = now;
                 }
                 ids.Add(id);
@@ -237,7 +238,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             return ids;
         }
-        
+
         private Task PublishUpdatedDomainEventAsync(TEntity previous, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher != null && !_isDefaultPublisher)
@@ -251,10 +252,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
                 return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
             }
-            
+
             return Task.CompletedTask;
         }
-        
+
         private Task PublishAddedDomainEventAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher != null && !_isDefaultPublisher)
@@ -267,7 +268,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
                 return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
             }
-            
+
             return Task.CompletedTask;
         }
     }

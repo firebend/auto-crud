@@ -13,16 +13,23 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
 {
-    public abstract class AbstractChangeTrackingReadController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+    using System.Linq;
+    using Microsoft.AspNetCore.JsonPatch.Operations;
+
+    public abstract class AbstractChangeTrackingReadController<TKey, TEntity, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TViewModel : class
     {
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
         private readonly IChangeTrackingReadService<TKey, TEntity> _read;
 
         protected AbstractChangeTrackingReadController(IChangeTrackingReadService<TKey, TEntity> read,
-            IEntityKeyParser<TKey, TEntity> keyParser) : base(keyParser)
+            IEntityKeyParser<TKey, TEntity> keyParser,
+            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(keyParser)
         {
             _read = read;
+            _viewModelMapper = viewModelMapper;
         }
 
         [HttpGet("{entityId}/changes")]
@@ -63,19 +70,38 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
             }
 
             changeSearchRequest.DoCount ??= true;
-            
+
             var changeRequest = new ChangeTrackingSearchRequest<TKey>
             {
                 EntityId = key.Value,
                 PageNumber = changeSearchRequest.PageNumber,
                 PageSize = changeSearchRequest.PageSize
             };
-            
+
             var changes = await _read
                 .GetChangesByEntityId(changeRequest, cancellationToken)
                 .ConfigureAwait(false);
 
-            return Ok(changes);
+            if (!(changes?.Data?.Any() ?? false))
+            {
+                return Ok(changes);
+            }
+
+            var tasks = changes
+                .Data
+                .Select(x => new ChangeTrackingViewModel<TKey, TEntity, TViewModel>().MapAsync(x, _viewModelMapper, cancellationToken))
+                .ToArray();
+
+            await Task.WhenAll(tasks);
+
+            return Ok(new EntityPagedResponse<ChangeTrackingViewModel<TKey, TEntity, TViewModel>>
+            {
+                Data = tasks.Select(x => x.Result),
+                CurrentPage = changes.CurrentPage,
+                TotalRecords = changes.TotalRecords,
+                CurrentPageSize = changes.CurrentPageSize
+            });
+
         }
     }
 }

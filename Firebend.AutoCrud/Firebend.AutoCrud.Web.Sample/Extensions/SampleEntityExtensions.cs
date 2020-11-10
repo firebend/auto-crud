@@ -12,7 +12,6 @@ using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
-using Firebend.AutoCrud.Web.Sample.Io;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -31,6 +30,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithMassTransit())
                     .AddCrud(x => x.WithCrud().WithOrderBy(m => m.LastName))
                     .AddControllers(controllers => controllers
+                        .WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithOpenApiGroupName("The Beautiful Mongo People"))
@@ -62,8 +62,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
                     )
-                    .AddIo( io => io.WithMapper<EfPersonExport, EfPersonMapper>())
+                    .AddIo( io => io.WithMapper(x => new EfPersonExport(x)))
                     .AddControllers(controllers => controllers
+                        .WithViewModel(entity => new PersonViewModel(entity), viewModel => new EfPerson(viewModel))
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()

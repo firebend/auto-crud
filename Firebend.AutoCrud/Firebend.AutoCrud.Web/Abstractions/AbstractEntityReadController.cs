@@ -10,16 +10,20 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityReadController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractEntityReadController<TKey, TEntity, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TViewModel : class
     {
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
         private readonly IEntityReadService<TKey, TEntity> _readService;
 
         protected AbstractEntityReadController(IEntityReadService<TKey, TEntity> readService,
-            IEntityKeyParser<TKey, TEntity> entityKeyParser) : base(entityKeyParser)
+            IEntityKeyParser<TKey, TEntity> entityKeyParser,
+            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(entityKeyParser)
         {
             _readService = readService;
+            _viewModelMapper = viewModelMapper;
         }
 
         [HttpGet("{id}")]
@@ -32,7 +36,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             CancellationToken cancellationToken)
         {
             var key = GetKey(id);
-            
+
             if (!key.HasValue)
             {
                 return BadRequest(ModelState);
@@ -47,7 +51,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return NotFound(new {id});
             }
 
-            return Ok(entity);
+            var mapped = await _viewModelMapper
+                .ToAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
+
+            return Ok(mapped);
         }
     }
 }

@@ -5,10 +5,16 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Firebend.AutoCrud.ChangeTracking.Models
 {
-    public class ChangeTrackingEntity<TKey, TEntity> : IEntity<Guid>
+
+    public class ChangeTrackingEntity<TKey, TEntity> : ChangeTrackingModel<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
+    {
 
+    }
+
+    public class ChangeTrackingModel<TKey, TEntity> : IEntity<Guid>
+        where TEntity : class
     {
         /// <summary>
         /// The user who made the change.
@@ -31,12 +37,12 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
         public string Action { get; set; }
 
         /// <summary>
-        /// The id corresponding to the change tracking record. 
+        /// The id corresponding to the change tracking record.
         /// </summary>
         public Guid Id { get; set; }
 
         /// <summary>
-        /// The time the change tracking record was modified. 
+        /// The time the change tracking record was modified.
         /// </summary>
         public DateTimeOffset Modified { get; set; }
 

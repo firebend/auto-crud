@@ -6,12 +6,4 @@ namespace Firebend.AutoCrud.Io.Interfaces
     {
         bool ShouldExport(IFileFieldWrite<TExport> field);
     }
-
-    public abstract class DefaultFileFileWriteFilter<TExport> : IFileFieldWriteFilter<TExport>
-    {
-        public bool ShouldExport(IFileFieldWrite<TExport> field)
-        {
-            return true;
-        }
-    }
 }

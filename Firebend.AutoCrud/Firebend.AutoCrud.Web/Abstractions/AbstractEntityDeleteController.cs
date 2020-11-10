@@ -10,16 +10,20 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityDeleteController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractEntityDeleteController<TKey, TEntity, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TViewModel : class
     {
         private readonly IEntityDeleteService<TKey, TEntity> _deleteService;
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
         protected AbstractEntityDeleteController(IEntityDeleteService<TKey, TEntity> deleteService,
-            IEntityKeyParser<TKey, TEntity> entityKeyParser) : base(entityKeyParser)
+            IEntityKeyParser<TKey, TEntity> entityKeyParser,
+            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(entityKeyParser)
         {
             _deleteService = deleteService;
+            _viewModelMapper = viewModelMapper;
         }
 
         [HttpDelete("{id}")]
@@ -43,12 +47,17 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 .DeleteAsync(key.Value, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (deleted != null)
+            if (deleted == null)
             {
-                return Ok();
+                return NotFound(new {id});
             }
 
-            return NotFound(new { id });
+            var mapped = await _viewModelMapper
+                .ToAsync(deleted, cancellationToken)
+                .ConfigureAwait(false);
+
+            return Ok(mapped);
+
         }
     }
 }
