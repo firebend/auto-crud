@@ -85,10 +85,10 @@ indent_style = tab
 [*.{cs,csx,cake,vb,vbx}]
 # "this." and "Me." qualifiers
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#this-and-me
-dotnet_style_qualification_for_field = true:warning
-dotnet_style_qualification_for_property = true:warning
-dotnet_style_qualification_for_method = true:warning
-dotnet_style_qualification_for_event = true:warning
+dotnet_style_qualification_for_field = false:none
+dotnet_style_qualification_for_property = false:none
+dotnet_style_qualification_for_method = false:none
+dotnet_style_qualification_for_event = false:none
 # Language keywords instead of framework type names for type references
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#language-keywords
 dotnet_style_predefined_type_for_locals_parameters_members = true:warning
@@ -141,13 +141,13 @@ csharp_style_var_elsewhere = true:warning
 # Expression-bodied members
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#expression-bodied-members
 csharp_style_expression_bodied_methods = true:warning
-csharp_style_expression_bodied_constructors = true:warning
-csharp_style_expression_bodied_operators = true:warning
-csharp_style_expression_bodied_properties = true:warning
-csharp_style_expression_bodied_indexers = true:warning
-csharp_style_expression_bodied_accessors = true:warning
+csharp_style_expression_bodied_constructors = false:warning
+csharp_style_expression_bodied_operators = when_on_single_line:warning
+csharp_style_expression_bodied_properties = when_on_single_line:warning
+csharp_style_expression_bodied_indexers = when_on_single_line:warning
+csharp_style_expression_bodied_accessors = when_on_single_line:warning
 csharp_style_expression_bodied_lambdas = true:warning
-csharp_style_expression_bodied_local_functions = true:warning
+csharp_style_expression_bodied_local_functions = when_on_single_line:warning
 # Pattern matching
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#pattern-matching
 csharp_style_pattern_matching_over_is_with_cast_check = true:warning
@@ -267,6 +267,9 @@ dotnet_naming_style.internal_error_style.capitalization  = pascal_case
 dotnet_naming_style.internal_error_style.required_prefix = ____INTERNAL_ERROR____
 dotnet_naming_style.internal_error_style.required_suffix = ____INTERNAL_ERROR____
 
+dotnet_naming_style.instance_field_style.capitalization = camel_case
+dotnet_naming_style.instance_field_style.required_prefix = _
+
 ##########################################
 # .NET Design Guideline Field Naming Rules
 # Naming rules for fields follow the .NET Framework design guidelines
@@ -337,7 +340,7 @@ dotnet_naming_rule.stylecop_instance_fields_must_be_private_rule.severity       
 dotnet_naming_symbols.stylecop_private_fields_group.applicable_accessibilities = private
 dotnet_naming_symbols.stylecop_private_fields_group.applicable_kinds           = field
 dotnet_naming_rule.stylecop_private_fields_must_be_camel_case_rule.symbols     = stylecop_private_fields_group
-dotnet_naming_rule.stylecop_private_fields_must_be_camel_case_rule.style       = camel_case_style
+dotnet_naming_rule.stylecop_private_fields_must_be_camel_case_rule.style       = instance_field_style
 dotnet_naming_rule.stylecop_private_fields_must_be_camel_case_rule.severity    = warning
 
 # Local variables must be camelCase
