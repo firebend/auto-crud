@@ -1,5 +1,4 @@
 ![Build, Test, and Release](https://github.com/firebend/auto-crud/workflows/Build,%20Test,%20and%20Release/badge.svg)
-[![GitHub Super-Linter](https://github.com/firebend/auto-crud/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
 # Firebend.AutoCrud
 A framework that provides Create Read Update Delete (CRUD) dotnet core services.
