@@ -36,4 +36,27 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public DateTimeOffset ModifiedDate { get; set; }
         public int TenantId { get; set; }
     }
+    
+    public class EfPersonExport
+    {
+        public string FirstName { get; set; }
+        
+        public string LastName { get; set; }
+
+        public string FullName => $"{FirstName} {LastName}";
+        
+        public Guid Id { get; set; }
+
+        public EfPersonExport()
+        {
+            
+        }
+
+        public EfPersonExport(EfPerson person)
+        {
+            FirstName = person.FirstName;
+            LastName = person.LastName;
+            Id = person.Id;
+        }
+    }
 }

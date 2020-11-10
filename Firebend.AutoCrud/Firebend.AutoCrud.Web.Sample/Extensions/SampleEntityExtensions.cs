@@ -12,7 +12,6 @@ using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
-using Firebend.AutoCrud.Web.Sample.Io;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -62,7 +61,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
                     )
-                    .AddIo( io => io.WithMapper<EfPersonExport, EfPersonMapper>())
+                    .AddIo( io => io.WithMapper(x => new EfPersonExport(x)))
                     .AddControllers(controllers => controllers
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
