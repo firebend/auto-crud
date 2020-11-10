@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Io
             builder.WithRegistration<IEntityFileWriterSpreadSheet, SpreadSheetEntityFileWriter>();
             builder.WithRegistration<IEntityFileWriterFactory, EntityFileWriterFactory>();
             Builder.WithRegistration<IEntityExportMapper<TEntity, TEntity>, AbstractDefaultEntityExportMapper<TEntity>>();
-            
+
             AddExportEntityRegistrations<TEntity>();
         }
 
@@ -45,24 +45,24 @@ namespace Firebend.AutoCrud.Io
             where TMapper : IEntityExportMapper<TEntity, TOut>
         {
             Builder.WithRegistration<IEntityExportMapper<TEntity, TOut>, TMapper>();
-            
+
             RemoveExportEntityRegistrations<TEntity>();
             AddExportEntityRegistrations<TOut>();
-            
+
             return this;
         }
 
         public IoConfigurator<TBuilder, TKey, TEntity> WithMapper<TOut>(Func<TEntity, TOut> mapper)
             where TOut : class
         {
-            Builder.WithRegistrationInstance(new EntityExportMapper<TEntity, TOut>
+            Builder.WithRegistrationInstance(typeof(IEntityExportMapper<TEntity, TOut>), new EntityExportMapper<TEntity, TOut>
             {
                 MapperFunc = mapper
             });
-            
+
             RemoveExportEntityRegistrations<TEntity>();
             AddExportEntityRegistrations<TOut>();
-            
+
             return this;
         }
     }
