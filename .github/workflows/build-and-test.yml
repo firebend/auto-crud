@@ -8,11 +8,8 @@ on:
 
 jobs:
   build_and_test:
-    name: Build and test    
+    name: Build and test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./Firebend.AutoCrud
 
     steps:
     - name : Checkout Repo
