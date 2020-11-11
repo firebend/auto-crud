@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>, new()
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
-        
+
         protected EntityFrameworkTenantUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
@@ -40,7 +40,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-            return new[] {tenantFilter};
+            return new[] { tenantFilter };
         }
 
         public override Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
@@ -49,7 +49,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             {
                 jsonPatchDocument.Operations.RemoveAll(x => x.path == "/tenantId");
             }
-            
+
             return base.UpdateAsync(key, jsonPatchDocument, cancellationToken);
         }
 
@@ -60,7 +60,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .ConfigureAwait(false);
 
             entity.TenantId = tenant.TenantId;
-            
+
             return await base.UpdateAsync(entity, cancellationToken).ConfigureAwait(false);
         }
     }

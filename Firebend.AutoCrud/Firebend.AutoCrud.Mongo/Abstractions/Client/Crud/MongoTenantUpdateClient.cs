@@ -27,9 +27,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
             IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchDocumentGenerator jsonPatchDocumentGenerator, 
-            IEntityDomainEventPublisher domainEventPublisher, 
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider)  
+            IJsonPatchDocumentGenerator jsonPatchDocumentGenerator,
+            IEntityDomainEventPublisher domainEventPublisher,
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider)
             : base(client, logger, entityConfiguration, keyGenerator, domainEventContextProvider,
                 jsonPatchDocumentGenerator, domainEventPublisher)
         {
@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 .ConfigureAwait(false);
 
             Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
-            return new[] {tenantFilter};
+            return new[] { tenantFilter };
         }
 
         public override Task<TEntity> UpdateAsync(TKey id, JsonPatchDocument<TEntity> patch,

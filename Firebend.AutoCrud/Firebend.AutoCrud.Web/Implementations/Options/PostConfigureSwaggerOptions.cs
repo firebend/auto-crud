@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Web.Implementations.Options
             {
                 options.SwaggerGeneratorOptions.TagsSelector = FirebendAutoCrudSwaggerGenTagger.TagActionsBy;
             }
-            
+
             options.EnableAnnotations();
 
             if (!options.OperationFilterDescriptors.Any(filter => filter.Type == typeof(SwaggerOperationFilter)))

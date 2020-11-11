@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             configure(config);
             return builder;
         }
-        
+
         public static EntityCrudBuilder<TKey, TEntity> AddCrud<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder)
             where TKey : struct
             where TEntity : class, IEntity<TKey>

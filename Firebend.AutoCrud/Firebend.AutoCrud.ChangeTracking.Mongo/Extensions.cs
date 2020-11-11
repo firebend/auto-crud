@@ -24,7 +24,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
             {
                 throw new Exception($"Configuration Error! This builder is not a {nameof(MongoDbEntityBuilder<Guid, FooEntity>)}");
             }
-            
+
             configurator.Builder.WithRegistration<IMongoChangeTrackingCreateClient<TKey, TEntity>,
                 AbstractMongoChangeTrackingCreateClient<TKey, TEntity>>();
 
@@ -43,7 +43,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
             configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
             configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
             configurator.WithDomainEventEntityDeletedSubscriber<AbstractChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
-            
+
             return configurator;
         }
     }

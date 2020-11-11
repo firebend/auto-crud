@@ -55,7 +55,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
             var queryable = set.AsQueryable();
 
-            if (firstStageFilters != null) queryable = queryable.Where(firstStageFilters);
+            if (firstStageFilters != null)
+                queryable = queryable.Where(firstStageFilters);
 
             var filters = await BuildFilters(cancellationToken: cancellationToken);
 
@@ -70,9 +71,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
                 .Where(x => x != null)
                 .ToList();
 
-            if (additionalFilter != null) filters.Add(additionalFilter);
+            if (additionalFilter != null)
+                filters.Add(additionalFilter);
 
-            if (filters.Count == 0) return null;
+            if (filters.Count == 0)
+                return null;
 
             return filters.Aggregate(default(Expression<Func<TEntity, bool>>),
                 (aggregate, filter) => aggregate.AndAlso(filter));

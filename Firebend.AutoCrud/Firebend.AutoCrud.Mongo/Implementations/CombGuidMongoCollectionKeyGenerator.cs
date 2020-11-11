@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
     {
         public Task<Guid> GenerateKeyAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult((Guid) MongoIdGeneratorComb.Instance.GenerateId(Guid.NewGuid(), DateTime.UtcNow));
+            return Task.FromResult((Guid)MongoIdGeneratorComb.Instance.GenerateId(Guid.NewGuid(), DateTime.UtcNow));
         }
     }
 }

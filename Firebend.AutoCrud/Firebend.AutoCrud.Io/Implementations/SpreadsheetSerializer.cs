@@ -15,29 +15,29 @@ namespace Firebend.AutoCrud.Io.Implementations
         private readonly bool _disposeWorkbook;
         private bool _disposed;
         private int _currentRow = 1;
-        
+
         public SpreadsheetSerializer(Stream stream,
             string sheetName = "Export",
             bool dispose = true,
-            CsvConfiguration configuration = null) 
+            CsvConfiguration configuration = null)
         {
             _stream = stream;
             _disposeWorkbook = dispose;
-            
+
             Configuration = configuration ?? new CsvConfiguration(CultureInfo.InvariantCulture);
-            Configuration.ShouldQuote = (s, context) =>  false;
+            Configuration.ShouldQuote = (s, context) => false;
             Context = new WritingContext(TextWriter.Null, Configuration, false);
 
             Workbook = new XLWorkbook();
-            
+
             Worksheet = GetOrAddWorksheet(Workbook, sheetName);
         }
-        
+
         public CsvConfiguration Configuration { get; }
-        
+
         public XLWorkbook Workbook { get; }
-        
-        public IXLWorksheet Worksheet { get;  }
+
+        public IXLWorksheet Worksheet { get; }
 
         public int RowOffset { get; } = 0;
 
@@ -46,38 +46,38 @@ namespace Firebend.AutoCrud.Io.Implementations
         public virtual void Write(string[] record)
         {
             CheckDisposed();
-            
+
             for (var i = 0; i < record.Length; i++)
             {
                 Worksheet
                     .AsRange()
                     .Cell(_currentRow + RowOffset, i + 1 + ColumnOffset).Value = ReplaceHexadecimalSymbols(record[i]);
             }
-            
+
             _currentRow++;
         }
 
         public Task WriteAsync(string[] record)
         {
             Write(record);
-            
+
             return Task.CompletedTask;
         }
 
         public void WriteLine()
         {
-            
+
         }
 
         public Task WriteLineAsync()
         {
             WriteLine();
-            
+
             return Task.CompletedTask;
         }
 
         public WritingContext Context { get; }
-        
+
         ISerializerConfiguration ISerializer.Configuration => Configuration;
 
         private static string ReplaceHexadecimalSymbols(string text)
@@ -86,7 +86,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             {
                 return text;
             }
-            
+
             return Regex.Replace(text, "[\x00-\x08\x0B\x0C\x0E-\x1F]", string.Empty, RegexOptions.Compiled);
         }
 
@@ -106,7 +106,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             try
             {
                 Dispose();
-                
+
                 return default;
             }
             catch (Exception exception)
@@ -117,12 +117,13 @@ namespace Firebend.AutoCrud.Io.Implementations
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed) return;
-            
+            if (_disposed)
+                return;
+
             if (disposing)
             {
                 SaveWorkbook();
-                
+
                 if (_disposeWorkbook)
                 {
                     _stream.Close();
@@ -131,7 +132,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             }
             _disposed = true;
         }
-        
+
         public virtual void SaveWorkbook()
         {
             Workbook.SaveAs(_stream);
@@ -157,7 +158,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             {
                 worksheet = workbook.AddWorksheet(sheetName);
             }
-            
+
             return worksheet;
         }
     }

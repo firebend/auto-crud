@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TTenantKey : struct
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
-        
+
         protected EntityFrameworkTenantQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> fullTextSearchProvider,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider) :
@@ -32,7 +32,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             Expression<Func<TEntity, bool>> filter = x => x.TenantId.Equals(tenant.TenantId);
 
-            return new[] {filter};
+            return new[] { filter };
         }
     }
 }

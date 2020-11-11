@@ -23,16 +23,16 @@ namespace Firebend.AutoCrud.Core.Threading
                 return default;
             }
 
-            return (T) val;
+            return (T)val;
         }
-        
+
 
         public static void UpdateValue(string key, object value)
         {
             Cache[key] = value;
         }
     }
-    
+
     public static class Run
     {
         public static Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
@@ -43,7 +43,7 @@ namespace Firebend.AutoCrud.Core.Threading
                 return true;
             }, cancellationToken);
         }
-        
+
         public static async Task<T> OnceAsync<T>(string key, Func<CancellationToken, Task<T>> func, CancellationToken cancellationToken = default)
         {
             var temp = RunOnceCaches.GetValue<T>(key);
@@ -52,9 +52,9 @@ namespace Firebend.AutoCrud.Core.Threading
             {
                 return temp;
             }
-            
+
             using var _ = await new AsyncDuplicateLock().LockAsync(key, cancellationToken).ConfigureAwait(false);
-            
+
             temp = RunOnceCaches.GetValue<T>(key);
 
             if (temp != null && !temp.Equals(default(T)))
@@ -68,8 +68,8 @@ namespace Firebend.AutoCrud.Core.Threading
 
             return temp;
         }
-        
-        
+
+
         public static void Once(string key, Action action)
         {
             Once(key, () =>
@@ -78,7 +78,7 @@ namespace Firebend.AutoCrud.Core.Threading
                 return true;
             });
         }
-        
+
         public static T Once<T>(string key, Func<T> func)
         {
             var temp = RunOnceCaches.GetValue<T>(key);
@@ -87,9 +87,9 @@ namespace Firebend.AutoCrud.Core.Threading
             {
                 return temp;
             }
-            
+
             using var _ = new AsyncDuplicateLock().Lock(key);
-            
+
             temp = RunOnceCaches.GetValue<T>(key);
 
             if (temp != null && !temp.Equals(default(T)))
@@ -97,7 +97,7 @@ namespace Firebend.AutoCrud.Core.Threading
                 return temp;
             }
 
-            temp =  func();
+            temp = func();
 
             RunOnceCaches.UpdateValue(key, temp);
 

@@ -1,7 +1,7 @@
 
-using Firebend.AutoCrud.Core.Models.Entities;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Models.Entities;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {

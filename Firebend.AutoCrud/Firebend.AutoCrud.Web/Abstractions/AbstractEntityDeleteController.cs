@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Delete(
-            [Required] [FromRoute] string id,
+            [Required][FromRoute] string id,
             CancellationToken cancellationToken)
         {
             var key = GetKey(id);
@@ -49,7 +49,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (deleted == null)
             {
-                return NotFound(new {id});
+                return NotFound(new { id });
             }
 
             var mapped = await _viewModelMapper

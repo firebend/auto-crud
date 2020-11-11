@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Core.Extensions
             var replacer = new ReplaceExpressionVisitor(parameterToRemove, Expression.Constant(parameterValue, typeof(T2)));
             return Expression.Lambda<Func<T1, TResult>>(replacer.Visit(expression.Body), expression.Parameters.Where(p => p != parameterToRemove));
         }
-        
+
         public static Expression<Func<T, bool>> AndAlso<T>(
             this Expression<Func<T, bool>> expr1,
             Expression<Func<T, bool>> expr2)

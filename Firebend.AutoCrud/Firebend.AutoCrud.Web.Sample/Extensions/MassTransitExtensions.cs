@@ -10,9 +10,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
     public static class MassTransitExtensions
     {
         private static readonly Regex ConStringParser = new Regex(
-            "^rabbitmq://([^:]+):(.+)@([^@]+)$", 
+            "^rabbitmq://([^:]+):(.+)@([^@]+)$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        
+
         public static IServiceCollection AddSampleMassTransit(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
             var connString = configuration.GetConnectionString("ServiceBus");
@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             return serviceCollection.AddMassTransit(bus =>
             {
                 bus.RegisterFirebendAutoCrudDomainEventHandlers(serviceCollection);
-                
+
                 bus.UsingRabbitMq((context, configurator) =>
                 {
                     var match = ConStringParser.Match(connString);

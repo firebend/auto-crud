@@ -9,13 +9,13 @@ namespace Firebend.AutoCrud.Core.Models
     {
         public ServiceLifetime Lifetime { get; set; } = ServiceLifetime.Scoped;
     }
-    
+
     public class DynamicClassRegistration : Registration
     {
         public string Signature { get; set; }
-        
+
         public IEnumerable<PropertySet> Properties { get; set; }
-        
+
         public Type Interface { get; set; }
     }
 

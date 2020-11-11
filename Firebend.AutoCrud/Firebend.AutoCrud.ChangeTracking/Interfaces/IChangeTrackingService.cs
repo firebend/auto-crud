@@ -5,7 +5,7 @@ using Firebend.AutoCrud.Core.Models.DomainEvents;
 
 namespace Firebend.AutoCrud.ChangeTracking.Interfaces
 {
-    public interface IChangeTrackingService<TKey, TEntity> 
+    public interface IChangeTrackingService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

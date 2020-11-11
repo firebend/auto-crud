@@ -13,7 +13,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
     public abstract class EntityFrameworkTenantCreateClient<TKey, TEntity, TTenantKey> : EntityFrameworkCreateClient<TKey, TEntity>
         where TKey : struct
         where TTenantKey : struct
-        where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>,  new()
+        where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>, new()
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
         protected EntityFrameworkTenantCreateClient(IDbContextProvider<TKey, TEntity> provider,
@@ -32,7 +32,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-            return new[] {tenantFilter};
+            return new[] { tenantFilter };
         }
 
         public override async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .ConfigureAwait(false);
 
             entity.TenantId = tenant.TenantId;
-            
+
             return await base.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         }
     }

@@ -11,10 +11,10 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             where TEntity : IEntity<TKey>
         {
             builder.EntityName = entityName;
-            
+
             return builder;
         }
 
-        
+
     }
 }

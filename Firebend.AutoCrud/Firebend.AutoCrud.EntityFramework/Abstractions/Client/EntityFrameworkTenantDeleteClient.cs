@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _tenantEntityProvider = tenantEntityProvider;
         }
 
-        
+
         protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
         {
             var tenant = await _tenantEntityProvider
@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-            return new[] {tenantFilter};
+            return new[] { tenantFilter };
         }
     }
 }

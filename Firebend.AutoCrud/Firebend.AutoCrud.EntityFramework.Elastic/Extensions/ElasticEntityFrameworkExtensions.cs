@@ -12,15 +12,15 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Extensions
             where TEntity : class, IEntity<TKey>, new()
         {
             var config = new ElasticPoolConfigurator<EntityFrameworkEntityBuilder<TKey, TEntity>, TKey, TEntity>(builder);
-            
+
             if (configureShardMapManager != null)
             {
                 config.WithShardMapConfiguration(configureShardMapManager);
             }
-            
+
             configure(config);
             return builder;
         }
-        
+
     }
 }

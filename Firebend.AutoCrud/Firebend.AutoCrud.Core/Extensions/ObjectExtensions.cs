@@ -13,7 +13,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         /// <returns>A cloned object</returns>
         public static T Clone<T>(this T source) where T : class
         {
-            return ((object) source).Clone<T>();
+            return ((object)source).Clone<T>();
         }
 
         /// <summary>
@@ -25,7 +25,8 @@ namespace Firebend.AutoCrud.Core.Extensions
         public static TOut Clone<TOut>(this object source)
         {
             // Don't serialize a null object, simply return the default for that object
-            if (ReferenceEquals(source, null)) return default;
+            if (ReferenceEquals(source, null))
+                return default;
 
             return JsonConvert.DeserializeObject<TOut>(JsonConvert.SerializeObject(source));
         }
@@ -50,13 +51,15 @@ namespace Firebend.AutoCrud.Core.Extensions
 
             foreach (var sourceProp in sourceProps)
             {
-                if (propertiesToIgnore != null && sourceProp.Name.In(propertiesToIgnore)) continue;
+                if (propertiesToIgnore != null && sourceProp.Name.In(propertiesToIgnore))
+                    continue;
 
                 if (destProps.Any(x => x.Name == sourceProp.Name))
                 {
                     var p = destProps.First(x => x.Name == sourceProp.Name);
 
-                    if (p.CanWrite) p.SetValue(dest, sourceProp.GetValue(source, null), null);
+                    if (p.CanWrite)
+                        p.SetValue(dest, sourceProp.GetValue(source, null), null);
                 }
             }
 

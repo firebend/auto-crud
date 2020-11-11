@@ -13,7 +13,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             where TEntity : class, IEntity<TKey>
         {
             source.WithDomainEventPublisher<MassTransitDomainEventPublisher>();
-            
+
             return source;
         }
     }

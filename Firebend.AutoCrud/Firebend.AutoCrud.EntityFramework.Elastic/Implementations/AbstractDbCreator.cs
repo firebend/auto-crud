@@ -17,13 +17,13 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         }
 
         protected abstract string GetSqlCommand(string dbName);
-        
+
         public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 
             var key = $"{connBuilder.DataSource}-{dbName}";
-            
+
             var runKey = $"{GetType().FullName}.{key}";
 
             return Run.OnceAsync(runKey, async ct =>

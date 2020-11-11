@@ -8,8 +8,8 @@ namespace Firebend.AutoCrud.Io.Interfaces
 {
     public interface IEntityFileWriter
     {
-        EntityFileType FileType { get;  }
-        
+        EntityFileType FileType { get; }
+
         Task<Stream> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
             IEnumerable<T> records,
             CancellationToken cancellationToken = default) where T : class;
@@ -17,12 +17,12 @@ namespace Firebend.AutoCrud.Io.Interfaces
 
     public interface IEntityFileWriterCsv : IEntityFileWriter
     {
-        
+
     }
 
     public interface IEntityFileWriterSpreadSheet : IEntityFileWriter
     {
-        
+
     }
-    
+
 }

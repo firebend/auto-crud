@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             _filter = filter;
         }
 
-        public IEnumerable<IFileFieldWrite<T>> MapOutput() 
+        public IEnumerable<IFileFieldWrite<T>> MapOutput()
         {
             var properties = typeof(T).GetProperties();
 
@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.Io.Implementations
                 {
                     continue;
                 }
-                
+
                 var field = new FileFieldWrite<T>
                 {
                     FieldIndex = ctExport?.Order ?? index++,
@@ -49,14 +49,14 @@ namespace Firebend.AutoCrud.Io.Implementations
                 {
                     continue;
                 }
-                
+
                 var parameter = Expression.Parameter(typeof(T), "x");
                 var property = Expression.Property(parameter, propertyInfo);
                 var conversion = Expression.Convert(property, typeof(object));
                 var lambda = Expression.Lambda<Func<T, object>>(conversion, parameter);
 
                 field.Writer = lambda.Compile();
-                    
+
                 yield return field;
             }
         }

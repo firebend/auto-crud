@@ -75,7 +75,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete()
         {
             var serviceType = Builder.DeleteType;
-            
+
             return WithDelete(serviceType);
         }
 
@@ -109,7 +109,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithRead(Type serviceType)
         {
             Builder.WithRegistration<IEntityReadService<TKey, TEntity>>(serviceType);
-            
+
             return this;
         }
 
@@ -130,7 +130,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             Builder.SearchRequestType = searchType;
 
             var registrationType = typeof(IEntitySearchService<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, searchType);
-            
+
             Builder.WithRegistration(registrationType,
                 serviceType,
                 typeof(IEntitySearchService<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, searchType));

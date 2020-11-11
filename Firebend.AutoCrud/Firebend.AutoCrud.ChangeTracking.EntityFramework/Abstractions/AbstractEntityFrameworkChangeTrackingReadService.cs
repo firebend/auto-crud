@@ -16,13 +16,13 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
-        
+
         public AbstractEntityFrameworkChangeTrackingReadService(IChangeTrackingDbContextProvider<TEntityKey, TEntity> contextProvider) :
             base(contextProvider, null)
         {
-            
+
         }
-        
+
         public Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
             ChangeTrackingSearchRequest<TEntityKey> searchRequest,
             CancellationToken cancellationToken = default)
@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             {
                 throw new ArgumentNullException(nameof(searchRequest));
             }
-            
+
             return PageAsync(null,
                 x => x.EntityId.Equals(searchRequest.EntityId),
                 searchRequest.PageNumber.GetValueOrDefault(),

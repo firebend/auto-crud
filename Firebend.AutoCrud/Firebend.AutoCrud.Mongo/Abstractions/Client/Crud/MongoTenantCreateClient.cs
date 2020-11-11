@@ -15,13 +15,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     public abstract class MongoTenantCreateClient<TKey, TEntity, TTenantKey> : MongoCreateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>, new()
-        where TTenantKey: struct
+        where TTenantKey : struct
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
         protected MongoTenantCreateClient(IMongoClient client, ILogger<MongoCreateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration, IEntityDomainEventPublisher eventPublisher,
-            IDomainEventContextProvider domainEventContextProvider, 
+            IDomainEventContextProvider domainEventContextProvider,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(client, logger, entityConfiguration,
             eventPublisher, domainEventContextProvider)
         {
@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-            return new[] {tenantFilter};
+            return new[] { tenantFilter };
         }
 
         public override async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)

@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
         {
             changeTrackingEntity.CopyPropertiesTo(this,
                 nameof(ChangeTrackingModel<Guid, FooEntity>.Changes),
-                nameof(ChangeTrackingModel<Guid,FooEntity>.Entity));
+                nameof(ChangeTrackingModel<Guid, FooEntity>.Entity));
 
             var mapped = await mapper
                 .ToAsync(changeTrackingEntity.Entity, cancellationToken)

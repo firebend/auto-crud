@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             _dbCreator = dbCreator;
             _shardMapMangerConfiguration = shardMapMangerConfiguration;
         }
-        
+
         public async Task<ShardMap> RegisterShardAsync(string shardDatabaseName, string key, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(shardDatabaseName))
@@ -31,14 +31,14 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             {
                 throw new Exception("Could not resolve key for shard.");
             }
-            
+
             var manager = await GetShardMapMangerAsync(cancellationToken).ConfigureAwait(false);
             var shardMap = GetShardMap(manager);
 
             await _dbCreator.EnsureCreatedAsync(_shardMapMangerConfiguration.ConnectionString,
                 shardDatabaseName,
                 cancellationToken).ConfigureAwait(false);
-            
+
             var shardLocation = new ShardLocation(_shardMapMangerConfiguration.Server, shardDatabaseName);
 
             if (!shardMap.TryGetShard(shardLocation, out var shard))
@@ -61,7 +61,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             await _dbCreator.EnsureCreatedAsync(_shardMapMangerConfiguration.ConnectionString,
                 _shardMapMangerConfiguration.ShardMapManagerDbName,
                 cancellationToken).ConfigureAwait(false);
-            
+
             var connStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString)
             {
                 DataSource = _shardMapMangerConfiguration.Server,

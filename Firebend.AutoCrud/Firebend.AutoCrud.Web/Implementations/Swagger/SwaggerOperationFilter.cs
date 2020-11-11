@@ -13,7 +13,7 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
             {
                 return;
             }
-            
+
             var entityNameAttribute = context
                 .ApiDescription
                 ?.ActionDescriptor

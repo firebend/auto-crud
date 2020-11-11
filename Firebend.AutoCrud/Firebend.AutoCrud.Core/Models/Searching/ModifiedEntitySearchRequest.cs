@@ -3,7 +3,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Models.Searching
 {
-    public class ModifiedEntitySearchRequest: EntitySearchRequest, IModifiedEntitySearchRequest
+    public class ModifiedEntitySearchRequest : EntitySearchRequest, IModifiedEntitySearchRequest
     {
         public DateTimeOffset? CreatedStartDate { get; set; }
         public DateTimeOffset? CreatedEndDate { get; set; }

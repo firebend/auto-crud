@@ -15,13 +15,13 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 {
     public abstract class AbstractMongoChangeTrackingReadRepository<TEntityKey, TEntity> :
         MongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>,
-        IChangeTrackingReadService<TEntityKey,TEntity>
+        IChangeTrackingReadService<TEntityKey, TEntity>
         where TEntityKey : struct
         where TEntity : class, IEntity<TEntityKey>
     {
         protected AbstractMongoChangeTrackingReadRepository(IMongoClient client,
             ILogger<MongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>> logger,
-            IMongoEntityConfiguration<TEntityKey, TEntity> entityConfiguration) : 
+            IMongoEntityConfiguration<TEntityKey, TEntity> entityConfiguration) :
             base(client,
                 logger,
                 new MongoChangeTrackingEntityConfiguration<TEntityKey, TEntity>(entityConfiguration))
@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
             {
                 throw new ArgumentNullException(nameof(searchRequest));
             }
-            
+
             return PageAsync(null,
                 x => x.EntityId.Equals(searchRequest.EntityId),
                 searchRequest.PageNumber.GetValueOrDefault(),

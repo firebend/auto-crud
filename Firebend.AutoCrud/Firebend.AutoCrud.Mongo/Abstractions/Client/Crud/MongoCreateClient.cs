@@ -46,7 +46,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             return entity;
         }
-        
+
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {
             if (_eventPublisher != null && !(_eventPublisher is DefaultEntityDomainEventPublisher))
@@ -59,7 +59,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
                 return _eventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
             }
-            
+
             return Task.CompletedTask;
         }
     }

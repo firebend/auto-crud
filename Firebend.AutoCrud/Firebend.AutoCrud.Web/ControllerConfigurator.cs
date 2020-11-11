@@ -82,14 +82,14 @@ namespace Firebend.AutoCrud.Web
         private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetRouteAttributeInfo()
         {
             var routeType = typeof(RouteAttribute);
-            var routeCtor = routeType.GetConstructor(new[] {typeof(string)});
+            var routeCtor = routeType.GetConstructor(new[] { typeof(string) });
 
             if (routeCtor == null)
             {
                 return default;
             }
 
-            var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] {Route});
+            var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] { Route });
 
             return (routeType, attributeBuilder);
         }
@@ -104,14 +104,14 @@ namespace Firebend.AutoCrud.Web
         private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo()
         {
             var attributeType = typeof(OpenApiGroupNameAttribute);
-            var attributeCtor = attributeType.GetConstructor(new[] {typeof(string)});
+            var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
 
             if (attributeCtor == null)
             {
                 return default;
             }
 
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] {OpenApiGroupName});
+            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { OpenApiGroupName });
 
             return (attributeType, attributeBuilder);
         }
@@ -159,7 +159,7 @@ namespace Firebend.AutoCrud.Web
             var authCtor = authorizePolicy == null
                 ? null
                 : authType.GetConstructor(!string.IsNullOrWhiteSpace(authorizePolicy)
-                    ? new[] {typeof(string)}
+                    ? new[] { typeof(string) }
                     : Type.EmptyTypes);
 
             if (authCtor == null)
@@ -168,7 +168,7 @@ namespace Firebend.AutoCrud.Web
             }
 
             var args = !string.IsNullOrWhiteSpace(authorizePolicy)
-                ? new object[] {authorizePolicy}
+                ? new object[] { authorizePolicy }
                 : new object[] { };
 
             return (authType, new CustomAttributeBuilder(authCtor, args));
@@ -225,7 +225,7 @@ namespace Firebend.AutoCrud.Web
                 throw new Exception("Controllers have already been added. Please call .WithViewModel first in your configuration callback");
             }
 
-            var config =  new ControllerConfigurator<TBuilder, TKey, TEntity, TNewViewModel>(Builder);
+            var config = new ControllerConfigurator<TBuilder, TKey, TEntity, TNewViewModel>(Builder);
 
             var instance = new FunctionViewModelMapper<TKey, TEntity, TNewViewModel>
             {
@@ -264,13 +264,13 @@ namespace Firebend.AutoCrud.Web
 
         private void AddSwaggenGenOptionConfiguration()
         {
-            Run.Once($"{GetType().FullName}.SwaggerGenOptions",() =>
-            {
-                Builder.WithServiceCollectionHook(sc =>
-                {
-                    sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
-                });
-            });
+            Run.Once($"{GetType().FullName}.SwaggerGenOptions", () =>
+             {
+                 Builder.WithServiceCollectionHook(sc =>
+                 {
+                     sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
+                 });
+             });
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithOpenApiGroupName(string openApiGroupName)
@@ -316,7 +316,7 @@ namespace Firebend.AutoCrud.Web
             => WithDeleteController(typeof(TRegistrationType));
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithDeleteController()
-            => WithDeleteController<AbstractEntityDeleteController<TKey,TEntity, TViewModel>>();
+            => WithDeleteController<AbstractEntityDeleteController<TKey, TEntity, TViewModel>>();
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithGetAllController(Type registrationType)
             => WithController<AbstractEntityReadAllController<TKey, TEntity, TViewModel>>(registrationType);
@@ -325,10 +325,10 @@ namespace Firebend.AutoCrud.Web
             WithGetAllController(typeof(TRegistrationType));
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithGetAllController()
-            => WithGetAllController<AbstractEntityReadAllController<TKey,TEntity, TViewModel>>();
+            => WithGetAllController<AbstractEntityReadAllController<TKey, TEntity, TViewModel>>();
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithReadController(Type registrationType)
-            => WithController<AbstractEntityReadController<TKey,TEntity, TViewModel>>(registrationType);
+            => WithController<AbstractEntityReadController<TKey, TEntity, TViewModel>>(registrationType);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithReadController<TRegistrationType>()
             => WithReadController(typeof(TRegistrationType));
@@ -348,13 +348,13 @@ namespace Firebend.AutoCrud.Web
             => WithSearchController(typeof(AbstractEntitySearchController<,,,>));
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithUpdateController(Type registrationType)
-            => WithController<AbstractEntityUpdateController<TKey,TEntity, TViewModel>>(registrationType);
+            => WithController<AbstractEntityUpdateController<TKey, TEntity, TViewModel>>(registrationType);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithUpdateController<TRegistrationType>()
             => WithUpdateController(typeof(TRegistrationType));
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithUpdateController()
-            => WithUpdateController<AbstractEntityUpdateController<TKey,TEntity, TViewModel>>();
+            => WithUpdateController<AbstractEntityUpdateController<TKey, TEntity, TViewModel>>();
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithAllControllers(bool includeGetAll = false)
         {
@@ -383,18 +383,18 @@ namespace Firebend.AutoCrud.Web
             => AddAuthorizationPolicy(typeof(TController), policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddCreateAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy<AbstractEntityCreateController<TKey,TEntity,TViewModel>>(policy);
+            => AddAuthorizationPolicy<AbstractEntityCreateController<TKey, TEntity, TViewModel>>(policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddDeleteAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy<AbstractEntityDeleteController<TKey,TEntity,TViewModel>>(policy);
+            => AddAuthorizationPolicy<AbstractEntityDeleteController<TKey, TEntity, TViewModel>>(policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddReadAuthorizationPolicy(string policy)
         {
-            return AddAuthorizationPolicy<AbstractEntityReadController<TKey,TEntity,TViewModel>>(policy);
+            return AddAuthorizationPolicy<AbstractEntityReadController<TKey, TEntity, TViewModel>>(policy);
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddReadAllAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy<AbstractEntityReadAllController<TKey,TEntity,TViewModel>>(policy);
+            => AddAuthorizationPolicy<AbstractEntityReadAllController<TKey, TEntity, TViewModel>>(policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddSearchAuthorizationPolicy(string policy)
         {
@@ -405,7 +405,7 @@ namespace Firebend.AutoCrud.Web
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddUpdateAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy<AbstractEntityUpdateController<TKey,TEntity,TViewModel>>(policy);
+            => AddAuthorizationPolicy<AbstractEntityUpdateController<TKey, TEntity, TViewModel>>(policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddAlterAuthorizationPolicies(string policy = "")
         {

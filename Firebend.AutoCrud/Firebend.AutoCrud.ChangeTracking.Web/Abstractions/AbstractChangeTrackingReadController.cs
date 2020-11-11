@@ -37,8 +37,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
         [SwaggerResponse(200, "Change tracking history for the given entity key")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> GetByEntityId(
-            [Required] [FromRoute] string entityId,
-            [Required] [FromQuery] EntitySearchRequest changeSearchRequest,
+            [Required][FromRoute] string entityId,
+            [Required][FromQuery] EntitySearchRequest changeSearchRequest,
             CancellationToken cancellationToken)
         {
             var key = GetKey(entityId);

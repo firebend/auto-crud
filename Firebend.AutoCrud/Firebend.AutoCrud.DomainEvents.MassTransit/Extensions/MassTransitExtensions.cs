@@ -14,18 +14,18 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 {
-    
+
     public static class MassTransitExtensions
     {
         private static ServiceDescriptor[] _listeners;
-        
+
         private static ServiceDescriptor[] GetListeners(IServiceCollection serviceCollection)
         {
             if (_listeners != null && _listeners.Any())
             {
                 return _listeners;
             }
-            
+
             var listeners = serviceCollection
                 .Where(x => IsMessageListener(x.ServiceType))
                 .ToArray();
@@ -44,17 +44,17 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             {
                 return;
             }
-            
+
             foreach (var listener in GetListeners(serviceCollection))
             {
                 var (consumerType, domainEventType, _) = GetConsumerInfo(listener);
 
                 addConsumer
                     .MakeGenericMethod(listener.ImplementationType, domainEventType, consumerType)
-                    .Invoke(null, new object[] {busConfigurator, serviceCollection});
+                    .Invoke(null, new object[] { busConfigurator, serviceCollection });
             }
         }
-        
+
         public static void RegisterFirebendAutoCrudeDomainEventHandlerEndPoints(
             this IBusRegistrationContext busRegistrationContext,
             IBusFactoryConfigurator bus,
@@ -63,9 +63,9 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             Action<IReceiveEndpointConfigurator> configureReceiveEndpoint = null)
         {
             var listeners = GetListeners(serviceCollection);
-            
+
             var queueNames = new List<string>();
-            
+
             var configureConsumer = typeof(MassTransitExtensions).GetMethod(nameof(ConfigureConsumer),
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Static);
 
@@ -94,15 +94,15 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 bus.ReceiveEndpoint(queueName, re =>
                 {
                     configureConsumer.MakeGenericMethod(listener.ImplementationType, domainEventType, consumerType)
-                        .Invoke(null, new object[] {busRegistrationContext, re});
-                    
+                        .Invoke(null, new object[] { busRegistrationContext, re });
+
                     configureReceiveEndpoint?.Invoke(re);
                 });
             }
 
             _listeners = null;
         }
-        
+
         private static void AddConsumer<TDomainEventHandler, TDomainEvent, TDomainEventConsumer>(IServiceCollectionBusConfigurator busConfigurator,
             IServiceCollection serviceCollection)
             where TDomainEvent : DomainEventBase
@@ -112,7 +112,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             serviceCollection.TryAddTransient<TDomainEventHandler>();
             busConfigurator.AddConsumer<TDomainEventConsumer>();
         }
-        
+
         private static void ConfigureConsumer<TDomainEventHandler, TDomainEvent, TDomainEventConsumer>(
             IRegistration context,
             IReceiveEndpointConfigurator receiveEndpointConfigurator)
@@ -128,11 +128,11 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             var listenerImplementationType = serviceDescriptor.ImplementationType;
             var serviceType = serviceDescriptor.ServiceType;
             var entity = serviceType.GenericTypeArguments[0];
-            
+
             Type consumerType = null;
             string description = null;
             Type domainEventType = null;
-            
+
             if (typeof(IEntityAddedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
             {
                 consumerType = typeof(MassTransitEntityAddedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
@@ -189,7 +189,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 iteration++;
                 queueName += iteration;
             }
-            
+
             queueNames.Add(queueName);
 
             return queueName;
@@ -197,11 +197,13 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 
         private static bool IsMessageListener(Type serviceType)
         {
-            if (!serviceType.IsGenericType) return false;
+            if (!serviceType.IsGenericType)
+                return false;
 
             var args = serviceType.GetGenericArguments();
 
-            if (args.Length != 1 && !args[0].IsClass) return false;
+            if (args.Length != 1 && !args[0].IsClass)
+                return false;
 
             return typeof(IDomainEventSubscriber).IsAssignableFrom(serviceType);
         }

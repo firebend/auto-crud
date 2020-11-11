@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
@@ -18,7 +18,8 @@ namespace Firebend.AutoCrud.Core.Extensions
                 return true;
 
             Type baseType = givenType.BaseType;
-            if (baseType == null) return false;
+            if (baseType == null)
+                return false;
 
             return IsAssignableToGenericType(baseType, genericType);
         }

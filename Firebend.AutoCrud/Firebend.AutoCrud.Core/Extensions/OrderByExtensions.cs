@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             return source == null
                 ? default(IEnumerable<(Expression<Func<T, object>> order, bool ascending)>)
-                : new List<(Expression<Func<T, object>> order, bool ascending)> {(source, ascending)};
+                : new List<(Expression<Func<T, object>> order, bool ascending)> { (source, ascending) };
         }
 
         public static IEnumerable<(Expression<Func<T, object>> order, bool ascending)> ToOrderByAscending<T>(
@@ -31,7 +31,8 @@ namespace Firebend.AutoCrud.Core.Extensions
             this IEnumerable<(Expression<Func<T, object>> order, bool ascending)> source,
             Expression<Func<T, object>> orderBy)
         {
-            if (orderBy == default) return source;
+            if (orderBy == default)
+                return source;
 
             var list = source?.ToList() ?? new List<(Expression<Func<T, object>> order, bool ascending)>();
 
@@ -44,7 +45,8 @@ namespace Firebend.AutoCrud.Core.Extensions
             this IEnumerable<(Expression<Func<T, object>> order, bool ascending)> source,
             Expression<Func<T, object>> orderBy)
         {
-            if (orderBy == default) return source;
+            if (orderBy == default)
+                return source;
 
             var list = source?.ToList() ?? new List<(Expression<Func<T, object>> order, bool ascending)>();
 
@@ -58,28 +60,33 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             var orderFields = source?.ToList();
 
-            if (orderFields?.Any() != true) return new List<(Expression<Func<T, object>> order, bool ascending)>();
+            if (orderFields?.Any() != true)
+                return new List<(Expression<Func<T, object>> order, bool ascending)>();
 
             return orderFields.Select(x => x.ToOrderByGroup<T>()).Where(x => x != default).ToList();
         }
 
         public static (Expression<Func<T, object>> order, bool ascending) ToOrderByGroup<T>(this string source)
         {
-            if (source == null) return default;
+            if (source == null)
+                return default;
 
             var spec = source.Split(':');
 
             var name = spec[0];
 
-            if (string.IsNullOrWhiteSpace(name)) return default;
+            if (string.IsNullOrWhiteSpace(name))
+                return default;
 
-            if (char.IsLower(name[0])) name = $"{char.ToUpper(name[0])}{name.Substring(1)}";
+            if (char.IsLower(name[0]))
+                name = $"{char.ToUpper(name[0])}{name.Substring(1)}";
 
             var type = typeof(T);
 
             var propertyInfo = type.GetProperty(name);
 
-            if (propertyInfo == null) return default;
+            if (propertyInfo == null)
+                return default;
 
             var arg = Expression.Parameter(type, "x");
             Expression expr = null;
@@ -103,11 +110,14 @@ namespace Firebend.AutoCrud.Core.Extensions
 
         public static string GetMemberName(this LambdaExpression source)
         {
-            if (source == null) return null;
+            if (source == null)
+                return null;
             var body = source.Body;
-            if (body is UnaryExpression unaryExpression) body = unaryExpression.Operand;
+            if (body is UnaryExpression unaryExpression)
+                body = unaryExpression.Operand;
 
-            if (body is MemberExpression memberExpression) return memberExpression.Member.Name;
+            if (body is MemberExpression memberExpression)
+                return memberExpression.Member.Name;
 
             return null;
         }

@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Core.Implementations.JsonPatch
     public class JsonPatchDocumentDocumentGenerator : IJsonPatchDocumentGenerator
     {
         public virtual JsonSerializer GetJsonSerializer() => JsonSerializer.CreateDefault();
-        
+
         /// <summary>
         /// Generates a JsonPatchDocument by comparing two objects.
         /// </summary>
@@ -119,7 +119,7 @@ namespace Firebend.AutoCrud.Core.Implementations.JsonPatch
                                         patch,
                                         $"{path}/{modifiedIndex}/");
                                 }
-                                else if(originalArray[modifiedIndex]?.ToString() != modifiedArray[modifiedIndex]?.ToString())
+                                else if (originalArray[modifiedIndex]?.ToString() != modifiedArray[modifiedIndex]?.ToString())
                                 {
                                     patch.Operations.Add(new Operation<T>(
                                         "replace",
@@ -135,8 +135,8 @@ namespace Firebend.AutoCrud.Core.Implementations.JsonPatch
                         if (diff > 0)
                         {
                             var counter = 0;
-                            
-                            while(counter < diff)
+
+                            while (counter < diff)
                             {
                                 patch.Operations.Add(new Operation<T>(
                                     "remove",

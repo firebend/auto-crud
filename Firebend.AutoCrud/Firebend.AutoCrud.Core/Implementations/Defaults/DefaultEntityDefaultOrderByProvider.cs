@@ -9,6 +9,6 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        public (Expression<Func<TEntity, object>>func, bool @ascending) OrderBy { get; set; }
+        public (Expression<Func<TEntity, object>> func, bool @ascending) OrderBy { get; set; }
     }
 }

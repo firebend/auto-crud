@@ -11,14 +11,14 @@ namespace Firebend.AutoCrud.EntityFramework.Indexing
     {
         public DefaultEntityFrameworkFullTextExpressionProvider()
         {
-            
+
         }
 
         public DefaultEntityFrameworkFullTextExpressionProvider(Expression<Func<TEntity, string, bool>> filter)
         {
             Filter = filter;
         }
-        
+
         public virtual Expression<Func<TEntity, string, bool>> Filter { get; }
     }
 }

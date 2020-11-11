@@ -16,11 +16,13 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
         public void Configure()
         {
-            if (_configured) return;
+            if (_configured)
+                return;
 
             lock (Key)
             {
-                if (_configured) return;
+                if (_configured)
+                    return;
 
                 _configured = true;
 

@@ -69,7 +69,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return model;
         }
 
-        public virtual  async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             var entity = await GetByKeyAsync(context, key, cancellationToken).ConfigureAwait(false);

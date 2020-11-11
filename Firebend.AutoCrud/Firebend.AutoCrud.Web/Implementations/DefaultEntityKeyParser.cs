@@ -16,26 +16,26 @@ namespace Firebend.AutoCrud.Web.Implementations
             {
                 if (long.TryParse(key, out var l))
                 {
-                    return (TKey) Convert.ChangeType(l, typeof(long));
+                    return (TKey)Convert.ChangeType(l, typeof(long));
                 }
             }
             else if (tKeyType == typeof(int))
             {
                 if (int.TryParse(key, out var i))
                 {
-                    return (TKey) Convert.ChangeType(i, typeof(int));
+                    return (TKey)Convert.ChangeType(i, typeof(int));
                 }
             }
             else if (tKeyType == typeof(Guid))
             {
                 if (Guid.TryParse(key, out var g))
                 {
-                    return (TKey) Convert.ChangeType(g, typeof(Guid));
+                    return (TKey)Convert.ChangeType(g, typeof(Guid));
                 }
             }
             else if (tKeyType == typeof(string))
             {
-                return (TKey) Convert.ChangeType(key, typeof(string));
+                return (TKey)Convert.ChangeType(key, typeof(string));
             }
 
             return null;

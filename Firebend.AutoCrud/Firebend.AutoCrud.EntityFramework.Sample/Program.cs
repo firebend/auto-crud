@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -35,14 +35,15 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
             return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
-                    if (hostingContext.HostingEnvironment.IsDevelopment()) builder.AddUserSecrets("Firebend.AutoCrud");
+                    if (hostingContext.HostingEnvironment.IsDevelopment())
+                        builder.AddUserSecrets("Firebend.AutoCrud");
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddDbContext<AppDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); },
                             ServiceLifetime.Singleton)
                         .UsingEfCrud()
-                        .AddEntity<Guid, Person>(person => 
+                        .AddEntity<Guid, Person>(person =>
                             person.WithDbContext<AppDbContext>()
                                 .AddCrud(crud => crud.WithCrud())
                                 .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()

@@ -118,7 +118,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 .Where(filter)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             patch.ApplyTo(entity);
 
@@ -187,7 +188,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             List<EntityUpdate<TEntity>> entities,
             CancellationToken cancellationToken = default)
         {
-            if (entities == null || !entities.Any()) throw new ArgumentException("There are no entities provided to update.", nameof(entities));
+            if (entities == null || !entities.Any())
+                throw new ArgumentException("There are no entities provided to update.", nameof(entities));
 
             var ids = new List<TKey>();
 

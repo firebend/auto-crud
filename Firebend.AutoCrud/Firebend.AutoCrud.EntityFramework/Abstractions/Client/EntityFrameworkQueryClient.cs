@@ -27,11 +27,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public async Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            
+
             var entity = await base
                 .GetByKeyAsync(context, key, cancellationToken)
                 .ConfigureAwait(false);
-            
+
             return entity;
         }
 
@@ -40,7 +40,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             var queryable = await GetFilteredQueryableAsync(context, null, cancellationToken).ConfigureAwait(false);
             var list = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
-            
+
             return list;
         }
 
@@ -53,7 +53,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            
+
             int? count = null;
 
             if (doCount)
@@ -85,7 +85,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            
+
             int? count = null;
 
             if (doCount)
@@ -144,11 +144,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var exists = await queryable
                 .AnyAsync(cancellationToken)
                 .ConfigureAwait(false);
-            
+
             return exists;
         }
-        
-        protected async  Task<IQueryable<TEntity>> BuildQueryAsync(
+
+        protected async Task<IQueryable<TEntity>> BuildQueryAsync(
             IDbContext context,
             string search = null,
             Expression<Func<TEntity, bool>> filter = null,
@@ -162,7 +162,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var searchWhere = _fullTextSearchProvider?.Filter;
-                
+
                 if (searchWhere != null)
                 {
                     var temp = searchWhere.FixParam(search);

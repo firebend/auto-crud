@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.Core.Extensions
 
             return null;
         }
-        
+
         public static bool In(this string source, params string[] list)
         {
             return list.Any(x => x.EqualsIgnoreCaseAndWhitespace(source));

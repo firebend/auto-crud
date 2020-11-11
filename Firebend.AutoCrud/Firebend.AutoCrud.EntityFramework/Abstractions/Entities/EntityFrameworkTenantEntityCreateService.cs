@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public override async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
-            if(tenant != null)
+            if (tenant != null)
             {
                 entity.TenantId = tenant.TenantId;
             }

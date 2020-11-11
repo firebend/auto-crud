@@ -15,18 +15,20 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public IDictionary<Type, List<Registration>> Registrations { get; set; }
 
         public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
-        
+
         public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
-        
+
         public virtual string SignatureBase { get; }
-        
+
         public void Build()
         {
-            if (IsBuilt) return;
+            if (IsBuilt)
+                return;
 
             lock (_lock)
             {
-                if (IsBuilt) return;
+                if (IsBuilt)
+                    return;
 
                 OnBuild();
                 IsBuilt = true;
@@ -36,7 +38,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         protected virtual void OnBuild()
         {
         }
-        
+
         public BaseBuilder WithRegistration(Type type, Registration registration, bool replace = true, bool allowMany = false)
         {
             if (Registrations == null)
@@ -63,7 +65,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
                 return this;
             }
-            
+
             Registrations.Add(type, new List<Registration> { registration });
 
             return this;
@@ -126,7 +128,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         {
             return WithRegistrationInstance(typeof(TInstance), instance);
         }
-        
+
         public BaseBuilder WithRegistrationInstance<TInstance>(object instance)
         {
             return WithRegistrationInstance(typeof(TInstance), instance);
@@ -135,7 +137,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public BaseBuilder WithDynamicClass(Type type, DynamicClassRegistration classRegistration)
         {
             WithRegistration(type, classRegistration);
-            
+
             return this;
         }
 
@@ -168,7 +170,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public BaseBuilder WithServiceCollectionHook(Action<IServiceCollection> action)
         {
-            ServiceCollectionHooks??=new List<Action<IServiceCollection>>();
+            ServiceCollectionHooks ??= new List<Action<IServiceCollection>>();
             ServiceCollectionHooks.Add(action);
             return this;
         }

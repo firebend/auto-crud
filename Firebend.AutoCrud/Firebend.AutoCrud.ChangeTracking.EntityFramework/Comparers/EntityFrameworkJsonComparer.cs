@@ -7,8 +7,8 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Comparers
     public class EntityFrameworkJsonComparer<T> : ValueComparer<T>
     {
         public EntityFrameworkJsonComparer()
-            : base((t1, t2) => DoEquals(t1, t2), 
-                t => DoGetHashCode(t), 
+            : base((t1, t2) => DoEquals(t1, t2),
+                t => DoGetHashCode(t),
                 t => DoGetSnapshot(t))
         {
         }
@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Comparers
         {
             if (instance is ICloneable cloneable)
             {
-                return (T) cloneable.Clone();
+                return (T)cloneable.Clone();
             }
 
             return (T)JsonConvert.DeserializeObject(Json(instance), typeof(T));
@@ -46,7 +46,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Comparers
             }
 
             var result = Json(left).Equals(Json(right));
-            
+
             return result;
         }
     }

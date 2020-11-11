@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.Io.Implementations
         public IEntityFileWriter Get(EntityFileType type)
         {
             using var scope = _serviceProvider.CreateScope();
-            
+
             return type switch
             {
                 EntityFileType.Csv => scope.ServiceProvider.GetService<IEntityFileWriterCsv>(),

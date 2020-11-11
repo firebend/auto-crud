@@ -14,20 +14,20 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Firebend.AutoCrud.Mongo
 {
     public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEntity>
-        where TKey : struct 
+        where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
         public MongoDbEntityBuilder()
         {
-            CreateType = typeof(MongoEntityCreateService<TKey,TEntity>); 
-            ReadType = typeof(MongoEntityReadService<TKey,TEntity>);
-            UpdateType = typeof(MongoEntityUpdateService<TKey,TEntity>);
-            
+            CreateType = typeof(MongoEntityCreateService<TKey, TEntity>);
+            ReadType = typeof(MongoEntityReadService<TKey, TEntity>);
+            UpdateType = typeof(MongoEntityUpdateService<TKey, TEntity>);
+
             SearchType = typeof(MongoEntitySearchService<,,>);
-            
+
             DeleteType = IsActiveEntity ?
-                typeof(MongoEntitySoftDeleteService<,>).MakeGenericType(EntityKeyType, EntityType):
-                typeof(MongoEntityDeleteService<TKey,TEntity>);
+                typeof(MongoEntitySoftDeleteService<,>).MakeGenericType(EntityKeyType, EntityType) :
+                typeof(MongoEntityDeleteService<TKey, TEntity>);
         }
 
         public override Type CreateType { get; }
@@ -52,7 +52,7 @@ namespace Firebend.AutoCrud.Mongo
             {
                 WithRegistration<IMongoCreateClient<TKey, TEntity>>(
                     typeof(MongoTenantCreateClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
-                
+
                 WithRegistration<IMongoReadClient<TKey, TEntity>>(
                     typeof(MongoTenantReadClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
 
@@ -69,7 +69,7 @@ namespace Firebend.AutoCrud.Mongo
                 WithRegistration<IMongoUpdateClient<TKey, TEntity>, MongoUpdateClient<TKey, TEntity>>(false);
                 WithRegistration<IMongoDeleteClient<TKey, TEntity>, MongoDeleteClient<TKey, TEntity>>(false);
             }
-            
+
             WithRegistration<IMongoIndexClient<TKey, TEntity>, MongoIndexClient<TKey, TEntity>>(false);
             WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
             WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);
@@ -96,9 +96,11 @@ namespace Firebend.AutoCrud.Mongo
 
         private void RegisterEntityConfiguration()
         {
-            if (string.IsNullOrWhiteSpace(CollectionName)) throw new Exception("Please provide a collection name for this mongo entity");
+            if (string.IsNullOrWhiteSpace(CollectionName))
+                throw new Exception("Please provide a collection name for this mongo entity");
 
-            if (string.IsNullOrWhiteSpace(Database)) throw new Exception("Please provide a database name for this entity.");
+            if (string.IsNullOrWhiteSpace(Database))
+                throw new Exception("Please provide a database name for this entity.");
 
             var signature = $"{EntityType.Name}_{CollectionName}_CollectionName";
 
@@ -123,7 +125,7 @@ namespace Firebend.AutoCrud.Mongo
             WithDynamicClass(iFaceType, new DynamicClassRegistration
             {
                 Interface = iFaceType,
-                Properties = new[] {databaseField, collectionNameField},
+                Properties = new[] { databaseField, collectionNameField },
                 Signature = signature,
                 Lifetime = ServiceLifetime.Singleton
             });
@@ -143,9 +145,11 @@ namespace Firebend.AutoCrud.Mongo
 
         public MongoDbEntityBuilder<TKey, TEntity> WithDefaultDatabase(string db)
         {
-            if (string.IsNullOrWhiteSpace(db)) throw new Exception("Please provide a database name.");
+            if (string.IsNullOrWhiteSpace(db))
+                throw new Exception("Please provide a database name.");
 
-            if (string.IsNullOrWhiteSpace(Database)) Database = db;
+            if (string.IsNullOrWhiteSpace(Database))
+                Database = db;
 
             var signature = "DefaultDb";
 
@@ -162,7 +166,7 @@ namespace Firebend.AutoCrud.Mongo
             WithDynamicClass(iFaceType, new DynamicClassRegistration
             {
                 Interface = iFaceType,
-                Properties = new [] { defaultDbField },
+                Properties = new[] { defaultDbField },
                 Signature = signature,
                 Lifetime = ServiceLifetime.Singleton
             });

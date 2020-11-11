@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         protected TKey? GetKey(string key)
         {
             var id = _keyParser.ParseKey(key);
-            
+
             if (!id.HasValue)
             {
                 ModelState.AddModelError(nameof(id), "The id is not valid");

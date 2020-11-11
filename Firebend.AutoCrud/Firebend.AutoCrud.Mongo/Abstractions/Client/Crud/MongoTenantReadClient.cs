@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-            return new[] {tenantFilter};
+            return new[] { tenantFilter };
         }
     }
 }

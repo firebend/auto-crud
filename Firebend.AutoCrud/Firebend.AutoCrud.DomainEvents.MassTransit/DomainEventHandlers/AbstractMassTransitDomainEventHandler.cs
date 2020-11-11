@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
         }
 
         public TDomainEventHandler Handler { get; }
-        
+
         public abstract Task Consume(ConsumeContext<TDomainEvent> context);
     }
 }

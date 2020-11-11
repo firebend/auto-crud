@@ -35,12 +35,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             var entityContext = await _contextProvider
                 .GetDbContextAsync(cancellationToken)
                 .ConfigureAwait(false);
-            
+
             var db = entityContext as DbContext;
-            var connectionString =  db?.Database.GetDbConnection()?.ConnectionString;
-            
+            var connectionString = db?.Database.GetDbConnection()?.ConnectionString;
+
             ChangeTrackingDbContext<TEntityKey, TEntity> context;
-            
+
             if (string.IsNullOrWhiteSpace(connectionString))
             {
                 context = new ChangeTrackingDbContext<TEntityKey, TEntity>();
@@ -50,7 +50,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 var options = new DbContextOptionsBuilder()
                     .UseSqlServer(connectionString)
                     .Options;
-                
+
                 context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
             }
 
@@ -69,9 +69,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 }
                 catch (SqlException)
                 {
-                    
+
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError("Error creating change tracking tables for context", ex);
                 }

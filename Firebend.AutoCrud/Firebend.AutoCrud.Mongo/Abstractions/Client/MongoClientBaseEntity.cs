@@ -37,7 +37,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
         {
             var mongoQueryable = GetCollection().AsQueryable();
 
-            if (firstStageFilters != null) mongoQueryable = mongoQueryable.Where(_ => firstStageFilters.Inject());
+            if (firstStageFilters != null)
+                mongoQueryable = mongoQueryable.Where(_ => firstStageFilters.Inject());
 
             var filters = await BuildFiltersAsync(cancellationToken: cancellationToken);
 
@@ -52,9 +53,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
                 .Where(x => x != null)
                 .ToList();
 
-            if (additionalFilter != null) filters.Add(additionalFilter);
+            if (additionalFilter != null)
+                filters.Add(additionalFilter);
 
-            if (filters.Count == 0) return null;
+            if (filters.Count == 0)
+                return null;
 
             return filters.Aggregate(default(Expression<Func<TEntity, bool>>),
                 (aggregate, filter) => aggregate.AndAlso(filter));

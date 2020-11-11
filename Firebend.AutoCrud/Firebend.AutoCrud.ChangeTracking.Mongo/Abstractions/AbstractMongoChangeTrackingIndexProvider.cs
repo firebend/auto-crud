@@ -7,7 +7,7 @@ using MongoDB.Driver;
 namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 {
     public abstract class AbstractMongoChangeTrackingIndexProvider<TEntityKey, TEntity> :
-        IMongoIndexProvider<ChangeTrackingEntity<TEntityKey, TEntity>> 
+        IMongoIndexProvider<ChangeTrackingEntity<TEntityKey, TEntity>>
         where TEntityKey : struct
         where TEntity : class, IEntity<TEntityKey>
     {

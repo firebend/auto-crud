@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -34,14 +34,15 @@ namespace Firebend.AutoCrud.Mongo.Sample
             return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
-                    if (hostingContext.HostingEnvironment.IsDevelopment()) builder.AddUserSecrets("Firebend.AutoCrud");
+                    if (hostingContext.HostingEnvironment.IsDevelopment())
+                        builder.AddUserSecrets("Firebend.AutoCrud");
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
                     services
                         .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
                         .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
-                        .AddEntity<Guid, Person>(person => 
+                        .AddEntity<Guid, Person>(person =>
                             person.WithDefaultDatabase("Samples")
                                 .WithCollection("People")
                                 .WithFullTextSearch()

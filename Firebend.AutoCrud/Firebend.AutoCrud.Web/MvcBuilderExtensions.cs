@@ -14,9 +14,9 @@ namespace Firebend.AutoCrud.Web
                 {
                     return;
                 }
-                
+
                 manager.FeatureProviders.Insert(0, new FirebendAutoCrudControllerConvention(serviceCollection));
-                
+
             });
         }
     }

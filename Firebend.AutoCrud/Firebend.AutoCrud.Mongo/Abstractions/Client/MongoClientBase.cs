@@ -36,7 +36,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             }
             catch (Exception ex)
             {
-                if (retry) return await RetryErrorAsync(method, false);
+                if (retry)
+                    return await RetryErrorAsync(method, false);
 
                 Logger?.LogError(ex, "Error querying Document Store: \"{Message}\"", ex.Message);
 

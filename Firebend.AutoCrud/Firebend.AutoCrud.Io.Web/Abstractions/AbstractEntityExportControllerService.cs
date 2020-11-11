@@ -23,7 +23,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         private readonly IEntityFileTypeMimeTypeMapper _entityFileTypeMimeTypeMapper;
         private readonly IEntityExportService<TMapped> _exportService;
         private readonly IEntityExportMapper<TEntity, TMapped> _mapper;
-        private readonly IEntitySearchService<TKey,TEntity,TSearch> _searchService;
+        private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
 
         public AbstractEntityExportControllerService(IEntityFileTypeMimeTypeMapper entityFileTypeMimeTypeMapper,
             IEntityExportService<TMapped> exportService,
@@ -73,7 +73,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             {
                 return new TMapped[0];
             }
-            
+
             var mappedRecords = data
                 .Select(_mapper.Map)
                 .ToArray();

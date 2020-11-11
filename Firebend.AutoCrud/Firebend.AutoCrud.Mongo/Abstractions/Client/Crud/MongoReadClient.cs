@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
         {
         }
-        
+
         public async Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
         {
             var queryable = await BuildQueryAsync(filter: filter, cancellationToken: cancellationToken);

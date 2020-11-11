@@ -16,12 +16,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
     {
         public ChangeTrackingDbContext()
         {
-            
+
         }
-        
+
         public ChangeTrackingDbContext(DbContextOptions options) : base(options)
         {
-            
+
         }
 
         public DbSet<ChangeTrackingEntity<TKey, TEntity>> Changes { get; set; }

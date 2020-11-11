@@ -35,7 +35,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 var builder = Builders<TEntity>.IndexKeys;
                 var indexesToAdd = _indexProvider.GetIndexes(builder)?.ToArray();
 
-                if (!(indexesToAdd?.Any() ?? false)) return;
+                if (!(indexesToAdd?.Any() ?? false))
+                    return;
 
                 var indexesCursor = await dbCollection.Indexes.ListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -69,7 +70,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                         Filter = new BsonDocument("name", EntityConfiguration.CollectionName)
                     }, cancellationToken)).AnyAsync(cancellationToken).ConfigureAwait(false);
 
-                if (!collectionExists) await database.CreateCollectionAsync(EntityConfiguration.CollectionName, null, cancellationToken);
+                if (!collectionExists)
+                    await database.CreateCollectionAsync(EntityConfiguration.CollectionName, null, cancellationToken);
             }), cancellationToken);
         }
 

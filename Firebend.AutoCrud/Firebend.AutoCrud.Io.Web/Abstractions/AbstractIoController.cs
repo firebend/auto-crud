@@ -10,7 +10,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Io.Web.Abstractions
 {
-    public abstract class AbstractIoController<TSearch>: ControllerBase
+    public abstract class AbstractIoController<TSearch> : ControllerBase
         where TSearch : EntitySearchRequest
     {
         private readonly IEntityExportControllerService<TSearch> _exportService;
@@ -25,8 +25,8 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.")]
         [SwaggerResponse(400, "The request is invalid.")]
         public virtual async Task<IActionResult> Search(
-            [Required] [FromRoute] string exportType,
-            [Required] [FromQuery] string filename,
+            [Required][FromRoute] string exportType,
+            [Required][FromQuery] string filename,
             [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
         {
@@ -41,7 +41,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
                 ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is required.");
                 return BadRequest(ModelState);
             }
-            
+
             var entityExportType = exportType.ParseEnum<EntityFileType>();
 
             if (!entityExportType.HasValue || entityExportType.Value == EntityFileType.Unknown)

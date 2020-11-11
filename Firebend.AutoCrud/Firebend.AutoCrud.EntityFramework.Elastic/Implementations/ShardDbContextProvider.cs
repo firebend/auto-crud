@@ -51,11 +51,11 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                     .ConfigureAwait(false);
 
                 var keyBytes = Encoding.ASCII.GetBytes(key);
-            
+
                 var rootConnectionStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString);
                 rootConnectionStringBuilder.Remove("Data Source");
                 rootConnectionStringBuilder.Remove("Initial Catalog");
-            
+
                 var shardConnectionString = rootConnectionStringBuilder.ConnectionString;
 
                 await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
@@ -65,16 +65,16 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 {
                     Password = rootConnectionStringBuilder.Password
                 };
-                
+
                 return connectionStringBuilder.ConnectionString;
             }, cancellationToken).ConfigureAwait(false);
 
             var options = new DbContextOptionsBuilder()
                 .UseSqlServer(connectionString)
                 .Options;
-            
+
             var instance = Activator.CreateInstance(contextType, options);
-            
+
             if (instance == null)
             {
                 throw new Exception("Could not create instance.");
@@ -95,7 +95,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                     .MigrateAsync(cancellationToken)
                     .ConfigureAwait(false);
             }, cancellationToken).ConfigureAwait(false);
-            
+
             return context;
         }
     }

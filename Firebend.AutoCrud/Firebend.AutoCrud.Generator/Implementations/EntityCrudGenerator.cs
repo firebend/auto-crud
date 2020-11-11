@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            
+
             Parallel.ForEach(Builders, builder =>
             {
                 var builderStopwatch = new Stopwatch();
@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 builderStopwatch.Stop();
                 Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {builderStopwatch.ElapsedMilliseconds} (ms)");
             });
-            
+
             stopwatch.Stop();
             Console.WriteLine($"All entities generated in {stopwatch.ElapsedMilliseconds} (ms)");
 
@@ -74,7 +74,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
         private void RegisterRegistrations(IServiceCollection serviceCollection, BaseBuilder builder)
         {
             var services = new Dictionary<Type, List<ServiceRegistration>>();
-            
+
             foreach (var (type, registrations) in builder.Registrations)
             {
                 if (registrations == null)
@@ -107,7 +107,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                             }
                             else
                             {
-                                services.Add(type, new List<ServiceRegistration>{ serviceRegistration});
+                                services.Add(type, new List<ServiceRegistration> { serviceRegistration });
                             }
                             break;
                     }
@@ -154,7 +154,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                         implementedTypes,
                         interfaceImplementations.ToArray(),
                         GetAttributes(typeToImplement, builder.Attributes));
-                
+
 
                     interfaceImplementations.ForEach(iFace =>
                     {
@@ -247,7 +247,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 .All(
                     info => info
                         .GetParameters()
-                        .All(parameterInfo => 
+                        .All(parameterInfo =>
                             typesToAdd.All(t => t.Key != parameterInfo.ParameterType)
                             && typesToAdd.All(types => !parameterInfo.ParameterType.IsAssignableFrom(types.Key))
                         )
@@ -262,7 +262,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             {
                 return extraInterfaces;
             }
-            
+
             foreach (var (key, regs) in configureRegistrations.ToArray())
             {
                 foreach (var reg in regs.ToArray())
@@ -275,7 +275,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     }
 
                     var implementedInterfaces = value.GetInterfaces();
-                    var matchingInterface =  implementedInterfaces.FirstOrDefault(x => x.Name == $"I{value.Name}");
+                    var matchingInterface = implementedInterfaces.FirstOrDefault(x => x.Name == $"I{value.Name}");
 
                     if (matchingInterface != null)
                     {
@@ -284,7 +284,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                     if (configureRegistrations.ContainsKey(key))
                     {
-                        configureRegistrations[key]??= new List<ServiceRegistration>();
+                        configureRegistrations[key] ??= new List<ServiceRegistration>();
                         configureRegistrations[key].Add(reg);
                     }
                     else
@@ -297,8 +297,8 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return extraInterfaces;
         }
 
-        public EntityCrudGenerator AddBuilder<TBuilder>(TBuilder builder, Func<TBuilder, TBuilder> configure) 
-            where TBuilder : BaseBuilder,  new()
+        public EntityCrudGenerator AddBuilder<TBuilder>(TBuilder builder, Func<TBuilder, TBuilder> configure)
+            where TBuilder : BaseBuilder, new()
 
         {
             configure(new TBuilder());

@@ -8,6 +8,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        public (Expression<Func<TEntity, object>>func, bool ascending) OrderBy { get; }
+        public (Expression<Func<TEntity, object>> func, bool ascending) OrderBy { get; }
     }
 }

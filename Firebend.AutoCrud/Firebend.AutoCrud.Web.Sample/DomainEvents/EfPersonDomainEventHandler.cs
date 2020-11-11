@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             var modified = domainEvent.Entity;
             var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
             var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
-            
+
             _logger.LogInformation($"Person Added! Person: {modifiedJson}. Context: {contextJson}");
             _logger.LogInformation($"Catch Phrase: {domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase}");
 
@@ -40,7 +40,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             {
                 _logger.LogInformation("No scope context");
             }
-            
+
             return Task.CompletedTask;
         }
 
@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             var originalJson = JsonConvert.SerializeObject(original, Formatting.Indented);
             var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
             var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
-            
+
             _logger.LogInformation($"Person Updated! Original: {originalJson}. Modified: {modifiedJson}. Context: {contextJson}");
             _logger.LogInformation($"Catch Phrase: {domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase}");
 

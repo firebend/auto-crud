@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public Type EntityType => typeof(TEntity);
 
         public Type EntityKeyType => typeof(TKey);
-        
+
         public Type ExportType { get; set; }
 
         public override string SignatureBase => $"{EntityType.Name}_{EntityName}";

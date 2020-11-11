@@ -32,7 +32,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> GetById(
-            [Required] [FromRoute] string id,
+            [Required][FromRoute] string id,
             CancellationToken cancellationToken)
         {
             var key = GetKey(id);
@@ -48,7 +48,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (entity == null)
             {
-                return NotFound(new {id});
+                return NotFound(new { id });
             }
 
             var mapped = await _viewModelMapper

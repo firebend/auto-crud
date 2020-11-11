@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         public DomainEventsConfigurator(TBuilder builder) : base(builder)
         {
         }
-        
+
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventPublisher(Type type)
         {
             Builder.WithRegistration(typeof(IEntityDomainEventPublisher),
@@ -50,7 +50,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             where TSubscriber : IEntityAddedDomainEventSubscriber<TEntity>
         {
             Builder.WithRegistration<IEntityAddedDomainEventSubscriber<TEntity>, TSubscriber>(false, true);
-            
+
             return this;
         }
 

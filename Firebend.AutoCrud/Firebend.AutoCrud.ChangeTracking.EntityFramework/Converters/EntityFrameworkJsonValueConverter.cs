@@ -7,7 +7,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Converters
 {
     public class EntityFrameworkJsonValueConverter<T> : ValueConverter<T, string>
     {
-        public EntityFrameworkJsonValueConverter( ConverterMappingHints mappingHints = null) :
+        public EntityFrameworkJsonValueConverter(ConverterMappingHints mappingHints = null) :
             base(ConvertTo, ConvertFrom, mappingHints)
         {
         }

@@ -40,8 +40,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Put(
-            [Required] [FromRoute] string id,
-            [Required] [FromBody] TEntity body,
+            [Required][FromRoute] string id,
+            [Required][FromBody] TEntity body,
             CancellationToken cancellationToken)
         {
             var key = GetKey(id);
@@ -100,8 +100,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Patch(
-            [Required] [FromRoute] string id,
-            [Required] [FromBody] JsonPatchDocument<TEntity> patch,
+            [Required][FromRoute] string id,
+            [Required][FromBody] JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken)
         {
             if (patch == null)

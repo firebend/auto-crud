@@ -21,11 +21,13 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             bool enableCommandLogging,
             IMongoDbConfigurator configurator)
         {
-            if (_isBootstrapped) return services;
+            if (_isBootstrapped)
+                return services;
 
             lock (BootStrapLock)
             {
-                if (_isBootstrapped) return services;
+                if (_isBootstrapped)
+                    return services;
 
                 DoBootstrapping(services, connectionString, enableCommandLogging, configurator);
 
@@ -41,7 +43,8 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             bool enableCommandLogging,
             IMongoDbConfigurator configurator)
         {
-            if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentNullException(nameof(connectionString));
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentNullException(nameof(connectionString));
 
             services.Scan(action => action.FromAssemblies()
                 .AddClasses(classes => classes.AssignableTo<IMongoMigration>())

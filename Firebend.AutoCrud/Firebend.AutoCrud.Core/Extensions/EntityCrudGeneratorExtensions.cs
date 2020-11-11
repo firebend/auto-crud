@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Core.Extensions
                     builder.WithRegistration<IDomainEventContextProvider, TProvider>();
                 }
             }
-            
+
             return generator;
         }
     }

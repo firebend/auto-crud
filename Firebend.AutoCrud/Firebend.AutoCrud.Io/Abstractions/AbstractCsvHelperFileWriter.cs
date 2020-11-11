@@ -16,14 +16,14 @@ namespace Firebend.AutoCrud.Io.Abstractions
     public abstract class AbstractCsvHelperFileWriter : IEntityFileWriter
     {
         public abstract EntityFileType FileType { get; }
-        
+
         public async Task<Stream> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
             IEnumerable<T> records,
             CancellationToken cancellationToken = default) where T : class
         {
             var stream = new MemoryStream();
-            
-            var (serializer, textWriter)  = GetSerializer(stream);
+
+            var (serializer, textWriter) = GetSerializer(stream);
 
             if (serializer == null)
             {
@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 .ToArray();
 
             var csvWriter = new CsvWriter(serializer);
-            
+
             foreach (var fileField in fieldArray)
             {
                 csvWriter.WriteField(fileField.FieldName);
@@ -50,7 +50,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
                     var value = field.Writer(record);
                     csvWriter.WriteField(value);
                 }
-                
+
                 await csvWriter.NextRecordAsync().ConfigureAwait(false);
             }
 
@@ -77,7 +77,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 IgnoreBlankLines = true,
             };
         }
-        
+
         private (ISerializer serializer, TextWriter writer) GetSerializer(Stream stream)
         {
             switch (FileType)

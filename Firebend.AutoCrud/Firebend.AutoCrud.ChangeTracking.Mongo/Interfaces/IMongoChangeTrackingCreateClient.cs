@@ -9,6 +9,6 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Interfaces
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
-        
+
     }
 }

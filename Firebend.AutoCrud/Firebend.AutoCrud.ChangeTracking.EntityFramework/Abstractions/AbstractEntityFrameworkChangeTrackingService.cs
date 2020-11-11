@@ -16,11 +16,11 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         IChangeTrackingService<TEntityKey, TEntity> where TEntityKey : struct where TEntity : class, IEntity<TEntityKey>
     {
         public AbstractEntityFrameworkChangeTrackingService(
-            IChangeTrackingDbContextProvider<TEntityKey, TEntity> provider) : 
+            IChangeTrackingDbContextProvider<TEntityKey, TEntity> provider) :
             base(provider, null, null)
         {
         }
-        
+
         private static ChangeTrackingEntity<TEntityKey, TEntity> GetChangeTrackingEntityBase(DomainEventBase domainEvent,
             string action, TEntity entity, TEntityKey id, JsonPatchDocument<TEntity> patchDocument = null)
             => new ChangeTrackingEntity<TEntityKey, TEntity>

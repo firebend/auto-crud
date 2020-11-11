@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
         {
             var creator = rootConnectionString.Contains("database.windows.net")
-                ? (IDbCreator) new ElasticPoolDbCreator(_loggerFactory.CreateLogger<ElasticPoolDbCreator>(), _configuration)
+                ? (IDbCreator)new ElasticPoolDbCreator(_loggerFactory.CreateLogger<ElasticPoolDbCreator>(), _configuration)
                 : new SqlServerDbCreator(_loggerFactory.CreateLogger<SqlServerDbCreator>());
 
             return creator.EnsureCreatedAsync(rootConnectionString, dbName, cancellationToken);

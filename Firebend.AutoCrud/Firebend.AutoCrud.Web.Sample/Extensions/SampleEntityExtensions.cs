@@ -62,7 +62,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
                     )
-                    .AddIo( io => io.WithMapper(x => new EfPersonExport(x)))
+                    .AddIo(io => io.WithMapper(x => new EfPersonExport(x)))
                     .AddControllers(controllers => controllers
                         .WithViewModel(entity => new PersonViewModel(entity), viewModel => new EfPerson(viewModel))
                         .WithAllControllers(true)

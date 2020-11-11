@@ -1,6 +1,3 @@
-﻿using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.EntityFramework.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +6,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions
 {

@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         public ElasticPoolConfigurator(TBuilder builder) : base(builder)
         {
         }
-        
+
         public ElasticPoolConfigurator<TBuilder, TKey, TEntity> WithElasticPool(ShardMapMangerConfiguration shardConfiguration)
         {
             if (shardConfiguration == null)
@@ -27,17 +27,17 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
             {
                 throw new Exception("Please assign a db context type before using elastic pool");
             }
-            
+
             Builder.WithRegistrationInstance(shardConfiguration);
             Builder.WithRegistration<IShardManager, ShardManager>();
             Builder.WithRegistration<IDbContextProvider<TKey, TEntity>>(
                 typeof(ShardDbContextProvider<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.DbContextType));
 
             WithDbCreator<DefaultDbCreator>();
-            
+
             return this;
         }
-        
+
         public ElasticPoolConfigurator<TBuilder, TKey, TEntity> WithShardMapConfiguration(Action<ShardMapMangerConfiguration> configure)
         {
             var shardConfig = new ShardMapMangerConfiguration();
@@ -48,10 +48,10 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         public ElasticPoolConfigurator<TBuilder, TKey, TEntity> WithShardKeyProvider<TShardKeyProvider>()
             where TShardKeyProvider : IShardKeyProvider
         {
-             Builder.WithRegistration<IShardKeyProvider, TShardKeyProvider>();
-             return this;
+            Builder.WithRegistration<IShardKeyProvider, TShardKeyProvider>();
+            return this;
         }
-        
+
         public ElasticPoolConfigurator<TBuilder, TKey, TEntity> WithShardDbNameProvider<TShardDbNameProvider>()
             where TShardDbNameProvider : IShardNameProvider
         {
