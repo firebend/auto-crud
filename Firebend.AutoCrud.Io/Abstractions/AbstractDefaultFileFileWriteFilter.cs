@@ -5,9 +5,6 @@ namespace Firebend.AutoCrud.Io.Abstractions
 {
     public abstract class AbstractDefaultFileFileWriteFilter<TExport> : IFileFieldWriteFilter<TExport>
     {
-        public bool ShouldExport(IFileFieldWrite<TExport> field)
-        {
-            return true;
-        }
+        public bool ShouldExport(IFileFieldWrite<TExport> field) => true;
     }
 }

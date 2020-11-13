@@ -23,31 +23,31 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             }
 
             return serviceCollection.AddMassTransit(bus =>
-            {
-                bus.RegisterFirebendAutoCrudDomainEventHandlers(serviceCollection);
-
-                bus.UsingRabbitMq((context, configurator) =>
                 {
-                    var match = ConStringParser.Match(connString);
+                    bus.RegisterFirebendAutoCrudDomainEventHandlers(serviceCollection);
 
-                    var domain = match.Groups[3].Value;
-                    var uri = $"rabbitmq://{domain}";
-
-                    configurator.Host(new Uri(uri), h =>
+                    bus.UsingRabbitMq((context, configurator) =>
                     {
-                        h.PublisherConfirmation = true;
-                        h.Username(match.Groups[1].Value);
-                        h.Password(match.Groups[2].Value);
+                        var match = ConStringParser.Match(connString);
+
+                        var domain = match.Groups[3].Value;
+                        var uri = $"rabbitmq://{domain}";
+
+                        configurator.Host(new Uri(uri), h =>
+                        {
+                            h.PublisherConfirmation = true;
+                            h.Username(match.Groups[1].Value);
+                            h.Password(match.Groups[2].Value);
+                        });
+
+                        configurator.Lazy = true;
+                        configurator.AutoDelete = true;
+                        configurator.PurgeOnStartup = true;
+
+                        context.RegisterFirebendAutoCrudeDomainEventHandlerEndPoints(configurator, serviceCollection);
                     });
-
-                    configurator.Lazy = true;
-                    configurator.AutoDelete = true;
-                    configurator.PurgeOnStartup = true;
-
-                    context.RegisterFirebendAutoCrudeDomainEventHandlerEndPoints(configurator, serviceCollection);
-                });
-            })
-            .AddMassTransitHostedService();
+                })
+                .AddMassTransitHostedService();
         }
     }
 }

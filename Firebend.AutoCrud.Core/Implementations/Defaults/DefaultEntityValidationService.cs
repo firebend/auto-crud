@@ -12,16 +12,12 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
         where TEntity : class, IEntity<TKey>
     {
         public Task<ModelStateResult<TEntity>> ValidateAsync(TEntity entity, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(ModelStateResult.Success(entity));
-        }
+            => Task.FromResult(ModelStateResult.Success(entity));
 
         public Task<ModelStateResult<TEntity>> ValidateAsync(TEntity original,
             TEntity entity,
             JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken)
-        {
-            return Task.FromResult(ModelStateResult.Success(entity));
-        }
+            => Task.FromResult(ModelStateResult.Success(entity));
     }
 }

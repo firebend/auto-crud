@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
@@ -8,20 +9,19 @@ namespace Firebend.AutoCrud.Core.Extensions
         {
             var interfaceTypes = givenType.GetInterfaces();
 
-            foreach (var it in interfaceTypes)
+            if (interfaceTypes.Any(it => it.IsGenericType && it.GetGenericTypeDefinition() == genericType))
             {
-                if (it.IsGenericType && it.GetGenericTypeDefinition() == genericType)
-                    return true;
+                return true;
             }
 
             if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
+            {
                 return true;
+            }
 
-            Type baseType = givenType.BaseType;
-            if (baseType == null)
-                return false;
+            var baseType = givenType.BaseType;
 
-            return IsAssignableToGenericType(baseType, genericType);
+            return baseType != null && IsAssignableToGenericType(baseType, genericType);
         }
     }
 }

@@ -21,19 +21,6 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
             _createClient = createClient;
         }
 
-        private static ChangeTrackingEntity<TEntityKey, TEntity> GetChangeTrackingEntityBase(DomainEventBase domainEvent,
-            string action, TEntity entity, TEntityKey id, JsonPatchDocument<TEntity> patchDocument = null)
-            => new ChangeTrackingEntity<TEntityKey, TEntity>
-            {
-                Modified = domainEvent.Time,
-                Source = domainEvent.EventContext?.Source,
-                UserEmail = domainEvent.EventContext?.UserEmail,
-                Action = action,
-                Changes = patchDocument?.Operations,
-                Entity = entity,
-                EntityId = id
-            };
-
         public Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
             => _createClient.CreateAsync(
                 GetChangeTrackingEntityBase(domainEvent,
@@ -58,5 +45,21 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
                     domainEvent.Previous.Id,
                     domainEvent.Patch),
                 cancellationToken);
+
+        private static ChangeTrackingEntity<TEntityKey, TEntity> GetChangeTrackingEntityBase(DomainEventBase domainEvent,
+            string action,
+            TEntity entity,
+            TEntityKey id,
+            JsonPatchDocument<TEntity> patchDocument = null)
+            => new ChangeTrackingEntity<TEntityKey, TEntity>
+            {
+                Modified = domainEvent.Time,
+                Source = domainEvent.EventContext?.Source,
+                UserEmail = domainEvent.EventContext?.UserEmail,
+                Action = action,
+                Changes = patchDocument?.Operations,
+                Entity = entity,
+                EntityId = id
+            };
     }
 }

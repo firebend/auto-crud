@@ -5,55 +5,53 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Firebend.AutoCrud.ChangeTracking.Models
 {
-
     public class ChangeTrackingEntity<TKey, TEntity> : ChangeTrackingModel<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
-
     }
 
     public class ChangeTrackingModel<TKey, TEntity> : IEntity<Guid>
         where TEntity : class
     {
         /// <summary>
-        /// The user who made the change.
+        ///     The user who made the change.
         /// </summary>
         public string UserEmail { get; set; }
 
         /// <summary>
-        /// The set of changes made to the entity.
+        ///     The set of changes made to the entity.
         /// </summary>
         public List<Operation<TEntity>> Changes { get; set; }
 
         /// <summary>
-        /// A descriptions of where the change was made at.
+        ///     A descriptions of where the change was made at.
         /// </summary>
         public string Source { get; set; }
 
         /// <summary>
-        /// What action was taken on the entity. Add, Update, Delete.
+        ///     What action was taken on the entity. Add, Update, Delete.
         /// </summary>
         public string Action { get; set; }
 
         /// <summary>
-        /// The id corresponding to the change tracking record.
-        /// </summary>
-        public Guid Id { get; set; }
-
-        /// <summary>
-        /// The time the change tracking record was modified.
+        ///     The time the change tracking record was modified.
         /// </summary>
         public DateTimeOffset Modified { get; set; }
 
         /// <summary>
-        /// An indexable entity id.
+        ///     An indexable entity id.
         /// </summary>
         public TKey EntityId { get; set; }
 
         /// <summary>
-        /// The entity's original form before the changes were made.
+        ///     The entity's original form before the changes were made.
         /// </summary>
         public TEntity Entity { get; set; }
+
+        /// <summary>
+        ///     The id corresponding to the change tracking record.
+        /// </summary>
+        public Guid Id { get; set; }
     }
 }

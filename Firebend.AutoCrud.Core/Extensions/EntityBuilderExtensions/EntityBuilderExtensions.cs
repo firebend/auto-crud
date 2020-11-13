@@ -14,7 +14,5 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
 
             return builder;
         }
-
-
     }
 }

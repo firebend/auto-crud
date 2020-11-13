@@ -18,10 +18,14 @@ namespace Firebend.AutoCrud.Core.Extensions
             Expression<Func<T, bool>> expr2)
         {
             if (expr1?.Body == null)
+            {
                 return expr2;
+            }
 
             if (expr2?.Body == null)
+            {
                 return expr1;
+            }
 
             var parameter = Expression.Parameter(typeof(T), "x");
 

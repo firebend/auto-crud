@@ -23,12 +23,16 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public void Build()
         {
             if (IsBuilt)
+            {
                 return;
+            }
 
             lock (_lock)
             {
                 if (IsBuilt)
+                {
                     return;
+                }
 
                 OnBuild();
                 IsBuilt = true;
@@ -43,10 +47,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         {
             if (Registrations == null)
             {
-                Registrations = new Dictionary<Type, List<Registration>>
-                {
-                    { type, new List<Registration> { registration } }
-                };
+                Registrations = new Dictionary<Type, List<Registration>> { { type, new List<Registration> { registration } } };
 
                 return this;
             }
@@ -76,23 +77,16 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             bool replace = true,
             bool allowMany = false)
         {
-            var registration = new ServiceRegistration
-            {
-                ServiceType = serviceType
-            };
+            var registration = new ServiceRegistration { ServiceType = serviceType };
 
             return WithRegistration(registrationType, registration, replace, allowMany);
         }
 
         public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true, bool allowMany = false)
-        {
-            return WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany);
-        }
+            => WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany);
 
         public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true, bool allowMany = false)
-        {
-            return WithRegistration(typeof(TRegistration), type, replace, allowMany);
-        }
+            => WithRegistration(typeof(TRegistration), type, replace, allowMany);
 
         public BaseBuilder WithRegistration(Type registrationType,
             Type serviceType,
@@ -115,24 +109,14 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public BaseBuilder WithRegistrationInstance(Type registrationType, object instance)
         {
-            var registration = new InstanceRegistration
-            {
-                Instance = instance,
-                Lifetime = ServiceLifetime.Singleton
-            };
+            var registration = new InstanceRegistration { Instance = instance, Lifetime = ServiceLifetime.Singleton };
 
             return WithRegistration(registrationType, registration);
         }
 
-        public BaseBuilder WithRegistrationInstance<TInstance>(TInstance instance)
-        {
-            return WithRegistrationInstance(typeof(TInstance), instance);
-        }
+        public BaseBuilder WithRegistrationInstance<TInstance>(TInstance instance) => WithRegistrationInstance(typeof(TInstance), instance);
 
-        public BaseBuilder WithRegistrationInstance<TInstance>(object instance)
-        {
-            return WithRegistrationInstance(typeof(TInstance), instance);
-        }
+        public BaseBuilder WithRegistrationInstance<TInstance>(object instance) => WithRegistrationInstance(typeof(TInstance), instance);
 
         public BaseBuilder WithDynamicClass(Type type, DynamicClassRegistration classRegistration)
         {
@@ -145,11 +129,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         {
             Attributes ??= new Dictionary<Type, List<CrudBuilderAttributeModel>>();
 
-            var model = new CrudBuilderAttributeModel
-            {
-                AttributeBuilder = attribute,
-                AttributeType = attributeType
-            };
+            var model = new CrudBuilderAttributeModel { AttributeBuilder = attribute, AttributeType = attributeType };
 
             if (Attributes.ContainsKey(registrationType))
             {
@@ -159,10 +139,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             }
             else
             {
-                Attributes.Add(registrationType, new List<CrudBuilderAttributeModel>
-                {
-                    model
-                });
+                Attributes.Add(registrationType, new List<CrudBuilderAttributeModel> { model });
             }
 
             return this;

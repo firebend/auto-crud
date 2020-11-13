@@ -14,45 +14,39 @@ namespace Firebend.AutoCrud.Web.Sample
 {
     public class Program
     {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+        public static void Main(string[] args) => CreateHostBuilder(args).Build().Run();
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, builder) =>
+        public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((hostingContext, builder) =>
+            {
+                if (hostingContext.HostingEnvironment.IsDevelopment())
                 {
-                    if (hostingContext.HostingEnvironment.IsDevelopment())
+                    builder.AddUserSecrets("Firebend.AutoCrud");
+                }
+            })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+                services
+                    .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
+                    .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"), mongo =>
                     {
-                        builder.AddUserSecrets("Firebend.AutoCrud");
-                    }
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services
-                        .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
-                        .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"), mongo =>
-                        {
-                            mongo.AddMongoPerson();
-                        })
-                        .UsingEfCrud(ef =>
-                        {
-                            ef.AddEfPerson(hostContext.Configuration)
-                                .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
-                        })
-                        .AddSampleMassTransit(hostContext.Configuration)
-                        .AddRouting()
-                        .AddSwaggerGen()
-                        .AddControllers()
-                        .AddNewtonsoftJson()
-                        .AddFirebendAutoCrudWeb(services);
-                });
-        }
+                        mongo.AddMongoPerson();
+                    })
+                    .UsingEfCrud(ef =>
+                    {
+                        ef.AddEfPerson(hostContext.Configuration)
+                            .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
+                    })
+                    .AddSampleMassTransit(hostContext.Configuration)
+                    .AddRouting()
+                    .AddSwaggerGen()
+                    .AddControllers()
+                    .AddNewtonsoftJson()
+                    .AddFirebendAutoCrudWeb(services);
+            });
     }
 }

@@ -12,14 +12,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
     {
         private readonly IEntityFrameworkDeleteClient<TKey, TEntity> _deleteClient;
 
-        public EntityFrameworkEntityDeleteService(IEntityFrameworkDeleteClient<TKey, TEntity> deleteClient)
+        protected EntityFrameworkEntityDeleteService(IEntityFrameworkDeleteClient<TKey, TEntity> deleteClient)
         {
             _deleteClient = deleteClient;
         }
 
         public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
-        {
-            return _deleteClient.DeleteAsync(key, cancellationToken);
-        }
+            => _deleteClient.DeleteAsync(key, cancellationToken);
     }
 }

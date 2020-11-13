@@ -24,10 +24,7 @@ namespace Firebend.AutoCrud.Web
             }
             else
             {
-                list = new List<string>
-                {
-                    apiDescription.RelativePath
-                };
+                list = new List<string> { apiDescription.RelativePath };
             }
 
             return list;

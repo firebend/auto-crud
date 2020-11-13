@@ -13,19 +13,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
     {
         private readonly IMongoReadClient<TKey, TEntity> _readClient;
 
-        public MongoEntityReadService(IMongoReadClient<TKey, TEntity> readClient)
+        protected MongoEntityReadService(IMongoReadClient<TKey, TEntity> readClient)
         {
             _readClient = readClient;
         }
 
-        public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
-        {
-            return _readClient.SingleOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
-        }
+        public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default) =>
+            _readClient.SingleOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
 
-        public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            return _readClient.GetAllAsync(cancellationToken);
-        }
+        public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default) => _readClient.GetAllAsync(cancellationToken);
     }
 }

@@ -3,6 +3,7 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
@@ -19,28 +20,28 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 {
     public static class SampleEntityExtensions
     {
-        public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenerator generator)
-        {
-            return generator.AddEntity<Guid, MongoPerson>(person =>
+        public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenerator generator) =>
+            generator.AddEntity<Guid, MongoPerson>(person =>
                 person.WithDefaultDatabase("Samples")
                     .WithCollection("People")
                     .WithFullTextSearch()
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
                         .WithMassTransit())
-                    .AddCrud(x => x.WithCrud().WithOrderBy(m => m.LastName))
+                    .AddCrud(x => x
+                        .WithCrud()
+                        .WithOrderBy(m => m.LastName)
+                    )
                     .AddControllers(controllers => controllers
                         .WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithOpenApiGroupName("The Beautiful Mongo People"))
-                );
-        }
+        );
 
         public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,
-            IConfiguration configuration)
-        {
-            return generator.AddEntity<Guid, EfPerson>(person =>
+            IConfiguration configuration) =>
+            generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
                     .WithSearchFilter((efPerson, s) => efPerson.LastName.Contains(s) || efPerson.FirstName.Contains(s))
                     .AddElasticPool(manager =>
@@ -55,7 +56,16 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     )
                     .AddCrud(crud => crud
                         .WithCrud()
-                        .WithOrderBy(efPerson => efPerson.LastName))
+                        .WithOrderBy(efPerson => efPerson.LastName)
+                        .WithSearch<CustomSearchParameters>(search =>
+                        {
+                            if(!string.IsNullOrWhiteSpace(search?.NickName))
+                            {
+                                return p => p.NickName.Contains(search.NickName);
+                            }
+
+                            return null;
+                        }))
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()
@@ -70,6 +80,5 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
                     ));
-        }
     }
 }

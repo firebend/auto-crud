@@ -33,39 +33,46 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             return database.GetCollection<TEntity>(EntityConfiguration.CollectionName);
         }
 
-        protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(FilterDefinition<TEntity> firstStageFilters = null, CancellationToken cancellationToken = default)
+        protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(FilterDefinition<TEntity> firstStageFilters = null,
+            CancellationToken cancellationToken = default)
         {
             var mongoQueryable = GetCollection().AsQueryable();
 
             if (firstStageFilters != null)
+            {
                 mongoQueryable = mongoQueryable.Where(_ => firstStageFilters.Inject());
+            }
 
-            var filters = await BuildFiltersAsync(cancellationToken: cancellationToken);
+            var filters = await BuildFiltersAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return filters == null ? mongoQueryable : mongoQueryable.Where(filters);
         }
 
-        protected async Task<Expression<Func<TEntity, bool>>> BuildFiltersAsync(Expression<Func<TEntity, bool>> additionalFilter = null, CancellationToken cancellationToken = default)
+        protected async Task<Expression<Func<TEntity, bool>>> BuildFiltersAsync(Expression<Func<TEntity, bool>> additionalFilter = null,
+            CancellationToken cancellationToken = default)
         {
-            var securityFilters = await GetSecurityFiltersAsync(cancellationToken) ?? new List<Expression<Func<TEntity, bool>>>();
+            var securityFilters = await GetSecurityFiltersAsync(cancellationToken).ConfigureAwait(false)
+                                  ?? new List<Expression<Func<TEntity, bool>>>();
 
             var filters = securityFilters
                 .Where(x => x != null)
                 .ToList();
 
             if (additionalFilter != null)
+            {
                 filters.Add(additionalFilter);
+            }
 
             if (filters.Count == 0)
+            {
                 return null;
+            }
 
             return filters.Aggregate(default(Expression<Func<TEntity, bool>>),
                 (aggregate, filter) => aggregate.AndAlso(filter));
         }
 
-        protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken)
-        {
-            return Task.FromResult<IEnumerable<Expression<Func<TEntity, bool>>>>(null);
-        }
+        protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<IEnumerable<Expression<Func<TEntity, bool>>>>(null);
     }
 }

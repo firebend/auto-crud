@@ -57,7 +57,6 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 .ConfigureAwait(false);
 
             return Ok(mapped);
-
         }
     }
 }

@@ -10,6 +10,5 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces
         where TEntityKey : struct
         where TEntity : class, IEntity<TEntityKey>
     {
-
     }
 }

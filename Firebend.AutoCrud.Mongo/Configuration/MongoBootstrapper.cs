@@ -22,12 +22,16 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             IMongoDbConfigurator configurator)
         {
             if (_isBootstrapped)
+            {
                 return services;
+            }
 
             lock (BootStrapLock)
             {
                 if (_isBootstrapped)
+                {
                     return services;
+                }
 
                 DoBootstrapping(services, connectionString, enableCommandLogging, configurator);
 
@@ -44,7 +48,9 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             IMongoDbConfigurator configurator)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
+            {
                 throw new ArgumentNullException(nameof(connectionString));
+            }
 
             services.Scan(action => action.FromAssemblies()
                 .AddClasses(classes => classes.AssignableTo<IMongoMigration>())
@@ -64,6 +70,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
                 var mongoClientSettings = MongoClientSettings.FromUrl(mongoUrl);
 
                 if (enableCommandLogging)
+                {
                     mongoClientSettings.ClusterConfigurator = cb =>
                     {
                         cb.Subscribe<CommandStartedEvent>(e =>
@@ -77,6 +84,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
                             logger.LogError("ERROR: {CommandName}({Duration}) - {Error}", e.CommandName, e.Duration,
                                 e.Failure));
                     };
+                }
 
                 return new MongoClient(mongoClientSettings);
             });

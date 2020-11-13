@@ -59,10 +59,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
             var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
 
-            var fileResult = new FileStreamResult(stream, mimeType)
-            {
-                FileDownloadName = $"{fileName}{extension}"
-            };
+            var fileResult = new FileStreamResult(stream, mimeType) { FileDownloadName = $"{fileName}{extension}" };
 
             return fileResult;
         }

@@ -12,17 +12,15 @@ namespace Firebend.AutoCrud.Io.Interfaces
 
         Task<Stream> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
             IEnumerable<T> records,
-            CancellationToken cancellationToken = default) where T : class;
+            CancellationToken cancellationToken = default)
+            where T : class;
     }
 
     public interface IEntityFileWriterCsv : IEntityFileWriter
     {
-
     }
 
     public interface IEntityFileWriterSpreadSheet : IEntityFileWriter
     {
-
     }
-
 }

@@ -13,10 +13,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        private readonly IEntityDomainEventPublisher _domainEventPublisher;
         private readonly IDomainEventContextProvider _domainEventContextProvider;
+        private readonly IEntityDomainEventPublisher _domainEventPublisher;
 
-        public EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider,
+        protected EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider,
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider) : base(provider)
         {
@@ -56,11 +56,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             if (_domainEventPublisher != null && !(_domainEventPublisher is DefaultEntityDomainEventPublisher))
             {
-                var domainEvent = new EntityAddedDomainEvent<TEntity>
-                {
-                    Entity = savedEntity,
-                    EventContext = _domainEventContextProvider?.GetContext()
-                };
+                var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
                 return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
             }

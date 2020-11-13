@@ -10,7 +10,10 @@ namespace Firebend.AutoCrud.Generator.Implementations
 {
     public class DynamicClassGenerator : IDynamicClassGenerator
     {
-        public Type GenerateDynamicClass(Type classType, string typeSignature, List<Type> implementedTypes, Type[] interfaces = null,
+        public Type GenerateDynamicClass(Type classType,
+            string typeSignature,
+            List<Type> implementedTypes,
+            Type[] interfaces = null,
             CustomAttributeBuilder[] attributes = null)
         {
             if (!classType.IsClass)
@@ -81,12 +84,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
 
-            var iProperties = interfaceType.GetProperties().Select(x => new PropertySet
-            {
-                Name = x.Name,
-                Type = x.PropertyType,
-                Override = true
-            });
+            var iProperties = interfaceType.GetProperties().Select(x => new PropertySet { Name = x.Name, Type = x.PropertyType, Override = true });
 
             properties ??= new PropertySet[0];
 
@@ -122,7 +120,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
             }
 
             return instance;
-
         }
 
         private static void CreatePassThroughConstructors(TypeBuilder builder, Type baseType, List<Type> implementedTypes)
@@ -134,7 +131,9 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 var parameters = constructor.GetParameters();
 
                 if (parameters.Length > 0 && parameters.Last().IsDefined(typeof(ParamArrayAttribute), false))
+                {
                     continue;
+                }
 
                 var parameterTypes = parameters
                     .Select(pi => implementedTypes.FirstOrDefault(t => pi.ParameterType.IsAssignableFrom(t)) ?? pi.ParameterType)
@@ -188,9 +187,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             }
         }
 
-        private static CustomAttributeBuilder[] BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes)
-        {
-            return customAttributes.Select(attribute =>
+        private static CustomAttributeBuilder[] BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes) => customAttributes.Select(attribute =>
             {
                 var attributeArgs = attribute.ConstructorArguments
                     .Select(a => a.Value)
@@ -222,8 +219,8 @@ namespace Firebend.AutoCrud.Generator.Implementations
                     namedPropertyValues,
                     namedFieldInfos,
                     namedFieldValues);
-            }).ToArray();
-        }
+            })
+            .ToArray();
 
         private static TypeBuilder GetTypeBuilder(string typeSignature,
             Type parentType = null,

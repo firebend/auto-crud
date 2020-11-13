@@ -21,7 +21,8 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
 
         Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities, CancellationToken cancellationToken = default);
 
-        Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities, Expression<Func<TEntity, TOut>> projection,
+        Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities,
+            Expression<Func<TEntity, TOut>> projection,
             CancellationToken cancellationToken = default);
 
         Task<TEntity> UpdateAsync(TKey id, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default);

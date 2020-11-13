@@ -16,11 +16,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
-
         public AbstractEntityFrameworkChangeTrackingReadService(IChangeTrackingDbContextProvider<TEntityKey, TEntity> contextProvider) :
             base(contextProvider, null)
         {
-
         }
 
         public Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(

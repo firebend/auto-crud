@@ -15,8 +15,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IEntityDomainEventPublisher _eventPublisher;
         private readonly IDomainEventContextProvider _domainEventContextProvider;
+        private readonly IEntityDomainEventPublisher _eventPublisher;
 
         protected MongoCreateClient(IMongoClient client,
             ILogger<MongoCreateClient<TKey, TEntity>> logger,
@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
 
@@ -51,11 +51,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         {
             if (_eventPublisher != null && !(_eventPublisher is DefaultEntityDomainEventPublisher))
             {
-                var domainEvent = new EntityAddedDomainEvent<TEntity>
-                {
-                    Entity = savedEntity,
-                    EventContext = _domainEventContextProvider?.GetContext()
-                };
+                var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
                 return _eventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
             }

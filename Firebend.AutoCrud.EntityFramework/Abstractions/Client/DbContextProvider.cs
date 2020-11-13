@@ -17,9 +17,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _context = context;
         }
 
-        private IDbContext GetDbContext() => _context;
-
         public Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(GetDbContext());
+
+        private IDbContext GetDbContext() => _context;
     }
 }

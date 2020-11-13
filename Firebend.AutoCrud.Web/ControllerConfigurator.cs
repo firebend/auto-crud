@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
@@ -23,10 +25,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web
 {
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Net.Sockets;
-
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public class ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> : EntityCrudConfigurator<TBuilder, TKey, TEntity>
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
@@ -34,12 +32,6 @@ namespace Firebend.AutoCrud.Web
         where TEntity : class, IEntity<TKey>
         where TViewModel : class
     {
-        public (Type attributeType, CustomAttributeBuilder attributeBuilder) DefaultAuthorizationPolicy { get; private set; }
-
-        public bool HasDefaultAuthorizationPolicy => DefaultAuthorizationPolicy != default
-                                                     && DefaultAuthorizationPolicy.attributeBuilder != null
-                                                     && DefaultAuthorizationPolicy.attributeType != null;
-
         internal ControllerConfigurator(TBuilder builder) : base(builder)
         {
             if (builder.EntityType == null)
@@ -64,10 +56,17 @@ namespace Firebend.AutoCrud.Web
             WithRoute($"/api/v1/{name.Kebaberize()}");
             WithOpenApiGroupName(name);
 
-            CrudBuilder.WithRegistration<IEntityValidationService<TKey, TEntity>, DefaultEntityValidationService<TKey, TEntity>>(false);
+            WithValidationService<DefaultEntityValidationService<TKey, TEntity>>(false);
+
             CrudBuilder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
             CrudBuilder.WithRegistration<IViewModelMapper<TKey, TEntity, TViewModel>, DefaultViewModelMapper<TKey, TEntity>>();
         }
+
+        public (Type attributeType, CustomAttributeBuilder attributeBuilder) DefaultAuthorizationPolicy { get; private set; }
+
+        public bool HasDefaultAuthorizationPolicy => DefaultAuthorizationPolicy != default
+                                                     && DefaultAuthorizationPolicy.attributeBuilder != null
+                                                     && DefaultAuthorizationPolicy.attributeType != null;
 
         private TBuilder CrudBuilder { get; }
 
@@ -120,22 +119,14 @@ namespace Firebend.AutoCrud.Web
         {
             var attributeType = typeof(OpenApiEntityNameAttribute);
 
-            var attributeCtor = attributeType.GetConstructor(new[]
-            {
-                typeof(string),
-                typeof(string)
-            });
+            var attributeCtor = attributeType.GetConstructor(new[] { typeof(string), typeof(string) });
 
             if (attributeCtor == null)
             {
                 return default;
             }
 
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[]
-            {
-                OpenApiEntityName,
-                OpenApiEntityNamePlural
-            });
+            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { OpenApiEntityName, OpenApiEntityNamePlural });
 
             return (attributeType, attributeBuilder);
         }
@@ -172,7 +163,6 @@ namespace Firebend.AutoCrud.Web
                 : new object[] { };
 
             return (authType, new CustomAttributeBuilder(authCtor, args));
-
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithController(Type type, Type typeToCheck, params Type[] genericArgs)
@@ -216,8 +206,8 @@ namespace Firebend.AutoCrud.Web
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TNewViewModel> WithViewModel<TNewViewModel>(
-                Func<TEntity, TNewViewModel> to,
-                Func<TNewViewModel, TEntity> from)
+            Func<TEntity, TNewViewModel> to,
+            Func<TNewViewModel, TEntity> from)
             where TNewViewModel : class
         {
             if (GetRegisteredControllers().Any())
@@ -227,11 +217,7 @@ namespace Firebend.AutoCrud.Web
 
             var config = new ControllerConfigurator<TBuilder, TKey, TEntity, TNewViewModel>(Builder);
 
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TNewViewModel>
-            {
-                From = from,
-                To = to
-            };
+            var instance = new FunctionViewModelMapper<TKey, TEntity, TNewViewModel> { From = from, To = to };
 
             config.Builder.WithRegistrationInstance<IViewModelMapper<TKey, TEntity, TNewViewModel>>(instance);
 
@@ -262,16 +248,13 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        private void AddSwaggenGenOptionConfiguration()
+        private void AddSwaggenGenOptionConfiguration() => Run.Once($"{GetType().FullName}.SwaggerGenOptions", () =>
         {
-            Run.Once($"{GetType().FullName}.SwaggerGenOptions", () =>
-             {
-                 Builder.WithServiceCollectionHook(sc =>
-                 {
-                     sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
-                 });
-             });
-        }
+            Builder.WithServiceCollectionHook(sc =>
+            {
+                sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
+            });
+        });
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithOpenApiGroupName(string openApiGroupName)
         {
@@ -338,8 +321,8 @@ namespace Firebend.AutoCrud.Web
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithSearchController(Type registrationType)
             => WithController(registrationType,
-            typeof(AbstractEntitySearchController<,,,>),
-            CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchRequestType, typeof(TViewModel));
+                typeof(AbstractEntitySearchController<,,,>),
+                CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchRequestType, typeof(TViewModel));
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithSearchController<TRegistrationType>()
             => WithSearchController(typeof(TRegistrationType));
@@ -389,9 +372,7 @@ namespace Firebend.AutoCrud.Web
             => AddAuthorizationPolicy<AbstractEntityDeleteController<TKey, TEntity, TViewModel>>(policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddReadAuthorizationPolicy(string policy)
-        {
-            return AddAuthorizationPolicy<AbstractEntityReadController<TKey, TEntity, TViewModel>>(policy);
-        }
+            => AddAuthorizationPolicy<AbstractEntityReadController<TKey, TEntity, TViewModel>>(policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> AddReadAllAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy<AbstractEntityReadAllController<TKey, TEntity, TViewModel>>(policy);
@@ -431,6 +412,13 @@ namespace Firebend.AutoCrud.Web
 
             AddAttributeToAllControllers(DefaultAuthorizationPolicy.attributeType, DefaultAuthorizationPolicy.attributeBuilder);
 
+            return this;
+        }
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithValidationService<TService>(bool replace = true)
+            where TService : IEntityValidationService<TKey, TEntity>
+        {
+            CrudBuilder.WithRegistration<IEntityValidationService<TKey, TEntity>, TService>(replace);
             return this;
         }
     }

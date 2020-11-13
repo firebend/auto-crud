@@ -17,10 +17,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        private readonly IEntityDomainEventPublisher _domainEventPublisher;
         private readonly IDomainEventContextProvider _domainEventContextProvider;
-        private readonly IJsonPatchDocumentGenerator _jsonPatchDocumentGenerator;
+        private readonly IEntityDomainEventPublisher _domainEventPublisher;
         private readonly bool _isDefaultPublisher;
+        private readonly IJsonPatchDocumentGenerator _jsonPatchDocumentGenerator;
 
         public EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityDomainEventPublisher domainEventPublisher,
@@ -86,8 +86,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 jsonPatchDocument.Operations.Add(new Operation<TEntity>(
                     "replace",
                     $"/{nameof(IModifiedEntity.ModifiedDate)}",
-                    from: null,
-                    value: DateTimeOffset.Now));
+                    null,
+                    DateTimeOffset.Now));
             }
 
             jsonPatchDocument.ApplyTo(entity);

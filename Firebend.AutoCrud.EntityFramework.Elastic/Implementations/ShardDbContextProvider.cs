@@ -16,10 +16,10 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         where TKey : struct
         where TContext : DbContext, IDbContext
     {
-        private readonly IShardManager _shardManager;
         private readonly IShardKeyProvider _shardKeyProvider;
-        private readonly IShardNameProvider _shardNameProvider;
+        private readonly IShardManager _shardManager;
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
+        private readonly IShardNameProvider _shardNameProvider;
 
         public ShardDbContextProvider(
             IShardManager shardManager,
@@ -45,29 +45,27 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             var contextType = typeof(TContext);
 
             var connectionString = await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}.ConnectionString", async ct =>
-            {
-                var shard = await _shardManager
-                    .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
-                    .ConfigureAwait(false);
-
-                var keyBytes = Encoding.ASCII.GetBytes(key);
-
-                var rootConnectionStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString);
-                rootConnectionStringBuilder.Remove("Data Source");
-                rootConnectionStringBuilder.Remove("Initial Catalog");
-
-                var shardConnectionString = rootConnectionStringBuilder.ConnectionString;
-
-                await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
-                    .ConfigureAwait(false);
-
-                var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString)
                 {
-                    Password = rootConnectionStringBuilder.Password
-                };
+                    var shard = await _shardManager
+                        .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
+                        .ConfigureAwait(false);
 
-                return connectionStringBuilder.ConnectionString;
-            }, cancellationToken).ConfigureAwait(false);
+                    var keyBytes = Encoding.ASCII.GetBytes(key);
+
+                    var rootConnectionStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString);
+                    rootConnectionStringBuilder.Remove("Data Source");
+                    rootConnectionStringBuilder.Remove("Initial Catalog");
+
+                    var shardConnectionString = rootConnectionStringBuilder.ConnectionString;
+
+                    await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
+                        .ConfigureAwait(false);
+
+                    var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString) { Password = rootConnectionStringBuilder.Password };
+
+                    return connectionStringBuilder.ConnectionString;
+                }, cancellationToken)
+                .ConfigureAwait(false);
 
             var options = new DbContextOptionsBuilder()
                 .UseSqlServer(connectionString)
@@ -86,15 +84,16 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             }
 
             await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}.Init", async ct =>
-            {
-                await context.Database
-                    .EnsureCreatedAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                {
+                    await context.Database
+                        .EnsureCreatedAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
-                await context.Database
-                    .MigrateAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            }, cancellationToken).ConfigureAwait(false);
+                    await context.Database
+                        .MigrateAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                }, cancellationToken)
+                .ConfigureAwait(false);
 
             return context;
         }

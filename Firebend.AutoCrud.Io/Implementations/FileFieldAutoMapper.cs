@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.Io.Implementations
                     FieldIndex = ctExport?.Order ?? index++,
                     FieldName = ctExport?.Name
                                 ?? propertyInfo.GetCustomAttribute<DescriptionAttribute>()?.Description
-                                ?? propertyInfo.Name,
+                                ?? propertyInfo.Name
                 };
 
                 if (!_filter.ShouldExport(field))

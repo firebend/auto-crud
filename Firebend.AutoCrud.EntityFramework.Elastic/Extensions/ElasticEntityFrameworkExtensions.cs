@@ -21,6 +21,5 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Extensions
             configure(config);
             return builder;
         }
-
     }
 }

@@ -34,11 +34,8 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
             }
         }
 
-        private static string SanitizeEntityName(string str, OpenApiEntityNameAttribute entityNameAttribute)
-        {
-            return str
+        private static string SanitizeEntityName(string str, OpenApiEntityNameAttribute entityNameAttribute) => str
             .Replace("{entityName}", entityNameAttribute.Name)
             .Replace("{entityNamePlural}", entityNameAttribute.Plural);
-        }
     }
 }

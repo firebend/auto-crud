@@ -14,10 +14,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
         {
             Source = "My Sample",
             UserEmail = "sample@firebend.com",
-            CustomContext = new CatchPhraseModel
-            {
-                CatchPhrase = "I Like Turtles"
-            }
+            CustomContext = new CatchPhraseModel { CatchPhrase = "I Like Turtles" }
         };
     }
 }

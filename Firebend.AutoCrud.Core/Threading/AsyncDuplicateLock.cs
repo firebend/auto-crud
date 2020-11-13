@@ -75,11 +75,15 @@ namespace Firebend.AutoCrud.Core.Threading
                     --item.RefCount;
 
                     if (item.RefCount == 0)
+                    {
                         SemaphoreSlims.Remove(Key);
+                    }
                 }
 
                 if (DidGetLock)
+                {
                     item.Value.Release();
+                }
             }
         }
     }

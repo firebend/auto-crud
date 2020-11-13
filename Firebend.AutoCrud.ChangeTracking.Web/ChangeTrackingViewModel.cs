@@ -1,16 +1,15 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Firebend.AutoCrud.ChangeTracking.Models;
+using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Web.Interfaces;
+using Microsoft.AspNetCore.JsonPatch.Operations;
+
 namespace Firebend.AutoCrud.ChangeTracking.Web
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using AutoCrud.Web.Interfaces;
-    using Core.Extensions;
-    using Core.Interfaces.Models;
-    using Microsoft.AspNetCore.JsonPatch.Operations;
-    using Models;
-
     public class ChangeTrackingViewModel<TKey, TEntity, TViewModel> : ChangeTrackingModel<TKey, TViewModel>
         where TKey : struct
         where TEntity : class, IEntity<TKey>

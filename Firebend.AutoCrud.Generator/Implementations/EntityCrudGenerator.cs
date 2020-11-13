@@ -109,14 +109,17 @@ namespace Firebend.AutoCrud.Generator.Implementations
                             {
                                 services.Add(type, new List<ServiceRegistration> { serviceRegistration });
                             }
+
                             break;
                     }
                 }
             }
+
             RegisterServiceRegistrations(serviceCollection, builder, services);
         }
 
-        private void RegisterServiceRegistrations(IServiceCollection serviceCollection, BaseBuilder builder,
+        private void RegisterServiceRegistrations(IServiceCollection serviceCollection,
+            BaseBuilder builder,
             IDictionary<Type, List<ServiceRegistration>> serviceRegistrations)
         {
             var signatureBase = builder.SignatureBase;
@@ -238,21 +241,18 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return orderedTypes;
         }
 
-        private static bool CanAddType(KeyValuePair<Type, Type> type, List<KeyValuePair<Type, Type>> typesToAdd)
-        {
-            return type.Value.GetConstructors(
-                    BindingFlags.Public |
-                    BindingFlags.NonPublic |
-                    BindingFlags.Instance)
-                .All(
-                    info => info
-                        .GetParameters()
-                        .All(parameterInfo =>
-                            typesToAdd.All(t => t.Key != parameterInfo.ParameterType)
-                            && typesToAdd.All(types => !parameterInfo.ParameterType.IsAssignableFrom(types.Key))
-                        )
-                );
-        }
+        private static bool CanAddType(KeyValuePair<Type, Type> type, List<KeyValuePair<Type, Type>> typesToAdd) => type.Value.GetConstructors(
+                BindingFlags.Public |
+                BindingFlags.NonPublic |
+                BindingFlags.Instance)
+            .All(
+                info => info
+                    .GetParameters()
+                    .All(parameterInfo =>
+                        typesToAdd.All(t => t.Key != parameterInfo.ParameterType)
+                        && typesToAdd.All(types => !parameterInfo.ParameterType.IsAssignableFrom(types.Key))
+                    )
+            );
 
         private static List<Type> GetCustomImplementations(IDictionary<Type, List<ServiceRegistration>> configureRegistrations)
         {

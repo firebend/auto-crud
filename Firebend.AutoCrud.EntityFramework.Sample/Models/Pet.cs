@@ -8,9 +8,14 @@ namespace Firebend.AutoCrud.EntityFramework.Sample.Models
     [Table("Pets")]
     public class Pet : IEntity<Guid>
     {
-        [StringLength(250)] [Required] public string Name { get; set; }
+        [StringLength(250)]
+        [Required]
+        public string Name { get; set; }
 
-        [Required] public Guid PersonId { get; set; }
-        [Key] public Guid Id { get; set; }
+        [Required]
+        public Guid PersonId { get; set; }
+
+        [Key]
+        public Guid Id { get; set; }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -48,10 +49,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate<TService>()
-        {
-            return WithCreate(typeof(TService));
-        }
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate<TService>() => WithCreate(typeof(TService));
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate()
         {
@@ -67,10 +65,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete<TService>()
-        {
-            return WithDelete(typeof(TService));
-        }
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete<TService>() => WithDelete(typeof(TService));
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete()
         {
@@ -86,10 +81,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy<T>()
-        {
-            return WithOrderBy(typeof(T));
-        }
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy<T>() => WithOrderBy(typeof(T));
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy(Expression<Func<TEntity, object>> expression, bool isAscending = true)
         {
@@ -113,10 +105,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithRead<TService>()
-        {
-            return WithRead(typeof(TService));
-        }
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithRead<TService>() => WithRead(typeof(TService));
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithRead()
         {
@@ -139,10 +128,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         }
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TService, TSearch>()
-            where TSearch : EntitySearchRequest
-        {
-            return WithSearch(typeof(TService), typeof(TSearch));
-        }
+            where TSearch : EntitySearchRequest => WithSearch(typeof(TService), typeof(TSearch));
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>()
             where TSearch : EntitySearchRequest
@@ -154,10 +140,16 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithSearch(serviceType, searchType);
         }
 
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch()
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>(Func<TSearch, Expression<Func<TEntity, bool>>> expression)
+            where TSearch : EntitySearchRequest
         {
-            return WithSearch<EntitySearchRequest>();
+            Builder.WithRegistrationInstance<ISearchExpressionProvider<TKey, TEntity, TSearch>>(
+                new SearchExpressionProvider<TKey, TEntity, TSearch>(expression));
+
+            return WithSearch<TSearch>();
         }
+
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch() => WithSearch<EntitySearchRequest>();
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithUpdate(Type serviceType)
         {
@@ -166,10 +158,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithUpdate<TService>()
-        {
-            return WithUpdate(typeof(TService));
-        }
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithUpdate<TService>() => WithUpdate(typeof(TService));
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithUpdate()
         {

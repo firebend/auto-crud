@@ -1,11 +1,19 @@
 using System;
+using Firebend.AutoCrud.Core.Extensions;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    using Core.Extensions;
-
     public class EfPersonExport
     {
+        public EfPersonExport()
+        {
+        }
+
+        public EfPersonExport(EfPerson person)
+        {
+            person.CopyPropertiesTo(this);
+        }
+
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
@@ -13,15 +21,5 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string FullName => $"{FirstName} {LastName}";
 
         public Guid Id { get; set; }
-
-        public EfPersonExport()
-        {
-
-        }
-
-        public EfPersonExport(EfPerson person)
-        {
-            person.CopyPropertiesTo(this);
-        }
     }
 }

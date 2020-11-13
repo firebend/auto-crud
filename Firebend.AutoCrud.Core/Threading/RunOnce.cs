@@ -9,10 +9,7 @@ namespace Firebend.AutoCrud.Core.Threading
     {
         private static readonly IDictionary<string, object> Cache = new Dictionary<string, object>();
 
-        public static object GetValue(string key)
-        {
-            return Cache.ContainsKey(key) ? Cache[key] : default;
-        }
+        public static object GetValue(string key) => Cache.ContainsKey(key) ? Cache[key] : default;
 
         public static T GetValue<T>(string key)
         {
@@ -27,22 +24,17 @@ namespace Firebend.AutoCrud.Core.Threading
         }
 
 
-        public static void UpdateValue(string key, object value)
-        {
-            Cache[key] = value;
-        }
+        public static void UpdateValue(string key, object value) => Cache[key] = value;
     }
 
     public static class Run
     {
-        public static Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
-        {
-            return OnceAsync(key, async ct =>
+        public static Task OnceAsync(string key, Func<CancellationToken, Task> action, CancellationToken cancellationToken = default) => OnceAsync(key,
+            async ct =>
             {
                 await action(ct).ConfigureAwait(false);
                 return true;
             }, cancellationToken);
-        }
 
         public static async Task<T> OnceAsync<T>(string key, Func<CancellationToken, Task<T>> func, CancellationToken cancellationToken = default)
         {
@@ -70,14 +62,11 @@ namespace Firebend.AutoCrud.Core.Threading
         }
 
 
-        public static void Once(string key, Action action)
+        public static void Once(string key, Action action) => Once(key, () =>
         {
-            Once(key, () =>
-            {
-                action();
-                return true;
-            });
-        }
+            action();
+            return true;
+        });
 
         public static T Once<T>(string key, Func<T> func)
         {

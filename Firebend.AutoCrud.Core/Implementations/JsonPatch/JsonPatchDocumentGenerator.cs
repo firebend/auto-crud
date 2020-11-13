@@ -10,16 +10,15 @@ namespace Firebend.AutoCrud.Core.Implementations.JsonPatch
 {
     public class JsonPatchDocumentDocumentGenerator : IJsonPatchDocumentGenerator
     {
-        public virtual JsonSerializer GetJsonSerializer() => JsonSerializer.CreateDefault();
-
         /// <summary>
-        /// Generates a JsonPatchDocument by comparing two objects.
+        ///     Generates a JsonPatchDocument by comparing two objects.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="a">The original object</param>
         /// <param name="b">The modified object</param>
-        /// <returns>The <see cref="JsonPatchDocument"/></returns>
-        public JsonPatchDocument<T> Generate<T>(T a, T b) where T : class
+        /// <returns>The <see cref="JsonPatchDocument" /></returns>
+        public JsonPatchDocument<T> Generate<T>(T a, T b)
+            where T : class
         {
             var output = new JsonPatchDocument<T>();
 
@@ -38,8 +37,10 @@ namespace Firebend.AutoCrud.Core.Implementations.JsonPatch
             return output;
         }
 
+        public virtual JsonSerializer GetJsonSerializer() => JsonSerializer.CreateDefault();
+
         /// <summary>
-        /// Fills the json patch values.
+        ///     Fills the json patch values.
         /// </summary>
         /// <param name="originalJson">The original json.</param>
         /// <param name="modifiedJson">The modified json.</param>
@@ -48,7 +49,8 @@ namespace Firebend.AutoCrud.Core.Implementations.JsonPatch
         private static void FillJsonPatchValues<T>(JObject originalJson,
             JObject modifiedJson,
             JsonPatchDocument<T> patch,
-            string currentPath = "/") where T : class
+            string currentPath = "/")
+            where T : class
         {
             var originalPropertyNames = new HashSet<string>(originalJson.Properties().Select(p => p.Name));
             var modifiedPropertyNames = new HashSet<string>(modifiedJson.Properties().Select(p => p.Name));

@@ -15,8 +15,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TEntity : class, IEntity<TKey>
         where TViewModel : class
     {
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
         private readonly IEntityReadService<TKey, TEntity> _readService;
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
         protected AbstractEntityReadController(IEntityReadService<TKey, TEntity> readService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,

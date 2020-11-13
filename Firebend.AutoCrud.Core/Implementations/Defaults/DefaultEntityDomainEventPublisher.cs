@@ -7,7 +7,6 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
 {
     public class DefaultEntityDomainEventPublisher : IEntityDomainEventPublisher
     {
-
         public Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
             where TEntity : class
             => Task.CompletedTask;

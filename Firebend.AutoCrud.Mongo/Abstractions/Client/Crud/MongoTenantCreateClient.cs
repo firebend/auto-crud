@@ -19,8 +19,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
-        protected MongoTenantCreateClient(IMongoClient client, ILogger<MongoCreateClient<TKey, TEntity>> logger,
-            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration, IEntityDomainEventPublisher eventPublisher,
+        protected MongoTenantCreateClient(IMongoClient client,
+            ILogger<MongoCreateClient<TKey, TEntity>> logger,
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
+            IEntityDomainEventPublisher eventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(client, logger, entityConfiguration,
             eventPublisher, domainEventContextProvider)

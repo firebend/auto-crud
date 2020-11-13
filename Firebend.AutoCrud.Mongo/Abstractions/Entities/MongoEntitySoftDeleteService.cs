@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
     {
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
 
-        public MongoEntitySoftDeleteService(IEntityUpdateService<TKey, TEntity> updateService)
+        protected MongoEntitySoftDeleteService(IEntityUpdateService<TKey, TEntity> updateService)
         {
             _updateService = updateService;
         }

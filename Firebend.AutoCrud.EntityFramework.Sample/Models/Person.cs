@@ -9,11 +9,17 @@ namespace Firebend.AutoCrud.EntityFramework.Sample.Models
     [Table("People")]
     public class Person : IEntity<Guid>
     {
-        [StringLength(250)] [Required] public string FirstName { get; set; }
+        [StringLength(250)]
+        [Required]
+        public string FirstName { get; set; }
 
-        [StringLength(250)] [Required] public string LastName { get; set; }
+        [StringLength(250)]
+        [Required]
+        public string LastName { get; set; }
 
         public ICollection<Pet> Pets { get; set; }
-        [Key] public Guid Id { get; set; }
+
+        [Key]
+        public Guid Id { get; set; }
     }
 }

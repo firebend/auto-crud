@@ -16,6 +16,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>, new()
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
+
         protected EntityFrameworkTenantCreateClient(IDbContextProvider<TKey, TEntity> provider,
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,

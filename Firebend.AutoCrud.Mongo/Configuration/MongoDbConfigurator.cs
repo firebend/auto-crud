@@ -17,12 +17,16 @@ namespace Firebend.AutoCrud.Mongo.Configuration
         public void Configure()
         {
             if (_configured)
+            {
                 return;
+            }
 
             lock (Key)
             {
                 if (_configured)
+                {
                     return;
+                }
 
                 _configured = true;
 
@@ -33,9 +37,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
                 var pack = new ConventionPack
                 {
-                    new CamelCaseElementNameConvention(),
-                    new EnumRepresentationConvention(BsonType.String),
-                    new IgnoreExtraElementsConvention(true)
+                    new CamelCaseElementNameConvention(), new EnumRepresentationConvention(BsonType.String), new IgnoreExtraElementsConvention(true)
                 };
 
                 var mongoEntityType = typeof(IEntity<>);
@@ -46,6 +48,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
                     if (map.ClassType.BaseType == null ||
                         map.ClassType.BaseType.IsInterface ||
                         map.ClassType.BaseType.GetProperty(mongoEntityIdName) == null)
+                    {
                         if (mongoEntityType.IsAssignableFrom(map.ClassType))
                         {
                             map.MapIdProperty(mongoEntityIdName)
@@ -54,6 +57,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
                             map.SetIgnoreExtraElements(true);
                         }
+                    }
                 });
 
                 pack.AddMemberMapConvention("Ignore Default Values", m => m.SetIgnoreIfDefault(!m.MemberType.GetTypeInfo().IsEnum));

@@ -13,19 +13,15 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
     {
         private readonly IEntityFrameworkQueryClient<TKey, TEntity> _readClient;
 
-        public EntityFrameworkEntityReadService(IEntityFrameworkQueryClient<TKey, TEntity> readClient)
+        protected EntityFrameworkEntityReadService(IEntityFrameworkQueryClient<TKey, TEntity> readClient)
         {
             _readClient = readClient;
         }
 
         public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
-        {
-            return _readClient.GetByKeyAsync(key, cancellationToken);
-        }
+            => _readClient.GetByKeyAsync(key, cancellationToken);
 
         public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            return _readClient.GetAllAsync(cancellationToken);
-        }
+            => _readClient.GetAllAsync(cancellationToken);
     }
 }
