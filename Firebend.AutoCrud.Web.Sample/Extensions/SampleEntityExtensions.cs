@@ -59,7 +59,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithOrderBy(efPerson => efPerson.LastName)
                         .WithSearch<CustomSearchParameters>(search =>
                         {
-                            if(!string.IsNullOrWhiteSpace(search?.NickName))
+                            if (!string.IsNullOrWhiteSpace(search?.NickName))
                             {
                                 return p => p.NickName.Contains(search.NickName);
                             }
