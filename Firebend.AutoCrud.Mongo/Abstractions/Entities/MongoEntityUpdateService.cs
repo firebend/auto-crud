@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
     {
         private readonly IMongoUpdateClient<TKey, TEntity> _updateClient;
 
-        public MongoEntityUpdateService(IMongoUpdateClient<TKey, TEntity> updateClient)
+        protected MongoEntityUpdateService(IMongoUpdateClient<TKey, TEntity> updateClient)
         {
             _updateClient = updateClient;
         }
@@ -22,7 +22,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
+            {
                 throw new ArgumentNullException(nameof(entity));
+            }
 
             // Allow creating entities through PUT to make it easier to set the guid in the client
             // when creating new entities. ( ACID2.0 )
@@ -32,7 +34,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         public Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
             if (key.Equals(default))
+            {
                 throw new ArgumentException("Key is invalid", nameof(key));
+            }
 
             return _updateClient.UpdateAsync(key, jsonPatchDocument, cancellationToken);
         }

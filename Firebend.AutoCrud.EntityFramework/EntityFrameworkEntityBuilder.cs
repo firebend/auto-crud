@@ -19,9 +19,9 @@ namespace Firebend.AutoCrud.EntityFramework
             ReadType = typeof(EntityFrameworkEntityReadService<TKey, TEntity>);
             UpdateType = typeof(EntityFrameworkEntityUpdateService<TKey, TEntity>);
 
-            DeleteType = IsActiveEntity ?
-                typeof(EntityFrameworkEntitySoftDeleteService<,>).MakeGenericType(EntityKeyType, EntityType) :
-                typeof(EntityFrameworkEntityDeleteService<TKey, TEntity>);
+            DeleteType = IsActiveEntity
+                ? typeof(EntityFrameworkEntitySoftDeleteService<,>).MakeGenericType(EntityKeyType, EntityType)
+                : typeof(EntityFrameworkEntityDeleteService<TKey, TEntity>);
 
             SearchType = typeof(EntityFrameworkEntitySearchService<,,>);
         }
@@ -77,10 +77,7 @@ namespace Firebend.AutoCrud.EntityFramework
         }
 
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext<TContext>()
-            where TContext : IDbContext
-        {
-            return WithDbContext(typeof(TContext));
-        }
+            where TContext : IDbContext => WithDbContext(typeof(TContext));
 
 
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Type type)
@@ -89,10 +86,7 @@ namespace Firebend.AutoCrud.EntityFramework
             return this;
         }
 
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter<T>()
-        {
-            return WithSearchFilter(typeof(T));
-        }
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter<T>() => WithSearchFilter(typeof(T));
 
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Expression<Func<TEntity, string, bool>> filter)
         {

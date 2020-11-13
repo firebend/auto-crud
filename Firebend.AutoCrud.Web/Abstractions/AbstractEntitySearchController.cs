@@ -1,17 +1,16 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
+using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    using System.Linq;
-    using Interfaces;
-
     [ApiController]
     public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch, TViewModel> : ControllerBase
         where TKey : struct
@@ -19,8 +18,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TSearch : EntitySearchRequest
         where TViewModel : class
     {
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
         protected AbstractEntitySearchController(IEntitySearchService<TKey, TEntity, TSearch> searchService,
             IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper)
@@ -115,7 +114,6 @@ namespace Firebend.AutoCrud.Web.Abstractions
             };
 
             return Ok(result);
-
         }
     }
 }

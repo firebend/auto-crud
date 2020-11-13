@@ -11,7 +11,6 @@ namespace Firebend.AutoCrud.EntityFramework.Indexing
     {
         public DefaultEntityFrameworkFullTextExpressionProvider()
         {
-
         }
 
         public DefaultEntityFrameworkFullTextExpressionProvider(Expression<Func<TEntity, string, bool>> filter)

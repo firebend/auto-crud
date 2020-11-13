@@ -36,14 +36,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             return _context;
         }
 
-        protected DbSet<TEntity> GetDbSet(IDbContext context)
-        {
-            return context.Set<TEntity>();
-        }
+        protected DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
 
         protected async Task<TEntity> GetByKeyAsync(IDbContext context, TKey key, CancellationToken cancellationToken)
         {
-            return await ((await GetFilteredQueryableAsync(context, cancellationToken: cancellationToken)).FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken));
+            var queryable = await GetFilteredQueryableAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var first = await queryable.FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
+
+            return first;
         }
 
         protected async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
@@ -56,14 +56,17 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             var queryable = set.AsQueryable();
 
             if (firstStageFilters != null)
+            {
                 queryable = queryable.Where(firstStageFilters);
+            }
 
             var filters = await BuildFilters(cancellationToken: cancellationToken);
 
             return filters == null ? queryable : queryable.Where(filters);
         }
 
-        protected async Task<Expression<Func<TEntity, bool>>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null, CancellationToken cancellationToken = default)
+        protected async Task<Expression<Func<TEntity, bool>>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null,
+            CancellationToken cancellationToken = default)
         {
             var securityFilters = await GetSecurityFiltersAsync(cancellationToken) ?? new List<Expression<Func<TEntity, bool>>>();
 
@@ -72,18 +75,20 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
                 .ToList();
 
             if (additionalFilter != null)
+            {
                 filters.Add(additionalFilter);
+            }
 
             if (filters.Count == 0)
+            {
                 return null;
+            }
 
             return filters.Aggregate(default(Expression<Func<TEntity, bool>>),
                 (aggregate, filter) => aggregate.AndAlso(filter));
         }
 
         protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
-        }
+            => Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
     }
 }

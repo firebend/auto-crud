@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Web.Interfaces;
+
 namespace Firebend.AutoCrud.Web.Implementations
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Core.Interfaces.Models;
-    using Interfaces;
-
     public class FunctionViewModelMapper<TKey, TEntity, TViewModel> : IViewModelMapper<TKey, TEntity, TViewModel>
         where TViewModel : class
         where TEntity : IEntity<TKey>

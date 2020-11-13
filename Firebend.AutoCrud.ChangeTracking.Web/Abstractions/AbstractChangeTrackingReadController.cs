@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
@@ -13,16 +14,13 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
 {
-    using System.Linq;
-    using Microsoft.AspNetCore.JsonPatch.Operations;
-
     public abstract class AbstractChangeTrackingReadController<TKey, TEntity, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TViewModel : class
     {
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
         private readonly IChangeTrackingReadService<TKey, TEntity> _read;
+        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
         protected AbstractChangeTrackingReadController(IChangeTrackingReadService<TKey, TEntity> read,
             IEntityKeyParser<TKey, TEntity> keyParser,
@@ -101,7 +99,6 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
                 TotalRecords = changes.TotalRecords,
                 CurrentPageSize = changes.CurrentPageSize
             });
-
         }
     }
 }

@@ -31,10 +31,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
             _mongoClient = scope.ServiceProvider.GetService<IMongoClient>();
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            return DoMigration(_cancellationTokenSource.Token);
-        }
+        public Task StartAsync(CancellationToken cancellationToken) => DoMigration(_cancellationTokenSource.Token);
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
@@ -65,10 +62,15 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
             foreach (var migration in _migrations
                 .Where(x => x.Version.Version > maxVersion)
                 .OrderBy(x => x.Version.Version))
+            {
                 try
                 {
-                    await migration.ApplyMigrationAsync(cancellationToken).ConfigureAwait(false);
-                    await collection.InsertOneAsync(migration.Version, new InsertOneOptions(), cancellationToken)
+                    await migration
+                        .ApplyMigrationAsync(cancellationToken)
+                        .ConfigureAwait(false);
+
+                    await collection
+                        .InsertOneAsync(migration.Version, new InsertOneOptions(), cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex)
@@ -76,8 +78,10 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
                     _logger.LogCritical(ex, "Error Applying mongo Migrations {Name}, {Version}",
                         migration.Version.Name,
                         migration.Version.Version);
+
                     break;
                 }
+            }
         }
     }
 }

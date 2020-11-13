@@ -13,31 +13,34 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public abstract class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySearchService<TEntity, TSearch>, IEntitySearchService<TKey, TEntity, TSearch>
+    public abstract class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySearchService<TEntity, TSearch>,
+        IEntitySearchService<TKey, TEntity, TSearch>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
     {
         private readonly IEntityDefaultOrderByProvider<TKey, TEntity> _orderByProvider;
         private readonly IMongoReadClient<TKey, TEntity> _readClient;
+        private readonly ISearchExpressionProvider<TKey, TEntity, TSearch> _searchExpressionProvider;
 
-        public MongoEntitySearchService(IMongoReadClient<TKey, TEntity> readClient,
-            IEntityDefaultOrderByProvider<TKey, TEntity> orderByProvider)
+        protected MongoEntitySearchService(IMongoReadClient<TKey, TEntity> readClient,
+            ISearchExpressionProvider<TKey, TEntity, TSearch> searchExpressionProvider = null,
+            IEntityDefaultOrderByProvider<TKey, TEntity> orderByProvider = null)
         {
             _readClient = readClient;
+            _searchExpressionProvider = searchExpressionProvider;
             _orderByProvider = orderByProvider;
         }
 
         public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
         {
-            var results = await PageAsync(request, cancellationToken);
+            var results = await PageAsync(request, cancellationToken).ConfigureAwait(false);
 
             return results?.Data?.ToList();
         }
 
         public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
-        {
-            return _readClient.PageAsync(request?.Search,
+            => _readClient.PageAsync(request?.Search,
                 BuildSearchExpression(request),
                 request?.PageNumber,
                 request?.PageSize,
@@ -45,36 +48,28 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
                 GetOrderByGroups(request),
                 cancellationToken
             );
-        }
 
         private IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> GetOrderByGroups(TSearch search)
         {
             var orderByGroups = search?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList();
 
-            if (!(orderByGroups?.Any() ?? false))
+            if (orderByGroups != null && orderByGroups.Any())
             {
-                var orderBy = _orderByProvider.OrderBy;
+                return orderByGroups;
+            }
 
-                if (orderBy != default && orderBy.func != null)
-                {
-                    orderByGroups = new List<(Expression<Func<TEntity, object>> order, bool ascending)>
-                    {
-                        orderBy
-                    };
-                }
+            var orderBy = _orderByProvider?.OrderBy;
+
+            if (orderBy.HasValue && orderBy.Value != default && orderBy.Value.func != null)
+            {
+                orderByGroups = new List<(Expression<Func<TEntity, object>> order, bool ascending)> { orderBy.Value };
             }
 
             return orderByGroups;
         }
 
-        protected virtual Expression<Func<TEntity, bool>> BuildSearchFilter(TSearch search)
-        {
-            return null;
-        }
+        protected virtual Expression<Func<TEntity, bool>> BuildSearchFilter(TSearch search) => _searchExpressionProvider?.GetSearchExpression(search);
 
-        protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search)
-        {
-            return GetSearchExpression(BuildSearchFilter(search), search);
-        }
+        protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search) => GetSearchExpression(BuildSearchFilter(search), search);
     }
 }

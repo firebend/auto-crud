@@ -4,10 +4,6 @@ namespace Firebend.AutoCrud.Io.Attributes
 {
     public class ExportAttribute : Attribute
     {
-        public string Name { get; set; }
-
-        public int Order { get; set; }
-
         public ExportAttribute(string name, int order)
         {
             Name = name;
@@ -16,7 +12,10 @@ namespace Firebend.AutoCrud.Io.Attributes
 
         public ExportAttribute()
         {
-
         }
+
+        public string Name { get; set; }
+
+        public int Order { get; set; }
     }
 }

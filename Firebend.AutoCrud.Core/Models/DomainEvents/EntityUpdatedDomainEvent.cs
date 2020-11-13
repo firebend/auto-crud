@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Models.DomainEvents
 {
-    public class EntityUpdatedDomainEvent<T> : DomainEventBase where T : class
+    public class EntityUpdatedDomainEvent<T> : DomainEventBase
+        where T : class
     {
         private T _modified;
 

@@ -30,32 +30,31 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
             Console.WriteLine("Done!");
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, builder) =>
+        public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((hostingContext, builder) =>
+            {
+                if (hostingContext.HostingEnvironment.IsDevelopment())
                 {
-                    if (hostingContext.HostingEnvironment.IsDevelopment())
-                        builder.AddUserSecrets("Firebend.AutoCrud");
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddDbContext<AppDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); },
-                            ServiceLifetime.Singleton)
-                        .UsingEfCrud()
-                        .AddEntity<Guid, Person>(person =>
-                            person.WithDbContext<AppDbContext>()
-                                .AddCrud(crud => crud.WithCrud())
-                                .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
-                            )
-                        .AddEntity<Guid, Pet>(pet =>
-                            pet.WithDbContext<AppDbContext>()
-                                .AddCrud(crud => crud.WithCrud())
-                            )
-                        .Generate();
+                    builder.AddUserSecrets("Firebend.AutoCrud");
+                }
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddDbContext<AppDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); },
+                        ServiceLifetime.Singleton)
+                    .UsingEfCrud()
+                    .AddEntity<Guid, Person>(person =>
+                        person.WithDbContext<AppDbContext>()
+                            .AddCrud(crud => crud.WithCrud())
+                            .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
+                    )
+                    .AddEntity<Guid, Pet>(pet =>
+                        pet.WithDbContext<AppDbContext>()
+                            .AddCrud(crud => crud.WithCrud())
+                    )
+                    .Generate();
 
-                    services.AddHostedService<SampleHostedService>();
-                });
-        }
+                services.AddHostedService<SampleHostedService>();
+            });
     }
 }

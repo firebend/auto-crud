@@ -57,25 +57,25 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             var runKey = $"{nameof(ChangeTrackingEntity<TEntityKey, TEntity>)}.CreateTables";
 
             await Run.OnceAsync(runKey, async ct =>
-            {
-                try
                 {
-                    if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
+                    try
                     {
-                        await dbCreator
-                            .CreateTablesAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                        if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
+                        {
+                            await dbCreator
+                                .CreateTablesAsync(cancellationToken)
+                                .ConfigureAwait(false);
+                        }
                     }
-                }
-                catch (SqlException)
-                {
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error creating change tracking tables for context", ex);
-                }
-            }, cancellationToken).ConfigureAwait(false);
+                    catch (SqlException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Error creating change tracking tables for context", ex);
+                    }
+                }, cancellationToken)
+                .ConfigureAwait(false);
 
             return context;
         }

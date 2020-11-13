@@ -29,29 +29,29 @@ namespace Firebend.AutoCrud.Mongo.Sample
             Console.WriteLine("Done!");
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, builder) =>
+        public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((hostingContext, builder) =>
+            {
+                if (hostingContext.HostingEnvironment.IsDevelopment())
                 {
-                    if (hostingContext.HostingEnvironment.IsDevelopment())
-                        builder.AddUserSecrets("Firebend.AutoCrud");
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services
-                        .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
-                        .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
-                        .AddEntity<Guid, Person>(person =>
-                            person.WithDefaultDatabase("Samples")
-                                .WithCollection("People")
-                                .WithFullTextSearch()
-                                .AddCrud()
-                                .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
-                        ).Generate();
+                    builder.AddUserSecrets("Firebend.AutoCrud");
+                }
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+                services
+                    .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
+                    .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
+                    .AddEntity<Guid, Person>(person =>
+                        person.WithDefaultDatabase("Samples")
+                            .WithCollection("People")
+                            .WithFullTextSearch()
+                            .AddCrud()
+                            .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
+                    )
+                    .Generate();
 
-                    services.AddHostedService<SampleHostedService>();
-                });
-        }
+                services.AddHostedService<SampleHostedService>();
+            });
     }
 }

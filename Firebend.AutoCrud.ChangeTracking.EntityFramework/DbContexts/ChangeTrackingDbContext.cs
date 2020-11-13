@@ -16,12 +16,10 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
     {
         public ChangeTrackingDbContext()
         {
-
         }
 
         public ChangeTrackingDbContext(DbContextOptions options) : base(options)
         {
-
         }
 
         public DbSet<ChangeTrackingEntity<TKey, TEntity>> Changes { get; set; }
@@ -45,12 +43,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
         }
 
         private static void MapJson<TProperty>(EntityTypeBuilder<ChangeTrackingEntity<TKey, TEntity>> changes,
-            Expression<Func<ChangeTrackingEntity<TKey, TEntity>, TProperty>> func)
-        {
-            changes.Property(func)
-                .HasConversion(new EntityFrameworkJsonValueConverter<TProperty>())
-                .Metadata
-                .SetValueComparer(new EntityFrameworkJsonComparer<TProperty>());
-        }
+            Expression<Func<ChangeTrackingEntity<TKey, TEntity>, TProperty>> func) => changes.Property(func)
+            .HasConversion(new EntityFrameworkJsonValueConverter<TProperty>())
+            .Metadata
+            .SetValueComparer(new EntityFrameworkJsonComparer<TProperty>());
     }
 }

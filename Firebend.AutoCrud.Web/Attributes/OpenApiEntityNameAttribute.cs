@@ -5,13 +5,8 @@ namespace Firebend.AutoCrud.Web.Attributes
 {
     public class OpenApiEntityNameAttribute : Attribute
     {
-        public string Name { get; set; }
-
-        public string Plural { get; set; }
-
         public OpenApiEntityNameAttribute()
         {
-
         }
 
         public OpenApiEntityNameAttribute(string name, string plural)
@@ -22,7 +17,10 @@ namespace Firebend.AutoCrud.Web.Attributes
 
         public OpenApiEntityNameAttribute(string name) : this(name, name.Pluralize())
         {
-
         }
+
+        public string Name { get; set; }
+
+        public string Plural { get; set; }
     }
 }

@@ -36,8 +36,9 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             var shardMap = GetShardMap(manager);
 
             await _dbCreator.EnsureCreatedAsync(_shardMapMangerConfiguration.ConnectionString,
-                shardDatabaseName,
-                cancellationToken).ConfigureAwait(false);
+                    shardDatabaseName,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             var shardLocation = new ShardLocation(_shardMapMangerConfiguration.Server, shardDatabaseName);
 
@@ -59,8 +60,9 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         private async Task<ShardMapManager> GetShardMapMangerAsync(CancellationToken cancellationToken)
         {
             await _dbCreator.EnsureCreatedAsync(_shardMapMangerConfiguration.ConnectionString,
-                _shardMapMangerConfiguration.ShardMapManagerDbName,
-                cancellationToken).ConfigureAwait(false);
+                    _shardMapMangerConfiguration.ShardMapManagerDbName,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             var connStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString)
             {

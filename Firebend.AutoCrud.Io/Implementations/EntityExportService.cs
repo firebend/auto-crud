@@ -11,8 +11,8 @@ namespace Firebend.AutoCrud.Io.Implementations
     public class EntityExportService<T> : IEntityExportService<T>
         where T : class
     {
-        private readonly IEntityFileWriterFactory _fileWriterFactory;
         private readonly IFileFieldAutoMapper<T> _autoMapper;
+        private readonly IEntityFileWriterFactory _fileWriterFactory;
 
         public EntityExportService(IEntityFileWriterFactory fileWriterFactory,
             IFileFieldAutoMapper<T> autoMapper)

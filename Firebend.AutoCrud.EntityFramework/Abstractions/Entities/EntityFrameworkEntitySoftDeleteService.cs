@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
     {
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
 
-        public EntityFrameworkEntitySoftDeleteService(IEntityUpdateService<TKey, TEntity> updateService)
+        protected EntityFrameworkEntitySoftDeleteService(IEntityUpdateService<TKey, TEntity> updateService)
         {
             _updateService = updateService;
         }

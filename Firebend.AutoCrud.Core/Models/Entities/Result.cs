@@ -7,45 +7,18 @@ namespace Firebend.AutoCrud.Core.Models.Entities
         public bool WasSuccessful { get; set; }
         public string Message { get; set; }
 
-        public static Result Success()
-        {
-            return new Result
-            {
-                WasSuccessful = true
-            };
-        }
+        public static Result Success() => new Result { WasSuccessful = true };
 
-        public static Result<T> Success<T>(T model)
-        {
-            return new Result<T>
-            {
-                WasSuccessful = true,
-                Model = model
-            };
-        }
+        public static Result<T> Success<T>(T model) => new Result<T> { WasSuccessful = true, Model = model };
 
-        public static Result Error(string message)
-        {
-            return new Result
-            {
-                WasSuccessful = false,
-                Message = message
-            };
-        }
+        public static Result Error(string message) => new Result { WasSuccessful = false, Message = message };
     }
 
     public class Result<TModel> : Result
     {
         public TModel Model { get; set; }
 
-        public new static Result<TModel> Error(string message)
-        {
-            return new Result<TModel>
-            {
-                WasSuccessful = false,
-                Message = message
-            };
-        }
+        public static new Result<TModel> Error(string message) => new Result<TModel> { WasSuccessful = false, Message = message };
     }
 
     public class ModelError
@@ -56,14 +29,7 @@ namespace Firebend.AutoCrud.Core.Models.Entities
 
     public static class ModelStateResult
     {
-        public static ModelStateResult<TModel> Success<TModel>(TModel model)
-        {
-            return new ModelStateResult<TModel>
-            {
-                WasSuccessful = true,
-                Model = model
-            };
-        }
+        public static ModelStateResult<TModel> Success<TModel>(TModel model) => new ModelStateResult<TModel> { WasSuccessful = true, Model = model };
     }
 
     public class ModelStateResult<TModel> : Result<TModel>
@@ -74,17 +40,10 @@ namespace Firebend.AutoCrud.Core.Models.Entities
         public ModelStateResult<TModel> AddError(string path, string error)
         {
             WasSuccessful = false;
-            _errors.Add(new ModelError
-            {
-                PropertyPath = path,
-                Error = error
-            });
+            _errors.Add(new ModelError { PropertyPath = path, Error = error });
             return this;
         }
 
-        public static ModelStateResult<TModel> Error(string path, string error)
-        {
-            return new ModelStateResult<TModel>().AddError(path, error);
-        }
+        public static ModelStateResult<TModel> Error(string path, string error) => new ModelStateResult<TModel>().AddError(path, error);
     }
 }

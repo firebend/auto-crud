@@ -6,9 +6,8 @@ namespace Firebend.AutoCrud.Web
 {
     public static class MvcBuilderExtensions
     {
-        public static IMvcBuilder AddFirebendAutoCrudWeb(this IMvcBuilder builder, IServiceCollection serviceCollection)
-        {
-            return builder.ConfigureApplicationPartManager(manager =>
+        public static IMvcBuilder AddFirebendAutoCrudWeb(this IMvcBuilder builder, IServiceCollection serviceCollection) =>
+            builder.ConfigureApplicationPartManager(manager =>
             {
                 if (manager.FeatureProviders.Any(fp => fp is FirebendAutoCrudControllerConvention))
                 {
@@ -16,8 +15,6 @@ namespace Firebend.AutoCrud.Web
                 }
 
                 manager.FeatureProviders.Insert(0, new FirebendAutoCrudControllerConvention(serviceCollection));
-
             });
-        }
     }
 }

@@ -19,7 +19,8 @@ namespace Firebend.AutoCrud.Io.Abstractions
 
         public async Task<Stream> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
             IEnumerable<T> records,
-            CancellationToken cancellationToken = default) where T : class
+            CancellationToken cancellationToken = default)
+            where T : class
         {
             var stream = new MemoryStream();
 
@@ -70,13 +71,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
             return stream;
         }
 
-        private static CsvConfiguration GetCsvConfiguration()
-        {
-            return new CsvConfiguration(CultureInfo.InvariantCulture)
-            {
-                IgnoreBlankLines = true,
-            };
-        }
+        private static CsvConfiguration GetCsvConfiguration() => new CsvConfiguration(CultureInfo.InvariantCulture) { IgnoreBlankLines = true };
 
         private (ISerializer serializer, TextWriter writer) GetSerializer(Stream stream)
         {

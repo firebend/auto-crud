@@ -13,10 +13,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Comparers
         {
         }
 
-        private static string Json(T instance)
-        {
-            return JsonConvert.SerializeObject(instance, Formatting.None);
-        }
+        private static string Json(T instance) => JsonConvert.SerializeObject(instance, Formatting.None);
 
         private static T DoGetSnapshot(T instance)
         {

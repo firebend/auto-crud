@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
         IEntityUpdatedDomainEventSubscriber<EfPerson>
     {
         private readonly ILogger _logger;
-        private ScopedConsumeContextProvider _scoped;
+        private readonly ScopedConsumeContextProvider _scoped;
 
         public EfPersonDomainEventHandler(ILogger<EfPersonDomainEventHandler> logger,
             ScopedConsumeContextProvider scoped)
@@ -63,6 +63,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             {
                 _logger.LogInformation("No scope context");
             }
+
             return Task.CompletedTask;
         }
     }

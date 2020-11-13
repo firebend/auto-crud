@@ -79,7 +79,9 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             get
             {
                 if (_tenantEntityKeyType != null)
+                {
                     return _tenantEntityKeyType;
+                }
 
                 if (!IsTenantEntity)
                 {

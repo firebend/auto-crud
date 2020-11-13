@@ -7,13 +7,11 @@ using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Services
 {
-
-    public abstract class AbstractEntitySearchService<TEntity, TSearch> where TSearch : EntitySearchRequest
+    public abstract class AbstractEntitySearchService<TEntity, TSearch>
+        where TSearch : EntitySearchRequest
     {
-
         protected Expression<Func<TEntity, bool>> GetSearchExpression(Expression<Func<TEntity, bool>> customFilter, TSearch search)
         {
-
             var functions = new List<Expression<Func<TEntity, bool>>>();
 
             if (search is IActiveEntitySearchRequest activeEntitySearchRequest)
@@ -32,16 +30,19 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                     var expression = (Expression<Func<IModifiedEntity, bool>>)(x => x.CreatedDate >= modifiedEntitySearchRequest.CreatedStartDate);
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }
+
                 if (modifiedEntitySearchRequest.CreatedEndDate.HasValue)
                 {
                     var expression = (Expression<Func<IModifiedEntity, bool>>)(x => x.CreatedDate <= modifiedEntitySearchRequest.CreatedEndDate);
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }
+
                 if (modifiedEntitySearchRequest.ModifiedStartDate.HasValue)
                 {
                     var expression = (Expression<Func<IModifiedEntity, bool>>)(x => x.ModifiedDate >= modifiedEntitySearchRequest.ModifiedStartDate);
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }
+
                 if (modifiedEntitySearchRequest.ModifiedEndDate.HasValue)
                 {
                     var expression = (Expression<Func<IModifiedEntity, bool>>)(x => x.ModifiedDate <= modifiedEntitySearchRequest.ModifiedEndDate);
@@ -56,7 +57,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 
             Expression<Func<TEntity, bool>> filters = null;
 
-            for (int i = 0; i < functions.Count; i++)
+            for (var i = 0; i < functions.Count; i++)
             {
                 if (i == 0)
                 {
@@ -70,8 +71,5 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 
             return filters;
         }
-
     }
-
 }
-

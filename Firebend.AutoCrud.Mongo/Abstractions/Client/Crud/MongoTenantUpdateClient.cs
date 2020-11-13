@@ -14,8 +14,7 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
-    public abstract class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateClient<TKey, TEntity>,
-        IMongoUpdateClient<TKey, TEntity>
+    public abstract class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>, new()
         where TTenantKey : struct
@@ -23,7 +22,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
-        protected MongoTenantUpdateClient(IMongoClient client, ILogger<MongoUpdateClient<TKey, TEntity>> logger,
+        protected MongoTenantUpdateClient(IMongoClient client,
+            ILogger<MongoUpdateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
             IDomainEventContextProvider domainEventContextProvider,
@@ -34,6 +34,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 jsonPatchDocumentGenerator, domainEventPublisher)
         {
             _tenantEntityProvider = tenantEntityProvider;
+        }
+
+        public override Task<TEntity> UpdateAsync(TKey id,
+            JsonPatchDocument<TEntity> patch,
+            CancellationToken cancellationToken = default)
+        {
+            patch?.Operations.RemoveAll(x => x.path == "/tenantId");
+            return base.UpdateAsync(id, patch, cancellationToken);
         }
 
         protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(
@@ -47,15 +55,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new[] { tenantFilter };
         }
 
-        public override Task<TEntity> UpdateAsync(TKey id, JsonPatchDocument<TEntity> patch,
-            CancellationToken cancellationToken = default)
-        {
-            patch?.Operations.RemoveAll(x => x.path == "/tenantId");
-            return base.UpdateAsync(id, patch, cancellationToken);
-        }
-
         protected override async Task<TEntity> UpdateInternalAsync(TEntity entity,
-            Expression<Func<TEntity, bool>> filter, bool doUpsert, CancellationToken cancellationToken,
+            Expression<Func<TEntity, bool>> filter,
+            bool doUpsert,
+            CancellationToken cancellationToken,
             JsonPatchDocument<TEntity> patchDocument = null)
         {
             var tenant = await _tenantEntityProvider
@@ -64,7 +67,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             entity.TenantId = tenant.TenantId;
             patchDocument?.Operations.RemoveAll(x => x.path == "/tenantId");
-            return await base.UpdateInternalAsync(entity, filter, doUpsert, cancellationToken, patchDocument).ConfigureAwait(false);
+
+            return await base
+                .UpdateInternalAsync(entity, filter, doUpsert, cancellationToken, patchDocument)
+                .ConfigureAwait(false);
         }
     }
 }

@@ -11,7 +11,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
         where TEntityKey : struct
         where TEntity : class, IEntity<TEntityKey>
     {
-        public IEnumerable<CreateIndexModel<ChangeTrackingEntity<TEntityKey, TEntity>>> GetIndexes(IndexKeysDefinitionBuilder<ChangeTrackingEntity<TEntityKey, TEntity>> builder)
+        public IEnumerable<CreateIndexModel<ChangeTrackingEntity<TEntityKey, TEntity>>> GetIndexes(
+            IndexKeysDefinitionBuilder<ChangeTrackingEntity<TEntityKey, TEntity>> builder)
         {
             yield return new CreateIndexModel<ChangeTrackingEntity<TEntityKey, TEntity>>(builder.Ascending(f => f.EntityId));
         }

@@ -11,10 +11,10 @@ namespace Firebend.AutoCrud.Io.Implementations
 {
     public class SpreadsheetSerializer : ISerializer
     {
-        private readonly Stream _stream;
         private readonly bool _disposeWorkbook;
-        private bool _disposed;
+        private readonly Stream _stream;
         private int _currentRow = 1;
+        private bool _disposed;
 
         public SpreadsheetSerializer(Stream stream,
             string sheetName = "Export",
@@ -51,7 +51,8 @@ namespace Firebend.AutoCrud.Io.Implementations
             {
                 Worksheet
                     .AsRange()
-                    .Cell(_currentRow + RowOffset, i + 1 + ColumnOffset).Value = ReplaceHexadecimalSymbols(record[i]);
+                    .Cell(_currentRow + RowOffset, i + 1 + ColumnOffset)
+                    .Value = ReplaceHexadecimalSymbols(record[i]);
             }
 
             _currentRow++;
@@ -66,7 +67,6 @@ namespace Firebend.AutoCrud.Io.Implementations
 
         public void WriteLine()
         {
-
         }
 
         public Task WriteLineAsync()
@@ -80,25 +80,10 @@ namespace Firebend.AutoCrud.Io.Implementations
 
         ISerializerConfiguration ISerializer.Configuration => Configuration;
 
-        private static string ReplaceHexadecimalSymbols(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-            {
-                return text;
-            }
-
-            return Regex.Replace(text, "[\x00-\x08\x0B\x0C\x0E-\x1F]", string.Empty, RegexOptions.Compiled);
-        }
-
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        ~SpreadsheetSerializer()
-        {
-            Dispose(false);
         }
 
         public ValueTask DisposeAsync()
@@ -115,10 +100,27 @@ namespace Firebend.AutoCrud.Io.Implementations
             }
         }
 
+        private static string ReplaceHexadecimalSymbols(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
+            return Regex.Replace(text, "[\x00-\x08\x0B\x0C\x0E-\x1F]", string.Empty, RegexOptions.Compiled);
+        }
+
+        ~SpreadsheetSerializer()
+        {
+            Dispose(false);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
@@ -130,13 +132,11 @@ namespace Firebend.AutoCrud.Io.Implementations
                     _stream.Dispose();
                 }
             }
+
             _disposed = true;
         }
 
-        public virtual void SaveWorkbook()
-        {
-            Workbook.SaveAs(_stream);
-        }
+        public virtual void SaveWorkbook() => Workbook.SaveAs(_stream);
 
         public virtual void SetWidths()
         {

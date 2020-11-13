@@ -13,10 +13,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        private readonly IEntityDomainEventPublisher _domainEventPublisher;
         private readonly IDomainEventContextProvider _domainEventContextProvider;
+        private readonly IEntityDomainEventPublisher _domainEventPublisher;
 
-        public EntityFrameworkDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider,
+        protected EntityFrameworkDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider) : base(contextProvider)
         {
@@ -28,10 +28,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-            var entity = new TEntity
-            {
-                Id = key
-            };
+            var entity = new TEntity { Id = key };
 
             var entry = context.Entry(entity);
 
@@ -70,11 +67,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             if (_domainEventPublisher != null && !(_domainEventPublisher is DefaultEntityDomainEventPublisher))
             {
-                var domainEvent = new EntityDeletedDomainEvent<TEntity>
-                {
-                    Entity = savedEntity,
-                    EventContext = _domainEventContextProvider?.GetContext()
-                };
+                var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
                 return _domainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
             }

@@ -4,13 +4,12 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Entities;
+using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    using Interfaces;
-
     [ApiController]
     public abstract class AbstractEntityCreateController<TKey, TEntity, TViewModel> : ControllerBase
         where TKey : struct
@@ -136,19 +135,12 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (createdEntities.Count > 0)
             {
-                return Ok(new
-                {
-                    created = createdEntities,
-                    errors = errorEntities
-                });
+                return Ok(new { created = createdEntities, errors = errorEntities });
             }
 
             if (errorEntities.Count > 0)
             {
-                return BadRequest(new
-                {
-                    errors = errorEntities
-                });
+                return BadRequest(new { errors = errorEntities });
             }
 
             return BadRequest();

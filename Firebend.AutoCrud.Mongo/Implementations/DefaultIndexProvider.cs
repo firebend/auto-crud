@@ -7,9 +7,6 @@ namespace Firebend.AutoCrud.Mongo.Implementations
 {
     public class DefaultIndexProvider<TEntity> : IMongoIndexProvider<TEntity>
     {
-        public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder)
-        {
-            return Enumerable.Empty<CreateIndexModel<TEntity>>();
-        }
+        public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder) => Enumerable.Empty<CreateIndexModel<TEntity>>();
     }
 }

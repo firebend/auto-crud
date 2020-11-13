@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 {
-
     public static class MassTransitExtensions
     {
         private static ServiceDescriptor[] _listeners;
@@ -35,7 +34,8 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             return listeners;
         }
 
-        public static void RegisterFirebendAutoCrudDomainEventHandlers(this IServiceCollectionBusConfigurator busConfigurator, IServiceCollection serviceCollection)
+        public static void RegisterFirebendAutoCrudDomainEventHandlers(this IServiceCollectionBusConfigurator busConfigurator,
+            IServiceCollection serviceCollection)
         {
             var addConsumer = typeof(MassTransitExtensions).GetMethod(nameof(AddConsumer),
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Static);
@@ -118,10 +118,8 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             IReceiveEndpointConfigurator receiveEndpointConfigurator)
             where TDomainEvent : DomainEventBase
             where TDomainEventHandler : class, IDomainEventSubscriber
-            where TDomainEventConsumer : AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler>
-        {
+            where TDomainEventConsumer : AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler> =>
             context.ConfigureConsumer<TDomainEventConsumer>(receiveEndpointConfigurator);
-        }
 
         private static (Type consumerType, Type domainEventType, string desc) GetConsumerInfo(ServiceDescriptor serviceDescriptor)
         {
@@ -198,12 +196,16 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
         private static bool IsMessageListener(Type serviceType)
         {
             if (!serviceType.IsGenericType)
+            {
                 return false;
+            }
 
             var args = serviceType.GetGenericArguments();
 
             if (args.Length != 1 && !args[0].IsClass)
+            {
                 return false;
+            }
 
             return typeof(IDomainEventSubscriber).IsAssignableFrom(serviceType);
         }

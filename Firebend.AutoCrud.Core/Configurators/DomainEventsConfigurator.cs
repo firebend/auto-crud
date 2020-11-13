@@ -9,7 +9,8 @@ namespace Firebend.AutoCrud.Core.Configurators
 {
     public class DomainEventsConfigurator<TBuilder, TKey, TEntity> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
-        where TKey : struct where TEntity : class, IEntity<TKey>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
         public DomainEventsConfigurator(TBuilder builder) : base(builder)
         {
@@ -25,15 +26,10 @@ namespace Firebend.AutoCrud.Core.Configurators
         }
 
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventPublisher<TPublisher>()
-            where TPublisher : IEntityDomainEventPublisher
-        {
-            return WithDomainEventPublisher(typeof(TPublisher));
-        }
+            where TPublisher : IEntityDomainEventPublisher => WithDomainEventPublisher(typeof(TPublisher));
 
-        public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventPublisherServiceProvider()
-        {
-            return WithDomainEventPublisher(typeof(ServiceProviderDomainEventPublisher));
-        }
+        public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventPublisherServiceProvider() =>
+            WithDomainEventPublisher(typeof(ServiceProviderDomainEventPublisher));
 
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventEntityAddedSubscriber(Type type)
         {
@@ -65,10 +61,8 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventEntityUpdatedSubscriber<TSubscriber>()
-        {
-            return WithDomainEventEntityUpdatedSubscriber(typeof(TSubscriber));
-        }
+        public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventEntityUpdatedSubscriber<TSubscriber>() =>
+            WithDomainEventEntityUpdatedSubscriber(typeof(TSubscriber));
 
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventEntityDeletedSubscriber(Type type)
         {
@@ -81,9 +75,7 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
-        public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventEntityDeletedSubscriber<TSubscriber>()
-        {
-            return WithDomainEventEntityDeletedSubscriber(typeof(TSubscriber));
-        }
+        public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventEntityDeletedSubscriber<TSubscriber>() =>
+            WithDomainEventEntityDeletedSubscriber(typeof(TSubscriber));
     }
 }

@@ -16,8 +16,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             _logger = logger;
         }
 
-        protected abstract string GetSqlCommand(string dbName);
-
         public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
@@ -41,5 +39,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 _logger.LogDebug($"Database is created. Key {key}");
             }, cancellationToken);
         }
+
+        protected abstract string GetSqlCommand(string dbName);
     }
 }

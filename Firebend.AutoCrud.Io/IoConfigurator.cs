@@ -11,7 +11,8 @@ namespace Firebend.AutoCrud.Io
     public class IoConfigurator<TBuilder, TKey, TEntity> :
         EntityBuilderConfigurator<TBuilder, TKey, TEntity>
         where TBuilder : EntityBuilder<TKey, TEntity>
-        where TKey : struct where TEntity : class, IEntity<TKey>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
         public IoConfigurator(TBuilder builder) : base(builder)
         {
@@ -24,7 +25,8 @@ namespace Firebend.AutoCrud.Io
             AddExportEntityRegistrations<TEntity>();
         }
 
-        private void AddExportEntityRegistrations<TOut>() where TOut : class
+        private void AddExportEntityRegistrations<TOut>()
+            where TOut : class
         {
             Builder.ExportType = typeof(TOut);
             Builder.WithRegistration<IEntityExportService<TOut>, EntityExportService<TOut>>();
@@ -32,7 +34,8 @@ namespace Firebend.AutoCrud.Io
             Builder.WithRegistration<IFileFieldWriteFilter<TOut>, AbstractDefaultFileFileWriteFilter<TOut>>();
         }
 
-        private void RemoveExportEntityRegistrations<TOut>() where TOut : class
+        private void RemoveExportEntityRegistrations<TOut>()
+            where TOut : class
         {
             Builder.Registrations.Remove(typeof(IEntityExportService<TOut>));
             Builder.Registrations.Remove(typeof(IFileFieldAutoMapper<TOut>));
@@ -55,10 +58,7 @@ namespace Firebend.AutoCrud.Io
         public IoConfigurator<TBuilder, TKey, TEntity> WithMapper<TOut>(Func<TEntity, TOut> mapper)
             where TOut : class
         {
-            Builder.WithRegistrationInstance(typeof(IEntityExportMapper<TEntity, TOut>), new EntityExportMapper<TEntity, TOut>
-            {
-                MapperFunc = mapper
-            });
+            Builder.WithRegistrationInstance(typeof(IEntityExportMapper<TEntity, TOut>), new EntityExportMapper<TEntity, TOut> { MapperFunc = mapper });
 
             RemoveExportEntityRegistrations<TEntity>();
             AddExportEntityRegistrations<TOut>();

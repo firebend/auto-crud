@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+
 namespace Firebend.AutoCrud.Core.Extensions
 {
     public static class StringExtensions
@@ -20,10 +21,7 @@ namespace Firebend.AutoCrud.Core.Extensions
             return null;
         }
 
-        public static bool In(this string source, params string[] list)
-        {
-            return list.Any(x => x.EqualsIgnoreCaseAndWhitespace(source));
-        }
+        public static bool In(this string source, params string[] list) => list.Any(x => x.EqualsIgnoreCaseAndWhitespace(source));
 
         public static bool EqualsIgnoreCaseAndWhitespace(this string source, string compare)
         {
@@ -40,9 +38,6 @@ namespace Firebend.AutoCrud.Core.Extensions
             return source.SafeTrim().Equals(compare.SafeTrim(), StringComparison.OrdinalIgnoreCase);
         }
 
-        public static string SafeTrim(this string source)
-        {
-            return string.IsNullOrEmpty(source) ? source : source.Trim();
-        }
+        public static string SafeTrim(this string source) => string.IsNullOrEmpty(source) ? source : source.Trim();
     }
 }

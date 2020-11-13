@@ -13,7 +13,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
     {
         private readonly IMongoDeleteClient<TKey, TEntity> _deleteClient;
 
-        public MongoEntityDeleteService(IMongoDeleteClient<TKey, TEntity> deleteClient)
+        protected MongoEntityDeleteService(IMongoDeleteClient<TKey, TEntity> deleteClient)
         {
             _deleteClient = deleteClient;
         }
@@ -21,7 +21,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
         {
             if (key.Equals(default))
+            {
                 throw new ArgumentException("Key is invalid", nameof(key));
+            }
 
             return _deleteClient.DeleteAsync(x => x.Id.Equals(key), cancellationToken);
         }

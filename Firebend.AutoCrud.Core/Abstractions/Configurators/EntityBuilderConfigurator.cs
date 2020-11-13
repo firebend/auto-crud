@@ -8,11 +8,11 @@ namespace Firebend.AutoCrud.Core.Abstractions.Configurators
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        public TBuilder Builder { get; }
-
         public EntityBuilderConfigurator(TBuilder builder)
         {
             Builder = builder;
         }
+
+        public TBuilder Builder { get; }
     }
 }

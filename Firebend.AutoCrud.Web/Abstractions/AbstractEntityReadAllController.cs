@@ -1,15 +1,14 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    using System.Linq;
-    using Interfaces;
-
     [ApiController]
     public abstract class AbstractEntityReadAllController<TKey, TEntity, TViewModel> : ControllerBase
         where TKey : struct

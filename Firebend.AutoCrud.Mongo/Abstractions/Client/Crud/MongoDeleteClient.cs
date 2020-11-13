@@ -16,8 +16,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
         private readonly IDomainEventContextProvider _domainEventContextProvider;
+        private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
 
         protected MongoDeleteClient(IMongoClient client,
             ILogger<MongoDeleteClient<TKey, TEntity>> logger,
@@ -50,11 +50,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         {
             if (_entityDomainEventPublisher != null && !(_entityDomainEventPublisher is DefaultEntityDomainEventPublisher))
             {
-                var domainEvent = new EntityDeletedDomainEvent<TEntity>
-                {
-                    Entity = savedEntity,
-                    EventContext = _domainEventContextProvider?.GetContext()
-                };
+                var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
                 return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
             }

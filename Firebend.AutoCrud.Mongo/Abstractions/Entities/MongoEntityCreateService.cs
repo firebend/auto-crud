@@ -12,14 +12,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
     {
         private readonly IMongoCreateClient<TKey, TEntity> _createClient;
 
-        public MongoEntityCreateService(IMongoCreateClient<TKey, TEntity> createClient)
+        protected MongoEntityCreateService(IMongoCreateClient<TKey, TEntity> createClient)
         {
             _createClient = createClient;
         }
 
-        public Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            return _createClient.CreateAsync(entity, cancellationToken);
-        }
+        public Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) => _createClient.CreateAsync(entity, cancellationToken);
     }
 }

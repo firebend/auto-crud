@@ -1,11 +1,11 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Web.Interfaces;
+
 namespace Firebend.AutoCrud.Web.Implementations
 {
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Core.Interfaces.Models;
-    using Interfaces;
-
     public class DefaultViewModelMapper<TKey, TEntity> : IViewModelMapper<TKey, TEntity, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>

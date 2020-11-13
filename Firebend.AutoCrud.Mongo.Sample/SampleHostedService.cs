@@ -53,10 +53,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 throw new Exception(msg);
             }
 
-            _serializer = JsonSerializer.Create(new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented
-            });
+            _serializer = JsonSerializer.Create(new JsonSerializerSettings { Formatting = Formatting.Indented });
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -67,11 +64,9 @@ namespace Firebend.AutoCrud.Mongo.Sample
 
             try
             {
-                var entity = await _createService.CreateAsync(new Person
-                {
-                    FirstName = $"First Name -{DateTimeOffset.UtcNow}",
-                    LastName = $"Last Name -{DateTimeOffset.UtcNow}"
-                }, _cancellationTokenSource.Token);
+                var entity = await _createService.CreateAsync(
+                    new Person { FirstName = $"First Name -{DateTimeOffset.UtcNow}", LastName = $"Last Name -{DateTimeOffset.UtcNow}" },
+                    _cancellationTokenSource.Token);
                 LogObject("Entity added....");
 
                 entity.FirstName = $"{entity.FirstName} - updated";
@@ -86,13 +81,8 @@ namespace Firebend.AutoCrud.Mongo.Sample
                 var read = await _readService.GetByKeyAsync(patched.Id, cancellationToken);
                 LogObject("Entity Read...", read);
 
-                var search = await _searchService.PageAsync(new EntitySearchRequest
-                {
-                    Search = "First",
-                    PageNumber = 1,
-                    PageSize = 10,
-                    DoCount = true
-                }, cancellationToken);
+                var search = await _searchService.PageAsync(new EntitySearchRequest { Search = "First", PageNumber = 1, PageSize = 10, DoCount = true },
+                    cancellationToken);
                 LogObject("Page....", search);
 
                 var all = await _readService.GetAllAsync(cancellationToken);
