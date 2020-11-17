@@ -41,7 +41,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [Produces("application/json")]
         public virtual async Task<IActionResult> Put(
             [Required][FromRoute] string id,
-            [Required][FromBody] TEntity body,
+            [Required]TEntity body,
             CancellationToken cancellationToken)
         {
             var key = GetKey(id);

@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Post(
-            [FromBody] TViewModel body,
+             TViewModel body,
             CancellationToken cancellationToken)
         {
             if (body == null)
@@ -89,7 +89,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> PostMultiple(
-            [FromBody] TViewModel[] body,
+            TViewModel[] body,
             CancellationToken cancellationToken)
         {
             if (body == null || body.Length <= 0)
