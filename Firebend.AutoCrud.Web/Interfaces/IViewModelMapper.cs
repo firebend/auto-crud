@@ -18,4 +18,28 @@ namespace Firebend.AutoCrud.Web.Interfaces
 
         Task<IEnumerable<TViewModel>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken = default);
     }
+
+    public interface ICreateViewModelMapper<TKey, TEntity, TViewModel> : IViewModelMapper<TKey, TEntity, TViewModel>
+        where TEntity : IEntity<TKey>
+        where TKey : struct
+        where TViewModel : class
+    {
+
+    }
+
+    public interface IUpdateViewModelMapper<TKey, TEntity, TViewModel> : IViewModelMapper<TKey, TEntity, TViewModel>
+        where TEntity : IEntity<TKey>
+        where TKey : struct
+        where TViewModel : class
+    {
+
+    }
+
+    public interface IReadViewModelMapper<TKey, TEntity, TViewModel> : IViewModelMapper<TKey, TEntity, TViewModel>
+        where TEntity : IEntity<TKey>
+        where TKey : struct
+        where TViewModel : class
+    {
+
+    }
 }

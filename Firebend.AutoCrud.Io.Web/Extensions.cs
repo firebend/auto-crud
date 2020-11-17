@@ -9,12 +9,11 @@ namespace Firebend.AutoCrud.Io.Web
 {
     public static class Extensions
     {
-        public static ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> WithIoControllers<TBuilder, TKey, TEntity, TViewModel>(
-            this ControllerConfigurator<TBuilder, TKey, TEntity, TViewModel> configurator)
+        public static ControllerConfigurator<TBuilder, TKey, TEntity> WithIoControllers<TBuilder, TKey, TEntity>(
+            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
             where TKey : struct
             where TEntity : class, IEntity<TKey>
-            where TViewModel : class
         {
             if (configurator?.Builder?.SearchRequestType == null)
             {
