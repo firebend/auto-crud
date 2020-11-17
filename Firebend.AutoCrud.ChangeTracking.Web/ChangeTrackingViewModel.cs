@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
         where TViewModel : class
     {
         public async Task<ChangeTrackingViewModel<TKey, TEntity, TViewModel>> MapAsync(ChangeTrackingEntity<TKey, TEntity> changeTrackingEntity,
-            IViewModelMapper<TKey, TEntity, TViewModel> mapper,
+            IReadViewModelMapper<TKey, TEntity, TViewModel> mapper,
             CancellationToken cancellationToken = default)
         {
             changeTrackingEntity.CopyPropertiesTo(this,

@@ -18,11 +18,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
     {
         private readonly IEntityCreateService<TKey, TEntity> _createService;
         private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _mapper;
+        private readonly ICreateViewModelMapper<TKey, TEntity, TViewModel> _mapper;
 
         public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
             IEntityValidationService<TKey, TEntity> entityValidationService,
-            IViewModelMapper<TKey, TEntity, TViewModel> mapper)
+            ICreateViewModelMapper<TKey, TEntity, TViewModel> mapper)
         {
             _createService = createService;
             _entityValidationService = entityValidationService;

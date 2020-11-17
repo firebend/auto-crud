@@ -16,11 +16,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TViewModel : class
     {
         private readonly IEntityDeleteService<TKey, TEntity> _deleteService;
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
         protected AbstractEntityDeleteController(IEntityDeleteService<TKey, TEntity> deleteService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(entityKeyParser)
+            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(entityKeyParser)
         {
             _deleteService = deleteService;
             _viewModelMapper = viewModelMapper;

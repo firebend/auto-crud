@@ -19,10 +19,10 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TViewModel : class
     {
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
         protected AbstractEntitySearchController(IEntitySearchService<TKey, TEntity, TSearch> searchService,
-            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper)
+            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper)
         {
             _searchService = searchService;
             _viewModelMapper = viewModelMapper;
