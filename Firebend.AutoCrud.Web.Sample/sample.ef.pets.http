@@ -7,3 +7,6 @@ Content-Type: application/json
 }
 ###
 GET https://localhost:5001/api/v1/ef-person/5eaa2c79-5709-43bb-9768-08d88bd03ee0/pets?pageNumber=1&pageSize=10
+
+###
+GET https://localhost:5001/api/v1/ef-person/5eaa2c79-5709-43bb-9768-08d88bd03ee0/pets/export/csv?pageNumber=1&pageSize=10&fileName=test
