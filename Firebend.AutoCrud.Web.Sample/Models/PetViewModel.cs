@@ -56,11 +56,13 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         {
             pet.CopyPropertiesTo(this);
 
-            if (pet.Person != null)
+            if (pet.Person == null)
             {
-                this.Person = new PetPersonViewModel();
-                pet.Person.CopyPropertiesTo(this.Person);
+                return;
             }
+
+            this.Person = new PetPersonViewModel();
+            pet.Person.CopyPropertiesTo(this.Person);
         }
     }
 
