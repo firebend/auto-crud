@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.Core.Extensions
                     continue;
                 }
 
-                if (destProps.Any(x => x.Name == sourceProp.Name))
+                if (destProps.Any(x => x.Name == sourceProp.Name && x.PropertyType == sourceProp.PropertyType))
                 {
                     var p = destProps.First(x => x.Name == sourceProp.Name);
 

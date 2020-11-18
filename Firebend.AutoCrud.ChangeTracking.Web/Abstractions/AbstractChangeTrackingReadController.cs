@@ -20,11 +20,11 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
         where TViewModel : class
     {
         private readonly IChangeTrackingReadService<TKey, TEntity> _read;
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
 
         protected AbstractChangeTrackingReadController(IChangeTrackingReadService<TKey, TEntity> read,
             IEntityKeyParser<TKey, TEntity> keyParser,
-            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(keyParser)
+            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(keyParser)
         {
             _read = read;
             _viewModelMapper = viewModelMapper;

@@ -17,11 +17,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> _fullTextSearchProvider;
+        private readonly IEntityFrameworkIncludesProvider<TKey, TEntity> _includesProvider;
 
         public EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> fullTextSearchProvider) : base(contextProvider)
+            IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> fullTextSearchProvider,
+            IEntityFrameworkIncludesProvider<TKey, TEntity> includesProvider) : base(contextProvider)
         {
             _fullTextSearchProvider = fullTextSearchProvider;
+            _includesProvider = includesProvider;
         }
 
         public async Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
@@ -190,5 +193,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             return queryable;
         }
+
+        protected override IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable)
+            => _includesProvider == null ? queryable : _includesProvider.AddIncludes(queryable);
     }
 }

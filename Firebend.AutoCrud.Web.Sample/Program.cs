@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Extensions;
 using Firebend.AutoCrud.Web.Sample.Tenant;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -39,6 +40,7 @@ namespace Firebend.AutoCrud.Web.Sample
                     .UsingEfCrud(ef =>
                     {
                         ef.AddEfPerson(hostContext.Configuration)
+                            .AddEfPets(hostContext.Configuration)
                             .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
                     })
                     .AddSampleMassTransit(hostContext.Configuration)
@@ -47,6 +49,8 @@ namespace Firebend.AutoCrud.Web.Sample
                     .AddControllers()
                     .AddNewtonsoftJson()
                     .AddFirebendAutoCrudWeb(services);
+
+                services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
             });
     }
 }

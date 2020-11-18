@@ -11,22 +11,26 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityCreateController<TKey, TEntity, TViewModel> : ControllerBase
+    public abstract class AbstractEntityCreateController<TKey, TEntity, TCreateViewModel, TReadViewModel> : ControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TViewModel : class
+        where TCreateViewModel : class
+        where TReadViewModel : class
     {
         private readonly IEntityCreateService<TKey, TEntity> _createService;
         private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _mapper;
+        private readonly ICreateViewModelMapper<TKey, TEntity, TCreateViewModel> _mapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readMapper;
 
         public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
             IEntityValidationService<TKey, TEntity> entityValidationService,
-            IViewModelMapper<TKey, TEntity, TViewModel> mapper)
+            ICreateViewModelMapper<TKey, TEntity, TCreateViewModel> mapper,
+            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper)
         {
             _createService = createService;
             _entityValidationService = entityValidationService;
             _mapper = mapper;
+            _readMapper = readMapper;
         }
 
         [HttpPost]
@@ -35,7 +39,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> Post(
-            [FromBody] TViewModel body,
+             TCreateViewModel body,
             CancellationToken cancellationToken)
         {
             if (body == null)
@@ -75,7 +79,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 .CreateAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
 
-            var createdViewModel = await _mapper
+            var createdViewModel = await _readMapper
                 .ToAsync(created, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -89,7 +93,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> PostMultiple(
-            [FromBody] TViewModel[] body,
+            TCreateViewModel[] body,
             CancellationToken cancellationToken)
         {
             if (body == null || body.Length <= 0)
@@ -98,7 +102,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            var createdEntities = new List<TViewModel>();
+            var createdEntities = new List<TReadViewModel>();
             var errorEntities = new List<ModelStateResult<TEntity>>();
 
             foreach (var toCreate in body)
@@ -126,7 +130,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     .CreateAsync(entityToCreate, cancellationToken)
                     .ConfigureAwait(false);
 
-                var mappedEntity = await _mapper
+                var mappedEntity = await _readMapper
                     .ToAsync(entity, cancellationToken)
                     .ConfigureAwait(false);
 

@@ -11,26 +11,30 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public abstract class AbstractEntityUpdateController<TKey, TEntity, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractEntityUpdateController<TKey, TEntity, TUpdateViewModel, TReadViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
-        where TViewModel : class
+        where TReadViewModel : class
+        where TUpdateViewModel : class
     {
         private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
-        private readonly IViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
+        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readViewModelMapper;
 
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
             IEntityValidationService<TKey, TEntity> entityValidationService,
-            IViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(entityKeyParser)
+            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
+            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper) : base(entityKeyParser)
         {
             _updateService = updateService;
             _readService = readService;
             _entityValidationService = entityValidationService;
-            _viewModelMapper = viewModelMapper;
+            _updateViewModelMapper = updateViewModelMapper;
+            _readViewModelMapper = readViewModelMapper;
         }
 
         [HttpPut("{id}")]
@@ -41,7 +45,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [Produces("application/json")]
         public virtual async Task<IActionResult> Put(
             [Required][FromRoute] string id,
-            [Required][FromBody] TEntity body,
+            [Required] TUpdateViewModel body,
             CancellationToken cancellationToken)
         {
             var key = GetKey(id);
@@ -51,20 +55,21 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            if (body == null || body.Id.Equals(default(TKey)) || body.Id.Equals(null))
+            if (body == null)
             {
-                ModelState.AddModelError(nameof(body), "The entity body has no id provided.");
+                ModelState.AddModelError(nameof(body), "A body is required");
+
                 return BadRequest(ModelState);
             }
 
-            if (!key.Value.Equals(body.Id))
-            {
-                ModelState.AddModelError(nameof(id), "The id provided in the url does not match the id in the body.");
-                return BadRequest(ModelState);
-            }
+            var entityUpdate = await _updateViewModelMapper
+                .FromAsync(body, cancellationToken)
+                .ConfigureAwait(false);
+
+            entityUpdate.Id = key.Value;
 
             var isValid = await _entityValidationService
-                .ValidateAsync(body, cancellationToken)
+                .ValidateAsync(entityUpdate, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!isValid.WasSuccessful)
@@ -78,7 +83,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             }
 
             var entity = await _updateService
-                .UpdateAsync(body, cancellationToken)
+                .UpdateAsync(entityUpdate, cancellationToken)
                 .ConfigureAwait(false);
 
             if (entity == null)
@@ -86,7 +91,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return NotFound(new { id });
             }
 
-            var mapped = await _viewModelMapper
+            var mapped = await _readViewModelMapper
                 .ToAsync(entity, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -161,7 +166,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (update != null)
             {
-                var mapped = await _viewModelMapper
+                var mapped = await _readViewModelMapper
                     .ToAsync(update, cancellationToken)
                     .ConfigureAwait(false);
 

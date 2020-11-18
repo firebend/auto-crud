@@ -1,0 +1,45 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+
+namespace Firebend.AutoCrud.Web.Sample.Models
+{
+    public class EfPet : IEntity<Guid>, IModifiedEntity, ITenantEntity<int>, IActiveEntity
+    {
+        public EfPet()
+        {
+
+        }
+
+        public EfPet(CreatePetViewModel pet)
+        {
+            pet.Body.CopyPropertiesTo(this);
+            EfPersonId = pet.PersonId;
+        }
+
+        public EfPet(PutPetViewModel pet)
+        {
+            pet.CopyPropertiesTo(this);
+        }
+
+        public Guid Id { get; set; }
+
+        public Guid EfPersonId { get; set; }
+
+        public EfPerson Person { get; set; }
+
+        [Required]
+        [MaxLength(205)]
+        public string PetName { get; set; }
+
+        [Required]
+        [MaxLength(250)]
+        public string PetType { get; set; }
+
+        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset ModifiedDate { get; set; }
+        public int TenantId { get; set; }
+        public bool IsDeleted { get; set; }
+    }
+}
