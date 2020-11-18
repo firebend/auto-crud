@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Web.Implementations
         IUpdateViewModelMapper<TKey, TEntity, TViewModel>,
         IReadViewModelMapper<TKey, TEntity, TViewModel>
         where TViewModel : class
-        where TEntity : IEntity<TKey>
+        where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
         public Func<TEntity, TViewModel> To { get; set; }
@@ -20,15 +20,15 @@ namespace Firebend.AutoCrud.Web.Implementations
         public Func<TViewModel, TEntity> From { get; set; }
 
         public Task<TEntity> FromAsync(TViewModel model, CancellationToken cancellationToken = default)
-            => Task.FromResult(From(model));
+            => Task.FromResult(From?.Invoke(model));
 
         public Task<IEnumerable<TEntity>> FromAsync(IEnumerable<TViewModel> model, CancellationToken cancellationToken = default)
-            => Task.FromResult(model.Select(From));
+            => From == null ? Task.FromResult((IEnumerable<TEntity>)null) : Task.FromResult(model.Select(From));
 
         public Task<TViewModel> ToAsync(TEntity entity, CancellationToken cancellationToken = default)
-            => Task.FromResult(To(entity));
+            => Task.FromResult(To?.Invoke(entity));
 
         public Task<IEnumerable<TViewModel>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken = default)
-            => Task.FromResult(entity.Select(To));
+            => To == null ? Task.FromResult((IEnumerable<TViewModel>)null) : Task.FromResult(entity.Select(To));
     }
 }

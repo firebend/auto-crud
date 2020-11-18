@@ -55,6 +55,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
             var queryable = set.AsQueryable();
 
+            queryable = AddIncludes(queryable);
+
             if (firstStageFilters != null)
             {
                 queryable = queryable.Where(firstStageFilters);
@@ -90,5 +92,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
             => Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
+
+        protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => queryable;
     }
 }

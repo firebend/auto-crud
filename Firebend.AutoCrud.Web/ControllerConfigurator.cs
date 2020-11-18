@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -308,29 +309,64 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        private ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type registrationType,
-                Type viewModelType,
-                Type viewModelMapper,
-                bool makeRegistrationGeneric
-                ) => WithControllerHelper(
-                typeof(AbstractEntityCreateController<,,>),
-                typeof(ICreateViewModelMapper<,,>),
-                registrationType,
-                viewModelType,
-                viewModelMapper,
-                makeRegistrationGeneric);
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type serviceType,
+            Type viewModelType,
+            Type viewModelMapper,
+            Type resultModelType,
+            Type resultModelTypeMapper,
+            bool makeServiceGeneric)
+        {
+            var controller = typeof(AbstractEntityCreateController<,,,>)
+                .MakeGenericType(CrudBuilder.EntityKeyType,
+                    CrudBuilder.EntityType,
+                    viewModelType,
+                    resultModelType);
 
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type registrationType,
-                Type viewModelType,
-                Type viewModelMapper = null
-                ) => WithCreateController(registrationType,viewModelType, viewModelMapper, false);
+            if (viewModelMapper != null)
+            {
+                var createViewModelMapperInterface = typeof(ICreateViewModelMapper<,,>)
+                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, viewModelType);
+
+                CrudBuilder.WithRegistration(createViewModelMapperInterface, viewModelMapper, createViewModelMapperInterface);
+            }
+
+            if (resultModelTypeMapper != null)
+            {
+                var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
+                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, resultModelType);
+
+                CrudBuilder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
+            }
+
+            if (makeServiceGeneric)
+            {
+                serviceType = serviceType.MakeGenericType(CrudBuilder.EntityKeyType,
+                        CrudBuilder.EntityType,
+                        viewModelType,
+                        resultModelType);
+            }
+
+            WithController(serviceType, controller);
+
+            return this;
+        }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController<TRegistrationType>()
-            => WithCreateController(typeof(TRegistrationType), CreateViewModelType);
+            => WithCreateController(typeof(TRegistrationType),
+                CreateViewModelType,
+                null,
+                ReadViewModelType,
+                null,
+                false);
 
-        public ControllerConfigurator<TBuilder, TKey, TEntity > WithCreateController()
-            => WithCreateController(typeof(AbstractEntityCreateController<,,>),
-                CreateViewModelType, null, true);
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController()
+            => WithCreateController(
+                typeof(AbstractEntityCreateController<,,,>),
+                CreateViewModelType,
+                null,
+                ReadViewModelType,
+                null,
+                true);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController(Type registrationType,
             Type viewModelType,
@@ -394,10 +430,9 @@ namespace Firebend.AutoCrud.Web
                 true);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController(Type registrationType,
-                Type viewModelType,
-                Type viewModelMapper = null,
-                bool makeRegistrationTypeGeneric = false
-                )
+            Type viewModelType,
+            Type viewModelMapper = null,
+            bool makeRegistrationTypeGeneric = false)
         {
             var controller = typeof(AbstractEntitySearchController<,,,>)
                 .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchRequestType, viewModelType);
@@ -428,25 +463,62 @@ namespace Firebend.AutoCrud.Web
                 null,
                 true);
 
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(Type registrationType,
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(Type serviceType,
             Type viewModelType,
-            Type viewModelMapper = null,
-            bool makeRegistrationTypeGeneric = false)
-            =>  WithControllerHelper(
-                typeof(AbstractEntityUpdateController<,,>),
-                typeof(ICreateViewModelMapper<,,>),
-                registrationType,
-                viewModelType,
-                viewModelMapper,
-                makeRegistrationTypeGeneric);
+            Type viewModelMapper,
+            Type resultModelType,
+            Type resultModelTypeMapper,
+            bool makeServiceTypeGeneric)
+        {
+            var controller = typeof(AbstractEntityUpdateController<,,,>)
+                .MakeGenericType(CrudBuilder.EntityKeyType,
+                    CrudBuilder.EntityType,
+                    viewModelType,
+                    resultModelType);
+
+            if (viewModelMapper != null)
+            {
+                var updateMapperInterface = typeof(IUpdateViewModelMapper<,,>)
+                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, viewModelType);
+
+                CrudBuilder.WithRegistration(updateMapperInterface, viewModelMapper, updateMapperInterface);
+            }
+
+            if (resultModelTypeMapper != null)
+            {
+                var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
+                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, resultModelType);
+
+                CrudBuilder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
+            }
+
+            if (makeServiceTypeGeneric)
+            {
+                serviceType = serviceType.MakeGenericType(CrudBuilder.EntityKeyType,
+                        CrudBuilder.EntityType,
+                        viewModelType,
+                        resultModelType);
+            }
+
+            WithController(serviceType, controller);
+
+            return this;
+        }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController<TRegistrationType>()
-            => WithUpdateController(typeof(TRegistrationType), UpdateViewModelType);
+            => WithUpdateController(typeof(TRegistrationType),
+                UpdateViewModelType,
+                null,
+                ReadViewModelType,
+                null,
+                false);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController()
             => WithUpdateController(
-                typeof(AbstractEntityUpdateController<,,>),
+                typeof(AbstractEntityUpdateController<,,,>),
                 UpdateViewModelType,
+                null,
+                ReadViewModelType,
                 null,
                 true);
 
@@ -477,8 +549,8 @@ namespace Firebend.AutoCrud.Web
             => AddAuthorizationPolicy(typeof(TController), policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity > AddCreateAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,, >)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CreateViewModelType), policy);
+            => AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,,,>)
+                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CreateViewModelType, ReadViewModelType), policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity > AddDeleteAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<,, >)
@@ -501,8 +573,8 @@ namespace Firebend.AutoCrud.Web
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType), policy);
+            => AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,,,>)
+                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType, UpdateViewModelType), policy);
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterAuthorizationPolicies(string policy = "")
         {
@@ -573,9 +645,27 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel<TViewModel>(
+            Func<TViewModel, TEntity> from)
+            where TViewModel : class
+        {
+            ViewModelGuard("Please register read view model before adding controllers.");
+
+            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>
+            {
+                From = from
+            };
+
+            CreateViewModelType = typeof(TViewModel);
+
+            CrudBuilder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+
+            return this;
+        }
+
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel(Type viewModelType, Type viewModelMapper)
         {
-            ViewModelGuard("Please register a Read view model before adding controllers");
+            ViewModelGuard("Please register a read view model before adding controllers");
 
             ReadViewModelType = viewModelType;
 
@@ -591,7 +681,7 @@ namespace Firebend.AutoCrud.Web
             where TViewModel : class
             where TViewModelMapper : IReadViewModelMapper<TKey, TEntity, TViewModel>
         {
-            ViewModelGuard("Please register a Read view model before adding controllers");
+            ViewModelGuard("Please register a read view model before adding controllers");
 
             ReadViewModelType = typeof(TViewModel);
 
@@ -600,9 +690,27 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel<TViewModel>(
+            Func<TEntity, TViewModel> to)
+            where TViewModel : class
+        {
+            ViewModelGuard("Please registered read view model before adding controllers");
+
+            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>
+            {
+                To = to
+            };
+
+            ReadViewModelType = typeof(TViewModel);
+
+            CrudBuilder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+
+            return this;
+        }
+
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel(Type viewModelType, Type viewModelMapper)
         {
-             ViewModelGuard("Please register a Update view model before adding controllers");
+            ViewModelGuard("Please register a Update view model before adding controllers");
 
              UpdateViewModelType = viewModelType;
 
@@ -618,11 +726,29 @@ namespace Firebend.AutoCrud.Web
             where TViewModel : class
             where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>
         {
-            ViewModelGuard("Please register a Update view model before adding controllers");
+            ViewModelGuard("Please register a update view model before adding controllers");
 
             UpdateViewModelType = typeof(TViewModel);
 
             CrudBuilder.WithRegistration<IUpdateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
+
+            return this;
+        }
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel>(
+            Func<TViewModel, TEntity> from)
+            where TViewModel : class, IEntity<TKey>
+        {
+            ViewModelGuard("Please register a update view model before adding controllers");
+
+            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>
+            {
+                From = from,
+            };
+
+            UpdateViewModelType = typeof(TViewModel);
+
+            CrudBuilder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
 
             return this;
         }
@@ -639,7 +765,7 @@ namespace Firebend.AutoCrud.Web
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel, TViewModelMapper>()
-            where TViewModel : class
+            where TViewModel : class, IEntity<TKey>
             where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>,
                 ICreateViewModelMapper<TKey, TEntity, TViewModel>,
                 IReadViewModelMapper<TKey, TEntity, TViewModel>
@@ -658,6 +784,8 @@ namespace Firebend.AutoCrud.Web
                 Func<TViewModel, TEntity> from)
             where TViewModel : class
         {
+            ViewModelGuard("Please register view model before adding controllers");
+
             var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>
             {
                 From = from,

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Firebend.AutoCrud.Core.Extensions;
@@ -15,7 +16,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         public EfPerson(PersonViewModel viewModel)
         {
-            viewModel.CopyPropertiesTo(this);
+            viewModel.Body.CopyPropertiesTo(this);
         }
 
         [StringLength(250)]
@@ -35,5 +36,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public DateTimeOffset CreatedDate { get; set; }
         public DateTimeOffset ModifiedDate { get; set; }
         public int TenantId { get; set; }
+
+        public ICollection<EfPet> Pets { get; set; }
     }
 }

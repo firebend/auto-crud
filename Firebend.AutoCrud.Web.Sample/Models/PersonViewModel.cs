@@ -1,5 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
@@ -7,9 +9,30 @@ namespace Firebend.AutoCrud.Web.Sample.Models
     {
         public PersonViewModel()
         {
+
         }
 
-        public PersonViewModel(EfPerson person)
+        public PersonViewModel(EfPerson entity)
+        {
+            Body = new PersonViewModelBase(entity);
+        }
+
+        public PersonViewModel(MongoPerson entity)
+        {
+            Body = new PersonViewModelBase(entity);
+        }
+
+        [FromBody]
+        public PersonViewModelBase Body { get; set; }
+    }
+
+    public class PersonViewModelBase : IEntity<Guid>
+    {
+        public PersonViewModelBase()
+        {
+        }
+
+        public PersonViewModelBase(EfPerson person)
         {
             FirstName = person.FirstName;
             LastName = person.LastName;
@@ -20,7 +43,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             ModifiedDate = person.ModifiedDate;
         }
 
-        public PersonViewModel(MongoPerson person)
+        public PersonViewModelBase(MongoPerson person)
         {
             FirstName = person.FirstName;
             LastName = person.LastName;

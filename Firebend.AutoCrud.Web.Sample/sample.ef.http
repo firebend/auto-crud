@@ -21,17 +21,17 @@ Content-Type: application/json
     }
 ]
 ###
-PUT https://localhost:5001/api/v1/ef-person/6cedb94a-c722-43aa-01a3-08d8858ed33e
+PUT https://localhost:5001/api/v1/ef-person/5eaa2c79-5709-43bb-9768-08d88bd03ee0
 Content-Type: application/json
 
 {
-    "id": "6cedb94a-c722-43aa-01a3-08d8858ed33e",
+    "id": "5eaa2c79-5709-43bb-9768-08d88bd03ee0",
     "firstName": "Hank",
     "lastName": "Hill",
     "nickName": "Hanky Panky"
 }
 ###
-PATCH https://localhost:5001/api/v1/ef-person/6cedb94a-c722-43aa-01a3-08d8858ed33e
+PATCH https://localhost:5001/api/v1/ef-person/5eaa2c79-5709-43bb-9768-08d88bd03ee0
 Content-Type: application/json
 
 [
@@ -42,7 +42,7 @@ Content-Type: application/json
     }
 ]
 ###
-DELETE https://localhost:5001/api/v1/ef-person/6cedb94a-c722-43aa-01a3-08d8858ed33e
+DELETE https://localhost:5001/api/v1/ef-person/5eaa2c79-5709-43bb-9768-08d88bd03ee0
 
 ###
 https://localhost:5001/api/v1/ef-person/6cedb94a-c722-43aa-01a3-08d8858ed33e

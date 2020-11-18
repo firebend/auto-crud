@@ -3,7 +3,6 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
-using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
@@ -14,6 +13,7 @@ using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Firebend.AutoCrud.Web.Sample.Extensions
@@ -77,6 +77,53 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithViewModel(entity => new PersonViewModel(entity), viewModel => new EfPerson(viewModel))
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
+                        .WithChangeTrackingControllers()
+                        .WithIoControllers()
+                    ));
+
+        public static EntityFrameworkEntityCrudGenerator AddEfPets(this EntityFrameworkEntityCrudGenerator generator,
+            IConfiguration configuration) =>
+            generator.AddEntity<Guid, EfPet>(person =>
+                person.WithDbContext<PersonDbContext>()
+                    .WithSearchFilter((efPet, s) => efPet.PetName.Contains(s) ||
+                                                    efPet.PetType.Contains(s) ||
+                                                    efPet.Person.LastName.Contains(s) ||
+                                                    efPet.Person.FirstName.Contains(s))
+                    .WithIncludes(pets => pets.Include(p => p.Person))
+                    .AddElasticPool(manager =>
+                        {
+                            manager.ConnectionString = configuration.GetConnectionString("Elastic");
+                            manager.MapName = configuration["Elastic:MapName"];
+                            manager.Server = configuration["Elastic:ServerName"];
+                            manager.ElasticPoolName = configuration["Elastic:PoolName"];
+                        }, pool => pool
+                            .WithShardKeyProvider<SampleKeyProvider>()
+                            .WithShardDbNameProvider<SampleDbNameProvider>()
+                    )
+                    .AddCrud(crud => crud
+                        .WithCrud()
+                        .WithOrderBy(efPet => efPet.PetName)
+                        .WithSearch<PetSearch>(search =>
+                        {
+                            if (search.PersonId.HasValue)
+                            {
+                                return p => p.EfPersonId == search.PersonId;
+                            }
+
+                            return null;
+                        }))
+                    .AddDomainEvents(events => events
+                        .WithEfChangeTracking()
+                        .WithMassTransit()
+                    )
+                    .AddIo(io => io.WithMapper(x => new ExportPetViewModel(x)))
+                    .AddControllers(controllers => controllers
+                        .WithReadViewModel(pet => new GetPetViewModel(pet))
+                        .WithCreateViewModel<CreatePetViewModel>(pet => new EfPet(pet))
+                        .WithUpdateViewModel<PutPetViewModel>(pet => new EfPet(pet))
+                        .WithRoute("/api/v1/ef-person/{personId}/pets")
+                        .WithAllControllers(true)
+                        .WithOpenApiGroupName("The Beautiful Fur Babies")
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
                     ));

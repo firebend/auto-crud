@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
+using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
@@ -63,6 +65,7 @@ namespace Firebend.AutoCrud.EntityFramework
             }
 
             WithRegistration<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>, DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(false);
+            WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>, DefaultEntityFrameworkIncludesProvider<TKey, TEntity>>(false);
         }
 
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext(Type dbContextType)
@@ -92,6 +95,29 @@ namespace Firebend.AutoCrud.EntityFramework
         {
             WithRegistrationInstance<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(
                 new DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>(filter));
+
+            return this;
+        }
+
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithIncludes(Type type)
+        {
+            WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>>(type);
+
+            return this;
+        }
+
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithIncludes<TProvider>()
+            where TProvider : IEntityFrameworkIncludesProvider<TKey, TEntity>
+        {
+            WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>, TProvider>();
+
+            return this;
+        }
+
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithIncludes(Func<IQueryable<TEntity>, IQueryable<TEntity>> func)
+        {
+            WithRegistrationInstance<IEntityFrameworkIncludesProvider<TKey, TEntity>>(
+                new FunctionIncludesProvider<TKey, TEntity>(func));
 
             return this;
         }
