@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
 
         public static IConfiguration GetConfiguration()
         {
-            _configuration ??=  new ConfigurationBuilder()
+            _configuration ??= new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", true, true)
                 .AddUserSecrets("ControlTowerModules")
                 .AddEnvironmentVariables()
