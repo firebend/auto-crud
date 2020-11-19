@@ -12,17 +12,13 @@ Content-Type: application/json
 
 [
     {
-        "body": {
-
-      "firstName": "Fox",
-      "lastName": "Mulder"
-        }
+        "firstName": "Fox",
+        "lastName": "Mulder",
+        "nickName": "Spooky"
     },
     {
-        "body": {
-          "firstName": "Dana",
-          "lastName": "Scully"
-        }
+        "firstName": "Dana",
+        "lastName": "Scully"
     }
 ]
 ###
@@ -65,4 +61,4 @@ http://localhost:5000/api/v1/ef-person/7d963ef7-a42d-40c8-449d-08d87a83025c/chan
 http://localhost:5000/api/v1/ef-person/export/csv?filename=export
 
 ###
-http://localhost:5000/api/v1/ef-person/export/spreadsheet?filename=export
+http://localhost:5000/api/v1/ef-person/export/csv?filename=export

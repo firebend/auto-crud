@@ -86,68 +86,6 @@ namespace Firebend.AutoCrud.Web.Abstractions
             return Created($"{Request.Path.Value}/{created.Id}", createdViewModel);
         }
 
-        [HttpPost]
-        [Route("multiple")]
-        [SwaggerOperation("Creates multiple {entityNamePlural}")]
-        [SwaggerResponse(201, "Multiple {entityNamePlural} were created successfully.")]
-        [SwaggerResponse(400, "The request is invalid.")]
-        [Produces("application/json")]
-        public virtual async Task<IActionResult> PostMultiple(
-            [FromBody]TCreateViewModel[] body,
-            CancellationToken cancellationToken)
-        {
-            if (body == null || body.Length <= 0)
-            {
-                ModelState.AddModelError("body", "A body is required");
-                return BadRequest(ModelState);
-            }
 
-            var createdEntities = new List<TReadViewModel>();
-            var errorEntities = new List<ModelStateResult<TEntity>>();
-
-            foreach (var toCreate in body)
-            {
-                var entityToCreate = await _mapper
-                    .FromAsync(toCreate, cancellationToken)
-                    .ConfigureAwait(false);
-
-                var isValid = await _entityValidationService
-                    .ValidateAsync(entityToCreate, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (!isValid.WasSuccessful)
-                {
-                    isValid.Model = entityToCreate;
-                    errorEntities.Add(isValid);
-                }
-
-                if (isValid.Model != null)
-                {
-                    entityToCreate = isValid.Model;
-                }
-
-                var entity = await _createService
-                    .CreateAsync(entityToCreate, cancellationToken)
-                    .ConfigureAwait(false);
-
-                var mappedEntity = await _readMapper
-                    .ToAsync(entity, cancellationToken)
-                    .ConfigureAwait(false);
-
-                createdEntities.Add(mappedEntity);
-            }
-
-            if (createdEntities.Count > 0)
-            {
-                return Ok(new { created = createdEntities, errors = errorEntities });
-            }
-
-            if (errorEntities.Count > 0)
-            {
-                return BadRequest(new { errors = errorEntities });
-            }
-
-            return BadRequest();
-        }
     }
 }

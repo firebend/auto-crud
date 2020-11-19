@@ -1,23 +1,26 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class PersonViewModel
+    public class CreatePersonViewModel
     {
-        public PersonViewModel()
+        public CreatePersonViewModel()
         {
 
         }
 
-        public PersonViewModel(EfPerson entity)
+        public CreatePersonViewModel(EfPerson entity)
         {
             Body = new PersonViewModelBase(entity);
         }
 
-        public PersonViewModel(MongoPerson entity)
+        public CreatePersonViewModel(MongoPerson entity)
         {
             Body = new PersonViewModelBase(entity);
         }
@@ -26,7 +29,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public PersonViewModelBase Body { get; set; }
     }
 
-    public class PersonViewModelBase : IEntity<Guid>
+    public class PersonViewModelBase
     {
         public PersonViewModelBase()
         {
@@ -34,24 +37,12 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         public PersonViewModelBase(EfPerson person)
         {
-            FirstName = person.FirstName;
-            LastName = person.LastName;
-            Id = person.Id;
-            NickName = person.NickName;
-            IsDeleted = person.IsDeleted;
-            CreatedDate = person.CreatedDate;
-            ModifiedDate = person.ModifiedDate;
+            person.CopyPropertiesTo(this);
         }
 
         public PersonViewModelBase(MongoPerson person)
         {
-            FirstName = person.FirstName;
-            LastName = person.LastName;
-            Id = person.Id;
-            NickName = person.LastName;
-            IsDeleted = person.IsDeleted;
-            CreatedDate = person.CreatedDate;
-            ModifiedDate = person.ModifiedDate;
+            person.CopyPropertiesTo(this);
         }
 
         [StringLength(250)]
@@ -60,14 +51,29 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         [StringLength(250)]
         public string LastName { get; set; }
 
-        [Key]
-        public Guid Id { get; set; }
-
         [StringLength(100)]
         public string NickName { get; set; }
+    }
+
+    public class GetPersonViewModel : PersonViewModelBase
+    {
+        public GetPersonViewModel(EfPerson entity)
+        {
+            entity.CopyPropertiesTo(this);
+        }
+
+        public Guid Id { get; set; }
 
         public bool IsDeleted { get; set; }
+
         public DateTimeOffset CreatedDate { get; set; }
+
         public DateTimeOffset ModifiedDate { get; set; }
+    }
+
+    public class CreateMultiplePeopleViewModel : IMultipleEntityViewModel<PersonViewModelBase>
+    {
+        [FromBody]
+        public IEnumerable<PersonViewModelBase> Entities { get; set; }
     }
 }

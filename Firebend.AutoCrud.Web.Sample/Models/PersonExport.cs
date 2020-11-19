@@ -3,13 +3,18 @@ using Firebend.AutoCrud.Core.Extensions;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class EfPersonExport
+    public class PersonExport
     {
-        public EfPersonExport()
+        public PersonExport()
         {
         }
 
-        public EfPersonExport(EfPerson person)
+        public PersonExport(EfPerson person)
+        {
+            person.CopyPropertiesTo(this);
+        }
+
+        public PersonExport(MongoPerson person)
         {
             person.CopyPropertiesTo(this);
         }

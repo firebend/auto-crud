@@ -15,7 +15,6 @@ using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Attributes;
-using Firebend.AutoCrud.Web.Implementations;
 using Firebend.AutoCrud.Web.Implementations.Options;
 using Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -66,6 +65,7 @@ namespace Firebend.AutoCrud.Web
             WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity>>();
             WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
             WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultUpdateViewModelMapper<TKey, TEntity>>();
+            WithCreateMultipleViewModel<MultipleEntityViewModel<TEntity>, TEntity, DefaultCreateMultipleViewModelMapper<TKey, TEntity>>();
         }
 
         public (Type attributeType, CustomAttributeBuilder attributeBuilder) DefaultAuthorizationPolicy { get; private set; }
@@ -89,6 +89,10 @@ namespace Firebend.AutoCrud.Web
         public Type UpdateViewModelType { get; private set; }
 
         public Type ReadViewModelType { get; private set; }
+
+        public Type CreateMultipleViewModelWrapperType { get; private set; }
+
+        public Type CreateMultipleViewModelType { get; private set; }
 
         private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetRouteAttributeInfo()
         {
@@ -519,7 +523,73 @@ namespace Firebend.AutoCrud.Web
                 null,
                 true);
 
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithAllControllers(bool includeGetAll = false)
+
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController(Type serviceType,
+            Type viewModelWrapperType,
+            Type viewModelType,
+            Type viewModelMapper,
+            Type resultModelType,
+            Type resultModelTypeMapper,
+            bool makeServiceGeneric)
+        {
+            var controller = typeof(AbstractEntityCreateMultipleController<,,,,>)
+                .MakeGenericType(CrudBuilder.EntityKeyType,
+                    CrudBuilder.EntityType,
+                    viewModelWrapperType,
+                    viewModelType,
+                    resultModelType);
+
+            if (viewModelMapper != null)
+            {
+                var createMultipleViewModelMapperInterface = typeof(ICreateMultipleViewModelMapper<,,,>)
+                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelWrapperType, viewModelType);
+
+                CrudBuilder.WithRegistration(createMultipleViewModelMapperInterface, viewModelMapper, createMultipleViewModelMapperInterface);
+            }
+
+            if (resultModelTypeMapper != null)
+            {
+                var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
+                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, resultModelType);
+
+                CrudBuilder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
+            }
+
+            if (makeServiceGeneric)
+            {
+                serviceType = serviceType.MakeGenericType(CrudBuilder.EntityKeyType,
+                        CrudBuilder.EntityType,
+                        viewModelWrapperType,
+                        viewModelType,
+                        resultModelType);
+            }
+
+            WithController(serviceType, controller);
+
+            return this;
+        }
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController<TRegistrationType>()
+            => WithCreateMultipleController(typeof(TRegistrationType),
+                CreateMultipleViewModelWrapperType,
+                CreateMultipleViewModelType,
+                null,
+                ReadViewModelType,
+                null,
+                false);
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController()
+            => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,>),
+                CreateMultipleViewModelWrapperType,
+                CreateMultipleViewModelType,
+                null,
+                ReadViewModelType,
+                null,
+                true);
+
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithAllControllers(bool includeGetAll = false, bool includeMultipleCreate = true)
         {
             WithReadController();
             WithCreateController();
@@ -530,6 +600,11 @@ namespace Firebend.AutoCrud.Web
             if (includeGetAll)
             {
                 WithGetAllController();
+            }
+
+            if (includeMultipleCreate)
+            {
+                WithCreateMultipleController();
             }
 
             return this;
@@ -624,7 +699,7 @@ namespace Firebend.AutoCrud.Web
             var mapper = typeof(ICreateViewModelMapper<,,>)
                 .MakeGenericType(CrudBuilder.EntityType, CrudBuilder.EntityType, viewModelType);
 
-            CrudBuilder.WithRegistration(mapper, viewModelMapper);
+            CrudBuilder.WithRegistration(mapper, viewModelMapper, mapper);
 
             return this;
         }
@@ -667,9 +742,9 @@ namespace Firebend.AutoCrud.Web
             ReadViewModelType = viewModelType;
 
             var mapper = typeof(IReadViewModelMapper<,,>)
-                .MakeGenericType(CrudBuilder.EntityType, CrudBuilder.EntityType, viewModelType);
+                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelType);
 
-            CrudBuilder.WithRegistration(mapper, viewModelMapper);
+            CrudBuilder.WithRegistration(mapper, viewModelMapper, mapper);
 
             return this;
         }
@@ -712,9 +787,9 @@ namespace Firebend.AutoCrud.Web
             UpdateViewModelType = viewModelType;
 
             var mapper = typeof(IUpdateViewModelMapper<,,>)
-                .MakeGenericType(CrudBuilder.EntityType, CrudBuilder.EntityType, viewModelType);
+                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelType);
 
-            CrudBuilder.WithRegistration(mapper, viewModelMapper);
+            CrudBuilder.WithRegistration(mapper, viewModelMapper, mapper);
 
             return this;
         }
@@ -746,6 +821,54 @@ namespace Firebend.AutoCrud.Web
             UpdateViewModelType = typeof(TViewModel);
 
             CrudBuilder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+
+            return this;
+        }
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel(Type viewWrapper,
+            Type view,
+            Type viewMapper)
+        {
+            ViewModelGuard("Please register a Update view model before adding controllers");
+
+            CreateMultipleViewModelType = view;
+            CreateMultipleViewModelWrapperType = viewWrapper;
+
+            var mapper = typeof(ICreateMultipleViewModelMapper<,,,>)
+                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewWrapper, view);
+
+            CrudBuilder.WithRegistration(mapper, viewMapper, mapper);
+
+            return this;
+        }
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel<TViewWrapper, TView, TMapper>()
+            where TView : class
+            where TViewWrapper : IMultipleEntityViewModel<TView>
+            where TMapper : ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>
+        {
+            CreateMultipleViewModelType = typeof(TView);
+            CreateMultipleViewModelWrapperType = typeof(TViewWrapper);
+
+            CrudBuilder.WithRegistration<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>, TMapper>();
+
+            return this;
+        }
+
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel<TViewWrapper, TView>(
+                Func<TViewWrapper, TView, TEntity> mapperFunc)
+            where TView : class
+            where TViewWrapper : IMultipleEntityViewModel<TView>
+        {
+            CreateMultipleViewModelType = typeof(TView);
+            CreateMultipleViewModelWrapperType = typeof(TViewWrapper);
+
+            var instance = new FunctionCreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>
+            {
+                Func = mapperFunc
+            };
+
+            CrudBuilder.WithRegistrationInstance<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>>(instance);
 
             return this;
         }
