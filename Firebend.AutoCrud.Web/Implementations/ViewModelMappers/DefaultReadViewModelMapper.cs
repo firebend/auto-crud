@@ -1,11 +1,10 @@
-
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 
-namespace Firebend.AutoCrud.Web.Implementations
+namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
     public class DefaultReadViewModelMapper<TKey, TEntity> : IReadViewModelMapper<TKey, TEntity, TEntity>
         where TEntity : class, IEntity<TKey>
