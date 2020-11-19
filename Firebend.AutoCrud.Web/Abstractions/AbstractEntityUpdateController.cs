@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,6 +66,16 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var entityUpdate = await _updateViewModelMapper
                 .FromAsync(body, cancellationToken)
                 .ConfigureAwait(false);
+
+            if (entityUpdate == null)
+            {
+                throw new Exception("Update view model mapper did not map to entity.");
+            }
+
+            if (!ModelState.IsValid || !TryValidateModel(entityUpdate))
+            {
+                return BadRequest(ModelState);
+            }
 
             entityUpdate.Id = key.Value;
 

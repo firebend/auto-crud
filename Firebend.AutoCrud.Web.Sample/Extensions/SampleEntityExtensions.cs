@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithOrderBy(m => m.LastName)
                     )
                     .AddControllers(controllers => controllers
-                        .WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
+                        //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithOpenApiGroupName("The Beautiful Mongo People"))

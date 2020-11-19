@@ -93,7 +93,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<IActionResult> PostMultiple(
-            TCreateViewModel[] body,
+            [FromBody] TCreateViewModel[] body,
             CancellationToken cancellationToken)
         {
             if (body == null || body.Length <= 0)

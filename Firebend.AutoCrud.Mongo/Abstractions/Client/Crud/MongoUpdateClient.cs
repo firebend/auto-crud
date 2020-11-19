@@ -134,6 +134,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             var mongoCollection = GetCollection();
 
             var now = DateTimeOffset.Now;
+
             if (entity is IModifiedEntity modifiedEntity)
             {
                 modifiedEntity.ModifiedDate = now;
