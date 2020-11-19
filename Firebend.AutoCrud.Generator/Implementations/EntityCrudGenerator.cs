@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            foreach(var builder in Builders)
+            foreach (var builder in Builders)
             {
                 var builderStopwatch = new Stopwatch();
                 builderStopwatch.Start();
