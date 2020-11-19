@@ -75,7 +75,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     )
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
-                        .WithCreateViewModel<CreatePersonViewModel>(view  => new EfPerson(view))
+                        .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithReadViewModel(entity => new GetPersonViewModel(entity))
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((model, viewModel) => new EfPerson(viewModel))

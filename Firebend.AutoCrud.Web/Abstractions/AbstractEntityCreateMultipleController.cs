@@ -87,12 +87,12 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (createdEntities.Count > 0)
             {
-                return Ok(new {created = createdEntities, errors = errorEntities});
+                return Ok(new { created = createdEntities, errors = errorEntities });
             }
 
             if (errorEntities.Count > 0)
             {
-                return BadRequest(new {errors = errorEntities});
+                return BadRequest(new { errors = errorEntities });
             }
 
             return BadRequest();
