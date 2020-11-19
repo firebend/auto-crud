@@ -20,10 +20,10 @@ namespace Firebend.AutoCrud.Web.Implementations
             => Task.FromResult(model.Select(m => m.Entity));
 
         public Task<DefaultCreateUpdateViewModel<TKey, TEntity>> ToAsync(TEntity entity, CancellationToken cancellationToken = default)
-            => Task.FromResult(new DefaultCreateUpdateViewModel<TKey, TEntity> {Entity = entity});
+            => Task.FromResult(new DefaultCreateUpdateViewModel<TKey, TEntity> { Entity = entity });
 
         public Task<IEnumerable<DefaultCreateUpdateViewModel<TKey, TEntity>>> ToAsync(IEnumerable<TEntity> entity,
             CancellationToken cancellationToken = default)
-            => Task.FromResult(entity.Select(e => new DefaultCreateUpdateViewModel<TKey, TEntity> {Entity = e}));
+            => Task.FromResult(entity.Select(e => new DefaultCreateUpdateViewModel<TKey, TEntity> { Entity = e }));
     }
 }
