@@ -736,7 +736,7 @@ namespace Firebend.AutoCrud.Web
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel>(
             Func<TViewModel, TEntity> from)
-            where TViewModel : class, IEntity<TKey>
+            where TViewModel : class
         {
             ViewModelGuard("Please register a update view model before adding controllers");
 
@@ -764,7 +764,7 @@ namespace Firebend.AutoCrud.Web
         }
 
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel, TViewModelMapper>()
-            where TViewModel : class, IEntity<TKey>
+            where TViewModel : class
             where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>,
                 ICreateViewModelMapper<TKey, TEntity, TViewModel>,
                 IReadViewModelMapper<TKey, TEntity, TViewModel>

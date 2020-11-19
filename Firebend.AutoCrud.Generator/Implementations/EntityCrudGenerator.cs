@@ -36,16 +36,17 @@ namespace Firebend.AutoCrud.Generator.Implementations
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            Parallel.ForEach(Builders, builder =>
+            foreach (var builder in Builders)
             {
                 var builderStopwatch = new Stopwatch();
                 builderStopwatch.Start();
                 Generate(ServiceCollection, builder);
                 builderStopwatch.Stop();
                 Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {builderStopwatch.ElapsedMilliseconds} (ms)");
-            });
+            }
 
             stopwatch.Stop();
+
             Console.WriteLine($"All entities generated in {stopwatch.ElapsedMilliseconds} (ms)");
 
             return ServiceCollection;
