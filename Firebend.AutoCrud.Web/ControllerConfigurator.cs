@@ -17,6 +17,7 @@ using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations;
 using Firebend.AutoCrud.Web.Implementations.Options;
+using Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.AutoCrud.Web.Models;
 using Humanizer;

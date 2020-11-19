@@ -2,7 +2,7 @@ using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 
-namespace Firebend.AutoCrud.Web.Implementations
+namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
     public class DefaultEntityKeyParser<TKey, TEntity> : IEntityKeyParser<TKey, TEntity>
         where TKey : struct
