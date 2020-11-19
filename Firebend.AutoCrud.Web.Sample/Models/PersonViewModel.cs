@@ -49,6 +49,9 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             LastName = person.LastName;
             Id = person.Id;
             NickName = person.LastName;
+            IsDeleted = person.IsDeleted;
+            CreatedDate = person.CreatedDate;
+            ModifiedDate = person.ModifiedDate;
         }
 
         [StringLength(250)]

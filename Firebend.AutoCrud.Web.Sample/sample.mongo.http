@@ -6,7 +6,7 @@ Content-Type: application/json
     "lastName": "Sample"
 }
 ###
-PUT https://localhost:5001/api/v1/mongo-person/60fcc388-0829-42a8-a49b-9006ea3d3080
+PUT https://localhost:5001/api/v1/mongo-person/67739754-4145-4514-a509-15a36bc856ef
 Content-Type: application/json
 
 {
@@ -26,10 +26,10 @@ Content-Type: application/json
     }
 ]
 ###
-DELETE https://localhost:5001/api/v1/mongo-person/f3d53eb0-9c2c-46ae-3f7d-08d8707b4bcc
+DELETE https://localhost:5001/api/v1/mongo-person/60fcc388-0829-42a8-a49b-9006ea3d3080
 
 ###
-https://localhost:5001/api/v1/mongo-person/9a627f6c-3fe2-4c18-bec9-08d87431b19f
+https://localhost:5001/api/v1/mongo-person/60fcc388-0829-42a8-a49b-9006ea3d3080
 
 ###
 https://localhost:5001/api/v1/mongo-person/all

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
@@ -12,11 +13,13 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         public MongoPerson(PersonViewModel viewModel)
         {
-            viewModel.CopyPropertiesTo(this);
+            viewModel?.Body.CopyPropertiesTo(this);
         }
 
+        [Required]
         public string FirstName { get; set; }
 
+        [Required]
         public string LastName { get; set; }
 
         public bool IsDeleted { get; set; }

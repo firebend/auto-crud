@@ -18,6 +18,7 @@ using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations;
 using Firebend.AutoCrud.Web.Implementations.Options;
 using Firebend.AutoCrud.Web.Interfaces;
+using Firebend.AutoCrud.Web.Models;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -61,13 +62,9 @@ namespace Firebend.AutoCrud.Web
 
             CrudBuilder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
 
-            CrudBuilder.WithRegistration<ICreateViewModelMapper<TKey, TEntity, TEntity>, DefaultViewModelMapper<TKey, TEntity>>();
-            CrudBuilder.WithRegistration<IUpdateViewModelMapper<TKey, TEntity, TEntity>, DefaultViewModelMapper<TKey, TEntity>>();
-            CrudBuilder.WithRegistration<IReadViewModelMapper<TKey, TEntity, TEntity>, DefaultViewModelMapper<TKey, TEntity>>();
-
-            CreateViewModelType = CrudBuilder.EntityType;
-            ReadViewModelType = CrudBuilder.EntityType;
-            UpdateViewModelType = CrudBuilder.EntityType;
+            WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity>>();
+            WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
+            WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultUpdateViewModelMapper<TKey, TEntity>>();
         }
 
         public (Type attributeType, CustomAttributeBuilder attributeBuilder) DefaultAuthorizationPolicy { get; private set; }
