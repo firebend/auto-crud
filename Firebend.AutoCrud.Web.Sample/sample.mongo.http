@@ -51,7 +51,6 @@ Content-Type: application/json
     {
         "firstName": "Fox",
         "lastName": "Mulder",
-        "nickName": "Spooky"
     },
     {
         "firstName": "Dana",
