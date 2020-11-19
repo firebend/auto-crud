@@ -12,12 +12,17 @@ Content-Type: application/json
 
 [
     {
-        "firstName": "Fox",
-        "lastName": "Mulder"
+        "body": {
+
+      "firstName": "Fox",
+      "lastName": "Mulder"
+        }
     },
     {
-        "firstName": "Dana",
-        "lastName": "Scully"
+        "body": {
+          "firstName": "Dana",
+          "lastName": "Scully"
+        }
     }
 ]
 ###

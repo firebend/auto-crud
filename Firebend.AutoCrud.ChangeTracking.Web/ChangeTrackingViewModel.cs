@@ -31,6 +31,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
 
             Changes = changeTrackingEntity
                 .Changes
+                .NullCheck()
+                .Where(x => x != null)
                 .Select(x => new Operation<TViewModel>(x.op, x.path, x.from, x.value))
                 .ToList();
 
