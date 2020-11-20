@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,7 +5,7 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Models;
 
-namespace Firebend.AutoCrud.Web.Implementations
+namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
     public abstract class AbstractDefaultCreateUpdateViewModelMapper<TKey, TEntity>
         where TEntity : class, IEntity<TKey>

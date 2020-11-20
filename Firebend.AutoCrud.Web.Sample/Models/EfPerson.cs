@@ -14,9 +14,14 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         {
         }
 
-        public EfPerson(PersonViewModel viewModel)
+        public EfPerson(CreatePersonViewModel viewModel)
         {
             viewModel.Body.CopyPropertiesTo(this);
+        }
+
+        public EfPerson(PersonViewModelBase viewModel)
+        {
+            viewModel.CopyPropertiesTo(this);
         }
 
         [StringLength(250)]

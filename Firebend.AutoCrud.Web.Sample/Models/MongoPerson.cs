@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         {
         }
 
-        public MongoPerson(PersonViewModel viewModel)
+        public MongoPerson(CreatePersonViewModel viewModel)
         {
             viewModel?.Body.CopyPropertiesTo(this);
         }

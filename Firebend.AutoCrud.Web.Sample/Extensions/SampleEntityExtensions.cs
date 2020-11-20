@@ -30,12 +30,13 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithMassTransit())
                     .AddCrud(x => x
                         .WithCrud()
-                        .WithOrderBy(m => m.LastName)
-                    )
+                        .WithOrderBy(m => m.LastName))
+                    .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
+                        .WithIoControllers()
                         .WithOpenApiGroupName("The Beautiful Mongo People"))
         );
 
@@ -72,9 +73,12 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
                     )
-                    .AddIo(io => io.WithMapper(x => new EfPersonExport(x)))
+                    .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
-                        .WithViewModel(entity => new PersonViewModel(entity), viewModel => new EfPerson(viewModel))
+                        .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
+                        .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
+                        .WithReadViewModel(entity => new GetPersonViewModel(entity))
+                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((model, viewModel) => new EfPerson(viewModel))
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()

@@ -42,4 +42,12 @@ namespace Firebend.AutoCrud.Web.Interfaces
     {
 
     }
+
+    public interface ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>
+        where TViewWrapper : IMultipleEntityViewModel<TView>
+        where TKey : struct
+        where TEntity : IEntity<TKey>
+    {
+        Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken = default);
+    }
 }
