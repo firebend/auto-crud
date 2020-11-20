@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Io.Models;
 using Firebend.AutoCrud.Io.Web.Interfaces;
@@ -10,12 +11,15 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Io.Web.Abstractions
 {
-    public abstract class AbstractIoController<TSearch> : ControllerBase
+    public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : ControllerBase
         where TSearch : EntitySearchRequest
+        where TKey : struct
+        where TEntity : IEntity<TKey>
+        where TMapped : class
     {
-        private readonly IEntityExportControllerService<TSearch> _exportService;
+        private readonly IEntityExportControllerService<TKey, TEntity, TSearch, TMapped> _exportService;
 
-        protected AbstractIoController(IEntityExportControllerService<TSearch> exportService)
+        protected AbstractIoController(IEntityExportControllerService<TKey, TEntity, TSearch, TMapped>  exportService)
         {
             _exportService = exportService;
         }

@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Firebend.AutoCrud.Io.Web.Abstractions
 {
     public abstract class AbstractEntityExportControllerService<TKey, TEntity, TSearch, TMapped> :
-        IEntityExportControllerService<TSearch>
+        IEntityExportControllerService<TKey, TEntity, TSearch, TMapped>
         where TSearch : EntitySearchRequest
         where TMapped : class
         where TEntity : class, IEntity<TKey>
