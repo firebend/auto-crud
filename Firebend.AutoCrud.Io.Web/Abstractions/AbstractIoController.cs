@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
     {
         private readonly IEntityExportControllerService<TKey, TEntity, TSearch, TMapped> _exportService;
 
-        protected AbstractIoController(IEntityExportControllerService<TKey, TEntity, TSearch, TMapped>  exportService)
+        protected AbstractIoController(IEntityExportControllerService<TKey, TEntity, TSearch, TMapped> exportService)
         {
             _exportService = exportService;
         }
