@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "Build Web Sample",
-            "program": "${workspaceFolder}/Firebend.AutoCrud/Firebend.AutoCrud.Web.Sample/bin/Debug/netcoreapp3.1/Firebend.AutoCrud.Web.Sample.dll",
+            "program": "${workspaceFolder}/Firebend.AutoCrud.Web.Sample/bin/Debug/netcoreapp3.1/Firebend.AutoCrud.Web.Sample.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,

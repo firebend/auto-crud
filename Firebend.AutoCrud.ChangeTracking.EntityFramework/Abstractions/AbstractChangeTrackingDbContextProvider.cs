@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
             }
 
-            var runKey = $"{nameof(ChangeTrackingEntity<TEntityKey, TEntity>)}.CreateTables";
+            var runKey = $"{nameof(ChangeTrackingEntity<TEntityKey, TEntity>)}.CreateTables.{typeof(TEntityKey).Name}.{typeof(TEntity).Name}";
 
             await Run.OnceAsync(runKey, async ct =>
                 {

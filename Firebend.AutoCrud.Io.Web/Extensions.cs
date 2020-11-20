@@ -25,8 +25,13 @@ namespace Firebend.AutoCrud.Io.Web
                 throw new ArgumentException("No export type configured for this controller configurator. Use IoConfigurator to set mappings.");
             }
 
-            var controllerType = typeof(AbstractIoController<>);
-            var iface = typeof(IEntityExportControllerService<>).MakeGenericType(configurator.Builder.SearchRequestType);
+            var controllerType = typeof(AbstractIoController<,,,>);
+
+            var iface = typeof(IEntityExportControllerService<,,,>).MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType,
+                configurator.Builder.SearchRequestType,
+                configurator.Builder.ExportType);
+
             var impl = typeof(AbstractEntityExportControllerService<,,,>).MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
                 configurator.Builder.SearchRequestType,
@@ -34,7 +39,10 @@ namespace Firebend.AutoCrud.Io.Web
 
             configurator.Builder.WithRegistration(iface, impl, iface);
 
-            return configurator.WithController(controllerType, controllerType, configurator.Builder.SearchRequestType);
+            return configurator.WithController(controllerType, controllerType, configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType,
+                configurator.Builder.SearchRequestType,
+                configurator.Builder.ExportType);
         }
     }
 }
