@@ -21,13 +21,16 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
     {
         private readonly IChangeTrackingReadService<TKey, TEntity> _read;
         private readonly IReadViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
+        private readonly IMaxPageSize<TKey, TEntity> _maxPageSize;
 
         protected AbstractChangeTrackingReadController(IChangeTrackingReadService<TKey, TEntity> read,
             IEntityKeyParser<TKey, TEntity> keyParser,
-            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(keyParser)
+            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
+            IMaxPageSize<TKey, TEntity> maxPageSize) : base(keyParser)
         {
             _read = read;
             _viewModelMapper = viewModelMapper;
+            _maxPageSize = maxPageSize;
         }
 
         [HttpGet("{entityId}/changes")]
@@ -60,9 +63,11 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            if (!changeSearchRequest.PageSize.GetValueOrDefault().IsBetween(1, 100))
+            var maxPageSize = _maxPageSize?.MaxPageSize ?? 100;
+
+            if (!changeSearchRequest.PageSize.GetValueOrDefault().IsBetween(1, maxPageSize))
             {
-                ModelState.AddModelError(nameof(changeSearchRequest.PageNumber), "Page size must be between 1 and 100");
+                ModelState.AddModelError(nameof(changeSearchRequest.PageNumber), $"Page size must be between 1 and {maxPageSize}");
 
                 return BadRequest(ModelState);
             }
