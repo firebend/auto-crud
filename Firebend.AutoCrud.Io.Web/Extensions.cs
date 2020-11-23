@@ -55,9 +55,9 @@ namespace Firebend.AutoCrud.Io.Web
             where TKey : struct
             where TEntity : class, IEntity<TKey>
         {
-             configurator.Builder.WithRegistrationInstance<IMaxExportPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(pageSize));
+            configurator.Builder.WithRegistrationInstance<IMaxExportPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(pageSize));
 
-             return configurator;
+            return configurator;
         }
     }
 }

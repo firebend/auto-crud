@@ -55,7 +55,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             var pageSize = _maxPageSize?.MaxPageSize ?? 100;
 
-            if (!searchRequest.PageSize.GetValueOrDefault().IsBetween(1,pageSize))
+            if (!searchRequest.PageSize.GetValueOrDefault().IsBetween(1, pageSize))
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), $"Page size must be between 1 and {pageSize}");
 
