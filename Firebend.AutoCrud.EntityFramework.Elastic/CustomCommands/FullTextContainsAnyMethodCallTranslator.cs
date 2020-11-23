@@ -17,22 +17,22 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
         private static readonly MethodInfo _freeTextMethodInfo
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
-                new[] {typeof(DbFunctions), typeof(string), typeof(string)});
+                new[] { typeof(DbFunctions), typeof(string), typeof(string) });
 
         private static readonly MethodInfo _freeTextMethodInfoWithLanguage
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
-                new[] {typeof(DbFunctions), typeof(string), typeof(string), typeof(int)});
+                new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
 
         private static readonly MethodInfo _containsMethodInfo
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
-                new[] {typeof(DbFunctions), typeof(string), typeof(string)});
+                new[] { typeof(DbFunctions), typeof(string), typeof(string) });
 
         private static readonly MethodInfo _containsMethodInfoWithLanguage
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
-                new[] {typeof(DbFunctions), typeof(string), typeof(string), typeof(int)});
+                new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
 
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
@@ -80,8 +80,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
 
             var splat = _sqlExpressionFactory.Fragment("*");
             var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true, null);
-            var freeText = _sqlExpressionFactory.ApplyTypeMapping(arguments[2],stringMap);
-            var functionArguments = new List<SqlExpression> {splat, freeText };
+            var freeText = _sqlExpressionFactory.ApplyTypeMapping(arguments[2], stringMap);
+            var functionArguments = new List<SqlExpression> { splat, freeText };
 
             if (arguments.Count == 4)
             {
