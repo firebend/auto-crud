@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;

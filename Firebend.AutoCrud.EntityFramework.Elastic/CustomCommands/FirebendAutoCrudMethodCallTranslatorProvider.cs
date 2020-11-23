@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
 {

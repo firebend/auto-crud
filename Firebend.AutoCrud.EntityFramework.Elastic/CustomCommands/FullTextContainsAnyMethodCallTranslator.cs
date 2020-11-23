@@ -34,6 +34,14 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
                 nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
                 new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
 
+        private static readonly IDictionary<MethodInfo, string> _typeMappings = new Dictionary<MethodInfo, string>
+        {
+            {_freeTextMethodInfo, FreeTextFunctionName},
+            {_freeTextMethodInfoWithLanguage, FreeTextFunctionName},
+            {_containsMethodInfo, ContainsFunctionName},
+            {_containsMethodInfoWithLanguage, ContainsFunctionName}
+        };
+
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
         public FullTextContainsAnyMethodCallTranslator(ISqlExpressionFactory sqlExpressionFactory)
@@ -53,14 +61,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
                 throw new ArgumentNullException(nameof(arguments));
             }
 
-            var _typeMappings = new Dictionary<MethodInfo, string>
-            {
-                {_freeTextMethodInfo, FreeTextFunctionName},
-                {_freeTextMethodInfoWithLanguage, FreeTextFunctionName},
-                {_containsMethodInfo, ContainsFunctionName},
-                {_containsMethodInfoWithLanguage, ContainsFunctionName}
-            };
-
             if (_typeMappings == null)
             {
                 return null;
@@ -76,7 +76,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
             if (!(propertyReference is ColumnExpression))
             {
                 throw new InvalidOperationException("Invalid property");
-            };
+            }
 
             var splat = _sqlExpressionFactory.Fragment("*");
             var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true, null);
@@ -92,8 +92,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
             return _sqlExpressionFactory.Function(
                 functionName,
                 functionArguments,
-                typeof(bool),
-                null
+                typeof(bool)
             );
 
         }
