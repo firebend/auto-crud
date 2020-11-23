@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Web.Sample.Extensions;
 using Firebend.AutoCrud.Web.Sample.Tenant;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
