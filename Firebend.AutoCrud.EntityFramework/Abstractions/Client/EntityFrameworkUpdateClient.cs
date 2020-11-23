@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly bool _isDefaultPublisher;
         private readonly IJsonPatchDocumentGenerator _jsonPatchDocumentGenerator;
 
-        public EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
+        protected EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
             IJsonPatchDocumentGenerator jsonPatchDocumentGenerator) : base(contextProvider)
@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-            var model = await GetByKeyAsync(context, entity.Id, cancellationToken).ConfigureAwait(false);
+            var model = await GetByKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
 
             if (model == null)
             {
@@ -72,7 +72,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public virtual async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var entity = await GetByKeyAsync(context, key, cancellationToken).ConfigureAwait(false);
+            var entity = await GetByKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
 
             if (entity == null)
             {

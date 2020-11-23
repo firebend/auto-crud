@@ -19,9 +19,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         }
 
         public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
-            => _readClient.GetByKeyAsync(key, cancellationToken);
+            => _readClient.GetByKeyAsync(key,true, cancellationToken);
 
         public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-            => _readClient.GetAllAsync(cancellationToken);
+            => _readClient.GetAllAsync(true, cancellationToken);
     }
 }

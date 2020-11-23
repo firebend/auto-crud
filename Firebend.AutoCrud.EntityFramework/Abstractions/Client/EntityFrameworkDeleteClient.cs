@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             {
                 var set = GetDbSet(context);
 
-                var found = await GetByKeyAsync(context, key, cancellationToken);
+                var found = await GetByKeyAsync(context, key, false, cancellationToken);
 
                 if (found != null)
                 {

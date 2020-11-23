@@ -38,9 +38,16 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
 
-        protected async Task<TEntity> GetByKeyAsync(IDbContext context, TKey key, CancellationToken cancellationToken)
+        protected async Task<TEntity> GetByKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
         {
-            var queryable = await GetFilteredQueryableAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var queryable = await GetFilteredQueryableAsync(context, null, asNoTracking, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (asNoTracking)
+            {
+                queryable = queryable.AsNoTracking();
+            }
+
             var first = await queryable.FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
 
             return first;
@@ -49,11 +56,17 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
         protected async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
             IDbContext context,
             Expression<Func<TEntity, bool>> firstStageFilters = null,
+            bool asNoTracking = true,
             CancellationToken cancellationToken = default)
         {
             var set = GetDbSet(context);
 
             var queryable = set.AsQueryable();
+
+            if (asNoTracking)
+            {
+                queryable = queryable.AsNoTracking();
+            }
 
             queryable = AddIncludes(queryable);
 

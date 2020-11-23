@@ -46,6 +46,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
                 request?.PageSize,
                 request?.DoCount ?? false,
                 GetOrderByGroups(request),
+                true,
                 cancellationToken
             );
 
