@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Threading;
+using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -69,6 +70,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
             var options = new DbContextOptionsBuilder()
                 .UseSqlServer(connectionString)
+                .AddFirebendFunctions()
                 .Options;
 
             var instance = Activator.CreateInstance(contextType, options);

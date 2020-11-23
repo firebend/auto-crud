@@ -5,6 +5,7 @@ using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
+using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
@@ -44,7 +45,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             IConfiguration configuration) =>
             generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithSearchFilter((efPerson, s) => efPerson.LastName.Contains(s) || efPerson.FirstName.Contains(s))
+                    .WithSearchFilter((efPerson, s) => EF.Functions.ContainsAny(efPerson.FirstName, s))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -83,6 +84,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
+                        .WithMaxPageSize(20)
+                        .WithMaxExportPageSize(50)
                     ));
 
         public static EntityFrameworkEntityCrudGenerator AddEfPets(this EntityFrameworkEntityCrudGenerator generator,

@@ -52,13 +52,13 @@ https://localhost:5001/api/v1/ef-person/6cedb94a-c722-43aa-01a3-08d8858ed33e
 https://localhost:5001/api/v1/ef-person/all
 
 ###
-https://localhost:5001/api/v1/ef-person?search=Peggy&pageSize=10&pageNumber=1&modifiedStartDate=2020-11-05T15:24:22.285552-06:00
+https://localhost:5001/api/v1/ef-person?search=Peggy&pageSize=20&pageNumber=1&modifiedStartDate=2020-11-05T15:24:22.285552-06:00
 
 ###
-http://localhost:5000/api/v1/ef-person/7d963ef7-a42d-40c8-449d-08d87a83025c/changes?pageNumber=1&pageSize=5
+http://localhost:5000/api/v1/ef-person/7d963ef7-a42d-40c8-449d-08d87a83025c/changes?pageNumber=1&pageSize=20
 
 ###
-http://localhost:5000/api/v1/ef-person/export/csv?filename=export
+http://localhost:5000/api/v1/ef-person/export/csv?filename=export&pageSize=1000&pageNumber=1
 
 ###
 http://localhost:5000/api/v1/ef-person/export/csv?filename=export

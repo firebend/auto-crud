@@ -1,3 +1,4 @@
+using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,9 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
             optionsBuilder
                 .UseLoggerFactory(
                     LoggerFactory.Create(c => c.AddConsole()))
-                .EnableSensitiveDataLogging();
+                .EnableSensitiveDataLogging()
+                .AddFirebendFunctions()
+                ;
 
             base.OnConfiguring(optionsBuilder);
         }

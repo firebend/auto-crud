@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

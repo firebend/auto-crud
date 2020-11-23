@@ -20,12 +20,15 @@ namespace Firebend.AutoCrud.Web.Abstractions
     {
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
         private readonly IReadViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
+        private readonly IMaxPageSize<TKey, TEntity> _maxPageSize;
 
         protected AbstractEntitySearchController(IEntitySearchService<TKey, TEntity, TSearch> searchService,
-            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper)
+            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
+            IMaxPageSize<TKey, TEntity> maxPageSize)
         {
             _searchService = searchService;
             _viewModelMapper = viewModelMapper;
+            _maxPageSize = maxPageSize;
         }
 
         [HttpGet]
@@ -50,9 +53,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            if (!searchRequest.PageSize.GetValueOrDefault().IsBetween(1, 100))
+            var pageSize = _maxPageSize?.MaxPageSize ?? 100;
+
+            if (!searchRequest.PageSize.GetValueOrDefault().IsBetween(1, pageSize))
             {
-                ModelState.AddModelError(nameof(searchRequest.PageNumber), "Page size must be between 1 and 100");
+                ModelState.AddModelError(nameof(searchRequest.PageNumber), $"Page size must be between 1 and {pageSize}");
 
                 return BadRequest(ModelState);
             }

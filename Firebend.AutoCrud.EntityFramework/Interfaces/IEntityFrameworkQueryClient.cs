@@ -13,9 +13,11 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         where TEntity : IEntity<TKey>
     {
         Task<TEntity> GetByKeyAsync(TKey key,
+            bool asNoTracking,
             CancellationToken cancellationToken = default);
 
         Task<List<TEntity>> GetAllAsync(
+            bool asNoTracking,
             CancellationToken cancellationToken = default);
 
         Task<EntityPagedResponse<TEntity>> PageAsync(
@@ -25,6 +27,7 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
             int? pageSize = null,
             bool doCount = true,
             IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
+            bool asNoTracking = true,
             CancellationToken cancellationToken = default);
 
         Task<EntityPagedResponse<TOut>> PageAsync<TOut>(
@@ -35,6 +38,7 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
             int? pageSize = null,
             bool doCount = false,
             IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
+            bool asNoTracking = true,
             CancellationToken cancellationToken = default);
 
         Task<int> CountAsync(

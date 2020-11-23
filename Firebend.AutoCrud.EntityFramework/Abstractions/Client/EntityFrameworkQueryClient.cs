@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> _fullTextSearchProvider;
         private readonly IEntityFrameworkIncludesProvider<TKey, TEntity> _includesProvider;
 
-        public EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
+        protected EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> fullTextSearchProvider,
             IEntityFrameworkIncludesProvider<TKey, TEntity> includesProvider) : base(contextProvider)
         {
@@ -27,21 +27,21 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _includesProvider = includesProvider;
         }
 
-        public async Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
+        public async Task<TEntity> GetByKeyAsync(TKey key, bool asNoTracking, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
             var entity = await base
-                .GetByKeyAsync(context, key, cancellationToken)
+                .GetByKeyAsync(context, key, asNoTracking, cancellationToken)
                 .ConfigureAwait(false);
 
             return entity;
         }
 
-        public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<List<TEntity>> GetAllAsync(bool asNoTracking = true, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var queryable = await GetFilteredQueryableAsync(context, null, cancellationToken).ConfigureAwait(false);
+            var queryable = await GetFilteredQueryableAsync(context, null, asNoTracking, cancellationToken).ConfigureAwait(false);
             var list = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
 
             return list;
@@ -53,6 +53,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             int? pageSize = null,
             bool doCount = true,
             IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
+            bool asNoTracking = true,
             CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -65,7 +66,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     .ConfigureAwait(false);
             }
 
-            var queryable = await BuildQueryAsync(context, search, filter, pageNumber, pageSize, orderBys, cancellationToken).ConfigureAwait(false);
+            var queryable = await BuildQueryAsync(context, search, filter, pageNumber, pageSize, orderBys, asNoTracking, cancellationToken
+            ).ConfigureAwait(false);
 
             var data = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -79,6 +81,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             int? pageSize = null,
             bool doCount = false,
             IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
+            bool asNoTracking = true,
             CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -91,7 +94,15 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     .ConfigureAwait(false);
             }
 
-            var queryable = await BuildQueryAsync(context, search, filter, pageNumber, pageSize, orderBys, cancellationToken).ConfigureAwait(false);
+            var queryable = await BuildQueryAsync(context,
+                search,
+                filter,
+                pageNumber,
+                pageSize,
+                orderBys,
+                asNoTracking,
+                cancellationToken).ConfigureAwait(false);
+
 
             var project = queryable.Select(projection);
 
@@ -110,7 +121,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var queryable = await BuildQueryAsync(context, filter: filter).ConfigureAwait(false);
+            var queryable = await BuildQueryAsync(context,
+                null,
+                filter,
+                null,
+                null,
+                null,
+                true,
+                cancellationToken).ConfigureAwait(false);
 
             var exists = await queryable
                 .AnyAsync(cancellationToken)
@@ -127,7 +145,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             dbContext ??= await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-            var queryable = await BuildQueryAsync(dbContext, search, expression, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var queryable = await BuildQueryAsync(dbContext,
+                search,
+                expression,
+                null,
+                null,
+                null,
+                true,
+                cancellationToken).ConfigureAwait(false);
 
             var count = await queryable
                 .CountAsync(cancellationToken)
@@ -143,9 +168,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             int? pageNumber = null,
             int? pageSize = null,
             IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
+            bool asNoTracking = true,
             CancellationToken cancellationToken = default)
         {
-            var queryable = await GetFilteredQueryableAsync(context, null, cancellationToken).ConfigureAwait(false);
+            var queryable = await GetFilteredQueryableAsync(context,
+                null,
+                asNoTracking,
+                cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(search))
             {
