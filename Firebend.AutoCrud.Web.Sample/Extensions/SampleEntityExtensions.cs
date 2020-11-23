@@ -84,6 +84,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
+                        .WithMaxPageSize(20)
+                        .WithMaxExportPageSize(50)
                     ));
 
         public static EntityFrameworkEntityCrudGenerator AddEfPets(this EntityFrameworkEntityCrudGenerator generator,

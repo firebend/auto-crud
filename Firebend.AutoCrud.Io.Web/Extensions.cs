@@ -4,6 +4,8 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Io.Web.Abstractions;
 using Firebend.AutoCrud.Io.Web.Interfaces;
 using Firebend.AutoCrud.Web;
+using Firebend.AutoCrud.Web.Implementations.Paging;
+using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Io.Web
 {
@@ -43,6 +45,19 @@ namespace Firebend.AutoCrud.Io.Web
                 configurator.Builder.EntityType,
                 configurator.Builder.SearchRequestType,
                 configurator.Builder.ExportType);
+        }
+
+
+        public static ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxExportPageSize<TBuilder, TKey, TEntity>(
+            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+            int pageSize)
+            where TBuilder : EntityCrudBuilder<TKey, TEntity>
+            where TKey : struct
+            where TEntity : class, IEntity<TKey>
+        {
+             configurator.Builder.WithRegistrationInstance<IMaxExportPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(pageSize));
+
+             return configurator;
         }
     }
 }

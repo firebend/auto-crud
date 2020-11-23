@@ -16,6 +16,7 @@ using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations.Options;
+using Firebend.AutoCrud.Web.Implementations.Paging;
 using Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.AutoCrud.Web.Models;
@@ -66,6 +67,7 @@ namespace Firebend.AutoCrud.Web
             WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
             WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultUpdateViewModelMapper<TKey, TEntity>>();
             WithCreateMultipleViewModel<MultipleEntityViewModel<TEntity>, TEntity, DefaultCreateMultipleViewModelMapper<TKey, TEntity>>();
+            WithMaxPageSize();
         }
 
         public (Type attributeType, CustomAttributeBuilder attributeBuilder) DefaultAuthorizationPolicy { get; private set; }
@@ -923,5 +925,11 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        public ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxPageSize(int size = 100)
+        {
+            CrudBuilder.WithRegistrationInstance<IMaxPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(size));
+
+            return this;
+        }
     }
 }
