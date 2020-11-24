@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
         private DbContextOptionsExtensionInfo _info;
 
         public void ApplyServices(IServiceCollection services) => services
-            .AddSingleton<IMethodCallTranslatorProvider, FirebendAutoCrudMethodCallTranslatorProvider>();
+            .AddSingleton<IMethodCallTranslatorPlugin, FirebendMethodCallTranslatorPlugin>();
 
         public void Validate(IDbContextOptions options)
         {

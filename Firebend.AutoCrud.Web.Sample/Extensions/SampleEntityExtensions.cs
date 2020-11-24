@@ -94,8 +94,10 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                 person.WithDbContext<PersonDbContext>()
                     .WithSearchFilter((efPet, s) => efPet.PetName.Contains(s) ||
                                                     efPet.PetType.Contains(s) ||
-                                                    efPet.Person.LastName.Contains(s) ||
-                                                    efPet.Person.FirstName.Contains(s))
+                                                    EF.Functions.ContainsAny(efPet.Person.FirstName, s)
+                                                    //efPet.Person.LastName.Contains(s) ||
+                                                    //efPet.Person.FirstName.Contains(s)
+                                                    )
                     .WithIncludes(pets => pets.Include(p => p.Person))
                     .AddElasticPool(manager =>
                         {

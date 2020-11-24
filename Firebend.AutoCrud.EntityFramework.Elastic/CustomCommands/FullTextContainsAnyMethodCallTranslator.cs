@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -73,12 +74,24 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
 
             var propertyReference = arguments[1];
 
-            if (!(propertyReference is ColumnExpression))
+            if (!(propertyReference is ColumnExpression columnExpression))
             {
                 throw new InvalidOperationException("Invalid property");
             }
 
-            var splat = _sqlExpressionFactory.Fragment("*");
+            var splatBuilder = new StringBuilder();
+
+            if (!string.IsNullOrWhiteSpace(columnExpression.Table?.Alias))
+            {
+                splatBuilder.Append('[');
+                splatBuilder.Append(columnExpression.Table.Alias);
+                splatBuilder.Append(']');
+                splatBuilder.Append('.');
+            }
+
+            splatBuilder.Append("*");
+
+            var splat = _sqlExpressionFactory.Fragment(splatBuilder.ToString());
             var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true, null);
             var freeText = _sqlExpressionFactory.ApplyTypeMapping(arguments[2], stringMap);
             var functionArguments = new List<SqlExpression> { splat, freeText };
