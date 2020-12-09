@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
-        <Version>0.0.24</Version>
+        <Version>0.0.25</Version>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -21,8 +21,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MassTransit" Version="7.0.6" />
-      <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.0.6" />
+      <PackageReference Include="MassTransit" Version="7.0.7" />
+      <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.0.7" />
     </ItemGroup>
 
 </Project>

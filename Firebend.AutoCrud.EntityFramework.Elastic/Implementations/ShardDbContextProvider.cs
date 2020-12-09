@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
+    internal static class ShardDbContextProviderStatics
+    {
+        public static readonly (string newName, string oldName)[] SqlPropertyRenames =
+        {
+            ("Application Intent", "ApplicationIntent"),
+            ("Connect Retry Count", "ConnectRetryCount"),
+            ("Connect Retry Interval", "ConnectRetryInterval"),
+            ("Pool Blocking Period", "PoolBlockingPeriod"),
+            ("Multiple Active Result Sets", "MultipleActiveResultSets"),
+            ("Multi Subnet Failover", "MultiSubnetFailover"),
+            ("Transparent Network IP Resolution", "TransparentNetworkIPResolution"),
+            ("Trust Server Certificate", "TrustServerCertificate")
+        };
+    }
     public class ShardDbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
@@ -33,6 +48,14 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             _shardNameProvider = shardNameProvider;
             _shardMapMangerConfiguration = shardMapMangerConfiguration;
         }
+
+        public static string NormalizeToLegacyConnectionString(string connectionString)
+            => string.IsNullOrWhiteSpace(connectionString)
+            ? connectionString
+            : ShardDbContextProviderStatics
+                .SqlPropertyRenames
+                .Aggregate(connectionString,
+                    (connString, replace) => connString.Replace(replace.newName, replace.oldName, StringComparison.OrdinalIgnoreCase));
 
         public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
         {
@@ -57,7 +80,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                     rootConnectionStringBuilder.Remove("Data Source");
                     rootConnectionStringBuilder.Remove("Initial Catalog");
 
-                    var shardConnectionString = rootConnectionStringBuilder.ConnectionString;
+                    var shardConnectionString = NormalizeToLegacyConnectionString(rootConnectionStringBuilder.ConnectionString);
 
                     await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
                         .ConfigureAwait(false);
