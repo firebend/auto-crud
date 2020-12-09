@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -50,8 +52,12 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+        public SqlExpression Translate(SqlExpression instance,
+            MethodInfo method,
+            IReadOnlyList<SqlExpression> arguments,
+            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
+
             if (method == null)
             {
                 throw new ArgumentNullException(nameof(method));
@@ -102,12 +108,11 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
                     _sqlExpressionFactory.Fragment($"LANGUAGE {((SqlConstantExpression)arguments[3]).Value}"));
             }
 
-            return _sqlExpressionFactory.Function(
-                functionName,
+            return _sqlExpressionFactory.Function(functionName,
                 functionArguments,
-                typeof(bool)
-            );
-
+                true,
+                functionArguments.Select(x => false).ToList(),
+                typeof(bool));
         }
     }
 }

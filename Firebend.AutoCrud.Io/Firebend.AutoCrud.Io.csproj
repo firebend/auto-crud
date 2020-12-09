@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
-        <Version>0.0.24</Version>
+        <Version>0.0.25</Version>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -18,7 +18,7 @@
 
     <ItemGroup>
       <PackageReference Include="ClosedXML" Version="0.95.3" />
-      <PackageReference Include="CsvHelper" Version="15.0.8" />
+      <PackageReference Include="CsvHelper" Version="18.0.0" />
     </ItemGroup>
 
     <ItemGroup>
