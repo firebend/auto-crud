@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -93,9 +94,27 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            var entity = await _updateService
-                .UpdateAsync(entityUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            TEntity entity;
+
+            try
+            {
+                entity = await _updateService
+                    .UpdateAsync(entityUpdate, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (AutoCrudEntityException ex)
+            {
+                if (ex.PropertyErrors != null)
+                {
+                    foreach (var (property, error) in ex.PropertyErrors)
+                    {
+                        ModelState.AddModelError(property, error);
+                    }
+
+                }
+
+                return BadRequest(ModelState);
+            }
 
             if (entity == null)
             {
@@ -171,20 +190,39 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 entity = isValid.Model;
             }
 
-            var update = await _updateService
-                .UpdateAsync(entity, cancellationToken)
-                .ConfigureAwait(false);
+            TEntity update;
 
-            if (update != null)
+            try
             {
-                var mapped = await _readViewModelMapper
-                    .ToAsync(update, cancellationToken)
+                update = await _updateService
+                    .UpdateAsync(entity, cancellationToken)
                     .ConfigureAwait(false);
+            }
+            catch (AutoCrudEntityException ex)
+            {
+                if (ex.PropertyErrors != null)
+                {
+                    foreach (var (property, error) in ex.PropertyErrors)
+                    {
+                        ModelState.AddModelError(property, error);
+                    }
 
-                return Ok(mapped);
+                }
+
+                return BadRequest(ModelState);
             }
 
-            return NotFound(new { id });
+            if (update == null)
+            {
+                return NotFound(new {id});
+            }
+
+            var mapped = await _readViewModelMapper
+                .ToAsync(update, cancellationToken)
+                .ConfigureAwait(false);
+
+            return Ok(mapped);
+
         }
     }
 }

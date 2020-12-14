@@ -10,6 +10,7 @@ using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -21,15 +22,18 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
         private readonly bool _isDefaultPublisher;
         private readonly IJsonPatchDocumentGenerator _jsonPatchDocumentGenerator;
+        private readonly IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> _exceptionHandler;
 
         protected EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchDocumentGenerator jsonPatchDocumentGenerator) : base(contextProvider)
+            IJsonPatchDocumentGenerator jsonPatchDocumentGenerator,
+            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(contextProvider)
         {
             _domainEventPublisher = domainEventPublisher;
             _domainEventContextProvider = domainEventContextProvider;
             _jsonPatchDocumentGenerator = jsonPatchDocumentGenerator;
+            _exceptionHandler = exceptionHandler;
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
@@ -53,9 +57,19 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 modified.ModifiedDate = DateTimeOffset.Now;
             }
 
-            await context
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                await context
+                    .SaveChangesAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch(DbUpdateException ex)
+            {
+                if (!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
+                {
+                    throw;
+                }
+            }
 
             JsonPatchDocument<TEntity> jsonPatchDocument = null;
 
@@ -92,9 +106,19 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             jsonPatchDocument.ApplyTo(entity);
 
-            await context
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                await context
+                    .SaveChangesAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch(DbUpdateException ex)
+            {
+                if(!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
+                {
+                    throw;
+                }
+            }
 
             await PublishDomainEventAsync(original, jsonPatchDocument, cancellationToken);
 

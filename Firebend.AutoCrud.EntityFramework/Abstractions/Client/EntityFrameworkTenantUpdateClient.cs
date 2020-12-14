@@ -23,11 +23,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
             IJsonPatchDocumentGenerator jsonPatchDocumentGenerator,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(
             contextProvider,
             domainEventPublisher,
             domainEventContextProvider,
-            jsonPatchDocumentGenerator)
+            jsonPatchDocumentGenerator,
+            exceptionHandler)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

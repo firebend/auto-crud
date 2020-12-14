@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -14,14 +15,17 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IDomainEventContextProvider _domainEventContextProvider;
+        private readonly IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> _exceptionHandler;
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
 
         protected EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider,
             IEntityDomainEventPublisher domainEventPublisher,
-            IDomainEventContextProvider domainEventContextProvider) : base(provider)
+            IDomainEventContextProvider domainEventContextProvider,
+            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(provider)
         {
             _domainEventPublisher = domainEventPublisher;
             _domainEventContextProvider = domainEventContextProvider;
+            _exceptionHandler = exceptionHandler;
         }
 
         public virtual async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
@@ -43,9 +47,19 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var savedEntity = entry.Entity;
 
-            await context
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                await context
+                    .SaveChangesAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch(DbUpdateException ex)
+            {
+                if (!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
+                {
+                    throw;
+                }
+            }
 
             await PublishDomainEventAsync(savedEntity, cancellationToken).ConfigureAwait(false);
 
