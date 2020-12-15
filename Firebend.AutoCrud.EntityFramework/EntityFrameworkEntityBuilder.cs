@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
+using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -66,6 +67,7 @@ namespace Firebend.AutoCrud.EntityFramework
 
             WithRegistration<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>, DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(false);
             WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>, DefaultEntityFrameworkIncludesProvider<TKey, TEntity>>(false);
+            WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>, DefaultEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>>(false);
         }
 
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext(Type dbContextType)

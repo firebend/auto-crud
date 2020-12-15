@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -74,9 +75,33 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     entityToCreate = isValid.Model;
                 }
 
-                var entity = await _createService
-                    .CreateAsync(entityToCreate, cancellationToken)
-                    .ConfigureAwait(false);
+                TEntity entity = null;
+
+                try
+                {
+                    entity = await _createService
+                        .CreateAsync(entityToCreate, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                catch (AutoCrudEntityException ex)
+                {
+                    var modelStateResult = new ModelStateResult<TEntity>();
+
+                    if (ex.PropertyErrors != null)
+                    {
+                        foreach (var (property, error) in ex.PropertyErrors)
+                        {
+                            modelStateResult.AddError(property, error);
+                        }
+                    }
+
+                    errorEntities.Add(modelStateResult);
+                }
+
+                if (entity == null)
+                {
+                    continue;
+                }
 
                 var mappedEntity = await _readMapper
                     .ToAsync(entity, cancellationToken)

@@ -20,7 +20,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         protected EntityFrameworkTenantCreateClient(IDbContextProvider<TKey, TEntity> provider,
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(provider, domainEventPublisher, domainEventContextProvider)
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(
+                provider,
+                domainEventPublisher,
+                domainEventContextProvider,
+                exceptionHandler)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

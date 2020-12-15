@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
     {
         public AbstractEntityFrameworkChangeTrackingService(
             IChangeTrackingDbContextProvider<TEntityKey, TEntity> provider) :
-            base(provider, null, null)
+            base(provider, null, null, null)
         {
         }
 
