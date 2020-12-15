@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler): base(
+            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(
                 provider,
                 domainEventPublisher,
                 domainEventContextProvider,

@@ -214,7 +214,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (update == null)
             {
-                return NotFound(new {id});
+                return NotFound(new { id });
             }
 
             var mapped = await _readViewModelMapper

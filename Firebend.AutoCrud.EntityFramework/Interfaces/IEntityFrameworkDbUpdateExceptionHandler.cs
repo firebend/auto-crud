@@ -7,6 +7,6 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        bool HandleException(IDbContext context,  TEntity entity, DbUpdateException exception);
+        bool HandleException(IDbContext context, TEntity entity, DbUpdateException exception);
     }
 }

@@ -53,7 +53,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     .SaveChangesAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch(DbUpdateException ex)
+            catch (DbUpdateException ex)
             {
                 if (!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
                 {

@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.Core.Exceptions
     {
         public object Entity { get; set; }
 
-        public IEnumerable<KeyValuePair<string,  string>> PropertyErrors { get; set; }
+        public IEnumerable<KeyValuePair<string, string>> PropertyErrors { get; set; }
 
         public AutoCrudEntityException(string message,
             Exception ex,
