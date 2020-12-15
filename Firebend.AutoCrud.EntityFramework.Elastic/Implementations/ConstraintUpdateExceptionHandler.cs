@@ -16,6 +16,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        private const int SQL_SERVER_CONSTRAINT_ERROR_CODE = 547;
+
         public bool HandleException(IDbContext context, TEntity entity, DbUpdateException exception)
         {
             if (!(exception?.InnerException is SqlException sqlException))
@@ -23,24 +25,31 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 return false;
             }
 
-            return sqlException.Number == 547 && HandleConstraint(context, entity, sqlException);
+            return sqlException.Number == SQL_SERVER_CONSTRAINT_ERROR_CODE && HandleConstraint(context, entity, sqlException);
         }
 
         private static bool HandleConstraint(IDbContext context, TEntity entity, Exception sqlException)
         {
-            var constraintSplit = sqlException.Message.Split("constraint \"");
-            var constraint = constraintSplit[1].Substring(0, constraintSplit[1].IndexOf("\""));
 
             if (!(context is DbContext dbContext))
             {
                 return false;
             }
 
+            if (string.IsNullOrWhiteSpace(sqlException?.Message))
+            {
+                return false;
+            }
+
+            var constraintSplit = sqlException.Message.Split("constraint \"");
+            var constraint = constraintSplit[1].Substring(0, constraintSplit[1].IndexOf("\""));
+
             var foreignKey = dbContext
                 .Model
                 .FindEntityType(typeof(TEntity))
                 .GetForeignKeys()
                 .SelectMany(x => x.GetAnnotations())
+                .Where(x => x?.Value != null)
                 .Where(x => x.Value is IEnumerable<ForeignKeyConstraint>)
                 .SelectMany(x => x.Value as IEnumerable<ForeignKeyConstraint>)
                 .FirstOrDefault(x => x?.Name?.EqualsIgnoreCaseAndWhitespace(constraint) ?? false);
