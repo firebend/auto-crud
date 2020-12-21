@@ -8,8 +8,12 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
     /// <summary>
     /// Encapsulates change
     /// </summary>
-    /// <typeparam name="TKey"></typeparam>
-    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TKey">
+    /// The type of key the entity uses.
+    /// </typeparam>
+    /// <typeparam name="TEntity">
+    /// The type of entity.
+    /// </typeparam>
     public class ChangeTrackingEntity<TKey, TEntity> : ChangeTrackingModel<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
@@ -20,42 +24,42 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
         where TEntity : class
     {
         /// <summary>
-        ///     The user who made the change.
+        /// Gets or sets a value indicating the user who made the change.
         /// </summary>
         public string UserEmail { get; set; }
 
         /// <summary>
-        ///     The set of changes made to the entity.
+        /// Gets or sets a value indicating the set of changes made to the entity.
         /// </summary>
         public List<Operation<TEntity>> Changes { get; set; }
 
         /// <summary>
-        ///     A descriptions of where the change was made at.
+        /// Gets or sets a value indicating descriptions of where the change was made at.
         /// </summary>
         public string Source { get; set; }
 
         /// <summary>
-        ///     What action was taken on the entity. Add, Update, Delete.
+        /// Gets or sets a value indicating what action was taken on the entity. Add, Update, Delete.
         /// </summary>
         public string Action { get; set; }
 
         /// <summary>
-        ///     The time the change tracking record was modified.
+        /// Gets or sets a value indicating the time the change tracking record was modified.
         /// </summary>
         public DateTimeOffset Modified { get; set; }
 
         /// <summary>
-        ///     An indexable entity id.
+        /// Gets or sets a value indicating the entity's unique identifier.
         /// </summary>
         public TKey EntityId { get; set; }
 
         /// <summary>
-        ///     The entity's original form before the changes were made.
+        /// Gets or sets a value indicating the entity's original form before the changes were made.
         /// </summary>
         public TEntity Entity { get; set; }
 
         /// <summary>
-        ///     The id corresponding to the change tracking record.
+        /// Gets or sets a value indicating the id corresponding to the change tracking record.
         /// </summary>
         public Guid Id { get; set; }
     }

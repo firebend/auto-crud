@@ -5,6 +5,15 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces
 {
+    /// <summary>
+    /// Encapsulates logic for getting an Entity Framework context that will persist changes.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The type of key the entity uses.
+    /// </typeparam>
+    /// <typeparam name="TEntity">
+    /// The type of entity.
+    /// </typeparam>
     public interface IChangeTrackingDbContextProvider<TEntityKey, TEntity> :
         IDbContextProvider<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>
         where TEntityKey : struct
