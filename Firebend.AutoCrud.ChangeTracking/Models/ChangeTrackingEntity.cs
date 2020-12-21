@@ -5,6 +5,11 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Firebend.AutoCrud.ChangeTracking.Models
 {
+    /// <summary>
+    /// Encapsulates change
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TEntity"></typeparam>
     public class ChangeTrackingEntity<TKey, TEntity> : ChangeTrackingModel<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
