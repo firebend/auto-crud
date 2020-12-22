@@ -387,6 +387,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         ///  // ...
         /// </code>
         /// </example>
+        /// See <see cref="EntitySearchRequest" /> for building custom search fields
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch(Type serviceType, Type searchType)
         {
             Builder.SearchRequestType = searchType;
@@ -427,6 +428,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         ///  // ...
         /// </code>
         /// </example>
+        /// See <see cref="EntitySearchRequest" /> for building custom search fields
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TService, TSearch>()
             where TSearch : EntitySearchRequest => WithSearch(typeof(TService), typeof(TSearch));
 
@@ -456,6 +458,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         ///  // ...
         /// </code>
         /// </example>
+        /// See <see cref="EntitySearchRequest" /> for building custom search fields
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>()
             where TSearch : EntitySearchRequest
         {
@@ -498,6 +501,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         ///  // ...
         /// </code>
         /// </example>
+        /// See <see cref="EntitySearchRequest" /> for building custom search fields
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>(Func<TSearch, Expression<Func<TEntity, bool>>> expression)
             where TSearch : EntitySearchRequest
         {
