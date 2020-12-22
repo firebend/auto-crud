@@ -360,6 +360,33 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithRead(serviceType);
         }
 
+        /// <summary>
+        /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing a custom service and custom search fields
+        /// </summary>
+        /// <param name="serviceType">The type of the service to use</param>
+        /// <param name="searchType">The type to use for search, must extend <code>EntitySearchRequest</code></param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCrud()
+        ///                      .WithSearch(typeof(WeatherForecastService), typeof(WeatherForecastSearchService))
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch(Type serviceType, Type searchType)
         {
             Builder.SearchRequestType = searchType;
@@ -373,9 +400,62 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing a custom service and custom search fields
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to use</typeparam>
+        /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCrud()
+        ///                      .WithSearch<WeatherForecastService, WeatherForecastSearchService>()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TService, TSearch>()
             where TSearch : EntitySearchRequest => WithSearch(typeof(TService), typeof(TSearch));
 
+        /// <summary>
+        /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing custom search fields
+        /// </summary>
+        /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCrud()
+        ///                      .WithSearch<WeatherForecastSearchService>()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>()
             where TSearch : EntitySearchRequest
         {
@@ -386,6 +466,38 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithSearch(serviceType, searchType);
         }
 
+        /// <summary>
+        /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing custom search fields and a callback function
+        /// </summary>
+        /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
+        /// <param name="expression">A callback function for performing a search, return a callback for filtering matching objects</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCrud()
+        ///                      .WithSearch<WeatherForecastSearchService>(search => {
+        ///                           if (!string.IsNullOrWhiteSpace(search?.Min) && !string.IsNullOrWhiteSpace(search?.Max)) {
+        ///                                return p => p.TemperatureC >= search.Min && p.TemperatureC <= search.Max;
+        ///                           }
+        ///                           return null;
+        ///                      })
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>(Func<TSearch, Expression<Func<TEntity, bool>>> expression)
             where TSearch : EntitySearchRequest
         {
@@ -395,6 +507,38 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithSearch<TSearch>();
         }
 
+        /// <summary>
+        /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing a callback function
+        /// </summary>
+        /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
+        /// <param name="expression">A callback function for performing a search, return a callback for filtering matching objects</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCrud()
+        ///                      .WithSearch(search => {
+        ///                           if (!string.IsNullOrWhiteSpace(search?.Search)) {
+        ///                                return p => p.Summary.Contains(search?.Search);
+        ///                           }
+        ///                           return null;
+        ///                      })
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch() => WithSearch<EntitySearchRequest>();
 
         /// <summary>
