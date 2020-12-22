@@ -13,6 +13,27 @@ namespace Firebend.AutoCrud.Mongo
             collection.ConfigureMongoDb(connectionString, true, new MongoDbConfigurator());
         }
 
+        // <summary>
+        // Adds an entity configured by the callback to the application's service collection
+        // </summary>
+        // <param name="configure">A callback function that allows configuring the individual entity</param>
+        // <example>
+        // <code>
+        // public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        //  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        //  .ConfigureServices((hostContext, services) => {
+        //      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        //          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        //              forecast.WithDefaultDatabase("Samples")
+        //                  .WithCollection("WeatherForecasts")
+        //                  // ... finish configuring the entity
+        //          )
+        //      });
+        //  })
+        //  // ...
+        // </code>
+        // </example>
+        // See <see cref="MongoDbEntityBuilder"/> extensions for options for configuring entities
         public MongoEntityCrudGenerator AddEntity<TKey, TEntity>(Action<MongoDbEntityBuilder<TKey, TEntity>> configure)
             where TKey : struct
             where TEntity : class, IEntity<TKey>, new()
