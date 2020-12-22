@@ -31,6 +31,30 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables Create, Read, Update, Delete, and Search actions for an entity
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCrud()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCrud()
         {
             WithCreate();
@@ -42,6 +66,31 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables Create actions for an entity by providing a custom service
+        /// </summary>
+        /// <param name="serviceType">The type of the service to use</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCreate(typeof(WeatherForecastsService))
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate(Type serviceType)
         {
             Builder.WithRegistration<IEntityCreateService<TKey, TEntity>>(serviceType);
@@ -49,8 +98,57 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables Create actions for an entity by providing a custom service
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to use</typeparam>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCreate<WeatherForecastsService>()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate<TService>() => WithCreate(typeof(TService));
 
+        /// <summary>
+        /// Enables Create actions for an entity with a default service
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithCreate()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCreate()
         {
             var serviceType = Builder.CreateType;
@@ -58,6 +156,31 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithCreate(serviceType);
         }
 
+        /// <summary>
+        /// Enables Delete actions for an entity by providing a custom service
+        /// </summary>
+        /// <param name="serviceType">The type of the service to use</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithDelete(typeof(WeatherForecastsService))
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete(Type serviceType)
         {
             Builder.WithRegistration<IEntityDeleteService<TKey, TEntity>>(serviceType);
@@ -65,8 +188,57 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables Delete actions for an entity by providing a custom service
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to use</typeparam>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithDelete<WeatherForecastsService>()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete<TService>() => WithDelete(typeof(TService));
 
+        /// <summary>
+        /// Enables Delete actions for an entity with a default service
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithDelete()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithDelete()
         {
             var serviceType = Builder.DeleteType;
@@ -98,6 +270,31 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables Read actions for an entity by providing a custom service
+        /// </summary>
+        /// <param name="serviceType">The type of the service to use</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithRead(typeof(WeatherForecastsService))
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithRead(Type serviceType)
         {
             Builder.WithRegistration<IEntityReadService<TKey, TEntity>>(serviceType);
@@ -105,8 +302,57 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables Read actions for an entity by providing a custom service
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to use</typeparam>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithRead<WeatherForecastsService>()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithRead<TService>() => WithRead(typeof(TService));
 
+        /// <summary>
+        /// Enables Read actions for an entity with a default service
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithRead()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithRead()
         {
             var serviceType = Builder.ReadType;
@@ -151,6 +397,31 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch() => WithSearch<EntitySearchRequest>();
 
+        /// <summary>
+        /// Enables Update actions for an entity by providing a custom service
+        /// </summary>
+        /// <param name="serviceType">The type of the service to use</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithUpdate(typeof(WeatherForecastsService))
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithUpdate(Type serviceType)
         {
             Builder.WithRegistration<IEntityUpdateService<TKey, TEntity>>(serviceType);
@@ -158,8 +429,57 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables Update actions for an entity by providing a custom service
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to use</typeparam>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithUpdate<WeatherForecastsService>()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithUpdate<TService>() => WithUpdate(typeof(TService));
 
+        /// <summary>
+        /// Enables Update actions for an entity with a default service
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .AddCrud(x => x
+        ///                      .WithUpdate()
+        ///                      // ... finish configuring CRUD for this entity
+        ///                   )
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithUpdate()
         {
             var serviceType = Builder.UpdateType;
