@@ -136,18 +136,77 @@ namespace Firebend.AutoCrud.Mongo
                 });
         }
 
+        /// <summary>
+        /// Defines the Mongo database the entity should reside in
+        /// </summary>
+        /// <param name="db">The name of the Mongo database to use</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public MongoDbEntityBuilder<TKey, TEntity> WithDatabase(string db)
         {
             Database = db;
             return this;
         }
 
+        /// <summary>
+        /// Defines the Mongo collection the entity should reside in
+        /// </summary>
+        /// <param name="db">The name of the Mongo collection to use</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public MongoDbEntityBuilder<TKey, TEntity> WithCollection(string collection)
         {
             CollectionName = collection;
             return this;
         }
 
+        /// <summary>
+        /// Defines the default database to use for the entity when connecting to Mongo
+        /// </summary>
+        /// <param name="db">The name of the Mongo database to use as the default database</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDefaultDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public MongoDbEntityBuilder<TKey, TEntity> WithDefaultDatabase(string db)
         {
             if (string.IsNullOrWhiteSpace(db))
@@ -178,6 +237,26 @@ namespace Firebend.AutoCrud.Mongo
             return this;
         }
 
+        /// <summary>
+        /// Enables full-text search on all of the entities properties
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public MongoDbEntityBuilder<TKey, TEntity> WithFullTextSearch()
         {
             if (IsModifiedEntity)
