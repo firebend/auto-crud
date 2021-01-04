@@ -206,7 +206,7 @@ namespace Firebend.AutoCrud.Mongo
         }
 
         public MongoDbEntityBuilder<TKey, TEntity> WithShardKeyProvider<TShardKeyProvider>()
-            where TShardKeyProvider:IMongoShardKeyProvider
+            where TShardKeyProvider : IMongoShardKeyProvider
         {
             WithRegistration<IMongoShardKeyProvider, TShardKeyProvider>();
             return this;
