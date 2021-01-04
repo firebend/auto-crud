@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models;
@@ -9,6 +10,7 @@ using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Abstractions.Entities;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using Firebend.AutoCrud.Mongo.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Mongo
@@ -43,6 +45,8 @@ namespace Firebend.AutoCrud.Mongo
         public string CollectionName { get; set; }
 
         public string Database { get; set; }
+
+        public MongoTenantShardMode ShardMode { get; set; }
 
         protected override void ApplyPlatformTypes()
         {
@@ -96,6 +100,13 @@ namespace Firebend.AutoCrud.Mongo
 
         private void RegisterEntityConfiguration()
         {
+            var iFaceType = typeof(IMongoEntityConfiguration<TKey, TEntity>);
+
+            if (Registrations.Any(x => x.Key == iFaceType))
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(CollectionName))
             {
                 throw new Exception("Please provide a collection name for this mongo entity");
@@ -106,34 +117,29 @@ namespace Firebend.AutoCrud.Mongo
                 throw new Exception("Please provide a database name for this entity.");
             }
 
-            var signature = $"{EntityType.Name}_{CollectionName}_CollectionName";
+            var instance = new MongoEntityConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode);
 
-            var iFaceType = typeof(IMongoEntityConfiguration<,>).MakeGenericType(EntityKeyType, EntityType);
-
-            var collectionNameField = new PropertySet
+            if (IsTenantEntity)
             {
-                Name = nameof(IMongoEntityConfiguration<Guid, FooEntity>.CollectionName),
-                Type = typeof(string),
-                Value = CollectionName,
-                Override = true
-            };
+                var shardProviderType = typeof(IMongoShardKeyProvider);
 
-            var databaseField = new PropertySet
-            {
-                Name = nameof(IMongoEntityConfiguration<Guid, FooEntity>.DatabaseName),
-                Type = typeof(string),
-                Value = Database,
-                Override = true
-            };
-
-            WithDynamicClass(iFaceType,
-                new DynamicClassRegistration
+                if (!Registrations.ContainsKey(shardProviderType))
                 {
-                    Interface = iFaceType,
-                    Properties = new[] { databaseField, collectionNameField },
-                    Signature = signature,
-                    Lifetime = ServiceLifetime.Singleton
-                });
+                    throw new Exception($"Please register a {nameof(IMongoShardKeyProvider)}");
+                }
+
+                if (ShardMode == MongoTenantShardMode.Unknown)
+                {
+                    throw new Exception($"Please set a {nameof(ShardMode)}");
+                }
+
+                WithRegistrationInstance(instance);
+                WithRegistration<IMongoEntityConfiguration<TKey, TEntity>, MongoTenantEntityConfiguration<TKey, TEntity>>();
+            }
+            else
+            {
+                WithRegistrationInstance(iFaceType, instance);
+            }
         }
 
         /// <summary>
@@ -269,6 +275,19 @@ namespace Firebend.AutoCrud.Mongo
                 WithRegistration<IMongoIndexProvider<TEntity>, FullTextIndexProvider<TEntity>>();
             }
 
+            return this;
+        }
+
+        public MongoDbEntityBuilder<TKey, TEntity> WithShardMode(MongoTenantShardMode mode)
+        {
+            ShardMode = mode;
+            return this;
+        }
+
+        public MongoDbEntityBuilder<TKey, TEntity> WithShardKeyProvider<TShardKeyProvider>()
+            where TShardKeyProvider : IMongoShardKeyProvider
+        {
+            WithRegistration<IMongoShardKeyProvider, TShardKeyProvider>();
             return this;
         }
     }
