@@ -10,6 +10,7 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
 using Firebend.AutoCrud.Mongo;
+using Firebend.AutoCrud.Mongo.Models;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
@@ -22,10 +23,12 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
     public static class SampleEntityExtensions
     {
         public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenerator generator) =>
-            generator.AddEntity<Guid, MongoPerson>(person =>
+            generator.AddEntity<Guid, MongoTenantPerson>(person =>
                 person.WithDefaultDatabase("Samples")
                     .WithCollection("People")
                     .WithFullTextSearch()
+                    .WithShardKeyProvider<SampleKeyProviderMongo>()
+                    .WithShardMode(MongoTenantShardMode.Database)
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
                         .WithMassTransit())
@@ -38,7 +41,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
-                        .WithOpenApiGroupName("The Beautiful Mongo People"))
+                        .WithOpenApiGroupName("The Beautiful Mongo People")
+                        .WithRoute("api/v1/mongo-person"))
         );
 
         public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,

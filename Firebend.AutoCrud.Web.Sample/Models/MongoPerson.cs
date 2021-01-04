@@ -27,4 +27,9 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public DateTimeOffset CreatedDate { get; set; }
         public DateTimeOffset ModifiedDate { get; set; }
     }
+
+    public class MongoTenantPerson : MongoPerson, ITenantEntity<int>
+    {
+        public int TenantId { get; set; }
+    }
 }
