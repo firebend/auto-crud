@@ -610,17 +610,107 @@ namespace AutoCrudSampleApi
 ```
 
 Now, you should be able to hit the endpoint `/weather-forecast/{id}/changes` and get a list of modifications to the object. You can add new entries by `PUT`ing to `/weather-forecast/{id}` to change some values.
-## Elastic pool
+## Elastic Pool with Sharding
 
-```
-// todo
-```
-
-## Sharding
-
-```
-// todo
+Install the `Firebend.AutoCrud.EntityFramework.Elastic` package
+```xml
+<PackageReference Include="Firebend.AutoCrud.EntityFramework.Elastic" />
 ```
 
+or
 
-A complete working example can be found [here](Firebend.AutoCrud/Firebend.AutoCrud.Web.Sample) that utilizes all the extension packs mentioned above. Sample `.http` files are also provided with example HTTP requests. [Get the VS Code REST client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
+```bash
+dotnet add package Firebend.AutoCrud.EntityFramework.Elastic
+```
+
+Modify `ConfigureServices` in `CreateHostBuilder` by removing the `services.AddDbContext` call (leaving `WithDbContext` on the entity) and adding `AddElasticPool` to the entity, like so
+```csharp
+using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
+
+// ...
+  services
+    // .AddDbContext<AppDbContext>(options => { options.UseSqlServer("connString")}, ServiceLifetime.Singleton) // delete
+    .UsingEfCrud(ef =>
+    {
+        ef.AddEntity<Guid, WeatherForecast>(forecast => 
+            forecast.WithDbContext<AppDbContext>()
+                .WithSearchFilter((f, s) => f.Summary.Contains(s))
+                .AddElasticPool( // add
+                    manager => {
+                        manager.ConnectionString = "Data Source=localhost;Initial Catalog=master;Persist Security Info=True;User ID=sa;Password=Password0#@!;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;MultipleActiveResultSets=True;Max Pool Size=200;";
+                        manager.MapName = "your-map-name";
+                        manager.Server = ".";
+                        manager.ElasticPoolName = "pool-name";
+                    },
+                    pool => pool
+                        .WithShardKeyProvider<KeyProvider>()
+                        .WithShardDbNameProvider<DbNameProvider>()
+                ) 
+    // ... rest of your setup
+```
+
+Create a class `KeyProvider` that implements `IShardKeyProvider` (or `IMongoShardKeyProvider` for Mongo)
+```csharp
+using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
+using Firebend.AutoCrud.Mongo.Interfaces;
+
+namespace AutoCrudSampleApi
+{
+    public class KeyProvider : IShardKeyProvider // or IMongoShardKeyProvider
+    {
+        public string GetShardKey() => "Firebend";
+    }
+}
+```
+
+Create a class `DbNameProvider` that implements `IShardNameProvider`
+```csharp
+using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
+
+namespace AutoCrudSampleApi
+{
+    public class DbNameProvider : IShardNameProvider
+    {
+        public string GetShardName(string key) => $"{key}_CrudSample";
+    }
+}
+```
+
+Rerun the project. You'll notice the first request takes a while to execute as the database is created.
+
+## Mongo Sharding
+
+Modify `ConfigureServices` in `CreateHostBuilder` by adding  `WithShardKeyProvider` and `WithShardMode` for each configured entity
+```csharp
+using Firebend.AutoCrud.Mongo.Models;
+
+// ...
+  services
+    .UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+            forecast.WithDefaultDatabase("Samples")
+                .WithCollection("WeatherForecasts")
+                .WithFullTextSearch()
+                .WithShardKeyProvider<KeyProviderMongo>()
+                .WithShardMode(MongoTenantShardMode.Database)
+    // ... rest of your setup
+```
+
+Create a class `KeyProvider` that implements `IMongoShardKeyProvider`
+```csharp
+using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
+using Firebend.AutoCrud.Mongo.Interfaces;
+
+namespace AutoCrudSampleApi
+{
+    public class KeyProvider : IShardKeyProvider // or IMongoShardKeyProvider
+    {
+        public string GetShardKey() => "Firebend";
+    }
+}
+```
+
+# Example Project
+
+
+A "kitchen-sink" example can be found [in `Firebend.AutoCrud.Web.Sample`]([Firebend.AutoCrud/Firebend.AutoCrud.Web.Sample](https://github.com/firebend/auto-crud/tree/main/Firebend.AutoCrud.Web.Sample)) that utilizes all the extension packs mentioned above. Sample `.http` files are also provided with example HTTP requests. [Get the VS Code REST client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
