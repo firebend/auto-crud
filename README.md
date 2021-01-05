@@ -499,7 +499,7 @@ Modify the `ConfigureServices` callback in `CreateHostBuilder` like so
 ```csharp
 services
     .AddDbContext<AppDbContext>(options => { options.UseSqlServer(
-        "Data Source=localhost;Initial Catalog=master;Persist Security Info=False;User ID=sa;Password=Password0#@!;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;MultipleActiveResultSets=True;Max Pool Size=200;"); },
+        "Data Source=localhost;Initial Catalog=master;Persist Security Info=True;User ID=sa;Password=Password0#@!;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;MultipleActiveResultSets=True;Max Pool Size=200;"); }, // make sure `Persist Security Info=True` in your connection string
         ServiceLifetime.Singleton
     )
     .UsingEfCrud(ef =>
