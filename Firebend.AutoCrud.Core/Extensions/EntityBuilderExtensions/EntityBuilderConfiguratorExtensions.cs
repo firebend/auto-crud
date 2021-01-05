@@ -69,6 +69,32 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             where TKey : struct
             where TEntity : class, IEntity<TKey> => AddCrud(builder, crud => crud.WithCrud());
 
+        /// <summary>
+        /// Adds DomainEvents with MassTransit
+        /// </summary>
+        /// <param name="configure">A callback allowing further configuration of domain events settings for an entity</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingEfCrud(ef =>
+        ///     {
+        ///         ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        ///             forecast.WithDbContext<AppDbContext>()
+        ///                 .AddCrud()
+        ///                 .AddDomainEvents(events => events
+        ///                     .WithEfChangeTracking()
+        ///                     .WithMassTransit()
+        ///                     .WithDomainEventEntityAddedSubscriber<DomainEventHandler>()
+        ///                     .WithDomainEventEntityUpdatedSubscriber<DomainEventHandler>()
+        ///                 )
+        ///                 // ... finish configuring the entity
+        ///             )
+        ///         });
+        ///     })
+        /// </code>
+        /// </example>
         public static EntityCrudBuilder<TKey, TEntity> AddDomainEvents<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder,
             Action<DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure)
             where TKey : struct
