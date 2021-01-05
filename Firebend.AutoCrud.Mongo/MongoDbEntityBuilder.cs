@@ -278,12 +278,58 @@ namespace Firebend.AutoCrud.Mongo
             return this;
         }
 
+        /// <summary>
+        /// Sets the Mongo ShardMode for the entity
+        /// </summary>
+        /// <param name="mode">The shard mode to use, one of <see cref="MongoTenantShardMode" /></param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .WithShardKeyProvider<KeyProviderMongo>()
+        ///                  .WithShardMode(MongoTenantShardMode.Database)
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public MongoDbEntityBuilder<TKey, TEntity> WithShardMode(MongoTenantShardMode mode)
         {
             ShardMode = mode;
             return this;
         }
 
+        /// <summary>
+        /// Sets the ShardKeyProvider for the entity
+        /// </summary>
+        /// <typeparam name="mode">The provider to use, a class that implements <see cref="IMongoShardKeyProvider" /></typeparam>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .WithShardKeyProvider<KeyProviderMongo>()
+        ///                  .WithShardMode(MongoTenantShardMode.Database)
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public MongoDbEntityBuilder<TKey, TEntity> WithShardKeyProvider<TShardKeyProvider>()
             where TShardKeyProvider : IMongoShardKeyProvider
         {
