@@ -1,5 +1,19 @@
 ![Build, Test, and Release](https://github.com/firebend/auto-crud/workflows/Build,%20Test,%20and%20Release/badge.svg)
 
+- [Firebend.AutoCrud](#firebendautocrud)
+- [Firebend Nuget Page](#firebend-nuget-page)
+- [Getting Started](#getting-started)
+  - [Project Setup](#project-setup)
+  - [Quickstart](#quickstart)
+    - [Entity Framework](#entity-framework)
+    - [Mongo](#mongo)
+  - [Custom Ordering and Search](#custom-ordering-and-search)
+  - [Entity Export](#entity-export)
+  - [Change Tracking](#change-tracking)
+  - [Elastic Pool with Sharding](#elastic-pool-with-sharding)
+  - [Mongo Sharding](#mongo-sharding)
+- [Example Project](#example-project)
+
 # Firebend.AutoCrud
 A framework that provides Create Read Update Delete (CRUD) dotnet core services.
 
@@ -22,20 +36,6 @@ A framework that provides Create Read Update Delete (CRUD) dotnet core services.
 # Getting Started
 
 The following lessons walk you through configuring a basic version of autocrud for your app, then progressively adding more advanced features. We'll build off of the dotnet WeatherForecast sample project from the dotnet documentation.
-
-- [Firebend.AutoCrud](#firebendautocrud)
-- [Firebend Nuget Page](#firebend-nuget-page)
-- [Getting Started](#getting-started)
-  - [Project Setup](#project-setup)
-  - [Quickstart](#quickstart)
-    - [Entity Framework](#entity-framework)
-    - [Mongo](#mongo)
-  - [Custom Ordering and Search](#custom-ordering-and-search)
-  - [Entity Export](#entity-export)
-  - [Change Tracking](#change-tracking)
-  - [Elastic Pool with Sharding](#elastic-pool-with-sharding)
-  - [Mongo Sharding](#mongo-sharding)
-- [Example Project](#example-project)
 
 ## Project Setup
 
