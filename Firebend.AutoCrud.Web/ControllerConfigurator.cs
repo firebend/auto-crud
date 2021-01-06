@@ -183,6 +183,16 @@ namespace Firebend.AutoCrud.Web
             return (authType, new CustomAttributeBuilder(authCtor, args));
         }
 
+        /// <summary>
+        /// Registers a given controller
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="typeToCheck"></param>
+        /// <param name="genericArgs"></param>
+        /// <example>
+        /// <code>
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type,
             Type typeToCheck,
             params Type[] genericArgs)
@@ -227,6 +237,22 @@ namespace Firebend.AutoCrud.Web
             .Where(x => x.Value is ServiceRegistration)
             .Where(x => typeof(ControllerBase).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType));
 
+        /// <summary>
+        /// Specifies the base route to use for an entity
+        /// </summary>
+        /// <param name="route"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers(true)
+        ///          .WithOpenApiGroupName("Weather Forecasts")
+        ///          .WithRoute("api/v1/mongo-person"))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithRoute(string route)
         {
             Route = route;
@@ -243,6 +269,21 @@ namespace Firebend.AutoCrud.Web
             });
         });
 
+        /// <summary>
+        /// Specifies the group name to list an entity under for OpenApi and Swagger documentation
+        /// </summary>
+        /// <param name="openApiGroupName">The group name to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers(true)
+        ///          .WithOpenApiGroupName("Weather Forecasts")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiGroupName(string openApiGroupName)
         {
             OpenApiGroupName = openApiGroupName;
@@ -256,6 +297,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specifies the entity name to use fo an entity under in OpenApi and Swagger documentation
+        /// </summary>
+        /// <param name="name">The entity name to use</param>
+        /// <param name="plural">Optional: the entity name to use when a plural is required, automatically pluralized if not provided</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers(true)
+        ///          .WithOpenApiGroupName("Weather Forecast")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiEntityName(string name, string plural = null)
         {
             OpenApiEntityName = name;
@@ -312,6 +369,25 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Registers a CREATE controller for the entity
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="viewModelType"></param>
+        /// <param name="viewModelMapper"></param>
+        /// <param name="resultModelType"></param>
+        /// <param name="resultModelTypeMapper"></param>
+        /// <param name="makeServiceGeneric"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithCreateController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type serviceType,
             Type viewModelType,
             Type viewModelMapper,
@@ -354,6 +430,20 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Registers a CREATE controller for the entity using a service type
+        /// </summary>
+        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithCreateController<>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController<TRegistrationType>()
             => WithCreateController(typeof(TRegistrationType),
                 CreateViewModelType,
@@ -362,6 +452,20 @@ namespace Firebend.AutoCrud.Web
                 null,
                 false);
 
+        /// <summary>
+        /// Registers a CREATE controller for the entity using auto-generated types
+        /// </summary>
+        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithCreateController<>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController()
             => WithCreateController(
                 typeof(AbstractEntityCreateController<,,,>),
@@ -371,6 +475,23 @@ namespace Firebend.AutoCrud.Web
                 null,
                 true);
 
+        /// <summary>
+        /// Registers a DELETE controller for the entity
+        /// </summary>
+        /// <param name="registrationType"></param>
+        /// <param name="viewModelType"></param>
+        /// <param name="viewModelMapper"></param>
+        /// <param name="makeRegistrationTypeGeneric"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithDeleteController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController(Type registrationType,
             Type viewModelType,
              Type viewModelMapper = null,
@@ -382,15 +503,59 @@ namespace Firebend.AutoCrud.Web
             viewModelMapper,
             makeRegistrationTypeGeneric);
 
+        /// <summary>
+        /// Registers a DELETE controller for the entity using a registration type
+        /// </summary>
+        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithDeleteController<>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController<TRegistrationType>()
             => WithDeleteController(typeof(TRegistrationType), ReadViewModelType);
 
+        /// <summary>
+        /// Registers a DELETE controller for the entity using auto-generated types
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithDeleteController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController()
             => WithDeleteController(typeof(AbstractEntityDeleteController<,,>),
                 ReadViewModelType,
                 null,
                 true);
 
+        /// <summary>
+        /// Registers a GET `/all` controller for the entity
+        /// </summary>
+        /// <param name="registrationType"></param>
+        /// <param name="viewModelType"></param>
+        /// <param name="viewModelMapper"></param>
+        /// <param name="makeRegistrationTypeGeneric"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithGetAllController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController(Type registrationType,
             Type viewModelType,
             Type viewModelMapper = null,
@@ -402,15 +567,59 @@ namespace Firebend.AutoCrud.Web
             viewModelMapper,
             makeRegistrationTypeGeneric);
 
+        /// <summary>
+        /// Registers a GET `/all` controller for the entity using a registration type
+        /// </summary>
+        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithGetAllController<>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController<TRegistrationType>() =>
             WithGetAllController(typeof(TRegistrationType), CrudBuilder.EntityType);
 
+        /// <summary>
+        /// Registers a GET `/all` controller for the entity using auto-generated types
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithGetAllController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController()
             => WithGetAllController(typeof(AbstractEntityReadAllController<,,>),
                 ReadViewModelType,
                 null,
                 true);
 
+        /// <summary>
+        /// Registers a GET controller for the entity
+        /// </summary>
+        /// <param name="registrationType"></param>
+        /// <param name="viewModelType"></param>
+        /// <param name="viewModelMapper"></param>
+        /// <param name="makeRegistrationTypeGeneric"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithReadController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController(Type registrationType,
             Type viewModelType,
             Type viewModelMapper = null,
@@ -422,9 +631,36 @@ namespace Firebend.AutoCrud.Web
             viewModelMapper,
             makeRegistrationTypeGeneric);
 
+        /// <summary>
+        /// Registers a GET controller for the entity using a registration type
+        /// </summary>
+        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithReadController<>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController<TRegistrationType>()
             => WithReadController(typeof(TRegistrationType), ReadViewModelType);
 
+        /// <summary>
+        /// Registers a GET controller for the entity using auto-generated types
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithReadController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController()
             => WithReadController(
                 typeof(AbstractEntityReadController<,,>),
@@ -432,6 +668,23 @@ namespace Firebend.AutoCrud.Web
                 null,
                 true);
 
+        /// <summary>
+        /// Registers a GET controller with search enabled for the entity
+        /// </summary>
+        /// <param name="registrationType"></param>
+        /// <param name="viewModelType"></param>
+        /// <param name="viewModelMapper"></param>
+        /// <param name="makeRegistrationTypeGeneric"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithSearchController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController(Type registrationType,
             Type viewModelType,
             Type viewModelMapper = null,
@@ -457,15 +710,60 @@ namespace Firebend.AutoCrud.Web
                false,
                 false);
         }
+
+        /// <summary>
+        /// Registers a GET controller with search enabled for the entity using a registration type
+        /// </summary>
+        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithSearchController<>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController<TRegistrationType>()
             => WithSearchController(typeof(TRegistrationType), ReadViewModelType);
 
+        /// <summary>
+        /// Registers a GET controller with search enabled for the entity using auto-generated types
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithSearchController())
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController()
             => WithSearchController(typeof(AbstractEntitySearchController<,,,>),
                 ReadViewModelType,
                 null,
                 true);
 
+        /// <summary>
+        /// Registers an UPDATE controller for the entity
+        /// </summary>
+        /// <param name="registrationType"></param>
+        /// <param name="viewModelType"></param>
+        /// <param name="viewModelMapper"></param>
+        /// <param name="makeRegistrationTypeGeneric"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithUpdateController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(Type serviceType,
             Type viewModelType,
             Type viewModelMapper,
@@ -508,6 +806,20 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Registers an UPDATE controller for the entity using a registration type
+        /// </summary>
+        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithUpdateController<>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController<TRegistrationType>()
             => WithUpdateController(typeof(TRegistrationType),
                 UpdateViewModelType,
@@ -516,6 +828,19 @@ namespace Firebend.AutoCrud.Web
                 null,
                 false);
 
+        /// <summary>
+        /// Registers an UPDATE controller for the entity using auto-generated types
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithUpdateController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController()
             => WithUpdateController(
                 typeof(AbstractEntityUpdateController<,,,>),
@@ -525,8 +850,23 @@ namespace Firebend.AutoCrud.Web
                 null,
                 true);
 
-
-
+        /// <summary>
+        /// Registers a POST `/multiple` controller for the entity
+        /// </summary>
+        /// <param name="registrationType"></param>
+        /// <param name="viewModelType"></param>
+        /// <param name="viewModelMapper"></param>
+        /// <param name="makeRegistrationTypeGeneric"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithCreateMultipleController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController(Type serviceType,
             Type viewModelWrapperType,
             Type viewModelType,
@@ -572,6 +912,20 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Registers a POST `/multiple` controller for the entity using a registration type
+        /// </summary>
+        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithCreateMultipleController<>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController<TRegistrationType>()
             => WithCreateMultipleController(typeof(TRegistrationType),
                 CreateMultipleViewModelWrapperType,
@@ -581,6 +935,19 @@ namespace Firebend.AutoCrud.Web
                 null,
                 false);
 
+        /// <summary>
+        /// Registers a POST `/multiple` controller for the entity using auto-generated types
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithCreateMultipleController()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController()
             => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,>),
                 CreateMultipleViewModelWrapperType,
@@ -590,7 +957,21 @@ namespace Firebend.AutoCrud.Web
                 null,
                 true);
 
-
+        /// <summary>
+        /// Registers Create, Read, Update, Delete (and, optionally, Create Multiple and Get All) controllers for an entity using auto-generated types
+        /// </summary>
+        /// <param name="includeGetAll">Optional; Whether to include the Get All controller</param>
+        /// <param name="includeMultipleCreate">Optional; Whether to include the Create Multiple controller</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers(true, true)
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithAllControllers(bool includeGetAll = false, bool includeMultipleCreate = true)
         {
             WithReadController();
