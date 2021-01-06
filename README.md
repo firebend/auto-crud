@@ -23,6 +23,20 @@ A framework that provides Create Read Update Delete (CRUD) dotnet core services.
 
 The following lessons walk you through configuring a basic version of autocrud for your app, then progressively adding more advanced features. We'll build off of the dotnet WeatherForecast sample project from the dotnet documentation.
 
+- [Firebend.AutoCrud](#firebendautocrud)
+- [Firebend Nuget Page](#firebend-nuget-page)
+- [Getting Started](#getting-started)
+  - [Project Setup](#project-setup)
+  - [Quickstart](#quickstart)
+    - [Entity Framework](#entity-framework)
+    - [Mongo](#mongo)
+  - [Custom Ordering and Search](#custom-ordering-and-search)
+  - [Entity Export](#entity-export)
+  - [Change Tracking](#change-tracking)
+  - [Elastic Pool with Sharding](#elastic-pool-with-sharding)
+  - [Mongo Sharding](#mongo-sharding)
+- [Example Project](#example-project)
+
 ## Project Setup
 
 1. [Install dotnet core](https://dotnet.microsoft.com/download/dotnet-core)
@@ -82,7 +96,10 @@ and hit the api at `http://localhost:5000/weatherforecast` to see a list of fore
 ]
 ```
 
-## Entity Framework Quickstart
+## Quickstart
+
+You can follow one or both of the following sections to set up AutoCrud for your choice of storage backend
+### Entity Framework
 
 Install `Firebend.AutoCrud.Mongo` by adding the following to `AutoCrudSampleApi.csproj`
 ```xml
@@ -236,7 +253,7 @@ ef.AddEntity<Guid, WeatherForecast>(forecast =>
 Now, when appending the query param `Search={your search}` to your url, you'll only get results with `'{your search}'` in the Summary.
 
 
-## Mongo Quickstart
+### Mongo
 
 Install `Firebend.AutoCrud.Mongo` by adding the following to `AutoCrudSampleApi.csproj`
 ```xml
@@ -357,7 +374,7 @@ mongo.AddEntity<Guid, WeatherForecast>(forecast =>
 
 Now, when appending the query param `Search={your search}` to your url, you'll only get results with `'{your search}'` in any text field.
 
-## Add Custom Ordering and Search
+## Custom Ordering and Search
 
 To enable ordering of results, include the following in `CreateHostBuilder` in the `AddEntity` callback
 ```csharp
@@ -406,7 +423,7 @@ namespace AutoCrudSampleApi
 ```
 
 Now, you can append the `CustomField={your search}` query parameter to your url and filter results by a custom parameter.
-## Add Entity Export
+## Entity Export
 
 To create an endpoint that exports your results to xlxs or csv
 
@@ -470,7 +487,7 @@ namespace AutoCrudSampleApi
 
 Now, you can make a `GET` request to the `/weather-forecast/export/{csv|excel}?filename=test.csv` endpoint, with either `csv` or `excel` requested. A file name is required. All search fields and custom parameters that work on the `GET` `/` and `GET` `/all` endpoints work here too.
 
-## Add Change Tracking
+## Change Tracking
 
 Install the `Firebend.AutoCrud.ChangeTracking` and `Firebend.AutoCrud.DomainEvents` packages
 ```xml
