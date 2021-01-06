@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.Io.Web
         ///      .AddCrud()
         ///      .AddControllers(controllers => controllers
         ///          .WithAllControllers(true, true)
-        ///          .WithIoControllers()
+        ///          .WithIoControllers())
         /// </code>
         /// </example>
         public static ControllerConfigurator<TBuilder, TKey, TEntity> WithIoControllers<TBuilder, TKey, TEntity>(
