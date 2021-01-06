@@ -187,7 +187,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <summary>
         /// Specifies EntityFramework related model Includes to use for the model
         /// </summary>
-        /// <typeparam name="TProvider">The function includes provider to use</param>
+        /// <typeparam name="TProvider">The function includes provider to use</typeparam>
         /// <example>
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
@@ -208,7 +208,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <summary>
         /// Specifies EntityFramework related model Includes to use for the model
         /// </summary>
-        /// <typeparam name="func">A callback function specifying the related model Includes to use for the model</param>
+        /// <typeparam name="func">A callback function specifying the related model Includes to use for the model</typeparam>
         /// <example>
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast => 

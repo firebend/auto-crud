@@ -468,7 +468,7 @@ namespace Firebend.AutoCrud.Web
         /// <summary>
         /// Registers a CREATE controller for the entity using a service type
         /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")
@@ -490,7 +490,7 @@ namespace Firebend.AutoCrud.Web
         /// <summary>
         /// Registers a CREATE controller for the entity using auto-generated types
         /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")
@@ -541,7 +541,7 @@ namespace Firebend.AutoCrud.Web
         /// <summary>
         /// Registers a DELETE controller for the entity using a registration type
         /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")
@@ -605,7 +605,7 @@ namespace Firebend.AutoCrud.Web
         /// <summary>
         /// Registers a GET `/all` controller for the entity using a registration type
         /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")
@@ -669,7 +669,7 @@ namespace Firebend.AutoCrud.Web
         /// <summary>
         /// Registers a GET controller for the entity using a registration type
         /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")
@@ -749,7 +749,7 @@ namespace Firebend.AutoCrud.Web
         /// <summary>
         /// Registers a GET controller with search enabled for the entity using a registration type
         /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")
@@ -844,7 +844,7 @@ namespace Firebend.AutoCrud.Web
         /// <summary>
         /// Registers an UPDATE controller for the entity using a registration type
         /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")
@@ -950,7 +950,7 @@ namespace Firebend.AutoCrud.Web
         /// <summary>
         /// Registers a POST `/multiple` controller for the entity using a registration type
         /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</param>
+        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")

@@ -48,7 +48,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         /// <summary>
         /// Specifies the ShardKeyProvider to use
         /// </summary>
-        /// <typeparam name="TShardKeyProvider">The ShardKeyProvider to use</param>
+        /// <typeparam name="TShardKeyProvider">The ShardKeyProvider to use</typeparam>
         /// <example>
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
@@ -77,7 +77,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         /// <summary>
         /// Specifies the ShardDbNameProvider to use
         /// </summary>
-        /// <typeparam name="TShardDbNameProvider">The ShardDbNameProvider to use</param>
+        /// <typeparam name="TShardDbNameProvider">The ShardDbNameProvider to use</typeparam>
         /// <example>
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
