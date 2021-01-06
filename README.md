@@ -644,7 +644,7 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
                     pool => pool
                         .WithShardKeyProvider<KeyProvider>()
                         .WithShardDbNameProvider<DbNameProvider>()
-                ) 
+                )
     // ... rest of your setup
 ```
 
