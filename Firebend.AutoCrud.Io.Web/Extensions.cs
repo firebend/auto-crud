@@ -11,6 +11,20 @@ namespace Firebend.AutoCrud.Io.Web
 {
     public static class Extensions
     {
+        /// <summary>
+        /// Specify the max page size to use for Export endpoints
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers(true, true)
+        ///          .WithIoControllers()
+        /// </code>
+        /// </example>
         public static ControllerConfigurator<TBuilder, TKey, TEntity> WithIoControllers<TBuilder, TKey, TEntity>(
             this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
@@ -47,7 +61,21 @@ namespace Firebend.AutoCrud.Io.Web
                 configurator.Builder.ExportType);
         }
 
-
+        /// <summary>
+        /// Specify the max page size to use for Export endpoints
+        /// </summary>
+        /// <param name="pageSize">The max page size to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers(true, true)
+        ///          .WithMaxExportPageSize(100))
+        /// </code>
+        /// </example>
         public static ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxExportPageSize<TBuilder, TKey, TEntity>(
             this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
             int pageSize)
