@@ -246,6 +246,29 @@ namespace Firebend.AutoCrud.Core.Configurators
             return WithDelete(serviceType);
         }
 
+        /// <summary>
+        /// Enables ordering of lists of results
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .WithOrderBy(typeof(OrderByOptions))
+        ///                  .AddCrud(x => x
+        ///                      .WithAllControllers()
+        ///                   )
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy(Type type)
         {
             Builder.WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>>(type);
@@ -253,8 +276,56 @@ namespace Firebend.AutoCrud.Core.Configurators
             return this;
         }
 
+        /// <summary>
+        /// Enables ordering of lists of results
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .WithOrderBy<OrderByOptions>())
+        ///                  .AddCrud(x => x
+        ///                      .WithAllControllers()
+        ///                   )
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy<T>() => WithOrderBy(typeof(T));
 
+        /// <summary>
+        /// Enables ordering of lists of results
+        /// </summary>
+        /// <param name="expression">A callback function returning the field on the entity to order by</param>
+        /// <param name="isAscending">Optional, default = true; whether results should be sorted in ascending order</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithFullTextSearch()
+        ///                  .WithOrderBy(forecast => forecast.TemperatureC, false))
+        ///                  .AddCrud(x => x
+        ///                      .WithAllControllers()
+        ///                   )
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy(Expression<Func<TEntity, object>> expression, bool isAscending = true)
         {
             var instance = new DefaultEntityDefaultOrderByProvider<TKey, TEntity>
