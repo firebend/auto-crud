@@ -191,6 +191,12 @@ namespace Firebend.AutoCrud.Web
         /// <param name="genericArgs"></param>
         /// <example>
         /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithController())
         /// </code>
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type,
@@ -221,9 +227,38 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Registers a given controller
+        /// </summary>
+        /// <typeparam name="TTypeCheck"></typeparam>
+        /// <param name="type"></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithController<>())
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TTypeCheck>(Type type)
             => WithController(type, typeof(TTypeCheck));
 
+        /// <summary>
+        /// Registers a given controller
+        /// </summary>
+        /// <typeparam name="TController"></typeparam>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithController<>())
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TController>()
             => WithController(typeof(TController), typeof(TController));
 
