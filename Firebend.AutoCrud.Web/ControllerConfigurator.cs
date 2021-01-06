@@ -1028,6 +1028,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Adds an authorization policy to requests for an entity that use the specified controller
+        /// </summary>
+        /// <param name="type">The type of the controller to add the policy for</param>
+        /// <param name="authorizePolicy">Optional; the authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddAuthorizationPlicy()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy(Type type, string authorizePolicy = "")
         {
             var (attributeType, attributeBuilder) = GetAuthorizationAttributeInfo(authorizePolicy);
@@ -1035,25 +1051,116 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Adds an authorization policy to requests for an entity that use the specified controller
+        /// </summary>
+        /// <typeparam name="TController">The type of the controller to add the authorization policy to</typeparam>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddAuthorizationPlicy<Controller>("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy<TController>(string policy)
             => AddAuthorizationPolicy(typeof(TController), policy);
 
+        /// <summary>
+        /// Adds an authorization policy to Create requests using the abstract create controller
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddCreateAuthorizationPlicy("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,,,>)
                 .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CreateViewModelType, ReadViewModelType), policy);
 
+        /// <summary>
+        /// Adds an authorization policy to DELETE requests using the abstract delete controller
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddDeleteAuthorizationPlicy("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<,,>)
                 .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType), policy);
 
+        /// <summary>
+        /// Adds an authorization policy to GET requests using the abstract read controller
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddReadAuthorizationPlicy("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityReadController<,,>)
                 .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType), policy);
 
+        /// <summary>
+        /// Adds an authorization policy to GET `/all` requests using the abstract read all controller
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddReadAllAuthorizationPolicy("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityReadAllController<,,>)
                 .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType), policy);
 
+        /// <summary>
+        /// Adds an authorization policy to search requests using the abstract search controller
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddSearchAuthorizationPolicy("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddSearchAuthorizationPolicy(string policy)
         {
             var type = typeof(AbstractEntitySearchController<,,,>)
@@ -1062,10 +1169,40 @@ namespace Firebend.AutoCrud.Web
             return AddAuthorizationPolicy(type, policy);
         }
 
+        /// <summary>
+        /// Adds an authorization policy to PUT requests using the abstract update controller
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddUpdateAuthorizationPolicy("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,,,>)
                 .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType, UpdateViewModelType), policy);
 
+        /// <summary>
+        /// Adds an authorization policies to all requests that modify an entity (Create, Update, and Delete) and use the abstract controllers
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddAlterAuthorizationPolicies("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterAuthorizationPolicies(string policy = "")
         {
             AddCreateAuthorizationPolicy(policy);
@@ -1075,6 +1212,21 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Adds an authorization policies to all requests that read an entity (Read, Read all, and Search) and use the abstract controllers
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddQueryAuthorizationPolicies("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddQueryAuthorizationPolicies(string policy = "")
         {
             AddReadAuthorizationPolicy(policy);
@@ -1084,6 +1236,21 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Adds an authorization policies to all requests that use the abstract controllers
+        /// </summary>
+        /// <param name="policy">The authorization policy name</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .AddAuthorizationPolicies("Policy")
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicies(string policy = "")
         {
             DefaultAuthorizationPolicy = GetAuthorizationAttributeInfo(policy);
@@ -1093,6 +1260,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Registers a validation service for an entity
+        /// </summary>
+        /// <typeparam name="TService">The validation service to use</typeparam>
+        /// <param name="replace">Whether to replace the existing validation service; default=<code>true</code></param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithValidationService<ValidationService>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidationService<TService>(bool replace = true)
             where TService : IEntityValidationService<TKey, TEntity>
         {
@@ -1108,6 +1291,22 @@ namespace Firebend.AutoCrud.Web
             }
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create endpoint
+        /// </summary>
+        /// <param name="viewModelType">The type of the view model to use</param>
+        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithCreateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel(Type viewModelType, Type viewModelMapper)
         {
             ViewModelGuard("Please register a Create view model before adding controllers");
@@ -1122,6 +1321,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create endpoint
+        /// </summary>
+        /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
+        /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithCreateViewModel<ViewModel, ViewModelWrapper>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel<TViewModel, TViewModelMapper>()
             where TViewModel : class
             where TViewModelMapper : ICreateViewModelMapper<TKey, TEntity, TViewModel>
@@ -1135,6 +1350,25 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create endpoint
+        /// </summary>
+        /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithCreateViewModel<ViewModel>(viewModel => {
+        ///              var e = new WeatherForecast();
+        ///              viewModel?.Body?.CopyPropertiesTo(e);
+        ///              return e;
+        ///          }))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel<TViewModel>(
             Func<TViewModel, TEntity> from)
             where TViewModel : class
@@ -1153,6 +1387,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Read endpoint
+        /// </summary>
+        /// <param name="viewModelType">The type of the view model to use</param>
+        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithReadViewModel(typeof(ViewModel), typeof(ViewModelMapper))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel(Type viewModelType, Type viewModelMapper)
         {
             ViewModelGuard("Please register a read view model before adding controllers");
@@ -1167,6 +1417,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Read endpoint
+        /// </summary>
+        /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
+        /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithReadViewModel<ViewModel, ViewModelWrapper>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel<TViewModel, TViewModelMapper>()
             where TViewModel : class
             where TViewModelMapper : IReadViewModelMapper<TKey, TEntity, TViewModel>
@@ -1180,6 +1446,21 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Read endpoint
+        /// </summary>
+        /// <param name="to">A callback function that maps the entity to the view model class</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithReadViewModel<ViewModel>(entity => new ViewModel(entity)))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel<TViewModel>(
             Func<TEntity, TViewModel> to)
             where TViewModel : class
@@ -1198,6 +1479,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Update endpoint
+        /// </summary>
+        /// <param name="viewModelType">The type of the view model to use</param>
+        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithUpdateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel(Type viewModelType, Type viewModelMapper)
         {
             ViewModelGuard("Please register a Update view model before adding controllers");
@@ -1212,6 +1509,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Update endpoint
+        /// </summary>
+        /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
+        /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithUpdateViewModel<ViewModel, ViewModelWrapper>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel, TViewModelMapper>()
             where TViewModel : class
             where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>
@@ -1225,6 +1538,25 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Update endpoint
+        /// </summary>
+        /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithUpdateViewModel<ViewModel>(viewModel => {
+        ///              var e = new WeatherForecast();
+        ///              viewModel?.Body?.CopyPropertiesTo(e);
+        ///              return e;
+        ///          }))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel>(
             Func<TViewModel, TEntity> from)
             where TViewModel : class
@@ -1243,6 +1575,23 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create `/multiple` endpoint
+        /// </summary>
+        /// <param name="viewWrapper">The type of the view model wrapper to use</param>
+        /// <param name="view">The type of the view model to use</param>
+        /// <param name="viewMapper">The type of the view model mapper to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithCreateMultipleViewModel(type(ViewWrapper), typeof(ViewModel), typeof(ViewModelMapper))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel(Type viewWrapper,
             Type view,
             Type viewMapper)
@@ -1260,6 +1609,23 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create `/multiple` endpoint
+        /// </summary>
+        /// <typeparam name="TViewWrapper">The type of the view model wrapper to use</typeparam>
+        /// <typeparam name="TView">The type of the view model to use</typeparam>
+        /// <typeparam name="TMapper">The type of the view model mapper to use</typeparam>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithCreateMultipleViewModel<ViewWrapper, ViewModel, ViewModelMapper>()
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel<TViewWrapper, TView, TMapper>()
             where TView : class
             where TViewWrapper : IMultipleEntityViewModel<TView>
@@ -1273,6 +1639,27 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create `/multiple` endpoint
+        /// </summary>
+        /// <typeparam name="TViewWrapper">The type of the view model wrapper to use</typeparam>
+        /// <typeparam name="TView">The type of the view model to use</typeparam>
+        /// <param name="mapperFunc">A callback function that maps a view model to the entity class</typeparam>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithCreateMultipleViewModel<ViewWrapper, ViewModel>(viewModel => {
+        ///              var e = new WeatherForecast();
+        ///              viewModel?.Body?.CopyPropertiesTo(e);
+        ///              return e;
+        ///          }))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel<TViewWrapper, TView>(
                 Func<TViewWrapper, TView, TEntity> mapperFunc)
             where TView : class
@@ -1291,6 +1678,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create, Update, and Read endpoints
+        /// </summary>
+        /// <param name="viewModelType">The type of the view model to use</param>
+        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithViewModel(ypeof(ViewModel), typeof(ViewModelMapper))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel(Type viewModelType, Type viewModelMapper)
         {
             ViewModelGuard("Please register a view model before adding controllers");
@@ -1302,6 +1705,22 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create, Update, and Read endpoints
+        /// </summary>
+        /// <param name="viewModelType">The type of the view model to use</param>
+        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithViewModel(ypeof(ViewModel), typeof(ViewModelMapper))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel, TViewModelMapper>()
             where TViewModel : class
             where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>,
@@ -1317,6 +1736,26 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify a custom view model to use for the entity Create, Update, and Read endpoints
+        /// </summary>
+        /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
+        /// <param name="to">A callback function that maps the entity to the view model class</param>
+        /// <param name="from">A callback function that maps the view model to the entity class</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers()
+        ///          .WithViewModel<ViewModel>(
+        ///             entity => new ViewModel(entity)
+        ///             viewModel => new WeatherForecast(viewModel)
+        ///          ))
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel>(
                 Func<TEntity, TViewModel> to,
                 Func<TViewModel, TEntity> from)
@@ -1341,6 +1780,21 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
+        /// <summary>
+        /// Specify the max page size to use for Read endpoints (except Read `/all`)
+        /// </summary>
+        /// <param name="size">Optional, default = 100; The max page size to use</param>
+        /// <example>
+        /// <code>
+        /// forecast.WithDefaultDatabase("Samples")
+        ///      .WithCollection("WeatherForecasts")
+        ///      .WithFullTextSearch()
+        ///      .AddCrud()
+        ///      .AddControllers(controllers => controllers
+        ///          .WithAllControllers(true, true)
+        ///          .WithMaxPageSize<ViewModel, ViewModelMapper>())
+        /// </code>
+        /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxPageSize(int size = 100)
         {
             CrudBuilder.WithRegistrationInstance<IMaxPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(size));
