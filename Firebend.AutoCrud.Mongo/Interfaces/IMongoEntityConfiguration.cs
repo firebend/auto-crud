@@ -14,9 +14,14 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         public MongoTenantShardMode ShardMode { get; }
     }
 
-    public interface IMongoEntityConfiguration<TKey, TEntity> : IMongoEntityDefaultConfiguration<TKey, TEntity>
+    public interface IMongoEntityConfiguration<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        public string CollectionName { get; }
+
+        public string DatabaseName { get; }
+
+        public MongoTenantShardMode ShardMode { get; }
     }
 }

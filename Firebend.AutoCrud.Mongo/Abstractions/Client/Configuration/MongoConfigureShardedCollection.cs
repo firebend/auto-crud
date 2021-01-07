@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
         private readonly IMongoEntityDefaultConfiguration<TKey, TEntity> _defaultConfiguration;
         private readonly IMongoEntityConfigurationTenantTransformService<TKey, TEntity> _transformService;
 
-        public MongoConfigureShardedCollection(ILogger logger,
+        public MongoConfigureShardedCollection(ILogger<MongoConfigureShardedCollection<TKey,TEntity>> logger,
             IMongoIndexClient<TKey, TEntity> indexClient,
             IMongoAllShardsProvider allShardsProvider,
             IMongoEntityDefaultConfiguration<TKey, TEntity> defaultConfiguration,
@@ -32,7 +32,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
             var shards = await _allShardsProvider.GetAllShardsAsync(cancellationToken);
 
             var configureTasks = shards
-                .Select(x => new MongoTenantEntityConfiguration<TKey, TEntity>(_defaultConfiguration, _transformService, x))
+                .Select(x => new MongoEntityConfiguration<TKey, TEntity>(
+                        _transformService.GetCollection(_defaultConfiguration, x),
+                        _transformService.GetDatabase(_defaultConfiguration, x),
+                        _defaultConfiguration.ShardMode))
                 .Select(x => ConfigureAsync(x, cancellationToken))
                 .ToArray();
 

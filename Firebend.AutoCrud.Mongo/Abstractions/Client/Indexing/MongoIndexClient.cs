@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         }
 
         public Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
-            => CheckConfiguredAsync($"{EntityConfiguration.CollectionName}.Indexes",
+            => CheckConfiguredAsync($"{configuration.DatabaseName}.{configuration.CollectionName}.Indexes",
                 async () =>
                 {
                     var dbCollection = GetCollection(configuration);
@@ -68,7 +68,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 }, cancellationToken);
 
         public Task CreateCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
-            => CheckConfiguredAsync($"{EntityConfiguration.CollectionName}.CreateCollection", () => RetryErrorAsync(async () =>
+            => CheckConfiguredAsync($"{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection", () => RetryErrorAsync(async () =>
             {
                 var database = Client.GetDatabase(configuration.DatabaseName);
 

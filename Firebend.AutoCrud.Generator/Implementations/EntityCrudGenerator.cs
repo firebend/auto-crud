@@ -233,7 +233,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                     if (maxVisits < 0)
                     {
-                        throw new ApplicationException("Cannot resolve dependencies for DefaultCrud (do you have a circular reference?)");
+                        throw new ApplicationException("Cannot resolve dependencies for auto crud (do you have a circular reference?)");
                     }
                 }
             }
