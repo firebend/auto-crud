@@ -33,23 +33,25 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        private string _collectionName;
-        private string _databaseName;
-        private readonly MongoEntityConfiguration<TKey, TEntity> _configuration;
-        private readonly IMongoShardKeyProvider _shardKeyProvider;
-
-        public string CollectionName => _collectionName ??= ApplyShard(_configuration.CollectionName, ShardMode == MongoTenantShardMode.Collection);
-        public string DatabaseName => _databaseName ??= ApplyShard(_configuration.DatabaseName, ShardMode == MongoTenantShardMode.Database);
-        public MongoTenantShardMode ShardMode { get; }
-
-        private string ApplyShard(string value, bool shouldApply) => shouldApply ? $"{_shardKeyProvider.GetShardKey()}_{value}" : value;
-
-        public MongoTenantEntityConfiguration(MongoEntityConfiguration<TKey, TEntity> configuration,
-            IMongoShardKeyProvider shardKeyProvider)
+        public MongoTenantEntityConfiguration(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration,
+            IMongoEntityConfigurationTenantTransformService<TKey, TEntity> transformService,
+            IMongoShardKeyProvider shardKeyProvider) : this(configuration, transformService, shardKeyProvider.GetShardKey())
         {
-            _configuration = configuration;
-            _shardKeyProvider = shardKeyProvider;
+
+        }
+
+        public MongoTenantEntityConfiguration(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration,
+            IMongoEntityConfigurationTenantTransformService<TKey, TEntity> transformService,
+            string shardKey)
+        {
+            CollectionName = transformService.GetCollection(configuration, shardKey);
+            DatabaseName = transformService.GetDatabase(configuration, shardKey);
             ShardMode = configuration.ShardMode;
         }
+
+        public string CollectionName { get; }
+        public string DatabaseName { get; }
+        public MongoTenantShardMode ShardMode { get; }
+
     }
 }

@@ -98,7 +98,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
             splatBuilder.Append("*");
 
             var splat = _sqlExpressionFactory.Fragment(splatBuilder.ToString());
-            var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true, null);
+            var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true);
             var freeText = _sqlExpressionFactory.ApplyTypeMapping(arguments[2], stringMap);
             var functionArguments = new List<SqlExpression> { splat, freeText };
 

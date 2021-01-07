@@ -27,51 +27,52 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             _indexProvider = indexProvider;
         }
 
-        public Task BuildIndexesAsync(CancellationToken cancellationToken = default) => CheckConfiguredAsync($"{EntityConfiguration.CollectionName}.Indexes",
-            async () =>
-            {
-                var dbCollection = GetCollection();
-                var builder = Builders<TEntity>.IndexKeys;
-                var indexesToAdd = _indexProvider.GetIndexes(builder)?.ToArray();
-
-                if (!(indexesToAdd?.Any() ?? false))
+        public Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+            => CheckConfiguredAsync($"{EntityConfiguration.CollectionName}.Indexes",
+                async () =>
                 {
-                    return;
-                }
+                    var dbCollection = GetCollection(configuration);
+                    var builder = Builders<TEntity>.IndexKeys;
+                    var indexesToAdd = _indexProvider.GetIndexes(builder)?.ToArray();
 
-                var indexesCursor = await dbCollection
-                    .Indexes
-                    .ListAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                    if (!(indexesToAdd?.Any() ?? false))
+                    {
+                        return;
+                    }
 
-                var indexes = await indexesCursor
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                    var indexesCursor = await dbCollection
+                        .Indexes
+                        .ListAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
-                var existingTextIndex = indexes.FirstOrDefault(y => y.Contains("textIndexVersion"));
+                    var indexes = await indexesCursor
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
-                if (existingTextIndex != null && indexesToAdd.Any(y => y?.Options?.Name != null && y.Options.Name.Equals("text")))
-                {
-                    Logger.LogDebug($"Dropping text index {existingTextIndex["name"].AsString} for collection {EntityConfiguration.CollectionName}");
+                    var existingTextIndex = indexes.FirstOrDefault(y => y.Contains("textIndexVersion"));
+
+                    if (existingTextIndex != null && indexesToAdd.Any(y => y?.Options?.Name != null && y.Options.Name.Equals("text")))
+                    {
+                        Logger.LogDebug($"Dropping text index {existingTextIndex["name"].AsString} for collection {EntityConfiguration.CollectionName}");
+
+                        await RetryErrorAsync(() => dbCollection
+                                .Indexes
+                                .DropOneAsync(existingTextIndex["name"].AsString, cancellationToken))
+                            .ConfigureAwait(false);
+                    }
 
                     await RetryErrorAsync(() => dbCollection
                             .Indexes
-                            .DropOneAsync(existingTextIndex["name"].AsString, cancellationToken))
+                            .CreateManyAsync(indexesToAdd, cancellationToken))
                         .ConfigureAwait(false);
-                }
+                }, cancellationToken);
 
-                await RetryErrorAsync(() => dbCollection
-                        .Indexes
-                        .CreateManyAsync(indexesToAdd, cancellationToken))
-                    .ConfigureAwait(false);
-            }, cancellationToken);
-
-        public Task CreateCollectionAsync(CancellationToken cancellationToken = default) => CheckConfiguredAsync(
-            $"{EntityConfiguration.CollectionName}.CreateCollection", () => RetryErrorAsync(async () =>
+        public Task CreateCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+            => CheckConfiguredAsync($"{EntityConfiguration.CollectionName}.CreateCollection", () => RetryErrorAsync(async () =>
             {
-                var database = Client.GetDatabase(EntityConfiguration.DatabaseName);
+                var database = Client.GetDatabase(configuration.DatabaseName);
 
-                var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };
+                var options = new ListCollectionNamesOptions {Filter = new BsonDocument("name", EntityConfiguration.CollectionName)};
 
                 var collectionNames = await database
                     .ListCollectionNamesAsync(options, cancellationToken)

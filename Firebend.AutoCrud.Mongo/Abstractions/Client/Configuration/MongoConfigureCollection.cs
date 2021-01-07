@@ -6,29 +6,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
 {
-    public abstract class MongoConfigureCollection<TKey, TEntity> : IConfigureCollection<TKey, TEntity>
+    public abstract class MongoConfigureCollection<TKey, TEntity> : BaseMongoConfigureCollection<TKey, TEntity>,  IConfigureCollection<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        private readonly IMongoIndexClient<TKey, TEntity> _indexClient;
-        private readonly ILogger _logger;
+        private readonly IMongoEntityConfiguration<TKey, TEntity> _configuration;
 
         protected MongoConfigureCollection(ILogger<MongoConfigureCollection<TKey, TEntity>> logger,
-            IMongoIndexClient<TKey, TEntity> indexClient)
+            IMongoIndexClient<TKey, TEntity> indexClient,
+            IMongoEntityConfiguration<TKey, TEntity> configuration) :base(logger, indexClient)
         {
-            _logger = logger;
-            _indexClient = indexClient;
+            _configuration = configuration;
         }
 
-        public virtual async Task ConfigureAsync(CancellationToken cancellationToken)
-        {
-            _logger.LogDebug("Configuring collection for {Collection}", typeof(TEntity).FullName);
-
-            await _indexClient.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
-
-            _logger.LogDebug("Configuring indexes for {Collection}", typeof(TEntity).FullName);
-
-            await _indexClient.BuildIndexesAsync(cancellationToken).ConfigureAwait(false);
-        }
+        public virtual Task ConfigureAsync(CancellationToken cancellationToken)
+            => ConfigureAsync(_configuration, cancellationToken);
     }
 }

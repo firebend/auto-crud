@@ -3,7 +3,7 @@ using Firebend.AutoCrud.Mongo.Models;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
-    public interface IMongoEntityConfiguration<TKey, TEntity>
+    public interface IMongoEntityDefaultConfiguration<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
@@ -12,5 +12,11 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         public string DatabaseName { get; }
 
         public MongoTenantShardMode ShardMode { get; }
+    }
+
+    public interface IMongoEntityConfiguration<TKey, TEntity> : IMongoEntityDefaultConfiguration<TKey, TEntity>
+        where TKey : struct
+        where TEntity : IEntity<TKey>
+    {
     }
 }

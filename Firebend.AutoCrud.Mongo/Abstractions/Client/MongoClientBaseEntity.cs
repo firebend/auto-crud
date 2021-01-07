@@ -26,12 +26,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
 
-        protected IMongoCollection<TEntity> GetCollection()
+        protected IMongoCollection<TEntity> GetCollection(IMongoEntityConfiguration<TKey, TEntity> configuration)
         {
-            var database = Client.GetDatabase(EntityConfiguration.DatabaseName);
+            var database = Client.GetDatabase(configuration.DatabaseName);
 
-            return database.GetCollection<TEntity>(EntityConfiguration.CollectionName);
+            return database.GetCollection<TEntity>(configuration.CollectionName);
         }
+
+        protected IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
 
         protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(FilterDefinition<TEntity> firstStageFilters = null,
             CancellationToken cancellationToken = default)
