@@ -45,6 +45,28 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
             return WithElasticPool(shardConfig);
         }
 
+        /// <summary>
+        /// Specifies the ShardKeyProvider to use
+        /// </summary>
+        /// <typeparam name="TShardKeyProvider">The ShardKeyProvider to use</typeparam>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithSearchFilter((f, s) => f.Summary.Contains(s))
+        ///        .AddElasticPool(
+        ///            manager => {
+        ///                manager.ConnectionString = "connString";
+        ///                manager.MapName = "your-map-name";
+        ///                manager.Server = ".";
+        ///                manager.ElasticPoolName = "pool-name";
+        ///            },
+        ///            pool => pool
+        ///                .WithShardKeyProvider<KeyProvider>()
+        ///                .WithShardDbNameProvider<DbNameProvider>()
+        ///        )
+        /// </code>
+        /// </example>
         public ElasticPoolConfigurator<TBuilder, TKey, TEntity> WithShardKeyProvider<TShardKeyProvider>()
             where TShardKeyProvider : IShardKeyProvider
         {
@@ -52,6 +74,28 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
             return this;
         }
 
+        /// <summary>
+        /// Specifies the ShardDbNameProvider to use
+        /// </summary>
+        /// <typeparam name="TShardDbNameProvider">The ShardDbNameProvider to use</typeparam>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithSearchFilter((f, s) => f.Summary.Contains(s))
+        ///        .AddElasticPool(
+        ///            manager => {
+        ///                manager.ConnectionString = "connString";
+        ///                manager.MapName = "your-map-name";
+        ///                manager.Server = ".";
+        ///                manager.ElasticPoolName = "pool-name";
+        ///            },
+        ///            pool => pool
+        ///                .WithShardKeyProvider<KeyProvider>()
+        ///                .WithShardDbNameProvider<DbNameProvider>()
+        ///        )
+        /// </code>
+        /// </example>
         public ElasticPoolConfigurator<TBuilder, TKey, TEntity> WithShardDbNameProvider<TShardDbNameProvider>()
             where TShardDbNameProvider : IShardNameProvider
         {

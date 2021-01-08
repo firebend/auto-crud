@@ -10,6 +10,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
 {
+    /// <summary>
+    /// Encapsulates logic for persisting entity changes using Entity Framework.
+    /// </summary>
+    /// <typeparam name="TKey">
+    /// The type of key for the entity that is being tracked.
+    /// </typeparam>
+    /// <typeparam name="TEntity">
+    /// The type of entity that is being tracked.
+    /// </typeparam>
     public class ChangeTrackingDbContext<TKey, TEntity> : DbContext, IDbContext
         where TKey : struct
         where TEntity : class, IEntity<TKey>
@@ -22,8 +31,10 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
         {
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating the <see cref="DbSet{TEntity}"/> comprised of <see cref="ChangeTrackingEntity{TKey,TEntity}"/>.
+        /// </summary>
         public DbSet<ChangeTrackingEntity<TKey, TEntity>> Changes { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
