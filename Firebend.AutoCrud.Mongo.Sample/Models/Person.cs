@@ -3,7 +3,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Mongo.Sample.Models
 {
-    public class Person : IEntity<Guid>, ITenantEntity<int>
+    public class Person : IEntity<Guid>//, ITenantEntity<int>
     {
         public string FirstName { get; set; }
 

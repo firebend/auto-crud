@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        string GetCollection(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration,  string shardKey);
+        string GetCollection(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration, string shardKey);
 
         string GetDatabase(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration, string shardKey);
     }

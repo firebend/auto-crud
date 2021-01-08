@@ -20,6 +20,6 @@ namespace Firebend.AutoCrud.Web.Sample.Elastic
     public class SampleAllShardsMongoProvider : IMongoAllShardsProvider
     {
         public Task<IEnumerable<string>> GetAllShardsAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult(new [] { "Firebend", "Dneberif"}.AsEnumerable());
+            => Task.FromResult(new[] { "Firebend", "Dneberif" }.AsEnumerable());
     }
 }

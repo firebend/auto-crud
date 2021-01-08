@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
 {
-    public abstract  class BaseMongoConfigureCollection<TKey, TEntity>
+    public abstract class BaseMongoConfigureCollection<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
 
             _logger.LogDebug("Configuring collection for {Collection}", fullCollectionName);
 
-            await _indexClient.CreateCollectionAsync(configuration,  cancellationToken).ConfigureAwait(false);
+            await _indexClient.CreateCollectionAsync(configuration, cancellationToken).ConfigureAwait(false);
 
             _logger.LogDebug("Configuring indexes for {Collection}", fullCollectionName);
 

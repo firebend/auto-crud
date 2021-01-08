@@ -72,7 +72,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             {
                 var database = Client.GetDatabase(configuration.DatabaseName);
 
-                var options = new ListCollectionNamesOptions {Filter = new BsonDocument("name", EntityConfiguration.CollectionName)};
+                var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };
 
                 var collectionNames = await database
                     .ListCollectionNamesAsync(options, cancellationToken)
