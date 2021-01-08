@@ -2,9 +2,9 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.AutoCrud.Mongo.Models;
 
-namespace Firebend.AutoCrud.Mongo.Implementations
+namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
 {
-    public class MongoEntityConfigurationTenantTransformService<TKey, TEntity> : IMongoEntityConfigurationTenantTransformService<TKey, TEntity>
+    public abstract class MongoEntityConfigurationTenantTransformService<TKey, TEntity> : IMongoEntityConfigurationTenantTransformService<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {

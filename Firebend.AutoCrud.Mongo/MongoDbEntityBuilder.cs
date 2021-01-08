@@ -68,7 +68,12 @@ namespace Firebend.AutoCrud.Mongo
 
                 WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureShardedCollection<TKey, TEntity>>(false);
                 WithRegistration<IConfigureCollection, MongoConfigureShardedCollection<TKey, TEntity>>(false);
-                WithRegistration<IMongoEntityConfigurationTenantTransformService<TKey, TEntity>, MongoEntityConfigurationTenantTransformService<TKey, TEntity>>(false);
+
+                WithRegistration<IMongoEntityConfigurationTenantTransformService<TKey, TEntity>,
+                    MongoEntityConfigurationTenantTransformService<TKey, TEntity>>(false);
+
+                WithRegistration<IMongoConfigurationAllShardsProvider<TKey, TEntity>,
+                    MongoConfigurationAllShardsProvider<TKey, TEntity>>(false);
             }
             else
             {

@@ -74,7 +74,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 entity = isValid.Model;
             }
 
-            TEntity created = null;
+            TEntity created;
 
             try
             {
