@@ -1,12 +1,16 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
@@ -37,6 +41,19 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
+        private static string[] GetIgnoredProperties() => Run.Once($"IgnoreKeys.{typeof(TEntity).FullName}", () =>
+        {
+            var props = typeof(TEntity)
+                .GetProperties()
+                .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
+                .Select(x => x.Name)
+                .ToList();
+
+            props.Add(nameof(IModifiedEntity.CreatedDate));
+
+            return props.ToArray();
+        });
+
         public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -50,7 +67,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var original = model.Clone();
 
-            model = entity.CopyPropertiesTo(model, nameof(IModifiedEntity.CreatedDate));
+            model = entity.CopyPropertiesTo(model, GetIgnoredProperties());
 
             if (model is IModifiedEntity modified)
             {
