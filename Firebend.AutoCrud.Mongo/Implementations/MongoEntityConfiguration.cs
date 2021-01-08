@@ -33,23 +33,43 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        private string _collectionName;
-        private string _databaseName;
-        private readonly MongoEntityConfiguration<TKey, TEntity> _configuration;
-        private readonly IMongoShardKeyProvider _shardKeyProvider;
-
-        public string CollectionName => _collectionName ??= ApplyShard(_configuration.CollectionName, ShardMode == MongoTenantShardMode.Collection);
-        public string DatabaseName => _databaseName ??= ApplyShard(_configuration.DatabaseName, ShardMode == MongoTenantShardMode.Database);
-        public MongoTenantShardMode ShardMode { get; }
-
-        private string ApplyShard(string value, bool shouldApply) => shouldApply ? $"{_shardKeyProvider.GetShardKey()}_{value}" : value;
-
-        public MongoTenantEntityConfiguration(MongoEntityConfiguration<TKey, TEntity> configuration,
-            IMongoShardKeyProvider shardKeyProvider)
+        public MongoTenantEntityConfiguration(IMongoEntityConfigurationTenantTransformService<TKey, TEntity> transformService,
+            IMongoShardKeyProvider shardKeyProvider,
+            IMongoEntityDefaultConfiguration<TKey, TEntity> configuration)
         {
-            _configuration = configuration;
-            _shardKeyProvider = shardKeyProvider;
+            var shardKey = shardKeyProvider.GetShardKey();
+            CollectionName = transformService.GetCollection(configuration, shardKey);
+            DatabaseName = transformService.GetDatabase(configuration, shardKey);
             ShardMode = configuration.ShardMode;
         }
+
+        public string CollectionName { get; }
+        public string DatabaseName { get; }
+        public MongoTenantShardMode ShardMode { get; }
+    }
+
+    public class MongoEntityDefaultConfiguration<TKey, TEntity> : IMongoEntityDefaultConfiguration<TKey, TEntity>
+        where TKey : struct
+        where TEntity : IEntity<TKey>
+    {
+        protected MongoEntityDefaultConfiguration()
+        {
+
+        }
+
+        public MongoEntityDefaultConfiguration(string collectionName,
+            string databaseName,
+            MongoTenantShardMode tenantShardMode = MongoTenantShardMode.Unknown)
+        {
+            CollectionName = collectionName;
+            DatabaseName = databaseName;
+            ShardMode = tenantShardMode;
+        }
+
+        public string CollectionName { get; }
+
+        public string DatabaseName { get; }
+
+        public MongoTenantShardMode ShardMode { get; }
     }
 }

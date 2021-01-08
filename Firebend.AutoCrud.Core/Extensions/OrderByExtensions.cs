@@ -95,9 +95,8 @@ namespace Firebend.AutoCrud.Core.Extensions
             }
 
             var arg = Expression.Parameter(type, "x");
-            Expression expr = null;
 
-            expr = Expression.Property(arg, propertyInfo);
+            Expression expr = Expression.Property(arg, propertyInfo);
 
             if (propertyInfo.PropertyType.IsValueType)
             {

@@ -65,9 +65,21 @@ namespace Firebend.AutoCrud.Mongo
 
                 WithRegistration<IMongoDeleteClient<TKey, TEntity>>(
                     typeof(MongoTenantDeleteClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
+
+                WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureShardedCollection<TKey, TEntity>>(false);
+                WithRegistration<IConfigureCollection, MongoConfigureShardedCollection<TKey, TEntity>>(false);
+
+                WithRegistration<IMongoEntityConfigurationTenantTransformService<TKey, TEntity>,
+                    MongoEntityConfigurationTenantTransformService<TKey, TEntity>>(false);
+
+                WithRegistration<IMongoConfigurationAllShardsProvider<TKey, TEntity>,
+                    MongoConfigurationAllShardsProvider<TKey, TEntity>>(false);
             }
             else
             {
+                WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);
+                WithRegistration<IConfigureCollection, MongoConfigureCollection<TKey, TEntity>>(false);
+
                 WithRegistration<IMongoCreateClient<TKey, TEntity>, MongoCreateClient<TKey, TEntity>>(false);
                 WithRegistration<IMongoReadClient<TKey, TEntity>, MongoReadClient<TKey, TEntity>>(false);
                 WithRegistration<IMongoUpdateClient<TKey, TEntity>, MongoUpdateClient<TKey, TEntity>>(false);
@@ -76,8 +88,6 @@ namespace Firebend.AutoCrud.Mongo
 
             WithRegistration<IMongoIndexClient<TKey, TEntity>, MongoIndexClient<TKey, TEntity>>(false);
             WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
-            WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);
-            WithRegistration<IConfigureCollection, MongoConfigureCollection<TKey, TEntity>>(false);
 
             if (IsModifiedEntity)
             {
@@ -117,10 +127,13 @@ namespace Firebend.AutoCrud.Mongo
                 throw new Exception("Please provide a database name for this entity.");
             }
 
-            var instance = new MongoEntityConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode);
-
             if (IsTenantEntity)
             {
+                if (ShardMode == MongoTenantShardMode.Unknown)
+                {
+                    throw new Exception($"Please set a {nameof(ShardMode)}");
+                }
+
                 var shardProviderType = typeof(IMongoShardKeyProvider);
 
                 if (!Registrations.ContainsKey(shardProviderType))
@@ -128,17 +141,21 @@ namespace Firebend.AutoCrud.Mongo
                     throw new Exception($"Please register a {nameof(IMongoShardKeyProvider)}");
                 }
 
-                if (ShardMode == MongoTenantShardMode.Unknown)
+                var allShardsProvider = typeof(IMongoAllShardsProvider);
+
+                if (!Registrations.ContainsKey(allShardsProvider))
                 {
-                    throw new Exception($"Please set a {nameof(ShardMode)}");
+                    throw new Exception($"Please register a {nameof(IMongoAllShardsProvider)}");
                 }
 
-                WithRegistrationInstance(instance);
+                WithRegistrationInstance<IMongoEntityDefaultConfiguration<TKey, TEntity>>(
+                    new MongoEntityDefaultConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode));
+
                 WithRegistration<IMongoEntityConfiguration<TKey, TEntity>, MongoTenantEntityConfiguration<TKey, TEntity>>();
             }
             else
             {
-                WithRegistrationInstance(iFaceType, instance);
+                WithRegistrationInstance(iFaceType, new MongoEntityConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode));
             }
         }
 
@@ -334,6 +351,13 @@ namespace Firebend.AutoCrud.Mongo
             where TShardKeyProvider : IMongoShardKeyProvider
         {
             WithRegistration<IMongoShardKeyProvider, TShardKeyProvider>();
+            return this;
+        }
+
+        public MongoDbEntityBuilder<TKey, TEntity> WithAllShardsProvider<TAllShardsProvider>()
+            where TAllShardsProvider : IMongoAllShardsProvider
+        {
+            WithRegistration<IMongoAllShardsProvider, TAllShardsProvider>();
             return this;
         }
     }

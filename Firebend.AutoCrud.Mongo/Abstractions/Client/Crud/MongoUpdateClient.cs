@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -11,6 +13,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Core.Models.Entities;
+using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
@@ -43,6 +46,19 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventPublisher = domainEventPublisher;
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
+
+        private static string[] GetIgnoredProperties() => Run.Once($"IgnoreKeys.{typeof(TEntity).FullName}", () =>
+        {
+            var props = typeof(TEntity)
+                .GetProperties()
+                .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
+                .Select(x => x.Name)
+                .ToList();
+
+            props.Add(nameof(IModifiedEntity.CreatedDate));
+
+            return props.ToArray();
+        });
 
         public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
             UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, cancellationToken);
@@ -145,7 +161,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var modified = original == null ? new TEntity() : original.Clone();
 
-            entity.CopyPropertiesTo(modified, nameof(IModifiedEntity.CreatedDate));
+            entity.CopyPropertiesTo(modified, GetIgnoredProperties());
 
             if (original == null && modified is IModifiedEntity mod)
             {

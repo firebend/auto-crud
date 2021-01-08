@@ -28,6 +28,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithCollection("People")
                     .WithFullTextSearch()
                     .WithShardKeyProvider<SampleKeyProviderMongo>()
+                    .WithAllShardsProvider<SampleAllShardsMongoProvider>()
                     .WithShardMode(MongoTenantShardMode.Database)
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
