@@ -50,6 +50,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             IConfiguration configuration) =>
             generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
+                    .WithDbOptionsProvider(PersonDbContextOptions.GetOptions)
                     .WithSearchFilter((efPerson, s) => EF.Functions.ContainsAny(efPerson.FirstName, s))
                     .AddElasticPool(manager =>
                         {
@@ -57,8 +58,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             manager.MapName = configuration["Elastic:MapName"];
                             manager.Server = configuration["Elastic:ServerName"];
                             manager.ElasticPoolName = configuration["Elastic:PoolName"];
-                        }, pool => pool
-                            .WithShardKeyProvider<SampleKeyProvider>()
+                        }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
                     .AddCrud(crud => crud
@@ -100,9 +100,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithSearchFilter((efPet, s) => efPet.PetName.Contains(s) ||
                                                     efPet.PetType.Contains(s) ||
                                                     EF.Functions.ContainsAny(efPet.Person.FirstName, s)
-                                                    //efPet.Person.LastName.Contains(s) ||
-                                                    //efPet.Person.FirstName.Contains(s)
                                                     )
+                    .WithDbOptionsProvider(PersonDbContextOptions.GetOptions)
                     .WithIncludes(pets => pets.Include(p => p.Person))
                     .AddElasticPool(manager =>
                         {
@@ -110,8 +109,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             manager.MapName = configuration["Elastic:MapName"];
                             manager.Server = configuration["Elastic:ServerName"];
                             manager.ElasticPoolName = configuration["Elastic:PoolName"];
-                        }, pool => pool
-                            .WithShardKeyProvider<SampleKeyProvider>()
+                        }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
                     .AddCrud(crud => crud

@@ -9,6 +9,7 @@ using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
@@ -76,7 +77,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <param name="dbContextType">The type of the DbContext to use</param>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext(typeof(AppDbContext))
         ///        .AddCrud()
         ///        .AddControllers()
@@ -99,7 +100,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <typeparam name="TContext">The type of the DbContext to use</typeparam>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .AddCrud()
         ///        .AddControllers()
@@ -115,7 +116,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <param name="type">The type of the search filter to use</param>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithSearchFilter(typeof(SearchFilter))
         ///        .AddCrud()
@@ -134,7 +135,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <typeparam name="T">The type of the search filter to use</typeparam>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithSearchFilter<SearchFilter>()
         ///        .AddCrud()
@@ -149,7 +150,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <param name="filter">A callback function returning whether to include the object in results for the search</param>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithSearchFilter((e, s) => e.TemperatureC > s)
         ///        .AddCrud()
@@ -170,7 +171,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <param name="type">The function includes provider to use</param>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithIncludes(typeof(EntityIncludes))
         ///        .AddCrud()
@@ -190,7 +191,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <typeparam name="TProvider">The function includes provider to use</typeparam>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithIncludes<FunctionIncludes>()
         ///        .AddCrud()
@@ -211,7 +212,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <typeparam name="func">A callback function specifying the related model Includes to use for the model</typeparam>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithIncludes(forecasts => forecasts.Include(f => f.LastUpdatedBy))
         ///        .AddCrud()
@@ -223,6 +224,67 @@ namespace Firebend.AutoCrud.EntityFramework
             WithRegistrationInstance<IEntityFrameworkIncludesProvider<TKey, TEntity>>(
                 new FunctionIncludesProvider<TKey, TEntity>(func));
 
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
+        /// </summary>
+        /// <param name="type">
+        /// The <see cref="Type"/> that specifies a class that implements <see cref="IDbContextOptionsProvider{TKey,TEntity}"/>
+        /// </param>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithDbOptionsProvider(typeof(AppDbContextOptionsProvider))
+        ///        .AddCrud()
+        ///        .AddControllers()
+        /// </code>
+        /// </example>
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Type type)
+        {
+            WithRegistration<IDbContextOptionsProvider<TKey, TEntity>>(type);
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
+        /// </summary>
+        /// <typeparam name="TProvider">The type that implements <see cref="IDbContextOptionsProvider{TKey,TEntity}"/></typeparam>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithDbOptionsProvider<AppDbContextOptionsProvider>()
+        ///        .AddCrud()
+        ///        .AddControllers()
+        /// </code>
+        /// </example>
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TProvider>()
+        {
+            WithRegistration<IDbContextOptionsProvider<TKey, TEntity>, TProvider>();
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
+        /// </summary>
+        /// <param name="dbContextOptionsFunc">
+        /// A <see cref="Func{TResult}"/> that accepts the connection string and returns a <see cref="DbContextOptions"/>
+        /// </param>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithDbOptionsProvider(new DbContextOptionsBuilder().AddSqlServer().Options)
+        ///        .AddCrud()
+        ///        .AddControllers()
+        /// </code>
+        /// </example>
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Func<string, DbContextOptions> dbContextOptionsFunc)
+        {
+            WithRegistrationInstance<IDbContextOptionsProvider<TKey, TEntity>>(new DbContextOptionsProvider<TKey, TEntity>(dbContextOptionsFunc));
             return this;
         }
     }

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Threading;
-using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -36,17 +35,20 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         private readonly IShardManager _shardManager;
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
         private readonly IShardNameProvider _shardNameProvider;
+        private readonly IDbContextOptionsProvider<TKey, TEntity> _optionsProvider;
 
         public ShardDbContextProvider(
             IShardManager shardManager,
             IShardKeyProvider shardKeyProvider,
             IShardNameProvider shardNameProvider,
-            ShardMapMangerConfiguration shardMapMangerConfiguration)
+            ShardMapMangerConfiguration shardMapMangerConfiguration,
+            IDbContextOptionsProvider<TKey, TEntity> optionsProvider)
         {
             _shardManager = shardManager;
             _shardKeyProvider = shardKeyProvider;
             _shardNameProvider = shardNameProvider;
             _shardMapMangerConfiguration = shardMapMangerConfiguration;
+            _optionsProvider = optionsProvider;
         }
 
         public static string NormalizeToLegacyConnectionString(string connectionString)
@@ -91,10 +93,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 }, cancellationToken)
                 .ConfigureAwait(false);
 
-            var options = new DbContextOptionsBuilder()
-                .UseSqlServer(connectionString)
-                .AddFirebendFunctions()
-                .Options;
+
+            var options = _optionsProvider.GetDbContextOptions(connectionString);
 
             var instance = Activator.CreateInstance(contextType, options);
 

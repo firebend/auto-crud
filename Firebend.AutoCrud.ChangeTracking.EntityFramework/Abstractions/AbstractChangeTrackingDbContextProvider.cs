@@ -7,7 +7,6 @@ using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -22,12 +21,15 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
     {
         private readonly IDbContextProvider<TEntityKey, TEntity> _contextProvider;
         private readonly ILogger _logger;
+        private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
 
         public AbstractChangeTrackingDbContextProvider(IDbContextProvider<TEntityKey, TEntity> contextProvider,
-            ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger)
+            ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
+            IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider)
         {
             _contextProvider = contextProvider;
             _logger = logger;
+            _optionsProvider = optionsProvider;
         }
 
         public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
@@ -47,9 +49,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             }
             else
             {
-                var options = new DbContextOptionsBuilder()
-                    .UseSqlServer(connectionString)
-                    .Options;
+                var options = _optionsProvider.GetDbContextOptions(connectionString);
 
                 context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
             }
@@ -67,12 +67,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                                 .ConfigureAwait(false);
                         }
                     }
-                    catch (SqlException)
-                    {
-                    }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error creating change tracking tables for context", ex);
+                        if (!ex.Message.StartsWith("There is already an object named"))
+                        {
+                            _logger.LogError("Error creating change tracking tables for context", ex);
+                        }
                     }
                 }, cancellationToken)
                 .ConfigureAwait(false);
