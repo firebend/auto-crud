@@ -115,7 +115,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
             {
                 return Ok(new CreateMultipleActionResult<TEntity, TReadViewModel>
                 {
-                    Created = createdEntities, Errors = errorEntities
+                    Created = createdEntities,
+                    Errors = errorEntities
                 });
             }
 
