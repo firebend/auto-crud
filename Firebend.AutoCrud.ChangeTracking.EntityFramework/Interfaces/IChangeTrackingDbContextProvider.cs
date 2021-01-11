@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces
     /// <summary>
     /// Encapsulates logic for getting an Entity Framework context that will persist changes.
     /// </summary>
-    /// <typeparam name="TKey">
+    /// <typeparam name="TEntityKey">
     /// The type of key the entity uses.
     /// </typeparam>
     /// <typeparam name="TEntity">

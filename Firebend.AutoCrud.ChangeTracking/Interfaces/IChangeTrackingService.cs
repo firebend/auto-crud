@@ -49,6 +49,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Interfaces
         /// <summary>
         /// Tracks changes when an entity is updated.
         /// </summary>
+        /// <param name="domainEvent">
         /// The <see cref="EntityUpdatedDomainEvent{T}"/> containing information about an Entity Updated event.
         /// </param>
         /// <param name="cancellationToken">
