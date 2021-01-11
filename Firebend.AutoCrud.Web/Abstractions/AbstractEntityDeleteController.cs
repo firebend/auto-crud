@@ -32,7 +32,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> Delete(
+        public virtual async Task<ActionResult<TViewModel>> Delete(
             [Required][FromRoute] string id,
             CancellationToken cancellationToken)
         {

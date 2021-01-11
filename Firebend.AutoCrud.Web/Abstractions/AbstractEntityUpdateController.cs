@@ -45,7 +45,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> Put(
+        public virtual async Task<ActionResult<TReadViewModel>> Put(
             [Required][FromRoute] string id,
             [Required] TUpdateViewModel body,
             CancellationToken cancellationToken)
@@ -134,7 +134,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> Patch(
+        public virtual async Task<ActionResult<TReadViewModel>> Patch(
             [Required][FromRoute] string id,
             [Required][FromBody] JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken)

@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Searches for {entityNamePlural}")]
         [SwaggerResponse(200, "All the {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.")]
-        public virtual async Task<IActionResult> Search(
+        public virtual async Task<ActionResult<EntityPagedResponse<TViewModel>>> Search(
             [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
         {

@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(201, "A {entityName} was created successfully..")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> Post(
+        public virtual async Task<ActionResult<TReadViewModel>> Post(
              TCreateViewModel body,
             CancellationToken cancellationToken)
         {
