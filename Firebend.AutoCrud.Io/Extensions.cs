@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.Io
         ///  .ConfigureServices((hostContext, services) => {
         ///      services.UsingEfCrud(ef =>
         ///     {
-        ///         ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        ///         ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///             forecast.WithDbContext<AppDbContext>()
         ///                 .AddCrud()
         ///                 .AddIo(io => io.WithMapper(x => new WeatherForecastExport(x)))
@@ -32,7 +32,6 @@ namespace Firebend.AutoCrud.Io
         ///     })
         /// </code>
         /// </example>
-        /// See <see cref="" />
         public static EntityCrudBuilder<TKey, TEntity> AddIo<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder,
             Action<IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure = null)
             where TKey : struct

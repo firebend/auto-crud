@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
-        <Version>0.0.28</Version>
+        <Version>0.0.29</Version>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -23,7 +23,6 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.1" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.1" />
     </ItemGroup>
 
 </Project>

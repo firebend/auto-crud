@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
+using Firebend.AutoCrud.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -41,7 +42,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(201, "Multiple {entityNamePlural} were created successfully.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<IActionResult> PostMultiple(
+        public virtual async Task<ActionResult<CreateMultipleActionResult<TEntity, TReadViewModel>>> PostMultiple(
             TMultipleViewModelWrapper body,
             CancellationToken cancellationToken)
         {
@@ -112,7 +113,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (createdEntities.Count > 0)
             {
-                return Ok(new { created = createdEntities, errors = errorEntities });
+                return Ok(new CreateMultipleActionResult<TEntity, TReadViewModel>
+                {
+                    Created = createdEntities,
+                    Errors = errorEntities
+                });
             }
 
             if (errorEntities.Count > 0)

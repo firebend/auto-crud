@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Gets all {entityNamePlural}")]
         [SwaggerResponse(200, "All the {entityNamePlural}.")]
         [SwaggerResponse(400, "The request is invalid.")]
-        public virtual async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public virtual async Task<ActionResult<IEnumerable<TViewModel>>> GetAll(CancellationToken cancellationToken)
         {
             var entities = await _readService
                 .GetAllAsync(cancellationToken)
