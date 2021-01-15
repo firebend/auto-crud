@@ -74,5 +74,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 
             return orderByGroups;
         }
+
+        protected override void DisposeManagedObjects() => _searchClient?.Dispose();
     }
 }

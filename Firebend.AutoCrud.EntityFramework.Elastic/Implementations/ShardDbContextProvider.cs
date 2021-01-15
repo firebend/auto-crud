@@ -70,7 +70,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
             var contextType = typeof(TContext);
 
-            var connectionString = await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}.ConnectionString", async ct =>
+            var connectionString = await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}.ConnectionString.{key}", async ct =>
                 {
                     var shard = await _shardManager
                         .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)

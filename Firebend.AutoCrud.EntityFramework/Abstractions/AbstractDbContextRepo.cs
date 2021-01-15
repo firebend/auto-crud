@@ -5,13 +5,14 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions
 {
-    public abstract class AbstractDbContextRepo<TKey, TEntity>
+    public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
@@ -107,5 +108,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             => Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
 
         protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => queryable;
+
+        protected override void DisposeManagedObjects() => _context?.Dispose();
+
+        protected override void DisposeUnmanagedObjectsAndAssignNull()
+        {
+            _context = null;
+        }
     }
 }

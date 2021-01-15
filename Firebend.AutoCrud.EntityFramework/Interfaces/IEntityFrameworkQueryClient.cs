@@ -8,7 +8,7 @@ using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
-    public interface IEntityFrameworkQueryClient<TKey, TEntity>
+    public interface IEntityFrameworkQueryClient<TKey, TEntity> : IDisposable
         where TKey : struct
         where TEntity : IEntity<TKey>
     {

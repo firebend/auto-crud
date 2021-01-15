@@ -1,3 +1,5 @@
+GET https://localhost:5001/api/v1/gc-collect
+###
 POST https://localhost:5001/api/v1/ef-person
 Content-Type: application/json
 
@@ -57,7 +59,7 @@ https://localhost:5001/api/v1/ef-person?search=Peggy&pageSize=20&pageNumber=1&mo
 http://localhost:5000/api/v1/ef-person/73686799-cf49-40f8-12e1-08d89c52a9fc/changes?pageNumber=1&pageSize=20
 
 ###
-http://localhost:5000/api/v1/ef-person/export/csv?filename=export&pageSize=50&pageNumber=1
+http://localhost:5000/api/v1/ef-person/export/spreadSheet?filename=export&pageSize=50&pageNumber=1
 
 ###
-http://localhost:5000/api/v1/ef-person/export/csv?filename=export
+http://localhost:5000/api/v1/ef-person/export/csv?filename=export&pageNumber=1&pageSize=10

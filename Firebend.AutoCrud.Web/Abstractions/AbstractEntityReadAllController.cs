@@ -32,6 +32,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         public virtual async Task<ActionResult<IEnumerable<TViewModel>>> GetAll(CancellationToken cancellationToken)
         {
+            Response.RegisterForDispose(_readService);
+
             var entities = await _readService
                 .GetAllAsync(cancellationToken)
                 .ConfigureAwait(false);

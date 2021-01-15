@@ -35,7 +35,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithMassTransit())
                     .AddCrud(x => x
                         .WithCrud()
-                        .WithOrderBy(m => m.LastName))
+                        .WithOrderBy(m => m.LastName)
+                        )
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
@@ -63,31 +64,32 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     )
                     .AddCrud(crud => crud
                         .WithCrud()
-                        .WithOrderBy(efPerson => efPerson.LastName)
-                        .WithSearch<CustomSearchParameters>(search =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(search?.NickName))
-                            {
-                                return p => p.NickName.Contains(search.NickName);
-                            }
-
-                            return null;
-                        }))
-                    .AddDomainEvents(events => events
-                        .WithEfChangeTracking()
-                        .WithMassTransit()
-                        .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
-                        .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
+                        //.WithOrderBy(efPerson => efPerson.LastName)
+                        // .WithSearch<CustomSearchParameters>(search =>
+                        // {
+                        //     if (!string.IsNullOrWhiteSpace(search?.NickName))
+                        //     {
+                        //         return p => p.NickName.Contains(search.NickName);
+                        //     }
+                        //
+                        //     return null;
+                        // })
                     )
+                    // .AddDomainEvents(events => events
+                    //     .WithEfChangeTracking()
+                    //     .WithMassTransit()
+                    //     .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
+                    //     .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
+                    // )
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
-                        .WithReadViewModel(entity => new GetPersonViewModel(entity))
+                        //.WithReadViewModel(entity => new GetPersonViewModel(entity))
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((model, viewModel) => new EfPerson(viewModel))
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
-                        .WithChangeTrackingControllers()
+                        //.WithChangeTrackingControllers()
                         .WithIoControllers()
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)

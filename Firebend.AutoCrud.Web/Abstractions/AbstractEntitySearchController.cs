@@ -39,6 +39,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
             [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
         {
+            Response.RegisterForDispose(_searchService);
+
             if (searchRequest == null)
             {
                 ModelState.AddModelError(nameof(searchRequest), "Search parameters are required.");

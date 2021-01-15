@@ -50,6 +50,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
             [Required] TUpdateViewModel body,
             CancellationToken cancellationToken)
         {
+            Response.RegisterForDispose(_readService);
+            Response.RegisterForDispose(_updateService);
+            
             var key = GetKey(id);
 
             if (!key.HasValue)

@@ -35,6 +35,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
             [Required][FromRoute] string id,
             CancellationToken cancellationToken)
         {
+            Response.RegisterForDispose(_readService);
+
             var key = GetKey(id);
 
             if (!key.HasValue)

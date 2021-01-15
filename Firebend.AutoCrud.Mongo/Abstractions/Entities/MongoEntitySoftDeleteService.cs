@@ -1,12 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public abstract class MongoEntitySoftDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
+    public abstract class MongoEntitySoftDeleteService<TKey, TEntity> : BaseDisposable, IEntityDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, IActiveEntity
     {

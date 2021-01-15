@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
-    public abstract class MongoEntityUpdateService<TKey, TEntity> : IEntityUpdateService<TKey, TEntity>
+    public abstract class MongoEntityUpdateService<TKey, TEntity> : BaseDisposable, IEntityUpdateService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

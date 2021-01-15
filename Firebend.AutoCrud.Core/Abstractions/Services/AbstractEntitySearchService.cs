@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Services
 {
-    public abstract class AbstractEntitySearchService<TEntity, TSearch>
+    public abstract class AbstractEntitySearchService<TEntity, TSearch> : BaseDisposable
         where TSearch : EntitySearchRequest
     {
         protected Expression<Func<TEntity, bool>> GetSearchExpression(Expression<Func<TEntity, bool>> customFilter, TSearch search)

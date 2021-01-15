@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -5,7 +6,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
-    public interface IDbContext
+    public interface IDbContext : IDisposable
     {
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
