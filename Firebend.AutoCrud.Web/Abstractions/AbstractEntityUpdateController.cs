@@ -9,6 +9,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
@@ -167,7 +168,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             var original = entity.Clone();
 
-            patch.ApplyTo(entity, ModelState);
+            ApplyTo(patch, entity, ModelState, string.Empty);
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {
@@ -225,7 +226,43 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 .ConfigureAwait(false);
 
             return Ok(mapped);
+        }
 
+        //********************************************
+        // Author: JMA
+        // Date: 2021-01-15 06:08:57
+        // Comment: yoink from here https://github.com/dotnet/aspnetcore/blob/master/src/Mvc/Mvc.NewtonsoftJson/src/JsonPatchExtensions.cs
+        // we are doing this because we want to keep this package netstandard2.1
+        // if we incorporate the package that includes this extension we have to force a specific version of asp net mvc i.e 3.1 or 5.0
+        //*******************************************
+        private static void ApplyTo<T>(
+            JsonPatchDocument<T> patchDoc,
+            T objectToApplyTo,
+            ModelStateDictionary modelState,
+            string prefix) where T : class
+        {
+            if (patchDoc == null)
+            {
+                throw new ArgumentNullException(nameof(patchDoc));
+            }
+
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            patchDoc.ApplyTo(objectToApplyTo, jsonPatchError =>
+            {
+                var affectedObjectName = jsonPatchError.AffectedObject.GetType().Name;
+                var key = string.IsNullOrEmpty(prefix) ? affectedObjectName : prefix + "." + affectedObjectName;
+
+                modelState.TryAddModelError(key, jsonPatchError.ErrorMessage);
+            });
         }
     }
 }

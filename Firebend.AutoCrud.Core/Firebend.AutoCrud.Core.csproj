@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <Version>0.0.29</Version>
+        <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -19,6 +20,8 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.1" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="5.0.2" />
+      <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.7.0" />
     </ItemGroup>
 
 </Project>

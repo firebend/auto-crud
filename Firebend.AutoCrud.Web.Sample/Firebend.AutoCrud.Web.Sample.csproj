@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>6ce34362-c2b5-48cd-9b85-8d56f0518f81</UserSecretsId>
     <ServerGarbageCollection>false</ServerGarbageCollection>
   </PropertyGroup>
@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="MassTransit.AspNetCore" Version="7.0.7" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="7.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
