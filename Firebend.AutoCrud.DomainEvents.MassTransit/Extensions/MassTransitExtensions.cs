@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;
 using MassTransit;
 using MassTransit.ExtensionsDependencyInjectionIntegration;
@@ -159,26 +160,40 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             MemberInfo listenerImplementationType,
             string handlerTypeDesc)
         {
-            var sb = new StringBuilder();
+            var sb = AutoCrudObjectPool.StringBuilder.Get();
+            string sbBuilt;
 
-            if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
+            try
             {
-                sb.Append(receiveEndpointPrefix);
-                sb.Append("-");
-            }
+                if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
+                {
+                    sb.Append(receiveEndpointPrefix);
+                    sb.Append("-");
+                }
 
-            sb.Append(genericMessageType.Name);
+                sb.Append(genericMessageType.Name);
 
-            if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
-            {
+                if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
+                {
+                    sb.Append("_");
+                    sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
+                }
+
                 sb.Append("_");
-                sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
+                sb.Append(handlerTypeDesc);
+                sbBuilt = sb.ToString();
+            }
+            finally
+            {
+                AutoCrudObjectPool.StringBuilder.Return(sb);
             }
 
-            sb.Append("_");
-            sb.Append(handlerTypeDesc);
+            if (string.IsNullOrWhiteSpace(sbBuilt))
+            {
+                throw new Exception("Error building queue name");
+            }
 
-            var queueName = sb.ToString().Replace("`1", null).Replace("`2", null);
+            var queueName = sbBuilt.Replace("`2", null);
 
             while (queueNames.Contains(queueName))
             {

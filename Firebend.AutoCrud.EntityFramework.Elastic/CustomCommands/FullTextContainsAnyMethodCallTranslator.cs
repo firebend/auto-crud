@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Firebend.AutoCrud.Core.Pooling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
@@ -85,19 +86,29 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
                 throw new InvalidOperationException("Invalid property");
             }
 
-            var splatBuilder = new StringBuilder();
+            var splatBuilder = AutoCrudObjectPool.StringBuilder.Get();
+            string splatString;
 
-            if (!string.IsNullOrWhiteSpace(columnExpression.Table?.Alias))
+            try
             {
-                splatBuilder.Append('[');
-                splatBuilder.Append(columnExpression.Table.Alias);
-                splatBuilder.Append(']');
-                splatBuilder.Append('.');
+
+                if (!string.IsNullOrWhiteSpace(columnExpression.Table?.Alias))
+                {
+                    splatBuilder.Append('[');
+                    splatBuilder.Append(columnExpression.Table.Alias);
+                    splatBuilder.Append(']');
+                    splatBuilder.Append('.');
+                }
+
+                splatBuilder.Append("*");
+                splatString = splatBuilder.ToString();
+            }
+            finally
+            {
+                AutoCrudObjectPool.StringBuilder.Return(splatBuilder);
             }
 
-            splatBuilder.Append("*");
-
-            var splat = _sqlExpressionFactory.Fragment(splatBuilder.ToString());
+            var splat = _sqlExpressionFactory.Fragment(splatString);
             var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true);
             var freeText = _sqlExpressionFactory.ApplyTypeMapping(arguments[2], stringMap);
             var functionArguments = new List<SqlExpression> { splat, freeText };
