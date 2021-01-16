@@ -12,5 +12,24 @@ namespace Firebend.AutoCrud.Core.Pooling
         private static readonly ObjectPool<StringBuilder> _stringBuilder = Instance.CreateStringBuilderPool();
 
         public static ObjectPool<StringBuilder> StringBuilder => _stringBuilder;
+
+        public static string InterpolateString(params object[] objects)
+        {
+            var sb = StringBuilder.Get();
+
+            try
+            {
+                foreach (var o in objects)
+                {
+                    sb.Append(o);
+                }
+
+                return sb.ToString();
+            }
+            finally
+            {
+                StringBuilder.Return(sb);
+            }
+        }
     }
 }

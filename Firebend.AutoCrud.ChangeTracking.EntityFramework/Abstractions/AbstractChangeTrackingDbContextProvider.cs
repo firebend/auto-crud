@@ -5,6 +5,7 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -54,7 +55,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
             }
 
-            var runKey = $"{nameof(ChangeTrackingEntity<TEntityKey, TEntity>)}.CreateTables.{typeof(TEntityKey).Name}.{typeof(TEntity).Name}";
+            var runKey = AutoCrudObjectPool.InterpolateString(
+                nameof(ChangeTrackingEntity<TEntityKey, TEntity>),
+                ".CreateTables.",
+                typeof(TEntityKey).Name,
+                "_",
+                typeof(TEntity).Name);
 
             await Run.OnceAsync(runKey, async ct =>
                 {
@@ -63,7 +69,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                         if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
                         {
                             await dbCreator
-                                .CreateTablesAsync(cancellationToken)
+                                .CreateTablesAsync(ct)
                                 .ConfigureAwait(false);
                         }
                     }

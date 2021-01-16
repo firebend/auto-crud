@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -70,10 +71,16 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
             var contextType = typeof(TContext);
 
-            var connectionString = await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}.ConnectionString.{key}", async ct =>
+            var shardRunKey = AutoCrudObjectPool.InterpolateString(GetType().FullName,
+                ".",
+                contextType.Name,
+                ".ConnectionString.",
+                key);
+
+            var connectionString = await Run.OnceAsync(shardRunKey, async ct =>
                 {
                     var shard = await _shardManager
-                        .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
+                        .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, ct)
                         .ConfigureAwait(false);
 
                     var keyBytes = Encoding.ASCII.GetBytes(key);
@@ -93,7 +100,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 }, cancellationToken)
                 .ConfigureAwait(false);
 
-
             var options = _optionsProvider.GetDbContextOptions(connectionString);
 
             var instance = Activator.CreateInstance(contextType, options);
@@ -108,14 +114,19 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 throw new Exception("Could not cast instance.");
             }
 
-            await Run.OnceAsync($"{GetType().FullName}.{contextType.Name}.Init", async ct =>
+            var shardEnsureCreatedKey = AutoCrudObjectPool.InterpolateString(GetType().FullName,
+                ".",
+                contextType.Name,
+                ".Init");
+
+            await Run.OnceAsync(shardEnsureCreatedKey, async ct =>
                 {
                     await context.Database
-                        .EnsureCreatedAsync(cancellationToken)
+                        .EnsureCreatedAsync(ct)
                         .ConfigureAwait(false);
 
                     await context.Database
-                        .MigrateAsync(cancellationToken)
+                        .MigrateAsync(ct)
                         .ConfigureAwait(false);
                 }, cancellationToken)
                 .ConfigureAwait(false);

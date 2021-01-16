@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -20,9 +21,9 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 
-            var key = $"{connBuilder.DataSource}-{dbName}";
+            var key = AutoCrudObjectPool.InterpolateString(connBuilder.DataSource,"-",dbName);
 
-            var runKey = $"{GetType().FullName}.{key}";
+            var runKey = AutoCrudObjectPool.InterpolateString(GetType().FullName,".",key);
 
             return Run.OnceAsync(runKey, async ct =>
             {
@@ -30,11 +31,11 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
                 var cString = connBuilder.ConnectionString;
                 await using var conn = new SqlConnection(cString);
-                await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+                await conn.OpenAsync(ct).ConfigureAwait(false);
 
                 await using var command = conn.CreateCommand();
                 command.CommandText = GetSqlCommand(dbName);
-                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
 
                 _logger.LogDebug($"Database is created. Key {key}");
             }, cancellationToken);

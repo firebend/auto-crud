@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Firebend.AutoCrud.Core.Pooling;
 using MongoDB.Bson.Serialization;
 
 namespace Firebend.AutoCrud.Mongo.Configuration
@@ -19,9 +20,27 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             var timeSpanMs = (long)timeSpan.TotalMilliseconds;
             var timestampString = timeSpanMs.ToString("x8");
             var guidString = guid.ToString("N");
-            var guidStringBuilder = new StringBuilder(timestampString.Substring(0, 11));
-            guidStringBuilder.Append(guidString.Substring(11));
-            var newGuidString = guidStringBuilder.ToString();
+
+            var pooledBuilder = AutoCrudObjectPool.StringBuilder.Get();
+
+            string newGuidString;
+
+            try
+            {
+                pooledBuilder.Append(timestampString.Substring(0, 11));
+                pooledBuilder.Append(guidString.Substring(11));
+                newGuidString = pooledBuilder.ToString();
+            }
+            finally
+            {
+                AutoCrudObjectPool.StringBuilder.Return(pooledBuilder);
+            }
+
+            if (string.IsNullOrWhiteSpace(newGuidString))
+            {
+                throw new Exception("Could not get guid string");
+            }
+
             var newGuid = Guid.Parse(newGuidString);
 
             return newGuid;
