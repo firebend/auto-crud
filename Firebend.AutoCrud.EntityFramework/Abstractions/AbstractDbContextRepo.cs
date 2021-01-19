@@ -111,9 +111,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected override void DisposeManagedObjects() => _context?.Dispose();
 
-        protected override void DisposeUnmanagedObjectsAndAssignNull()
-        {
-            _context = null;
-        }
+        protected override void DisposeUnmanagedObjectsAndAssignNull() => _context = null;
     }
 }

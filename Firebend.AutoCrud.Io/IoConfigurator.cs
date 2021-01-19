@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Io
             builder.WithRegistration<IEntityFileWriterCsv, CsvEntityFileWriter>();
             builder.WithRegistration<IEntityFileWriterSpreadSheet, SpreadSheetEntityFileWriter>();
             builder.WithRegistration<IEntityFileWriterFactory, EntityFileWriterFactory>();
-            Builder.WithRegistration<IEntityExportMapper<TEntity, TEntity>, AbstractDefaultEntityExportMapper<TEntity>>();
+            builder.WithRegistration<IEntityExportMapper<TEntity, TEntity>, AbstractDefaultEntityExportMapper<TEntity>>();
 
             AddExportEntityRegistrations<TEntity>();
         }
