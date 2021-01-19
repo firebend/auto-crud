@@ -54,14 +54,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
             TEntityKey id,
             JsonPatchDocument<TEntity> patchDocument = null)
             => new()
-            {
-                Modified = domainEvent.Time,
-                Source = domainEvent.EventContext?.Source,
-                UserEmail = domainEvent.EventContext?.UserEmail,
-                Action = action,
-                Changes = patchDocument?.Operations,
-                Entity = entity,
-                EntityId = id
-            };
+        {
+            Modified = domainEvent.Time,
+            Source = domainEvent.EventContext?.Source,
+            UserEmail = domainEvent.EventContext?.UserEmail,
+            Action = action,
+            Changes = patchDocument?.Operations,
+            Entity = entity,
+            EntityId = id
+        };
     }
 }

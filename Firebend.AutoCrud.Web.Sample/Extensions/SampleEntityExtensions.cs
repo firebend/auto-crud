@@ -64,16 +64,16 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     )
                     .AddCrud(crud => crud
                         .WithCrud()
-                        //.WithOrderBy(efPerson => efPerson.LastName)
-                        // .WithSearch<CustomSearchParameters>(search =>
-                        // {
-                        //     if (!string.IsNullOrWhiteSpace(search?.NickName))
-                        //     {
-                        //         return p => p.NickName.Contains(search.NickName);
-                        //     }
-                        //
-                        //     return null;
-                        // })
+                    //.WithOrderBy(efPerson => efPerson.LastName)
+                    // .WithSearch<CustomSearchParameters>(search =>
+                    // {
+                    //     if (!string.IsNullOrWhiteSpace(search?.NickName))
+                    //     {
+                    //         return p => p.NickName.Contains(search.NickName);
+                    //     }
+                    //
+                    //     return null;
+                    // })
                     )
                     // .AddDomainEvents(events => events
                     //     .WithEfChangeTracking()

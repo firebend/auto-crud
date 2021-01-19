@@ -48,22 +48,22 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
                 throw new ArgumentNullException(nameof(search));
             }
 
-                var entities = await _searchService
-                    .SearchAsync(search, cancellationToken)
-                    .ConfigureAwait(false);
+            var entities = await _searchService
+                .SearchAsync(search, cancellationToken)
+                .ConfigureAwait(false);
 
-                var records = MapRecords(entities);
+            var records = MapRecords(entities);
 
-                var fileContents = await _exportService
-                    .ExportAsync(fileType, records, cancellationToken)
-                    .ConfigureAwait(false);
+            var fileContents = await _exportService
+                .ExportAsync(fileType, records, cancellationToken)
+                .ConfigureAwait(false);
 
-                var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
-                var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
+            var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
+            var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
 
-                var fileResult = new FileContentResult(fileContents, mimeType) {FileDownloadName = $"{fileName}{extension}"};
+            var fileResult = new FileContentResult(fileContents, mimeType) { FileDownloadName = $"{fileName}{extension}" };
 
-                return fileResult;
+            return fileResult;
         }
 
         private IEnumerable<TMapped> MapRecords(IEnumerable<TEntity> data)

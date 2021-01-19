@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
-    public interface IEntityUpdateService<in TKey, TEntity>: IDisposable
+    public interface IEntityUpdateService<in TKey, TEntity> : IDisposable
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

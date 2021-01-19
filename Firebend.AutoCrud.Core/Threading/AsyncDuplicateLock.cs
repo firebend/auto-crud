@@ -7,7 +7,7 @@ namespace Firebend.AutoCrud.Core.Threading
 {
     public sealed class AsyncDuplicateLock
     {
-        private static readonly Dictionary<object, RefCounted<SemaphoreSlim>> SemaphoreSlims = new ();
+        private static readonly Dictionary<object, RefCounted<SemaphoreSlim>> SemaphoreSlims = new();
 
         private static SemaphoreSlim GetOrCreate(object key)
         {

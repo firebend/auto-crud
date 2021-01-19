@@ -42,6 +42,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
             [Required][FromQuery] EntitySearchRequest changeSearchRequest,
             CancellationToken cancellationToken)
         {
+            Response.RegisterForDispose(_read);
+
             var key = GetKey(entityId);
 
             if (!key.HasValue)

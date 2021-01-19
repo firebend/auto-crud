@@ -90,7 +90,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
             }
         }
 
-        private static CsvConfiguration GetCsvConfiguration() => new (CultureInfo.InvariantCulture) { IgnoreBlankLines = true };
+        private static CsvConfiguration GetCsvConfiguration() => new(CultureInfo.InvariantCulture) { IgnoreBlankLines = true };
 
         private (ISerializer serializer, TextWriter writer) GetSerializer(Stream stream)
         {

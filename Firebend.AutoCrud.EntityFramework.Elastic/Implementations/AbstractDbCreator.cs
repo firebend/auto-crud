@@ -21,9 +21,9 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 
-            var key = AutoCrudObjectPool.InterpolateString(connBuilder.DataSource,"-",dbName);
+            var key = AutoCrudObjectPool.InterpolateString(connBuilder.DataSource, "-", dbName);
 
-            var runKey = AutoCrudObjectPool.InterpolateString(GetType().FullName,".",key);
+            var runKey = AutoCrudObjectPool.InterpolateString(GetType().FullName, ".", key);
 
             return Run.OnceAsync(runKey, async ct =>
             {
