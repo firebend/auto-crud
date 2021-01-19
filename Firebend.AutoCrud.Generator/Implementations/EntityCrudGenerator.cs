@@ -93,7 +93,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                                 classRegistration.Signature,
                                 classRegistration.Properties.ToArray());
 
-                            serviceCollection.AddSingleton(classRegistration.Interface, instance.GetType());
+                            serviceCollection.AddSingleton(classRegistration.Interface, instance);
                             break;
                         }
                         case InstanceRegistration instanceRegistration:
