@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Models;
@@ -16,6 +17,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Interfaces
     /// The type of entity.
     /// </typeparam>
     public interface IChangeTrackingReadService<TKey, TEntity>
+        : IDisposable
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

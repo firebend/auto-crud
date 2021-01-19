@@ -1,11 +1,12 @@
 using System;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
-    public abstract class MongoClientBase
+    public abstract class MongoClientBase : BaseDisposable
     {
         protected MongoClientBase(IMongoClient client,
             ILogger logger)

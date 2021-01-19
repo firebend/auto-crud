@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
         {
         }
 
-        public override Task Consume(ConsumeContext<EntityUpdatedDomainEvent<TEntity>> context)
+        protected override Task ConsumeEvent(ConsumeContext<EntityUpdatedDomainEvent<TEntity>> context)
             => Handler.EntityUpdatedAsync(context.Message, context.CancellationToken);
     }
 }

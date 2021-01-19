@@ -53,7 +53,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             TEntity entity,
             TEntityKey id,
             JsonPatchDocument<TEntity> patchDocument = null)
-            => new ChangeTrackingEntity<TEntityKey, TEntity>
+            => new ()
             {
                 Modified = domainEvent.Time,
                 Source = domainEvent.EventContext?.Source,

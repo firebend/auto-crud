@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Mongo.Interfaces;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Microsoft.AspNetCore.JsonPatch;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.JsonPatch;
 namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 {
     public class AbstractMongoChangeTrackingService<TEntityKey, TEntity> :
+        BaseDisposable,
         IChangeTrackingService<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
@@ -51,7 +53,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
             TEntity entity,
             TEntityKey id,
             JsonPatchDocument<TEntity> patchDocument = null)
-            => new ChangeTrackingEntity<TEntityKey, TEntity>
+            => new()
             {
                 Modified = domainEvent.Time,
                 Source = domainEvent.EventContext?.Source,

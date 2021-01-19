@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -14,7 +15,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Interfaces
     /// <typeparam name="TEntity">
     /// The type of entity.
     /// </typeparam>
-    public interface IChangeTrackingService<TKey, TEntity>
+    public interface IChangeTrackingService<TKey, TEntity> : IDisposable
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

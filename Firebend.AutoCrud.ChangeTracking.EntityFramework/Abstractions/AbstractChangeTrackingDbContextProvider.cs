@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
         public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
         {
-            var entityContext = await _contextProvider
+            using var entityContext = await _contextProvider
                 .GetDbContextAsync(cancellationToken)
                 .ConfigureAwait(false);
 

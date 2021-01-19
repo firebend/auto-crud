@@ -21,10 +21,17 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
         public async Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var tasks = GetSubscribers<IEntityAddedDomainEventSubscriber<TEntity>>()
+            var subscribers = GetSubscribers<IEntityAddedDomainEventSubscriber<TEntity>>().ToList();
+
+            var tasks = subscribers
                 .Select(x => x.EntityAddedAsync(domainEvent, cancellationToken));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            foreach (var subscriber in subscribers)
+            {
+                subscriber.Dispose();
+            }
         }
 
         public async Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
