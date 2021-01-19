@@ -20,6 +20,7 @@
     <ItemGroup>
       <PackageReference Include="ClosedXML" Version="0.95.3" />
       <PackageReference Include="CsvHelper" Version="18.0.0" />
+      <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.4.0" />
     </ItemGroup>
 
     <ItemGroup>

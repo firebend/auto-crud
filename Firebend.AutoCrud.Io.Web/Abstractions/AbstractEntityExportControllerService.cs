@@ -52,19 +52,19 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
 
             var records = MapRecords(entities);
 
-            var stream = await _exportService
+            var fileContents = await _exportService
                 .ExportAsync(fileType, records, cancellationToken)
                 .ConfigureAwait(false);
 
             var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
             var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
 
-            var fileResult = new FileStreamResult(stream, mimeType) { FileDownloadName = $"{fileName}{extension}" };
+            var fileResult = new FileContentResult(fileContents, mimeType) { FileDownloadName = $"{fileName}{extension}" };
 
             return fileResult;
         }
 
-        private TMapped[] MapRecords(IEnumerable<TEntity> data)
+        private IEnumerable<TMapped> MapRecords(IEnumerable<TEntity> data)
         {
             if (data == null)
             {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Firebend.AutoCrud.Core.Pooling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -122,7 +121,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
             return _sqlExpressionFactory.Function(functionName,
                 functionArguments,
                 true,
-                functionArguments.Select(x => false).ToList(),
+                functionArguments.Select(_ => false).ToList(),
                 typeof(bool));
         }
     }

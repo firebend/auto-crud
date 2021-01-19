@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Io.Interfaces
     public interface IEntityExportService<in T>
         where T : class
     {
-        Task<Stream> ExportAsync(EntityFileType exportType,
+        Task<byte[]> ExportAsync(EntityFileType exportType,
             IEnumerable<T> records,
             CancellationToken cancellationToken = default);
     }

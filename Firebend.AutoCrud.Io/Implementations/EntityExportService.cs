@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             _autoMapper = autoMapper;
         }
 
-        public Task<Stream> ExportAsync(EntityFileType exportType,
+        public Task<byte[]> ExportAsync(EntityFileType exportType,
             IEnumerable<T> records,
             CancellationToken cancellationToken = default)
         {
