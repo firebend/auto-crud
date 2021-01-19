@@ -38,6 +38,8 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
         {
+            Response.RegisterForDispose(_exportService);
+
             if (string.IsNullOrWhiteSpace(filename))
             {
                 ModelState.AddModelError(nameof(filename), $"{nameof(filename)} is invalid.");

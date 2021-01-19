@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Io.Web.Interfaces
 {
-    public interface IEntityExportControllerService<TKey, TEntity, TSearch, TMapped>
+    public interface IEntityExportControllerService<TKey, TEntity, TSearch, TMapped> : IDisposable
         where TSearch : EntitySearchRequest
         where TKey : struct
         where TEntity : IEntity<TKey>
