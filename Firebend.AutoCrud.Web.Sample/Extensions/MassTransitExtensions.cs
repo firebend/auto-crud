@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 {
     public static class MassTransitExtensions
     {
-        private static readonly Regex ConStringParser = new Regex(
+        private static readonly Regex ConStringParser = new(
             "^rabbitmq://([^:]+):(.+)@([^@]+)$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         configurator.AutoDelete = true;
                         configurator.PurgeOnStartup = true;
 
-                        context.RegisterFirebendAutoCrudeDomainEventHandlerEndPoints(configurator, serviceCollection);
+                        context.RegisterFirebendAutoCrudeDomainEventHandlerEndPoints(configurator, serviceCollection, AutoCrudMassTransitQueueMode.OneQueue);
                     });
                 })
                 .AddMassTransitHostedService();
