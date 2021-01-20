@@ -20,40 +20,27 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
-        private readonly IDbContextProvider<TEntityKey, TEntity> _contextProvider;
         private readonly ILogger _logger;
         private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
+        private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
 
-        public AbstractChangeTrackingDbContextProvider(IDbContextProvider<TEntityKey, TEntity> contextProvider,
-            ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
-            IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider)
+        public AbstractChangeTrackingDbContextProvider(ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
+            IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
+            IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider)
         {
-            _contextProvider = contextProvider;
             _logger = logger;
             _optionsProvider = optionsProvider;
+            _connectionStringProvider = connectionStringProvider;
         }
 
         public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
         {
-            using var entityContext = await _contextProvider
-                .GetDbContextAsync(cancellationToken)
+            var connectionString = await _connectionStringProvider
+                .GetConnectionStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var db = entityContext as DbContext;
-            var connectionString = db?.Database.GetDbConnection()?.ConnectionString;
-
-            ChangeTrackingDbContext<TEntityKey, TEntity> context;
-
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                context = new ChangeTrackingDbContext<TEntityKey, TEntity>();
-            }
-            else
-            {
-                var options = _optionsProvider.GetDbContextOptions(connectionString);
-
-                context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
-            }
+            var options = _optionsProvider.GetDbContextOptions(connectionString);
+            var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
 
             var runKey = AutoCrudObjectPool.InterpolateString(
                 nameof(ChangeTrackingEntity<TEntityKey, TEntity>),

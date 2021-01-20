@@ -155,5 +155,15 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public bool HasRegistration(Type type) => Registrations != null && Registrations.ContainsKey(type);
 
         public bool HasRegistration<TRegistration>() => HasRegistration(typeof(TRegistration));
+
+        public void EnsureRegistered<TRegistration>()
+        {
+            var type = typeof(TRegistration);
+
+            if (!HasRegistration(type))
+            {
+                throw new Exception($"Please register a {nameof(type.Name)}");
+            }
+        }
     }
 }

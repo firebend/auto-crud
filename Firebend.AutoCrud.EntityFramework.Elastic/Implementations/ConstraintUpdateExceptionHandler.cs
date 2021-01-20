@@ -30,7 +30,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
         private static bool HandleConstraint(IDbContext context, TEntity entity, Exception sqlException)
         {
-
             if (!(context is DbContext dbContext))
             {
                 return false;

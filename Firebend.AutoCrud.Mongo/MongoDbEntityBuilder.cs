@@ -134,19 +134,8 @@ namespace Firebend.AutoCrud.Mongo
                     throw new Exception($"Please set a {nameof(ShardMode)}");
                 }
 
-                var shardProviderType = typeof(IMongoShardKeyProvider);
-
-                if (!Registrations.ContainsKey(shardProviderType))
-                {
-                    throw new Exception($"Please register a {nameof(IMongoShardKeyProvider)}");
-                }
-
-                var allShardsProvider = typeof(IMongoAllShardsProvider);
-
-                if (!Registrations.ContainsKey(allShardsProvider))
-                {
-                    throw new Exception($"Please register a {nameof(IMongoAllShardsProvider)}");
-                }
+                EnsureRegistered<IMongoShardKeyProvider>();
+                EnsureRegistered<IMongoAllShardsProvider>();
 
                 WithRegistrationInstance<IMongoEntityDefaultConfiguration<TKey, TEntity>>(
                     new MongoEntityDefaultConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode));

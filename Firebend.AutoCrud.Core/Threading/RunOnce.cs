@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Pooling;
 
 namespace Firebend.AutoCrud.Core.Threading
 {
@@ -54,7 +55,9 @@ namespace Firebend.AutoCrud.Core.Threading
                 return temp;
             }
 
-            temp = await func(cancellationToken).ConfigureAwait(false);
+            using var __ = AutoCrudDelegatePool.GetPooledFunction(func, cancellationToken, out var pooledFunc);
+
+            temp = await pooledFunc().ConfigureAwait(false);
 
             RunOnceCaches.UpdateValue(key, temp);
 

@@ -9,7 +9,6 @@ using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
@@ -27,40 +26,37 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             ("Trust Server Certificate", "TrustServerCertificate")
         };
     }
-    public class ShardDbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
+
+    public class ShardDbContextConnectionStringProvider<TKey, TEntity> : IDbContextConnectionStringProvider<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
-        where TContext : DbContext, IDbContext
     {
         private readonly IShardKeyProvider _shardKeyProvider;
         private readonly IShardManager _shardManager;
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
         private readonly IShardNameProvider _shardNameProvider;
-        private readonly IDbContextOptionsProvider<TKey, TEntity> _optionsProvider;
 
-        public ShardDbContextProvider(
+        public ShardDbContextConnectionStringProvider(
             IShardManager shardManager,
             IShardKeyProvider shardKeyProvider,
             IShardNameProvider shardNameProvider,
-            ShardMapMangerConfiguration shardMapMangerConfiguration,
-            IDbContextOptionsProvider<TKey, TEntity> optionsProvider)
+            ShardMapMangerConfiguration shardMapMangerConfiguration)
         {
             _shardManager = shardManager;
             _shardKeyProvider = shardKeyProvider;
             _shardNameProvider = shardNameProvider;
             _shardMapMangerConfiguration = shardMapMangerConfiguration;
-            _optionsProvider = optionsProvider;
         }
 
-        public static string NormalizeToLegacyConnectionString(string connectionString)
+        private static string NormalizeToLegacyConnectionString(string connectionString)
             => string.IsNullOrWhiteSpace(connectionString)
-            ? connectionString
-            : ShardDbContextProviderStatics
-                .SqlPropertyRenames
-                .Aggregate(connectionString,
-                    (connString, replace) => connString.Replace(replace.newName, replace.oldName, StringComparison.OrdinalIgnoreCase));
+                ? connectionString
+                : ShardDbContextProviderStatics
+                    .SqlPropertyRenames
+                    .Aggregate(connectionString,
+                        (connString, replace) => connString.Replace(replace.newName, replace.oldName, StringComparison.OrdinalIgnoreCase));
 
-        public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+        public async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default)
         {
             var key = _shardKeyProvider?.GetShardKey();
 
@@ -69,11 +65,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 throw new Exception("Shard key is null");
             }
 
-            var contextType = typeof(TContext);
-
-            var shardRunKey = AutoCrudObjectPool.InterpolateString(GetType().FullName,
-                ".",
-                contextType.Name,
+            var shardRunKey = AutoCrudObjectPool.InterpolateString(nameof(ShardDbContextConnectionStringProvider<TKey, TEntity>),
                 ".ConnectionString.",
                 key);
 
@@ -94,44 +86,13 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                     await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
                         .ConfigureAwait(false);
 
-                    var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString) { Password = rootConnectionStringBuilder.Password };
+                    var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString) {Password = rootConnectionStringBuilder.Password};
 
                     return connectionStringBuilder.ConnectionString;
                 }, cancellationToken)
                 .ConfigureAwait(false);
 
-            var options = _optionsProvider.GetDbContextOptions(connectionString);
-
-            var instance = Activator.CreateInstance(contextType, options);
-
-            if (instance == null)
-            {
-                throw new Exception("Could not create instance.");
-            }
-
-            if (!(instance is TContext context))
-            {
-                throw new Exception("Could not cast instance.");
-            }
-
-            var shardEnsureCreatedKey = AutoCrudObjectPool.InterpolateString(GetType().FullName,
-                ".",
-                contextType.Name,
-                ".Init");
-
-            await Run.OnceAsync(shardEnsureCreatedKey, async ct =>
-                {
-                    await context.Database
-                        .EnsureCreatedAsync(ct)
-                        .ConfigureAwait(false);
-
-                    await context.Database
-                        .MigrateAsync(ct)
-                        .ConfigureAwait(false);
-                }, cancellationToken)
-                .ConfigureAwait(false);
-
-            return context;
+            return connectionString;
         }
     }
 }

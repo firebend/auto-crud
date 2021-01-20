@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
         }
 
-        public List<BaseBuilder> Builders { get; } = new List<BaseBuilder>();
+        public List<BaseBuilder> Builders { get; } = new();
 
         public IServiceCollection ServiceCollection { get; }
 

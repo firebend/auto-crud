@@ -23,15 +23,9 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
                 throw new ArgumentNullException(nameof(shardConfiguration));
             }
 
-            if (Builder.DbContextType == null)
-            {
-                throw new Exception("Please assign a db context type before using elastic pool");
-            }
-
             Builder.WithRegistrationInstance(shardConfiguration);
             Builder.WithRegistration<IShardManager, ShardManager>();
-            Builder.WithRegistration<IDbContextProvider<TKey, TEntity>>(
-                typeof(ShardDbContextProvider<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.DbContextType));
+            Builder.WithConnectionStringProvider<ShardDbContextConnectionStringProvider<TKey, TEntity>>();
 
             WithDbCreator<DefaultDbCreator>();
 
@@ -51,7 +45,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         /// <typeparam name="TShardKeyProvider">The ShardKeyProvider to use</typeparam>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithSearchFilter((f, s) => f.Summary.Contains(s))
         ///        .AddElasticPool(
@@ -80,7 +74,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         /// <typeparam name="TShardDbNameProvider">The ShardDbNameProvider to use</typeparam>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithSearchFilter((f, s) => f.Summary.Contains(s))
         ///        .AddElasticPool(
