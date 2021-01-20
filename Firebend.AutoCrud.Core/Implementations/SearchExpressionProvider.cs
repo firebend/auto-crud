@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
+using Firebend.AutoCrud.Core.Pooling;
 
 namespace Firebend.AutoCrud.Core.Implementations
 {
@@ -18,6 +19,10 @@ namespace Firebend.AutoCrud.Core.Implementations
             _expression = expression;
         }
 
-        public Expression<Func<TEntity, bool>> GetSearchExpression(TSearch searchRequest) => _expression(searchRequest);
+        public Expression<Func<TEntity, bool>> GetSearchExpression(TSearch searchRequest)
+        {
+            using var _ = AutoCrudDelegatePool.GetPooledFunction(_expression, searchRequest, out var func);
+            return func();
+        }
     }
 }

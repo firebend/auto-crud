@@ -328,13 +328,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         /// </example>
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy(Expression<Func<TEntity, object>> expression, bool isAscending = true)
         {
-            var instance = new DefaultEntityDefaultOrderByProvider<TKey, TEntity>
-            {
-                OrderBy = (
-                    expression,
-                    isAscending
-                )
-            };
+            var instance = new DefaultEntityDefaultOrderByProvider<TKey, TEntity>((expression, isAscending));
 
             Builder.WithRegistrationInstance<IEntityDefaultOrderByProvider<TKey, TEntity>>(instance);
 

@@ -198,12 +198,18 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
                 foreach (var orderBy in orderBys)
                 {
-                    if (orderBy != default)
+                    if (orderBy == default)
                     {
-                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
-                            queryable.OrderByDescending(orderBy.order) :
-                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
-                            ordered.ThenByDescending(orderBy.order);
+                        continue;
+                    }
+
+                    if (ordered == null)
+                    {
+                        ordered = orderBy.@ascending ? queryable.OrderBy(orderBy.order) : queryable.OrderByDescending(orderBy.order);
+                    }
+                    else
+                    {
+                        ordered = orderBy.@ascending ? ordered.ThenBy(orderBy.order) : ordered.ThenByDescending(orderBy.order);
                     }
                 }
 

@@ -9,10 +9,6 @@ namespace Firebend.AutoCrud.EntityFramework.Indexing
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        public DefaultEntityFrameworkFullTextExpressionProvider()
-        {
-        }
-
         public DefaultEntityFrameworkFullTextExpressionProvider(Expression<Func<TEntity, string, bool>> filter)
         {
             Filter = filter;

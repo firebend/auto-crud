@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations;
@@ -56,21 +57,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                 functions.Add(customFilter);
             }
 
-            Expression<Func<TEntity, bool>> filters = null;
-
-            for (var i = 0; i < functions.Count; i++)
-            {
-                if (i == 0)
-                {
-                    filters = functions[i];
-                }
-                else
-                {
-                    filters = filters.AndAlso(functions[i]);
-                }
-            }
-
-            return filters;
+            return functions.Aggregate(default(Expression<Func<TEntity, bool>>),
+                (aggregate, filter) => aggregate.AndAlso(filter));
         }
     }
 }

@@ -6,9 +6,8 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
         where TEntity : IEntity<TKey>, IModifiedEntity
         where TKey : struct
     {
-        public DefaultModifiedEntityDefaultOrderByProvider()
+        public DefaultModifiedEntityDefaultOrderByProvider() : base((x => x.ModifiedDate, false))
         {
-            OrderBy = (x => x.ModifiedDate, false);
         }
     }
 }
