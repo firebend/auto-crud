@@ -48,14 +48,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {
-            if (_entityDomainEventPublisher != null && !(_entityDomainEventPublisher is DefaultEntityDomainEventPublisher))
+            if (_entityDomainEventPublisher == null || _entityDomainEventPublisher is DefaultEntityDomainEventPublisher)
             {
-                var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
-
-                return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
+                return Task.CompletedTask;
             }
 
-            return Task.CompletedTask;
+            var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
+
+            return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
+
         }
     }
 }

@@ -13,7 +13,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Core.Models.Entities;
-using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
@@ -47,7 +46,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
-        private static string[] GetIgnoredProperties() => Run.Once($"IgnoreKeys.{typeof(TEntity).FullName}", () =>
+        private readonly Lazy<string[]> _ignoredProperties = new(() =>
         {
             var props = typeof(TEntity)
                 .GetProperties()
@@ -161,7 +160,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var modified = original == null ? new TEntity() : original.Clone();
 
-            entity.CopyPropertiesTo(modified, GetIgnoredProperties());
+            entity.CopyPropertiesTo(modified, _ignoredProperties.Value);
 
             if (original == null && modified is IModifiedEntity mod)
             {
@@ -268,14 +267,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
         private Task PublishAddedDomainEventAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher != null && !_isDefaultPublisher)
+            if (_domainEventPublisher == null || _isDefaultPublisher)
             {
-                var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = entity, EventContext = _domainEventContextProvider?.GetContext() };
-
-                return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
+                return Task.CompletedTask;
             }
 
-            return Task.CompletedTask;
+            var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = entity, EventContext = _domainEventContextProvider?.GetContext() };
+
+            return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
+
         }
     }
 }

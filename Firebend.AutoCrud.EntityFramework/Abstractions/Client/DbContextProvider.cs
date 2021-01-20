@@ -2,10 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Pooling;
-using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -31,28 +28,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .ConfigureAwait(false);
 
             var options = _optionsProvider.GetDbContextOptions(connectionString);
-
             var contextType = typeof(TContext);
             var instance = Activator.CreateInstance(contextType, options);
-
             var context = instance as TContext;
-
-            var shardEnsureCreatedKey = AutoCrudObjectPool.InterpolateString(nameof(DbContextProvider<TKey, TEntity, TContext>),
-                ".",
-                contextType.Name,
-                ".Init");
-
-            await Run.OnceAsync(shardEnsureCreatedKey, async ct =>
-                {
-                    await context.Database
-                        .EnsureCreatedAsync(ct)
-                        .ConfigureAwait(false);
-
-                    await context.Database
-                        .MigrateAsync(ct)
-                        .ConfigureAwait(false);
-                }, cancellationToken)
-                .ConfigureAwait(false);
 
             return context;
         }

@@ -30,6 +30,12 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web
 {
+    public static class ControllerConfiguratorCache
+    {
+        public static bool IsSwaggerApplied;
+        public static readonly object Lock = new ();
+    }
+
     public class ControllerConfigurator<TBuilder, TKey, TEntity> : EntityCrudConfigurator<TBuilder, TKey, TEntity>
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
@@ -296,13 +302,28 @@ namespace Firebend.AutoCrud.Web
             return this;
         }
 
-        private void AddSwaggerGenOptionConfiguration() => Run.Once($"{GetType().FullName}.SwaggerGenOptions", () =>
+        private void AddSwaggerGenOptionConfiguration()
         {
-            Builder.WithServiceCollectionHook(sc =>
+            if (ControllerConfiguratorCache.IsSwaggerApplied)
             {
-                sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
-            });
-        });
+                return;
+            }
+
+            using var _ = new AsyncDuplicateLock().Lock(ControllerConfiguratorCache.Lock);
+            {
+                if (ControllerConfiguratorCache.IsSwaggerApplied)
+                {
+                    return;
+                }
+
+                Builder.WithServiceCollectionHook(sc =>
+                {
+                    sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
+                });
+
+                ControllerConfiguratorCache.IsSwaggerApplied = true;
+            }
+        }
 
         /// <summary>
         /// Specifies the group name to list an entity under for OpenApi and Swagger documentation

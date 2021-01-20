@@ -17,28 +17,21 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             _logger = logger;
         }
 
-        public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
+        public async Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 
-            var key = AutoCrudObjectPool.InterpolateString(connBuilder.DataSource, "-", dbName);
+            _logger.LogDebug($"Creating database. DbName: {dbName}. DataSource: {connBuilder.DataSource}");
 
-            var runKey = AutoCrudObjectPool.InterpolateString(GetType().FullName, ".", key);
+            var cString = connBuilder.ConnectionString;
+            await using var conn = new SqlConnection(cString);
+            await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-            return Run.OnceAsync(runKey, async ct =>
-            {
-                _logger.LogDebug($"Creating database. Key {key}");
+            await using var command = conn.CreateCommand();
+            command.CommandText = GetSqlCommand(dbName);
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-                var cString = connBuilder.ConnectionString;
-                await using var conn = new SqlConnection(cString);
-                await conn.OpenAsync(ct).ConfigureAwait(false);
-
-                await using var command = conn.CreateCommand();
-                command.CommandText = GetSqlCommand(dbName);
-                await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-
-                _logger.LogDebug($"Database is created. Key {key}");
-            }, cancellationToken);
+            _logger.LogDebug($"Database is created. DbName: {dbName}. DataSource: {connBuilder.DataSource}");
         }
 
         protected abstract string GetSqlCommand(string dbName);
