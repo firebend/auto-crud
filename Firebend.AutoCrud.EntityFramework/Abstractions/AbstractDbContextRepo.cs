@@ -25,17 +25,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             _provider = provider;
         }
 
-        protected async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
-        {
-            if (_context == null)
-            {
-                _context = await _provider
-                    .GetDbContextAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            return _context;
-        }
+        protected async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default) => _context ??= await _provider
+            .GetDbContextAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         protected DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
 
