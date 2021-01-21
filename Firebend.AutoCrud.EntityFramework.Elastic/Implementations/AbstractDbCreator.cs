@@ -32,6 +32,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.LogDebug($"Database is created. DbName: {dbName}. DataSource: {connBuilder.DataSource}");
+
+            connBuilder = null;
         }
 
         protected abstract string GetSqlCommand(string dbName);

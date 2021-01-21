@@ -1,11 +1,18 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
+    public static class DbContextProviderCaches
+    {
+        public static ConcurrentDictionary<string, Task<bool>> InitCache = new();
+    }
+
     public abstract class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
@@ -31,6 +38,16 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var contextType = typeof(TContext);
             var instance = Activator.CreateInstance(contextType, options);
             var context = instance as TContext;
+
+            if (context is DbContext dbContext)
+            {
+                await DbContextProviderCaches.InitCache.GetOrAdd(contextType.FullName, async _ =>
+                {
+                    await dbContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
+                    await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+                    return true;
+                }).ConfigureAwait(false);
+            }
 
             return context;
         }

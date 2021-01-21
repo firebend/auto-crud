@@ -230,6 +230,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         }
 
         protected override IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable)
-            => _includesProvider == null ? queryable : _includesProvider.AddIncludes(queryable);
+            => _includesProvider?.AddIncludes(queryable) == null ? queryable : _includesProvider.AddIncludes(queryable);
     }
 }

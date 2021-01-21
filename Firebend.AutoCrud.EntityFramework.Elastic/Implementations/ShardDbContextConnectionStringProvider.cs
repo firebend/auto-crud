@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
@@ -85,7 +86,11 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 
                 var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString) {Password = rootConnectionStringBuilder.Password};
 
-                return connectionStringBuilder.ConnectionString;
+                var connectionString =  connectionStringBuilder.ConnectionString;
+                connectionStringBuilder = null;
+                rootConnectionStringBuilder = null;
+
+                return connectionString;
             });
         }
     }

@@ -45,7 +45,7 @@ namespace Firebend.AutoCrud.Web.Sample
                     .UsingEfCrud(ef =>
                     {
                         ef.AddEfPerson(hostContext.Configuration)
-                            .AddEfPets(hostContext.Configuration)
+                            //.AddEfPets(hostContext.Configuration)
                             .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
                     })
                     .AddSampleMassTransit(hostContext.Configuration)

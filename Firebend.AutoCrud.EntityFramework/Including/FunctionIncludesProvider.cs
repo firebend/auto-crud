@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Including
@@ -9,13 +10,28 @@ namespace Firebend.AutoCrud.EntityFramework.Including
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        public FunctionIncludesProvider(Func<IQueryable<TEntity>, IQueryable<TEntity>> func)
+        private readonly Func<IQueryable<TEntity>, IQueryable<TEntity>> _func;
+
+        public FunctionIncludesProvider()
         {
-            Func = func;
+
         }
 
-        public IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => Func(queryable);
+        public FunctionIncludesProvider(Func<IQueryable<TEntity>, IQueryable<TEntity>> func)
+        {
+            _func = func;
+        }
 
-        public Func<IQueryable<TEntity>, IQueryable<TEntity>> Func { get; }
+        public IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable)
+        {
+            if (_func == null)
+            {
+                return queryable;
+            }
+
+            using var _ = AutoCrudDelegatePool.GetPooledFunction(_func, queryable, out var func);
+            var query = func();
+            return query;
+        }
     }
 }

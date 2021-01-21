@@ -8,6 +8,6 @@ namespace Firebend.AutoCrud.EntityFramework.Including
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        public IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => queryable;
+        public IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => null;
     }
 }
