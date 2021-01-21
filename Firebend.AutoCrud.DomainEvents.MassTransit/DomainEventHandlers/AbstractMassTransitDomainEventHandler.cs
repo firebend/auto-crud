@@ -1,20 +1,24 @@
+using System;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
 {
-    public abstract class AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler> : IConsumer<TDomainEvent>
+    public abstract class AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler> : BaseDisposable, IConsumer<TDomainEvent>
         where TDomainEvent : DomainEventBase
-        where TDomainEventHandler : IDomainEventSubscriber
+        where TDomainEventHandler : class, IDomainEventSubscriber
     {
+        private TDomainEventHandler _handler;
+
         protected AbstractMassTransitDomainEventHandler(TDomainEventHandler handler)
         {
-            Handler = handler;
+            _handler = handler;
         }
 
-        public TDomainEventHandler Handler { get; }
+        public TDomainEventHandler Handler => _handler;
 
         public async Task Consume(ConsumeContext<TDomainEvent> context)
         {
@@ -23,5 +27,9 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
         }
 
         protected abstract Task ConsumeEvent(ConsumeContext<TDomainEvent> context);
+
+        protected override void DisposeManagedObjects() => Handler.Dispose();
+
+        protected override void DisposeUnmanagedObjectsAndAssignNull() => _handler = null;
     }
 }

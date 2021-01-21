@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
     public class MassTransitEntityDeletedDomainEventHandler<TDomainEventHandler, TEntity> :
         AbstractMassTransitDomainEventHandler<EntityDeletedDomainEvent<TEntity>, TDomainEventHandler>
         where TEntity : class
-        where TDomainEventHandler : IEntityDeletedDomainEventSubscriber<TEntity>
+        where TDomainEventHandler : class, IEntityDeletedDomainEventSubscriber<TEntity>
     {
         public MassTransitEntityDeletedDomainEventHandler(TDomainEventHandler deleted) : base(deleted)
         {

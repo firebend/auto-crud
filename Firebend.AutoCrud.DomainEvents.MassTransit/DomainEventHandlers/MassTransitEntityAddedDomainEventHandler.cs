@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
     public class MassTransitEntityAddedDomainEventHandler<TDomainEventHandler, TEntity> :
         AbstractMassTransitDomainEventHandler<EntityAddedDomainEvent<TEntity>, TDomainEventHandler>
         where TEntity : class
-        where TDomainEventHandler : IEntityAddedDomainEventSubscriber<TEntity>
+        where TDomainEventHandler : class, IEntityAddedDomainEventSubscriber<TEntity>
     {
         public MassTransitEntityAddedDomainEventHandler(TDomainEventHandler added) : base(added)
         {
