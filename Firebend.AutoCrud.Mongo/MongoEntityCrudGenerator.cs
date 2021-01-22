@@ -8,9 +8,9 @@ namespace Firebend.AutoCrud.Mongo
 {
     public class MongoEntityCrudGenerator : EntityCrudGenerator
     {
-        public MongoEntityCrudGenerator(IServiceCollection collection, string connectionString) : base(collection)
+        public MongoEntityCrudGenerator(IServiceCollection collection, string connectionString, bool enableLogging = true) : base(collection)
         {
-            collection.ConfigureMongoDb(connectionString, true, new MongoDbConfigurator());
+            collection.ConfigureMongoDb(connectionString, enableLogging, new MongoDbConfigurator());
         }
 
         /// <summary>

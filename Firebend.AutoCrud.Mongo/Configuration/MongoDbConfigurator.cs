@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
     public class MongoDbConfigurator : IMongoDbConfigurator
     {
         private static bool _configured;
-        private static readonly object Key = new object();
+        private static readonly object Key = new ();
 
         public void Configure()
         {

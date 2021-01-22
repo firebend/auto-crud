@@ -133,10 +133,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 {
                     if (orderBy != default)
                     {
-                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
-                            queryable.OrderByDescending(orderBy.order) :
-                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
-                            ordered.ThenByDescending(orderBy.order);
+                        if (ordered == null)
+                        {
+                            ordered = orderBy.@ascending ? queryable.OrderBy(orderBy.order) : queryable.OrderByDescending(orderBy.order);
+                        }
+                        else
+                        {
+                            ordered = orderBy.@ascending ? ordered.ThenBy(orderBy.order) : ordered.ThenByDescending(orderBy.order);
+                        }
                     }
                 }
 

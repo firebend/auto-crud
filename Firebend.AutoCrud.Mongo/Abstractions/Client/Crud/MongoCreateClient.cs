@@ -57,7 +57,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
             return _eventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
-
         }
     }
 }
