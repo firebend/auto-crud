@@ -70,6 +70,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 
         protected virtual Expression<Func<TEntity, bool>> BuildSearchFilter(TSearch search) => _searchExpressionProvider?.GetSearchExpression(search);
 
-        protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search) => GetSearchExpression(BuildSearchFilter(search), search);
+        protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search) => GetSearchExpression(search, BuildSearchFilter(search));
     }
 }

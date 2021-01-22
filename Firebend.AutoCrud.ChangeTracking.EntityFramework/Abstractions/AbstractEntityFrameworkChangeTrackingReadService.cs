@@ -9,7 +9,10 @@ using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
@@ -37,7 +40,21 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
             var query = await _queryClient.GetQueryableAsync(cancellationToken);
 
-            var filter = GetSearchExpression(x => x.EntityId.Equals(searchRequest.EntityId), searchRequest);
+            query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.Search))
+            {
+                if (!searchRequest.Search.Contains("%"))
+                {
+                    searchRequest.Search = $"%{searchRequest.Search}%";
+                }
+
+                query = query.Where(x =>
+                    EF.Functions.JsonContainsAny(x.Changes, searchRequest.Search) ||
+                    EF.Functions.JsonContainsAny(x.Entity, searchRequest.Search));
+            }
+
+            var filter = GetSearchExpression(searchRequest);
 
             query = query.Where(filter);
 

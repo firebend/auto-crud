@@ -45,7 +45,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
                 query = _customizer.Customize(query, request);
             }
 
-            var expression = GetSearchExpression(null, request);
+            var expression = GetSearchExpression(request);
 
             if (expression != null)
             {

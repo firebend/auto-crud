@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
     public abstract class AbstractEntitySearchService<TEntity, TSearch> : BaseDisposable
         where TSearch : EntitySearchRequest
     {
-        protected Expression<Func<TEntity, bool>> GetSearchExpression(Expression<Func<TEntity, bool>> customFilter, TSearch search)
+        protected Expression<Func<TEntity, bool>> GetSearchExpression(TSearch search, Expression<Func<TEntity, bool>> customFilter = null)
         {
             var functions = new List<Expression<Func<TEntity, bool>>>();
 

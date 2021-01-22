@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
             .UseSqlServer(connectionString)
             .AddFirebendFunctions()
             .UseLoggerFactory(loggerFactory)
-            //.EnableSensitiveDataLogging()
+            .EnableSensitiveDataLogging()
             .Options;
     }
 
