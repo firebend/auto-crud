@@ -162,7 +162,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
             if (!HasRegistration(type))
             {
-                throw new Exception($"Please register a {nameof(type.Name)}");
+                throw new Exception($"Please register a {type.Name}");
             }
         }
     }

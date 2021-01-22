@@ -57,7 +57,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-            var model = await GetByKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
+            var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
 
             if (model == null)
             {
@@ -102,7 +102,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public virtual async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var entity = await GetByKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
+            var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
 
             if (entity == null)
             {

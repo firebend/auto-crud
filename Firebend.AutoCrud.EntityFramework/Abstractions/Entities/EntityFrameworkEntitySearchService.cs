@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Abstractions.Services;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
@@ -19,60 +16,32 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
     {
-        private readonly IEntityDefaultOrderByProvider<TKey, TEntity> _orderByProvider;
         private readonly IEntityFrameworkQueryClient<TKey, TEntity> _searchClient;
-        private readonly ISearchExpressionProvider<TKey, TEntity, TSearch> _searchExpressionProvider;
 
-        public EntityFrameworkEntitySearchService(IEntityFrameworkQueryClient<TKey, TEntity> searchClient,
-            IEntityDefaultOrderByProvider<TKey, TEntity> orderByProvider = null,
-            ISearchExpressionProvider<TKey, TEntity, TSearch> searchExpressionProvider = null)
+        public EntityFrameworkEntitySearchService(IEntityFrameworkQueryClient<TKey, TEntity> searchClient)
         {
             _searchClient = searchClient;
-            _orderByProvider = orderByProvider;
-            _searchExpressionProvider = searchExpressionProvider;
         }
 
         public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
         {
+            request.DoCount = false;
+
             var results = await PageAsync(request, cancellationToken).ConfigureAwait(false);
 
             return results?.Data?.ToList();
         }
 
-        public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
-            => _searchClient.PageAsync(request?.Search,
-                BuildSearchExpression(request),
-                request?.PageNumber,
-                request?.PageSize,
-                request?.DoCount ?? false,
-                GetOrderByGroups(request),
-                true,
-                cancellationToken
-            );
-
-        protected virtual Expression<Func<TEntity, bool>> BuildSearchFilter(TSearch search)
-            => _searchExpressionProvider?.GetSearchExpression(search);
-
-        protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search)
-            => GetSearchExpression(BuildSearchFilter(search), search);
-
-        private IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> GetOrderByGroups(TSearch search)
+        public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
         {
-            var orderByGroups = search?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList();
+            var query = await _searchClient
+                .GetQueryableAsync(cancellationToken).ConfigureAwait(false);
 
-            if (orderByGroups.HasValues())
-            {
-                return orderByGroups;
-            }
+            var paged = await _searchClient
+                .GetPagedResponseAsync(query, request, cancellationToken)
+                .ConfigureAwait(false);
 
-            var orderBy = _orderByProvider?.OrderBy;
-
-            if (orderBy != null && orderBy.Value != default && orderBy.Value.func != null)
-            {
-                orderByGroups = new List<(Expression<Func<TEntity, object>> order, bool ascending)> { orderBy.Value };
-            }
-
-            return orderByGroups;
+            return paged;
         }
 
         protected override void DisposeManagedObjects() => _searchClient?.Dispose();

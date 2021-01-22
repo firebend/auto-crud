@@ -1,7 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Pooling;
-using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;

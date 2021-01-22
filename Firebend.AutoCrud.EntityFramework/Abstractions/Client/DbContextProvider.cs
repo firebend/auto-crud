@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
     public static class DbContextProviderCaches
     {
-        public static ConcurrentDictionary<string, Task<bool>> InitCache = new();
+        public static readonly ConcurrentDictionary<string, Task<bool>> InitCache = new();
     }
 
     public abstract class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
@@ -35,6 +35,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .ConfigureAwait(false);
 
             var options = _optionsProvider.GetDbContextOptions(connectionString);
+
             var contextType = typeof(TContext);
             var instance = Activator.CreateInstance(contextType, options);
             var context = instance as TContext;

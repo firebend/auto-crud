@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Extensions;
@@ -11,12 +12,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
 {
+    [SuppressMessage("ReSharper", "EF1001")]
     public class ConstraintUpdateExceptionHandler<TKey, TEntity>
         : IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        private const int SQL_SERVER_CONSTRAINT_ERROR_CODE = 547;
+        private const int SqlServerConstraintErrorCode = 547;
 
         public bool HandleException(IDbContext context, TEntity entity, DbUpdateException exception)
         {
@@ -25,7 +27,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
                 return false;
             }
 
-            return sqlException.Number == SQL_SERVER_CONSTRAINT_ERROR_CODE && HandleConstraint(context, entity, sqlException);
+            return sqlException.Number == SqlServerConstraintErrorCode && HandleConstraint(context, entity, sqlException);
         }
 
         private static bool HandleConstraint(IDbContext context, TEntity entity, Exception sqlException)
@@ -41,7 +43,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             }
 
             var constraintSplit = sqlException.Message.Split("constraint \"");
-            var constraint = constraintSplit[1].Substring(0, constraintSplit[1].IndexOf("\""));
+            var constraint = constraintSplit[1].Substring(0, constraintSplit[1].IndexOf("\"", StringComparison.Ordinal));
 
             var foreignKey = dbContext
                 .Model

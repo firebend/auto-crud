@@ -4,7 +4,7 @@ namespace Firebend.AutoCrud.Core.Implementations
 {
     public class BaseDisposable : IDisposable
     {
-        private bool _disposed = false;
+        private bool _disposed;
 
         ~BaseDisposable()
         {

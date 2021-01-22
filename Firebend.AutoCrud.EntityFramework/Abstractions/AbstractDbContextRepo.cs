@@ -31,9 +31,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
 
-        protected async Task<TEntity> GetByKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
+        protected async Task<TEntity> GetByEntityKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
         {
-            var queryable = await GetFilteredQueryableAsync(context, null, asNoTracking, cancellationToken)
+            var queryable = await GetFilteredQueryableAsync(context,  cancellationToken)
                 .ConfigureAwait(false);
 
             if (asNoTracking)
@@ -48,25 +48,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
             IDbContext context,
-            Expression<Func<TEntity, bool>> firstStageFilters = null,
-            bool asNoTracking = true,
             CancellationToken cancellationToken = default)
         {
             var set = GetDbSet(context);
 
             var queryable = set.AsQueryable();
-
-            if (asNoTracking)
-            {
-                queryable = queryable.AsNoTracking();
-            }
-
-            queryable = AddIncludes(queryable);
-
-            if (firstStageFilters != null)
-            {
-                queryable = queryable.Where(firstStageFilters);
-            }
 
             var filters = await BuildFilters(cancellationToken: cancellationToken);
 
@@ -99,9 +85,27 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
         protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
             => Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
 
-        protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => queryable;
+        protected override void DisposeManagedObjects()
+        {
+            if (_context == null || _context is not DbContext dbContext)
+            {
+                return;
+            }
 
-        protected override void DisposeManagedObjects() => _context?.Dispose();
+            try
+            {
+                foreach (var changes in dbContext.ChangeTracker.Entries())
+                {
+                    changes.State = EntityState.Detached;
+                }
+            }
+            catch
+            {
+
+            }
+
+            _context.Dispose();
+        }
 
         protected override void DisposeUnmanagedObjectsAndAssignNull() => _context = null;
     }

@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
@@ -20,10 +21,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         }
 
         public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
-            => _readClient.GetByKeyAsync(key, true, cancellationToken);
+            => _readClient.GetByKeyAsync(key, false, cancellationToken);
 
-        public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-            => _readClient.GetAllAsync(true, cancellationToken);
+        public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            var query = await _readClient.GetQueryableAsync(cancellationToken).ConfigureAwait(false);
+            var entity = await query.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
+            return entity;
+        }
 
         protected override void DisposeManagedObjects() => _readClient?.Dispose();
     }

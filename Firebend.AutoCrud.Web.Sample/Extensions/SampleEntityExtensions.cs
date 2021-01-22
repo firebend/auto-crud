@@ -5,7 +5,6 @@ using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
-using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
@@ -15,7 +14,6 @@ using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Firebend.AutoCrud.Web.Sample.Extensions
@@ -52,7 +50,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
                     .WithDbOptionsProvider(PersonDbContextOptions.GetOptions)
-                    //.WithSearchFilter((efPerson, s) => EF.Functions.ContainsAny(efPerson.FirstName, s))
+                    //.WithConnectionString(configuration.GetConnectionString("SqlServer"))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -62,19 +60,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCrud(crud => crud
-                        .WithCrud()
-                    //.WithOrderBy(efPerson => efPerson.LastName)
-                     // .WithSearch<CustomSearchParameters>(search =>
-                     // {
-                     //     if (!string.IsNullOrWhiteSpace(search?.NickName))
-                     //     {
-                     //         return p => p.NickName.Contains(search.NickName);
-                     //     }
-                     //
-                     //     return null;
-                     // })
-                    )
+                    .AddCrud()
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()
@@ -99,12 +85,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             IConfiguration configuration) =>
             generator.AddEntity<Guid, EfPet>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithSearchFilter((efPet, s) => efPet.PetName.Contains(s) ||
-                                                    efPet.PetType.Contains(s) ||
-                                                    EF.Functions.ContainsAny(efPet.Person.FirstName, s)
-                                                    )
                     .WithDbOptionsProvider(PersonDbContextOptions.GetOptions)
-                    .WithIncludes(pets => pets.Include(p => p.Person))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -114,18 +95,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCrud(crud => crud
-                        .WithCrud()
-                        .WithOrderBy(efPet => efPet.PetName)
-                        .WithSearch<PetSearch>(search =>
-                        {
-                            if (search.PersonId.HasValue)
-                            {
-                                return p => p.EfPersonId == search.PersonId;
-                            }
-
-                            return null;
-                        }))
+                    .AddCrud()
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()
