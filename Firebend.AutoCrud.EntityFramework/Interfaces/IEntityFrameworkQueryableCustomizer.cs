@@ -4,11 +4,11 @@ using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
-    public interface IEntityFrameworkQueryableCustomizer<TKey, TEntity, TSearch>
+    public interface IEntityFrameworkQueryableCustomizer<TKey, TEntity, in TSearch>
         where TEntity: IEntity<TKey>
         where TKey : struct
         where TSearch : EntitySearchRequest
     {
-        public IQueryable<TEntity> Customize(TSearch searchRequest);
+        public IQueryable<TEntity> Customize(IQueryable<TEntity> queryable,  TSearch searchRequest);
     }
 }

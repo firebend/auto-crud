@@ -60,7 +60,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 
             return new (Expression<Func<ChangeTrackingEntity<TEntityKey, TEntity>, object>> order, bool @ascending)[]
             {
-                (x => x.Modified, false)
+                (x => x.ModifiedDate, false)
             };
         }
     }

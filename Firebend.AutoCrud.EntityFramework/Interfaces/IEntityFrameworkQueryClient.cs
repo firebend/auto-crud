@@ -18,7 +18,9 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
 
         Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
 
-        Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable, TSearchRequest searchRequest, CancellationToken cancellationToken = default)
+        Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
+            TSearchRequest searchRequest,
+            CancellationToken cancellationToken = default)
             where TSearchRequest : EntitySearchRequest;
     }
 }

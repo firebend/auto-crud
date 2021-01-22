@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             var options = _optionsProvider.GetDbContextOptions(connectionString);
             var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
 
-            await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).Name, async _ =>
+            await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName, async _ =>
                 {
                     try
                     {
