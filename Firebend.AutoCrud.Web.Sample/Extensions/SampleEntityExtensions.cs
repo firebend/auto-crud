@@ -49,8 +49,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             IConfiguration configuration) =>
             generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithDbOptionsProvider(PersonDbContextOptions.GetOptions)
-                    //.WithConnectionString(configuration.GetConnectionString("SqlServer"))
+                    .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPerson>>()
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -85,7 +84,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             IConfiguration configuration) =>
             generator.AddEntity<Guid, EfPet>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithDbOptionsProvider(PersonDbContextOptions.GetOptions)
+                    .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPet>>()
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");

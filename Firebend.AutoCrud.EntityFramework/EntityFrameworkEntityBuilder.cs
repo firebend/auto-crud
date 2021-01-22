@@ -141,6 +141,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// </code>
         /// </example>
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TProvider>()
+        where TProvider : IDbContextOptionsProvider<TKey, TEntity>
         {
             WithRegistration<IDbContextOptionsProvider<TKey, TEntity>, TProvider>();
             return this;
