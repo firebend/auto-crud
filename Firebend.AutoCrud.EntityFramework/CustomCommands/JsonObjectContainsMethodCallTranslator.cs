@@ -109,7 +109,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
         private static bool IsLikeWildChar(char c)
             => c == '%' || c == '_' || c == '[';
 
-        private string EscapeLikePattern(string pattern)
+        private static string EscapeLikePattern(string pattern)
         {
             var builder = AutoCrudObjectPool.StringBuilder.Get();
 

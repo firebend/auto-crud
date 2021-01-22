@@ -56,7 +56,10 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
             var filter = GetSearchExpression(searchRequest);
 
-            query = query.Where(filter);
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
 
             if (searchRequest.OrderBy == null)
             {
