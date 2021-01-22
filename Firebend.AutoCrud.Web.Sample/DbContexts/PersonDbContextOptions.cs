@@ -10,14 +10,14 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
     public static class PersonDbContextOptions
     {
         private static ILoggerFactory _loggerFactory;
-        public static ILoggerFactory DbLoggerFactory = _loggerFactory ??= LoggerFactory.Create(c => c.AddConsole());
+        public static ILoggerFactory DbLoggerFactory => _loggerFactory ??= LoggerFactory.Create(c => c.AddConsole());
 
         public static DbContextOptions GetOptions() => GetOptions(DataAccessConfiguration.GetConfiguration().GetConnectionString("InventoryElasticPool"), DbLoggerFactory);
 
         public static DbContextOptions GetOptions(string connectionString, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder()
             .UseSqlServer(connectionString)
             .AddFirebendFunctions()
-            //.UseLoggerFactory(loggerFactory)
+            .UseLoggerFactory(loggerFactory)
             //.EnableSensitiveDataLogging()
             .Options;
     }
