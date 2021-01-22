@@ -12,9 +12,9 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
         public static DbContextOptions GetOptions(string connectionString) => new DbContextOptionsBuilder()
             .UseSqlServer(connectionString)
             .AddFirebendFunctions()
-            .UseLoggerFactory(
-                LoggerFactory.Create(c => c.AddConsole()))
-            .EnableSensitiveDataLogging()
+            // .UseLoggerFactory(
+            //     LoggerFactory.Create(c => c.AddConsole()))
+            // .EnableSensitiveDataLogging()
             .Options;
     }
 }
