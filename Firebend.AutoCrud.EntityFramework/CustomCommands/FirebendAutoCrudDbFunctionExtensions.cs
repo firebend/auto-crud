@@ -15,5 +15,8 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 
         public static bool FreeTextAny(this DbFunctions source, string property, string search, int language) =>
             throw new InvalidOperationException("This method is for use with Entity Framework Core only and has no in-memory implementation.");
+
+        public static bool JsonContainsAny(this DbFunctions source, object property, string search) =>
+            throw new InvalidOperationException("This method is for use with Entity Framework Core only and has no in-memory implementation.");
     }
 }

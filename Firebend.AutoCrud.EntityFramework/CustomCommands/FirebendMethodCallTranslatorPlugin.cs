@@ -7,7 +7,11 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
     {
         public FirebendMethodCallTranslatorPlugin(ISqlExpressionFactory expressionFactory)
         {
-            Translators = new[] { new FullTextContainsAnyMethodCallTranslator(expressionFactory), };
+            Translators = new IMethodCallTranslator[]
+            {
+                new FullTextContainsAnyMethodCallTranslator(expressionFactory),
+                new JsonObjectContainsMethodCallTranslator(expressionFactory)
+            };
         }
 
         public IEnumerable<IMethodCallTranslator> Translators { get; }

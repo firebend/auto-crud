@@ -32,10 +32,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 
             }
 
-            public override long GetServiceProviderHashCode()
-            {
-                return 0;
-            }
+            public override long GetServiceProviderHashCode() => 0;
         }
     }
 }
