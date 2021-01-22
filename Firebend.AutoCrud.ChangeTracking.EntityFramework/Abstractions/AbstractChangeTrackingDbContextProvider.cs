@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
@@ -11,6 +12,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
+    public static class ChangeTrackingCaches
+    {
+        public static readonly ConcurrentDictionary<string, Task<bool>> InitCaches = new();
+    }
+
     public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity> :
         IChangeTrackingDbContextProvider<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
@@ -38,22 +44,28 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             var options = _optionsProvider.GetDbContextOptions(connectionString);
             var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
 
-            try
-            {
-                if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
+            await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).Name, async _ =>
                 {
-                    await dbCreator
-                        .CreateTablesAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (!ex.Message.StartsWith("There is already an object named"))
-                {
-                    _logger.LogError("Error creating change tracking tables for context", ex);
-                }
-            }
+                    try
+                    {
+                        if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
+                        {
+                            await dbCreator
+                                .CreateTablesAsync(cancellationToken)
+                                .ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!ex.Message.StartsWith("There is already an object named"))
+                        {
+                            _logger.LogError("Error creating change tracking tables for context", ex);
+                        }
+                    }
+
+                    return true;
+                })
+                .ConfigureAwait(false);
 
             return context;
         }

@@ -58,7 +58,7 @@ namespace Firebend.AutoCrud.Io
         public IoConfigurator<TBuilder, TKey, TEntity> WithMapper<TOut>(Func<TEntity, TOut> mapper)
             where TOut : class
         {
-            Builder.WithRegistrationInstance(typeof(IEntityExportMapper<TEntity, TOut>), new EntityExportMapper<TEntity, TOut> { MapperFunc = mapper });
+            Builder.WithRegistrationInstance(typeof(IEntityExportMapper<TEntity, TOut>), new EntityExportMapper<TEntity, TOut>(mapper));
 
             RemoveExportEntityRegistrations<TEntity>();
             AddExportEntityRegistrations<TOut>();

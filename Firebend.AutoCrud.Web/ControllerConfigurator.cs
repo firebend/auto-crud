@@ -1396,10 +1396,7 @@ namespace Firebend.AutoCrud.Web
         {
             ViewModelGuard("Please register read view model before adding controllers.");
 
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>
-            {
-                From = from
-            };
+            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(from);
 
             CreateViewModelType = typeof(TViewModel);
 
@@ -1488,10 +1485,7 @@ namespace Firebend.AutoCrud.Web
         {
             ViewModelGuard("Please registered read view model before adding controllers");
 
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>
-            {
-                To = to
-            };
+            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(to);
 
             ReadViewModelType = typeof(TViewModel);
 
@@ -1584,10 +1578,7 @@ namespace Firebend.AutoCrud.Web
         {
             ViewModelGuard("Please register a update view model before adding controllers");
 
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>
-            {
-                From = from,
-            };
+            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(from);
 
             UpdateViewModelType = typeof(TViewModel);
 
@@ -1784,11 +1775,7 @@ namespace Firebend.AutoCrud.Web
         {
             ViewModelGuard("Please register view model before adding controllers");
 
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>
-            {
-                From = from,
-                To = to
-            };
+            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(from, to);
 
             CreateViewModelType = typeof(TViewModel);
             UpdateViewModelType = typeof(TViewModel);
