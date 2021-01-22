@@ -55,7 +55,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             JsonPatchDocument<TEntity> patchDocument = null)
             => new()
         {
-            Modified = domainEvent.Time,
+            ModifiedDate = domainEvent.Time,
             Source = domainEvent.EventContext?.Source,
             UserEmail = domainEvent.EventContext?.UserEmail,
             Action = action,

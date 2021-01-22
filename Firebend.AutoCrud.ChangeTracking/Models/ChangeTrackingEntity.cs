@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
     {
     }
 
-    public class ChangeTrackingModel<TKey, TEntity> : IEntity<Guid>
+    public class ChangeTrackingModel<TKey, TEntity> : IEntity<Guid>, IModifiedEntity
         where TEntity : class
     {
         /// <summary>
@@ -44,11 +44,6 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
         public string Action { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the time the change tracking record was modified.
-        /// </summary>
-        public DateTimeOffset Modified { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating the entity's unique identifier.
         /// </summary>
         public TKey EntityId { get; set; }
@@ -62,5 +57,15 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
         /// Gets or sets a value indicating the id corresponding to the change tracking record.
         /// </summary>
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the time the change tracking record was modified.
+        /// </summary>
+        public DateTimeOffset CreatedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the time the change tracking record was created.
+        /// </summary>
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 }

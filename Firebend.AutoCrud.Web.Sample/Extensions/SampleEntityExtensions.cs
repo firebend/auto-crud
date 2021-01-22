@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
+using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
@@ -14,6 +16,7 @@ using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Firebend.AutoCrud.Web.Sample.Extensions
@@ -59,6 +62,25 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
+                    .WithQueryableCustomizer<CustomSearchParameters>((query, parameters) =>
+                    {
+                        if(!string.IsNullOrWhiteSpace(parameters?.NickName))
+                        {
+                            query = query.Where(x => x.NickName == parameters.NickName);
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(parameters?.Search))
+                        {
+                            query = query.Where(x => EF.Functions.ContainsAny(x.FirstName, parameters.Search));
+                        }
+
+                        if (parameters.OrderBy == null)
+                        {
+                            query = query.OrderBy(x => x.ModifiedDate);
+                        }
+
+                        return query;
+                    })
                     .AddCrud()
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()

@@ -39,7 +39,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
         [Produces("application/json")]
         public virtual async Task<ActionResult<EntityPagedResponse<ChangeTrackingViewModel<TKey, TEntity, TViewModel>>>> GetByEntityId(
             [Required][FromRoute] string entityId,
-            [Required][FromQuery] EntitySearchRequest changeSearchRequest,
+            [Required][FromQuery] ModifiedEntitySearchRequest changeSearchRequest,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_read);
@@ -76,12 +76,9 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
 
             changeSearchRequest.DoCount ??= true;
 
-            var changeRequest = new ChangeTrackingSearchRequest<TKey>
-            {
-                EntityId = key.Value,
-                PageNumber = changeSearchRequest.PageNumber,
-                PageSize = changeSearchRequest.PageSize
-            };
+            var changeRequest = new ChangeTrackingSearchRequest<TKey>();
+            changeSearchRequest.CopyPropertiesTo(changeRequest);
+            changeRequest.EntityId = key.Value;
 
             var changes = await _read
                 .GetChangesByEntityId(changeRequest, cancellationToken)

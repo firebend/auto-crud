@@ -1,11 +1,14 @@
 using System;
+using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.Connections;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Firebend.AutoCrud.EntityFramework.Querying;
 using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework
@@ -30,6 +33,8 @@ namespace Firebend.AutoCrud.EntityFramework
         public override Type CreateType { get; }
 
         public override Type ReadType { get; }
+
+        private Type _searchType;
 
         public override Type SearchType { get; }
 
@@ -63,7 +68,16 @@ namespace Firebend.AutoCrud.EntityFramework
                 WithRegistration<IEntityFrameworkDeleteClient<TKey, TEntity>, EntityFrameworkDeleteClient<TKey, TEntity>>(false);
             }
 
-            WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>, DefaultEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>>(false);
+            WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>,
+                DefaultEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>>(false);
+
+            if (!HasRegistration(typeof(IEntityFrameworkQueryableCustomizer<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType)))
+            {
+                WithQueryableCustomizer(typeof(DefaultEntityFrameworkQueryCustomizer<,,>).MakeGenericType(
+                    EntityKeyType,
+                    EntityType,
+                    SearchRequestType));
+            }
 
             EnsureRegistered<IDbContextConnectionStringProvider<TKey, TEntity>>();
         }
@@ -208,6 +222,30 @@ namespace Firebend.AutoCrud.EntityFramework
             where TProvider : IDbContextConnectionStringProvider<TKey, TEntity>
         {
             WithRegistration<IDbContextConnectionStringProvider<TKey, TEntity>, TProvider>();
+            return this;
+        }
+
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithQueryableCustomizer(Type type)
+        {
+            var service = typeof(IEntityFrameworkQueryableCustomizer<,,>).MakeGenericType(EntityKeyType,
+                EntityType,
+                SearchRequestType);
+
+            WithRegistration(service, type);
+
+            return this;
+        }
+
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithQueryableCustomizer<TCustomizer>()
+            => WithQueryableCustomizer(typeof(TCustomizer));
+
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithQueryableCustomizer<TSearch>(Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> func)
+            where TSearch : EntitySearchRequest
+        {
+            SearchRequestType = typeof(TSearch);
+            var instance = new DefaultEntityFrameworkQueryCustomizer<TKey, TEntity, TSearch>(func);
+            WithRegistrationInstance<IEntityFrameworkQueryableCustomizer<TKey, TEntity, TSearch>>(instance);
+
             return this;
         }
     }

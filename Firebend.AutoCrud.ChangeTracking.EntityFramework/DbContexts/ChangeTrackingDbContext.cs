@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
                 changes.ToTable($"{typeof(TEntity).Name}_Changes");
                 changes.HasKey(x => x.Id);
                 changes.Property(x => x.Action).HasMaxLength(25);
-                changes.Property(x => x.Modified);
+                changes.Property(x => x.ModifiedDate);
                 changes.Property(x => x.Source).HasMaxLength(500);
                 changes.Property(x => x.UserEmail).HasMaxLength(250);
                 changes.Property(x => x.EntityId);

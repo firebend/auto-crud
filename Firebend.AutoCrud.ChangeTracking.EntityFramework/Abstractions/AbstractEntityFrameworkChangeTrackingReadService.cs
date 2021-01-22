@@ -5,21 +5,25 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
+using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
     public abstract class AbstractEntityFrameworkChangeTrackingReadService<TEntityKey, TEntity> :
-        EntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>,
+        AbstractEntitySearchService<ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>>,
         IChangeTrackingReadService<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
-        public AbstractEntityFrameworkChangeTrackingReadService(IChangeTrackingDbContextProvider<TEntityKey, TEntity> contextProvider) :
-            base(contextProvider)
+        private readonly IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _queryClient;
+
+        public AbstractEntityFrameworkChangeTrackingReadService(IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> queryClient)
         {
+            _queryClient = queryClient;
         }
 
         public async Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
@@ -31,15 +35,20 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 throw new ArgumentNullException(nameof(searchRequest));
             }
 
-            var query = await GetQueryableAsync(cancellationToken);
-            query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
+            var query = await _queryClient.GetQueryableAsync(cancellationToken);
+
+            var filter = GetSearchExpression(x => x.EntityId.Equals(searchRequest.EntityId), searchRequest);
+
+            query = query.Where(filter);
 
             if (searchRequest.OrderBy == null)
             {
-                query = query.OrderByDescending(x => x.Modified);
+                query = query.OrderByDescending(x => x.ModifiedDate);
             }
 
-            var paged = await GetPagedResponseAsync(query, searchRequest, cancellationToken).ConfigureAwait(false);
+            var paged = await _queryClient
+                .GetPagedResponseAsync(query, searchRequest, cancellationToken)
+                .ConfigureAwait(false);
 
             return paged;
         }
