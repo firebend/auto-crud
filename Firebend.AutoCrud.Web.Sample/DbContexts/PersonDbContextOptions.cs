@@ -1,5 +1,5 @@
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
+using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

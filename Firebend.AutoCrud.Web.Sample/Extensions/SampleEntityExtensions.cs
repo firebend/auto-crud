@@ -6,7 +6,7 @@ using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
-using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
+using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;

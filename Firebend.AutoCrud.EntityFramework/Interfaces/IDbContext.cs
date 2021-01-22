@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
+
     public interface IDbContext : IDisposable
     {
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);

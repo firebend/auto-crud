@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
+namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 {
     public class FullTextContainsAnyMethodCallTranslator : IMethodCallTranslator
     {

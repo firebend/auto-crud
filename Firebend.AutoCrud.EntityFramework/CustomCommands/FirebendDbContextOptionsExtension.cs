@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
+namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 {
     public class FirebendDbContextOptionsExtension : IDbContextOptionsExtension
     {

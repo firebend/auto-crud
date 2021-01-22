@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
+namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 {
     public sealed class FirebendMethodCallTranslatorPlugin : IMethodCallTranslatorPlugin
     {

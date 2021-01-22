@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
+namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 {
     public static class DbContextOptionsBuilderExtensions
     {

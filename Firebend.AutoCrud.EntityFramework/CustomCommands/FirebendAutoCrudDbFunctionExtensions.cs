@@ -1,7 +1,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands
+namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 {
     public static class FirebendAutoCrudDbFunctionExtensions
     {
