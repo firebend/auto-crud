@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
@@ -247,95 +248,6 @@ namespace Firebend.AutoCrud.Core.Configurators
         }
 
         /// <summary>
-        /// Enables ordering of lists of results
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
-        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
-        ///  .ConfigureServices((hostContext, services) => {
-        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
-        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///              forecast.WithDatabase("Samples")
-        ///                  .WithCollection("WeatherForecasts")
-        ///                  .WithFullTextSearch()
-        ///                  .WithOrderBy(typeof(OrderByOptions))
-        ///                  .AddCrud(x => x
-        ///                      .WithAllControllers()
-        ///                   )
-        ///          )
-        ///      });
-        ///  })
-        ///  // ...
-        /// </code>
-        /// </example>
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy(Type type)
-        {
-            Builder.WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>>(type);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Enables ordering of lists of results
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
-        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
-        ///  .ConfigureServices((hostContext, services) => {
-        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
-        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///              forecast.WithDatabase("Samples")
-        ///                  .WithCollection("WeatherForecasts")
-        ///                  .WithFullTextSearch()
-        ///                  .WithOrderBy<OrderByOptions>())
-        ///                  .AddCrud(x => x
-        ///                      .WithAllControllers()
-        ///                   )
-        ///          )
-        ///      });
-        ///  })
-        ///  // ...
-        /// </code>
-        /// </example>
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy<T>() => WithOrderBy(typeof(T));
-
-        /// <summary>
-        /// Enables ordering of lists of results
-        /// </summary>
-        /// <param name="expression">A callback function returning the field on the entity to order by</param>
-        /// <param name="isAscending">Optional, default = true; whether results should be sorted in ascending order</param>
-        /// <example>
-        /// <code>
-        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
-        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
-        ///  .ConfigureServices((hostContext, services) => {
-        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
-        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///              forecast.WithDatabase("Samples")
-        ///                  .WithCollection("WeatherForecasts")
-        ///                  .WithFullTextSearch()
-        ///                  .WithOrderBy(forecast => forecast.TemperatureC, false))
-        ///                  .AddCrud(x => x
-        ///                      .WithAllControllers()
-        ///                   )
-        ///          )
-        ///      });
-        ///  })
-        ///  // ...
-        /// </code>
-        /// </example>
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithOrderBy(Expression<Func<TEntity, object>> expression, bool isAscending = true)
-        {
-            var instance = new DefaultEntityDefaultOrderByProvider<TKey, TEntity>((expression, isAscending));
-
-            Builder.WithRegistrationInstance<IEntityDefaultOrderByProvider<TKey, TEntity>>(instance);
-
-            return this;
-        }
-
-        /// <summary>
         /// Enables Read actions for an entity by providing a custom service
         /// </summary>
         /// <param name="serviceType">The type of the service to use</param>
@@ -535,48 +447,6 @@ namespace Firebend.AutoCrud.Core.Configurators
         }
 
         /// <summary>
-        /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing custom search fields and a callback function
-        /// </summary>
-        /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
-        /// <param name="expression">A callback function for performing a search, return a callback for filtering matching objects</param>
-        /// <example>
-        /// <code>
-        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
-        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
-        ///  .ConfigureServices((hostContext, services) => {
-        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
-        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///              forecast.WithDatabase("Samples")
-        ///                  .WithCollection("WeatherForecasts")
-        ///                  .WithFullTextSearch()
-        ///                  .AddCrud(x => x
-        ///                      .WithCrud()
-        ///                      .WithSearch<WeatherForecastSearchService>(search => {
-        ///                           if (!string.IsNullOrWhiteSpace(search?.Min) && !string.IsNullOrWhiteSpace(search?.Max)) {
-        ///                                return p => p.TemperatureC >= search.Min && p.TemperatureC <= search.Max;
-        ///                           }
-        ///                           return null;
-        ///                      })
-        ///                      // ... finish configuring CRUD for this entity
-        ///                   )
-        ///                  // ... finish configuring the entity
-        ///          )
-        ///      });
-        ///  })
-        ///  // ...
-        /// </code>
-        /// </example>
-        /// See <see cref="EntitySearchRequest" /> for building custom search fields
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>(Func<TSearch, Expression<Func<TEntity, bool>>> expression)
-            where TSearch : EntitySearchRequest
-        {
-            Builder.WithRegistrationInstance<ISearchExpressionProvider<TKey, TEntity, TSearch>>(
-                new SearchExpressionProvider<TKey, TEntity, TSearch>(expression));
-
-            return WithSearch<TSearch>();
-        }
-
-        /// <summary>
         /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing a callback function
         /// </summary>
         /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
@@ -698,6 +568,30 @@ namespace Firebend.AutoCrud.Core.Configurators
             var serviceType = Builder.UpdateType;
 
             return WithUpdate(serviceType);
+        }
+
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithQueryCustomizer(Type type)
+        {
+            var service = typeof(IEntityQueryCustomizer<,,>).MakeGenericType(Builder.EntityType,
+                Builder.EntityType,
+                Builder.SearchRequestType);
+
+            Builder.WithRegistration(service, type);
+
+            return this;
+        }
+
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity>WithQueryCustomizer<TCustomizer>()
+            => WithQueryCustomizer(typeof(TCustomizer));
+
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithQueryCustomizer<TSearch>(Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> func)
+            where TSearch : EntitySearchRequest
+        {
+            Builder.SearchRequestType = typeof(TSearch);
+            var instance = new DefaultEntityQueryCustomizer<TKey, TEntity, TSearch>(func);
+            Builder.WithRegistrationInstance<IEntityQueryCustomizer<TKey, TEntity, TSearch>>(instance);
+
+            return this;
         }
     }
 }

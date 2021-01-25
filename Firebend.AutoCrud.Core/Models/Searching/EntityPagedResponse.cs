@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Core.Models.Searching
     {
         public IEnumerable<TEntity> Data { get; set; }
 
-        public int? TotalRecords { get; set; }
+        public long? TotalRecords { get; set; }
 
         public int? CurrentPage { get; set; }
 

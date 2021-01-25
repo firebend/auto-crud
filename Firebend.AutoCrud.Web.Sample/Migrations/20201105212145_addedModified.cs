@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+// ReSharper disable InconsistentNaming
 
 namespace Firebend.AutoCrud.Web.Sample.Migrations
 {

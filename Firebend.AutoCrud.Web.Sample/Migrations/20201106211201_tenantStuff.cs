@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Firebend.AutoCrud.Web.Sample.Migrations
 {
+    // ReSharper disable once UnusedType.Global
     public partial class tenantStuff : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.AddColumn<int>(

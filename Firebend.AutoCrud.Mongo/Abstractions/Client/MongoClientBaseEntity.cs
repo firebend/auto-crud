@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
 
-        protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(FilterDefinition<TEntity> firstStageFilters = null,
+        protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(FilterDefinition<TEntity> firstStageFilters,
             CancellationToken cancellationToken = default)
         {
             var mongoQueryable = GetCollection().AsQueryable();

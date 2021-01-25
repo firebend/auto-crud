@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.Web.Sample
             {
                 services
                     .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
-                    .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"), false, mongo =>
+                    .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"), true, mongo =>
                     {
                         mongo.AddMongoPerson();
                     })

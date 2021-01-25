@@ -32,6 +32,7 @@ namespace Firebend.AutoCrud.Web
 {
     public static class ControllerConfiguratorCache
     {
+        // ReSharper disable once InconsistentNaming
         public static bool IsSwaggerApplied;
         public static readonly object Lock = new ();
     }

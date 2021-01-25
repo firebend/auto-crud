@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -12,9 +13,13 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        Task<TEntity> GetByKeyAsync(TKey key, bool track, CancellationToken cancellationToken);
+        Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, bool track, CancellationToken cancellationToken = default);
 
         Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default);
+
+        Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
+
+        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
 
         Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
 

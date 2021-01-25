@@ -17,10 +17,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         where TSearch : EntitySearchRequest
     {
         private readonly IEntityFrameworkQueryClient<TKey, TEntity> _searchClient;
-        private readonly IEntityFrameworkQueryableCustomizer<TKey, TEntity, TSearch> _customizer;
+        private readonly IEntityQueryCustomizer<TKey, TEntity, TSearch> _customizer;
 
         public EntityFrameworkEntitySearchService(IEntityFrameworkQueryClient<TKey, TEntity> searchClient,
-            IEntityFrameworkQueryableCustomizer<TKey, TEntity, TSearch> customizer)
+            IEntityQueryCustomizer<TKey, TEntity, TSearch> customizer)
         {
             _searchClient = searchClient;
             _customizer = customizer;

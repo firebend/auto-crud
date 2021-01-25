@@ -34,10 +34,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
                         .WithMassTransit())
-                    .AddCrud(x => x
-                        .WithCrud()
-                        .WithOrderBy(m => m.LastName)
-                        )
+                    .AddCrud()
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
@@ -62,26 +59,28 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .WithQueryableCustomizer<CustomSearchParameters>((query, parameters) =>
-                    {
-                        if(!string.IsNullOrWhiteSpace(parameters?.NickName))
+                    .AddCrud(crud => crud
+                        .WithSearch<CustomSearchParameters>()
+                        .WithCrud()
+                        .WithQueryCustomizer<CustomSearchParameters>((query, parameters) =>
                         {
-                            query = query.Where(x => x.NickName == parameters.NickName);
-                        }
+                            if(!string.IsNullOrWhiteSpace(parameters?.NickName))
+                            {
+                                query = query.Where(x => x.NickName == parameters.NickName);
+                            }
 
-                        if (!string.IsNullOrWhiteSpace(parameters?.Search))
-                        {
-                            query = query.Where(x => EF.Functions.ContainsAny(x.FirstName, parameters.Search));
-                        }
+                            if (!string.IsNullOrWhiteSpace(parameters?.Search))
+                            {
+                                query = query.Where(x => EF.Functions.ContainsAny(x.FirstName, parameters.Search));
+                            }
 
-                        if (parameters.OrderBy == null)
-                        {
-                            query = query.OrderBy(x => x.ModifiedDate);
-                        }
+                            if (parameters.OrderBy == null)
+                            {
+                                query = query.OrderBy(x => x.ModifiedDate);
+                            }
 
-                        return query;
-                    })
-                    .AddCrud()
+                            return query;
+                        }))
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()

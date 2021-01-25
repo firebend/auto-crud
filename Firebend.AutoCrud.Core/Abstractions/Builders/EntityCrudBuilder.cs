@@ -41,16 +41,6 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 SearchRequestType = typeof(EntitySearchRequest);
             }
 
-            if (IsModifiedEntity)
-            {
-                var orderType = typeof(DefaultModifiedEntityDefaultOrderByProvider<,>).MakeGenericType(EntityKeyType, EntityType);
-                WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>>(orderType, false);
-            }
-            else
-            {
-                WithRegistration<IEntityDefaultOrderByProvider<TKey, TEntity>, DefaultEntityDefaultOrderByProvider<TKey, TEntity>>(false);
-            }
-
             WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
             WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
             WithRegistration<IJsonPatchDocumentGenerator, JsonPatchDocumentDocumentGenerator>(false);
@@ -121,6 +111,16 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         {
             base.OnBuild();
             ApplyPlatformTypes();
+
+            var customerizerType = typeof(IEntityQueryCustomizer<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
+
+            if (!HasRegistration(customerizerType))
+            {
+                WithRegistration(customerizerType,typeof(DefaultEntityQueryCustomizer<,,>).MakeGenericType(
+                    EntityKeyType,
+                    EntityType,
+                    SearchRequestType));
+            }
         }
     }
 }

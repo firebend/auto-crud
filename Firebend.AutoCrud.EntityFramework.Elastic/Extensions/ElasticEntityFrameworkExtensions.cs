@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Extensions
         /// <param name="configure">The type of the service to use</param>
         /// <example>
         /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
         ///        .WithSearchFilter((f, s) => f.Summary.Contains(s))
         ///        .AddElasticPool(

@@ -21,14 +21,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         }
 
         public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
-            => _readClient.GetByKeyAsync(key, false, cancellationToken);
+            => _readClient.GetFirstOrDefaultAsync(x => x.Id.Equals(key), false, cancellationToken);
 
-        public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            var query = await _readClient.GetQueryableAsync(cancellationToken).ConfigureAwait(false);
-            var entity = await query.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
-            return entity;
-        }
+        public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+            => _readClient.GetAllAsync(null, cancellationToken);
 
         protected override void DisposeManagedObjects() => _readClient?.Dispose();
     }

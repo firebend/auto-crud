@@ -1,15 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Abstractions.Services;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 {
@@ -19,57 +18,50 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
     {
-        private readonly IEntityDefaultOrderByProvider<TKey, TEntity> _orderByProvider;
         private readonly IMongoReadClient<TKey, TEntity> _readClient;
-        private readonly ISearchExpressionProvider<TKey, TEntity, TSearch> _searchExpressionProvider;
+        private readonly IEntityQueryCustomizer<TKey, TEntity, TSearch> _queryCustomizer;
 
         protected MongoEntitySearchService(IMongoReadClient<TKey, TEntity> readClient,
-            ISearchExpressionProvider<TKey, TEntity, TSearch> searchExpressionProvider = null,
-            IEntityDefaultOrderByProvider<TKey, TEntity> orderByProvider = null)
+            IEntityQueryCustomizer<TKey, TEntity, TSearch> queryCustomizer)
         {
             _readClient = readClient;
-            _searchExpressionProvider = searchExpressionProvider;
-            _orderByProvider = orderByProvider;
+            _queryCustomizer = queryCustomizer;
         }
 
         public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
         {
             var results = await PageAsync(request, cancellationToken).ConfigureAwait(false);
-
             return results?.Data?.ToList();
         }
 
-        public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
-            => _readClient.PageAsync(request?.Search,
-                BuildSearchExpression(request),
-                request?.PageNumber,
-                request?.PageSize,
-                request?.DoCount ?? false,
-                GetOrderByGroups(request),
-                cancellationToken
-            );
-
-        private IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> GetOrderByGroups(TSearch search)
+        public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
         {
-            var orderByGroups = search?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList();
+            FilterDefinition<TEntity> searchExpression = null;
 
-            if (orderByGroups != null && orderByGroups.Any())
+            if (!string.IsNullOrWhiteSpace(request?.Search))
             {
-                return orderByGroups;
+                searchExpression = Builders<TEntity>.Filter.Text(request.Search);
+            }
+            var query = await _readClient
+                .GetQueryableAsync(searchExpression, cancellationToken).ConfigureAwait(false);
+
+            if (_queryCustomizer != null)
+            {
+                query = _queryCustomizer.Customize(query, request);
             }
 
-            var orderBy = _orderByProvider?.OrderBy;
+            var expression = GetSearchExpression(request);
 
-            if (orderBy.HasValue && orderBy.Value != default && orderBy.Value.func != null)
+            if (expression != null)
             {
-                orderByGroups = new List<(Expression<Func<TEntity, object>> order, bool ascending)> { orderBy.Value };
+                query = query.Where(expression);
             }
 
-            return orderByGroups;
+            var paged = await _readClient
+                .GetPagedResponseAsync(query, request, cancellationToken)
+                .ConfigureAwait(false);
+
+            return paged;
         }
-
-        protected virtual Expression<Func<TEntity, bool>> BuildSearchFilter(TSearch search) => _searchExpressionProvider?.GetSearchExpression(search);
-
-        protected virtual Expression<Func<TEntity, bool>> BuildSearchExpression(TSearch search) => GetSearchExpression(search, BuildSearchFilter(search));
     }
 }

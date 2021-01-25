@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -20,34 +21,54 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
         }
 
-        public async Task<TEntity> GetByKeyAsync(TKey key, bool track, CancellationToken cancellationToken)
+        private async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter, bool track, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var entity = await GetByEntityKeyAsync(context, key, track, cancellationToken).ConfigureAwait(false);
-            return entity;
-        }
+            var query = await GetFilteredQueryableAsync(context, cancellationToken);
+            if (!track)
+            {
+                query = query.AsNoTracking();
+            }
 
-        public async Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default)
-        {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var filtered = await GetFilteredQueryableAsync(context, cancellationToken);
-            var queryable = await ModifyQueryableAsync(filtered);
-            return queryable;
-        }
-
-        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
-            CancellationToken cancellationToken = default)
-        {
-            var query = await GetQueryableAsync(cancellationToken);
+            query = await ModifyQueryableAsync(query);
 
             if (filter != null)
             {
                 query = query.Where(filter);
             }
 
-            var exists = await query
-                .AnyAsync(cancellationToken)
-                .ConfigureAwait(false);
+            return query;
+        }
+
+        public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, bool track, CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableAsync(filter, track, cancellationToken);
+            var entity =  await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            return entity;
+        }
+
+        public Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default)
+            => GetQueryableAsync(null, true, cancellationToken);
+
+        public async Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableAsync(filter, false, cancellationToken).ConfigureAwait(false);
+            var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
+            return count;
+        }
+
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableAsync(filter, true, cancellationToken).ConfigureAwait(false);
+            var list = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+            return list;
+        }
+
+        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableAsync(filter, false, cancellationToken).ConfigureAwait(false);
+            var exists = await query.AnyAsync(cancellationToken).ConfigureAwait(false);
 
             return exists;
         }

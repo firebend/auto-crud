@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo;
+using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Interfaces;
 
 namespace Firebend.AutoCrud.ChangeTracking.Mongo
@@ -27,6 +28,9 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
 
             configurator.Builder.WithRegistration<IMongoChangeTrackingCreateClient<TKey, TEntity>,
                 AbstractMongoChangeTrackingCreateClient<TKey, TEntity>>();
+
+            configurator.Builder.WithRegistration<IMongoChangeTrackingReadClient<TKey, TEntity>,
+                AbstractMongoChangeTrackingReadClient<TKey, TEntity>>();
 
             configurator.Builder.WithRegistration<IMongoIndexClient<Guid, ChangeTrackingEntity<TKey, TEntity>>,
                 AbstractMongoChangeTrackingIndexClient<TKey, TEntity>>();

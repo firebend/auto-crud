@@ -1,30 +1,31 @@
 using System;
 using System.Linq;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Core.Pooling;
-using Firebend.AutoCrud.EntityFramework.Interfaces;
 
-namespace Firebend.AutoCrud.EntityFramework.Querying
+namespace Firebend.AutoCrud.Core.Implementations.Defaults
 {
-    public class DefaultEntityFrameworkQueryCustomizer<TKey, TEntity, TSearch> : IEntityFrameworkQueryableCustomizer<TKey, TEntity, TSearch>
+    public class DefaultEntityQueryCustomizer<TKey, TEntity, TSearch> : IEntityQueryCustomizer<TKey, TEntity, TSearch>
         where TSearch : EntitySearchRequest
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
         private readonly Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> _func;
 
-        public DefaultEntityFrameworkQueryCustomizer()
+        public DefaultEntityQueryCustomizer()
         {
 
         }
 
-        public DefaultEntityFrameworkQueryCustomizer(Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> func)
+        public DefaultEntityQueryCustomizer(Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> func)
         {
             _func = func;
         }
 
-        public IQueryable<TEntity> Customize(IQueryable<TEntity> query, TSearch searchRequest)
+        public T Customize<T>(T query, TSearch searchRequest)
+            where T : IQueryable<TEntity>
         {
             if (_func == null)
             {
@@ -33,7 +34,7 @@ namespace Firebend.AutoCrud.EntityFramework.Querying
 
             using var _ = AutoCrudDelegatePool.GetPooledFunction(_func, searchRequest, out var pooledFunc);
 
-            return pooledFunc(query);
+            return (T)pooledFunc(query);
         }
     }
 }
