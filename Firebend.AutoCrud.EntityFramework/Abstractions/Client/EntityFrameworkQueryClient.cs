@@ -18,16 +18,22 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : class, IEntity<TKey>, new()
     {
         private readonly IEntityQueryOrderByHandler<TKey, TEntity> _orderByHandler;
+        private readonly IEntityFrameworkIncludesProvider<TKey, TEntity> _includesProvider;
+
         protected EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler) : base(contextProvider)
+            IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler,
+            IEntityFrameworkIncludesProvider<TKey, TEntity> includesProvider) : base(contextProvider)
         {
             _orderByHandler = orderByHandler;
+            _includesProvider = includesProvider;
         }
 
         private async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter, bool track, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+
             var query = await GetFilteredQueryableAsync(context, cancellationToken);
+
             if (!track)
             {
                 query = query.AsNoTracking();
@@ -106,5 +112,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         }
 
         protected virtual Task<IQueryable<TEntity>> ModifyQueryableAsync(IQueryable<TEntity> queryable) => Task.FromResult(queryable);
+
+        protected override IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable)
+            => _includesProvider != null ? _includesProvider.AddIncludes(queryable) : queryable;
     }
 }

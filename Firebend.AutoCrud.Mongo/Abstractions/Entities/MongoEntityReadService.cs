@@ -22,6 +22,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default) =>
             _readClient.GetFirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
 
-        public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default) =>
+            _readClient.GetAllAsync(null, cancellationToken);
     }
 }

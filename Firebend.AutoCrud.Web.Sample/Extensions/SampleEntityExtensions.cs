@@ -60,9 +60,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
                     .AddCrud(crud => crud
-                        .WithSearch<CustomSearchParameters>()
-                        .WithCrud()
-                        .WithQueryCustomizer<CustomSearchParameters>((query, parameters) =>
+                        .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
                         {
                             if(!string.IsNullOrWhiteSpace(parameters?.NickName))
                             {
@@ -74,13 +72,10 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                 query = query.Where(x => EF.Functions.ContainsAny(x.FirstName, parameters.Search));
                             }
 
-                            if (parameters.OrderBy == null)
-                            {
-                                query = query.OrderBy(x => x.ModifiedDate);
-                            }
-
                             return query;
-                        }))
+                        })
+                        .WithCrud()
+                        )
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()
@@ -106,6 +101,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             generator.AddEntity<Guid, EfPet>(person =>
                 person.WithDbContext<PersonDbContext>()
                     .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPet>>()
+                    .WithIncludes(pets => pets.Include(x =>x.Person))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -115,7 +111,15 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCrud()
+                    .AddCrud(crud => crud.WithSearchHandler<CustomSearchParameters>((pets, parameters) =>
+                    {
+                        if (!string.IsNullOrWhiteSpace(parameters.Search))
+                        {
+                            pets = pets.Where(x => x.PetName.Contains(parameters.Search));
+                        }
+
+                        return pets;
+                    }).WithCrud())
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()

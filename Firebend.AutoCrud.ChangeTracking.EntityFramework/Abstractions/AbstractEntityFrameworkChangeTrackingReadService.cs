@@ -6,10 +6,9 @@ using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
-using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
@@ -20,10 +19,13 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         where TEntityKey : struct
     {
         private readonly IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _queryClient;
+        private readonly IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> _searchHandler;
 
-        public AbstractEntityFrameworkChangeTrackingReadService(IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> queryClient)
+        public AbstractEntityFrameworkChangeTrackingReadService(IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> queryClient,
+            IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> searchHandler)
         {
             _queryClient = queryClient;
+            _searchHandler = searchHandler;
         }
 
         public async Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
@@ -39,18 +41,6 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
             query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
 
-            if (!string.IsNullOrWhiteSpace(searchRequest.Search))
-            {
-                if (!searchRequest.Search.Contains("%"))
-                {
-                    searchRequest.Search = $"%{searchRequest.Search}%";
-                }
-
-                query = query.Where(x =>
-                    EF.Functions.JsonContainsAny(x.Changes, searchRequest.Search) ||
-                    EF.Functions.JsonContainsAny(x.Entity, searchRequest.Search));
-            }
-
             var filter = GetSearchExpression(searchRequest);
 
             if (filter != null)
@@ -58,9 +48,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 query = query.Where(filter);
             }
 
-            if (searchRequest.OrderBy == null)
+            if (_searchHandler != null)
             {
-                query = query.OrderByDescending(x => x.ModifiedDate);
+                query = _searchHandler.HandleSearch(query, searchRequest);
             }
 
             var paged = await _queryClient

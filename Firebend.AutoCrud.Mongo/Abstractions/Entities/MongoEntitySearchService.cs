@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,13 +20,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         where TSearch : EntitySearchRequest
     {
         private readonly IMongoReadClient<TKey, TEntity> _readClient;
-        private readonly IEntityQueryCustomizer<TKey, TEntity, TSearch> _queryCustomizer;
+        private readonly IEntitySearchHandler<TKey, TEntity, TSearch> _searchHandler;
 
         protected MongoEntitySearchService(IMongoReadClient<TKey, TEntity> readClient,
-            IEntityQueryCustomizer<TKey, TEntity, TSearch> queryCustomizer)
+            IEntitySearchHandler<TKey, TEntity, TSearch> searchHandler)
         {
             _readClient = readClient;
-            _queryCustomizer = queryCustomizer;
+            _searchHandler = searchHandler;
         }
 
         public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
@@ -36,20 +37,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 
         public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
         {
-            FilterDefinition<TEntity> searchExpression = null;
+            Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilter = null;
 
-            if (!string.IsNullOrWhiteSpace(request?.Search))
+            if (_searchHandler != null && !string.IsNullOrWhiteSpace(request?.Search))
             {
-                searchExpression = Builders<TEntity>.Filter.Text(request.Search);
+                firstStageFilter = x => (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, request);
             }
 
             var query = await _readClient
-                .GetQueryableAsync(searchExpression, cancellationToken).ConfigureAwait(false);
-
-            if (_queryCustomizer != null)
-            {
-                query = _queryCustomizer.Customize(query, request);
-            }
+                .GetQueryableAsync(firstStageFilter, cancellationToken)
+                .ConfigureAwait(false);
 
             var expression = GetSearchExpression(request);
 

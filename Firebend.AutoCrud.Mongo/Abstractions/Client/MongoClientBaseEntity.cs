@@ -35,14 +35,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
 
-        protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(FilterDefinition<TEntity> firstStageFilters,
+        protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
             CancellationToken cancellationToken = default)
         {
             var mongoQueryable = GetCollection().AsQueryable();
 
             if (firstStageFilters != null)
             {
-                mongoQueryable = mongoQueryable.Where(_ => firstStageFilters.Inject());
+                mongoQueryable = firstStageFilters(mongoQueryable);
             }
 
             var filters = await BuildFiltersAsync(cancellationToken: cancellationToken).ConfigureAwait(false);

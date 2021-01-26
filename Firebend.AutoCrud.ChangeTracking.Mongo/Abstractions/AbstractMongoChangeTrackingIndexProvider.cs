@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Mongo.Helpers;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using MongoDB.Driver;
 
@@ -15,6 +16,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
             IndexKeysDefinitionBuilder<ChangeTrackingEntity<TEntityKey, TEntity>> builder)
         {
             yield return new CreateIndexModel<ChangeTrackingEntity<TEntityKey, TEntity>>(builder.Ascending(f => f.EntityId));
+            yield return MongoIndexProviderHelpers.FullText(builder);
+            yield return MongoIndexProviderHelpers.DateTimeOffset(builder);
         }
     }
 }

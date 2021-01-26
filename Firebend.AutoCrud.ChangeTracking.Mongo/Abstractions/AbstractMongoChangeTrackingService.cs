@@ -1,11 +1,12 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
-using Firebend.AutoCrud.ChangeTracking.Mongo.Interfaces;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
@@ -16,9 +17,9 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
-        private readonly IMongoChangeTrackingCreateClient<TEntityKey, TEntity> _createClient;
+        private readonly IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _createClient;
 
-        public AbstractMongoChangeTrackingService(IMongoChangeTrackingCreateClient<TEntityKey, TEntity> createClient)
+        public AbstractMongoChangeTrackingService(IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> createClient)
         {
             _createClient = createClient;
         }

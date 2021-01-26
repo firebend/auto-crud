@@ -1,10 +1,13 @@
 using System;
+using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.Connections;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
+using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,7 +69,11 @@ namespace Firebend.AutoCrud.EntityFramework
             WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>,
                 DefaultEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>>(false);
 
+            WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>,
+                DefaultEntityFrameworkIncludesProvider<TKey, TEntity>>(false);
+
             EnsureRegistered<IDbContextConnectionStringProvider<TKey, TEntity>>();
+            EnsureRegistered(typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType));
         }
 
         /// <summary>
@@ -209,6 +216,68 @@ namespace Firebend.AutoCrud.EntityFramework
             where TProvider : IDbContextConnectionStringProvider<TKey, TEntity>
         {
             WithRegistration<IDbContextConnectionStringProvider<TKey, TEntity>, TProvider>();
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies EntityFramework related model Includes to use for the model
+        /// </summary>
+        /// <param name="type">The function includes provider to use</param>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithIncludes(typeof(EntityIncludes))
+        ///        .AddCrud()
+        ///        .AddControllers()
+        /// </code>
+        /// </example>
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithIncludes(Type type)
+        {
+            WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>>(type);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies EntityFramework related model Includes to use for the model
+        /// </summary>
+        /// <typeparam name="TProvider">The function includes provider to use</typeparam>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithIncludes<FunctionIncludes>()
+        ///        .AddCrud()
+        ///        .AddControllers()
+        /// </code>
+        /// </example>
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithIncludes<TProvider>()
+            where TProvider : IEntityFrameworkIncludesProvider<TKey, TEntity>
+        {
+            WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>, TProvider>();
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies EntityFramework related model Includes to use for the model
+        /// </summary>
+        /// <typeparam name="func">A callback function specifying the related model Includes to use for the model</typeparam>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithIncludes(forecasts => forecasts.Include(f => f.LastUpdatedBy))
+        ///        .AddCrud()
+        ///        .AddControllers()
+        /// </code>
+        /// </example>
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithIncludes(Func<IQueryable<TEntity>, IQueryable<TEntity>> func)
+        {
+            WithRegistrationInstance<IEntityFrameworkIncludesProvider<TKey, TEntity>>(
+                new FunctionIncludesProvider<TKey, TEntity>(func));
+
             return this;
         }
     }

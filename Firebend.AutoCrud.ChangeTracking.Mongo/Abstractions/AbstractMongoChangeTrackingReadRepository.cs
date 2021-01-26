@@ -5,6 +5,7 @@ using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using MongoDB.Driver;
@@ -19,10 +20,13 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
         where TEntity : class, IEntity<TEntityKey>
     {
         private readonly IMongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _queryClient;
+        private readonly IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> _searchHandler;
 
-        protected AbstractMongoChangeTrackingReadRepository(IMongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> queryClient)
+        protected AbstractMongoChangeTrackingReadRepository(IMongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> queryClient,
+            IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> searchHandler)
         {
             _queryClient = queryClient;
+            _searchHandler = searchHandler;
         }
 
         public async Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
@@ -34,14 +38,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
                 throw new ArgumentNullException(nameof(searchRequest));
             }
 
-            FilterDefinition<ChangeTrackingEntity<TEntityKey, TEntity>> filterDefinition = null;
+            Func<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>, IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>> firstStageFilter = null;
 
-            if (!string.IsNullOrWhiteSpace(searchRequest.Search))
+            if (_searchHandler != null && !string.IsNullOrWhiteSpace(searchRequest?.Search))
             {
-                filterDefinition = Builders<ChangeTrackingEntity<TEntityKey, TEntity>>.Filter.Text(searchRequest.Search);
+                firstStageFilter = x => (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)_searchHandler.HandleSearch(x, searchRequest);
             }
 
-            var query = await _queryClient.GetQueryableAsync(filterDefinition, cancellationToken);
+            var query = await _queryClient.GetQueryableAsync(firstStageFilter, cancellationToken);
 
             query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
 
