@@ -125,16 +125,6 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         {
             base.OnBuild();
             ApplyPlatformTypes();
-
-            var customerizerType = typeof(IEntityQueryCustomizer<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
-
-            if (!HasRegistration(customerizerType))
-            {
-                WithRegistration(customerizerType,typeof(DefaultEntityQueryCustomizer<,,>).MakeGenericType(
-                    EntityKeyType,
-                    EntityType,
-                    SearchRequestType));
-            }
         }
     }
 }

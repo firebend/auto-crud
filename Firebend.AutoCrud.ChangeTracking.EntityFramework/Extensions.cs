@@ -2,6 +2,7 @@ using System;
 using Firebend.AutoCrud.ChangeTracking.Abstractions;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
+using Firebend.AutoCrud.ChangeTracking.EntityFramework.Searching;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
@@ -11,6 +12,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
@@ -75,6 +77,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
 
             configurator.Builder.WithRegistration<IEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey, TEntity>>,
                 DefaultEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey,TEntity>>>();
+
+            configurator.Builder.WithRegistration<IEntitySearchHandler<Guid, ChangeTrackingEntity<TKey, TEntity>, ChangeTrackingSearchRequest<TKey>>,
+                EntityFrameworkChangeTrackingSearchHandler<TKey,TEntity>>();
+
+            configurator.Builder. WithRegistration<IEntityFrameworkIncludesProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                DefaultEntityFrameworkIncludesProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
 
             configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
             configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();

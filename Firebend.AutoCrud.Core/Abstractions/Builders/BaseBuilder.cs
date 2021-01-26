@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
+using System.Text;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -157,14 +160,24 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public bool HasRegistration<TRegistration>() => HasRegistration(typeof(TRegistration));
 
-        public void EnsureRegistered<TRegistration>()
+        public void EnsureRegistered(Type type)
         {
-            var type = typeof(TRegistration);
-
             if (!HasRegistration(type))
             {
-                throw new Exception($"Please register a {type.Name}");
+                string argsString = null;
+
+                if (type.GenericTypeArguments.HasValues())
+                {
+                    var args = type
+                        .GenericTypeArguments
+                        .Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+
+                    argsString = args.ToString(0, args.Length - 1);
+
+                }
+                throw new Exception($"Please register a {type.Name} {argsString}");
             }
         }
+        public void EnsureRegistered<TRegistration>() => EnsureRegistered(typeof(TRegistration));
     }
 }

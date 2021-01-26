@@ -17,13 +17,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         where TSearch : EntitySearchRequest
     {
         private readonly IEntityFrameworkQueryClient<TKey, TEntity> _searchClient;
-        private readonly IEntityQueryCustomizer<TKey, TEntity, TSearch> _customizer;
+        private readonly IEntitySearchHandler<TKey, TEntity, TSearch> _searchHandler;
 
         public EntityFrameworkEntitySearchService(IEntityFrameworkQueryClient<TKey, TEntity> searchClient,
-            IEntityQueryCustomizer<TKey, TEntity, TSearch> customizer)
+            IEntitySearchHandler<TKey, TEntity, TSearch> searchHandler)
         {
             _searchClient = searchClient;
-            _customizer = customizer;
+            _searchHandler = searchHandler;
         }
 
         public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
@@ -40,16 +40,16 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
             var query = await _searchClient
                 .GetQueryableAsync(cancellationToken).ConfigureAwait(false);
 
-            if (_customizer != null)
-            {
-                query = _customizer.Customize(query, request);
-            }
-
             var expression = GetSearchExpression(request);
 
             if (expression != null)
             {
                 query = query.Where(expression);
+            }
+
+            if (_searchHandler != null)
+            {
+                query = _searchHandler.HandleSearch(query, request);
             }
 
             var paged = await _searchClient

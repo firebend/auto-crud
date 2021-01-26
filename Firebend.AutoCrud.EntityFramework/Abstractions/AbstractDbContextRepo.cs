@@ -41,6 +41,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
                 queryable = queryable.AsNoTracking();
             }
 
+            queryable = AddIncludes(queryable);
+
             var first = await queryable.FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
 
             return first;
@@ -84,6 +86,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
             => Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
+
+        protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => queryable;
 
         protected override void DisposeManagedObjects()
         {
