@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
         where TEntity : IEntity<TKey>
         where TSearch : EntitySearchRequest
     {
-        private Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> _func;
+        private readonly Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> _func;
 
         public DefaultEntitySearchHandler()
         {
