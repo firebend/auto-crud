@@ -6,9 +6,10 @@ using Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions;
 using Firebend.AutoCrud.ChangeTracking.Mongo.Interfaces;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Interfaces;
 
 namespace Firebend.AutoCrud.ChangeTracking.Mongo
@@ -43,6 +44,12 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
 
             configurator.Builder.WithRegistration<IChangeTrackingService<TKey, TEntity>,
                 AbstractMongoChangeTrackingService<TKey, TEntity>>();
+
+            configurator.Builder.WithRegistration<IDefaultEntityOrderByProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                DefaultEntityOrderByProviderModified<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
+
+            configurator.Builder.WithRegistration<IEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                DefaultEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey,TEntity>>>();
 
             configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
             configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();

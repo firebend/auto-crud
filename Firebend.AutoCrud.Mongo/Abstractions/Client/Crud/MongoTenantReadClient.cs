@@ -21,7 +21,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         protected MongoTenantReadClient(IMongoClient client,
             ILogger<MongoReadClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(client, logger, entityConfiguration)
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+            IEntityQueryOrderByHandler<TKey, TEntity> entityQueryOrderByHandler) : base(client, logger, entityConfiguration, entityQueryOrderByHandler)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

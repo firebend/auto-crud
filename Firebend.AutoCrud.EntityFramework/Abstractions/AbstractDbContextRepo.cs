@@ -101,7 +101,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             }
             catch
             {
-
+                // ignored
             }
 
             _context.Dispose();

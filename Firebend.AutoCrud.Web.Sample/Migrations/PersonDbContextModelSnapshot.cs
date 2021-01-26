@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Firebend.AutoCrud.Web.Sample.Migrations
 {
     [DbContext(typeof(PersonDbContext))]
+    // ReSharper disable once PartialTypeWithSinglePart
     partial class PersonDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

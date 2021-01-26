@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
-        public SqlExpression? Translate(SqlExpression instance,
+        public SqlExpression Translate(SqlExpression instance,
             MethodInfo method, IReadOnlyList<SqlExpression> arguments,
             IDiagnosticsLogger<DbLoggerCategory.Query> logger)
         {
@@ -80,7 +80,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
                         {
                             return _sqlExpressionFactory.Like(
                                 columnFragment,
-                                _sqlExpressionFactory.Constant(null, stringTypeMapping));
+                                _sqlExpressionFactory.Constant(null!, stringTypeMapping));
                         }
 
                         if (patternValue.Length == 0)

@@ -44,6 +44,20 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
             WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
             WithRegistration<IJsonPatchDocumentGenerator, JsonPatchDocumentDocumentGenerator>(false);
+            WithRegistration<IEntityQueryOrderByHandler<TKey, TEntity>, DefaultEntityQueryOrderByHandler<TKey, TEntity>>(false);
+
+            if (IsModifiedEntity)
+            {
+                WithRegistration<IDefaultEntityOrderByProvider<TKey, TEntity>>(typeof(DefaultEntityOrderByProviderModified<,>).MakeGenericType(EntityKeyType, EntityType));
+            }
+            else if (IsActiveEntity)
+            {
+                WithRegistration<IDefaultEntityOrderByProvider<TKey, TEntity>>(typeof(DefaultEntityOrderByProviderActive<,>).MakeGenericType(EntityKeyType, EntityType));
+            }
+            else
+            {
+                WithRegistrationInstance<IDefaultEntityOrderByProvider<TKey, TEntity>>(new DefaultDefaultEntityOrderByProvider<TKey, TEntity>());
+            }
         }
 
         public bool IsActiveEntity

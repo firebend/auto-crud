@@ -3,6 +3,7 @@ using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Mongo.Implementations;
 using Firebend.AutoCrud.ChangeTracking.Mongo.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -18,8 +19,9 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
     {
         public AbstractMongoChangeTrackingReadClient(IMongoClient client,
             ILogger<MongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>> logger,
-            IMongoEntityConfiguration<TEntityKey, TEntity> entityConfiguration) :
-            base(client, logger, new MongoChangeTrackingEntityConfiguration<TEntityKey, TEntity>(entityConfiguration))
+            IMongoEntityConfiguration<TEntityKey, TEntity> entityConfiguration,
+            IEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> orderByHandler) :
+            base(client, logger, new MongoChangeTrackingEntityConfiguration<TEntityKey, TEntity>(entityConfiguration), orderByHandler)
         {
         }
     }

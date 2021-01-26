@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -18,10 +19,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        private readonly IEntityQueryOrderByHandler<TKey, TEntity> _orderByHandler;
         protected MongoReadClient(IMongoClient client,
             ILogger<MongoReadClient<TKey, TEntity>> logger,
-            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
+            IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler) : base(client, logger, entityConfiguration)
         {
+            _orderByHandler = orderByHandler;
         }
 
         private async Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(FilterDefinition<TEntity> firstPipelineStateFilters,
@@ -80,31 +84,17 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (searchRequest?.DoCount ?? false)
             {
-                count = await RetryErrorAsync(() => queryable.LongCountAsync(cancellationToken)).ConfigureAwait(false);
+                var queryable1 = queryable;
+                count = await RetryErrorAsync(() => queryable1.LongCountAsync(cancellationToken)).ConfigureAwait(false);
             }
 
-            var orderBys = searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList();
+            queryable = _orderByHandler.OrderBy(queryable,searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
 
-            if (!orderBys.IsEmpty())
+            if ((searchRequest?.PageNumber ?? 0) > 0 && (searchRequest.PageSize ?? 0) > 0)
             {
-                IOrderedMongoQueryable<TEntity> ordered = null;
-
-                foreach (var (orderExpression, @ascending) in orderBys.Where(orderBy => orderBy != default))
-                {
-                    if (ordered == null)
-                    {
-                        ordered = @ascending ? queryable.OrderBy(orderExpression) : queryable.OrderByDescending(orderExpression);
-                    }
-                    else
-                    {
-                        ordered = @ascending ? ordered.ThenBy(orderExpression) : ordered.ThenByDescending(orderExpression);
-                    }
-                }
-
-                if (ordered != null)
-                {
-                    queryable = ordered;
-                }
+                queryable = queryable
+                    .Skip((searchRequest.PageNumber.Value - 1) * searchRequest.PageSize.Value)
+                    .Take(searchRequest.PageSize.Value);
             }
 
             var data = await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken))

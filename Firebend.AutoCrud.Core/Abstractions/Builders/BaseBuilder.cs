@@ -18,6 +18,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
 
+        // ReSharper disable once UnassignedGetOnlyAutoProperty
         public virtual string SignatureBase { get; }
 
         public void Build()

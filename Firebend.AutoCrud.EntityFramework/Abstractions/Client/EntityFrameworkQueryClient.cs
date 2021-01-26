@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -16,9 +17,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-
-        protected EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider) : base(contextProvider)
+        private readonly IEntityQueryOrderByHandler<TKey, TEntity> _orderByHandler;
+        protected EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
+            IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler) : base(contextProvider)
         {
+            _orderByHandler = orderByHandler;
         }
 
         private async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter, bool track, CancellationToken cancellationToken = default)
@@ -85,29 +88,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 count = await queryable.CountAsync(cancellationToken);
             }
 
-            var orderBys = searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList();
-
-            if (!orderBys.IsEmpty())
-            {
-                IOrderedQueryable<TEntity> ordered = null;
-
-                foreach (var (orderExpression, @ascending) in orderBys.Where(orderBy => orderBy != default))
-                {
-                    if (ordered == null)
-                    {
-                        ordered = @ascending ? queryable.OrderBy(orderExpression) : queryable.OrderByDescending(orderExpression);
-                    }
-                    else
-                    {
-                        ordered = @ascending ? ordered.ThenBy(orderExpression) : ordered.ThenByDescending(orderExpression);
-                    }
-                }
-
-                if (ordered != null)
-                {
-                    queryable = ordered;
-                }
-            }
+            queryable = _orderByHandler?.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
 
             if ((searchRequest?.PageNumber ?? 0) > 0 && (searchRequest.PageSize ?? 0) > 0)
             {

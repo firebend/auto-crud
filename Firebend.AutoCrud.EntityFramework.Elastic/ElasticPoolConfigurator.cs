@@ -3,6 +3,7 @@ using Firebend.AutoCrud.Core.Abstractions.Configurators;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
+using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic
 {

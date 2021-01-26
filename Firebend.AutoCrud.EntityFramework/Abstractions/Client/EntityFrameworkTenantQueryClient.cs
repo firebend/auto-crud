@@ -17,8 +17,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
         protected EntityFrameworkTenantQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider) :
-            base(contextProvider)
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+            IEntityQueryOrderByHandler<TKey, TEntity> queryOrderByHandler) :
+            base(contextProvider, queryOrderByHandler)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

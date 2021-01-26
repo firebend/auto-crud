@@ -42,6 +42,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
             {
                 searchExpression = Builders<TEntity>.Filter.Text(request.Search);
             }
+
             var query = await _readClient
                 .GetQueryableAsync(searchExpression, cancellationToken).ConfigureAwait(false);
 

@@ -1,4 +1,4 @@
-namespace Firebend.AutoCrud.EntityFramework.Elastic
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Models
 {
     public class ShardMapMangerConfiguration
     {

@@ -331,6 +331,7 @@ namespace Firebend.AutoCrud.Core.Pooling
         {
             protected AbstractDelegateWithBoundArgument()
             {
+                // ReSharper disable once VirtualMemberCallInConstructor
                 BoundDelegate = Bind();
 
                 UnboundDelegate = null!;
