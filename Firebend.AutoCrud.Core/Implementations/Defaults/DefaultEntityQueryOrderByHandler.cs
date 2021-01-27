@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
 
             if (ordered != null)
             {
-                queryable = (TQueryable) ordered;
+                queryable = (TQueryable)ordered;
             }
 
             return queryable;

@@ -34,7 +34,7 @@ namespace Firebend.AutoCrud.Web
     {
         // ReSharper disable once InconsistentNaming
         public static bool IsSwaggerApplied;
-        public static readonly object Lock = new ();
+        public static readonly object Lock = new();
     }
 
     public class ControllerConfigurator<TBuilder, TKey, TEntity> : EntityCrudConfigurator<TBuilder, TKey, TEntity>

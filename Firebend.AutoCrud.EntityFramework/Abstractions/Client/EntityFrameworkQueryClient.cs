@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
         {
             var query = await GetQueryableAsync(filter, asNoTracking, cancellationToken);
-            var entity =  await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            var entity = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
             return entity;
         }
 
@@ -117,7 +117,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             return new EntityPagedResponse<TEntity>
             {
-                Data = list, CurrentPage = searchRequest?.PageNumber, TotalRecords = count, CurrentPageSize = searchRequest?.PageSize
+                Data = list,
+                CurrentPage = searchRequest?.PageNumber,
+                TotalRecords = count,
+                CurrentPageSize = searchRequest?.PageSize
             };
         }
 

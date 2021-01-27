@@ -88,7 +88,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 count = await RetryErrorAsync(() => queryable1.LongCountAsync(cancellationToken)).ConfigureAwait(false);
             }
 
-            queryable = _orderByHandler.OrderBy(queryable,searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
+            queryable = _orderByHandler.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
 
             if ((searchRequest?.PageNumber ?? 0) > 0 && (searchRequest.PageSize ?? 0) > 0)
             {

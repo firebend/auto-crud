@@ -76,12 +76,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
                 DefaultEntityOrderByProviderModified<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
 
             configurator.Builder.WithRegistration<IEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-                DefaultEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey,TEntity>>>();
+                DefaultEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
 
             configurator.Builder.WithRegistration<IEntitySearchHandler<Guid, ChangeTrackingEntity<TKey, TEntity>, ChangeTrackingSearchRequest<TKey>>,
-                EntityFrameworkChangeTrackingSearchHandler<TKey,TEntity>>();
+                EntityFrameworkChangeTrackingSearchHandler<TKey, TEntity>>();
 
-            configurator.Builder. WithRegistration<IEntityFrameworkIncludesProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+            configurator.Builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
                 DefaultEntityFrameworkIncludesProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
 
             configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();

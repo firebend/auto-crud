@@ -115,7 +115,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             switch (queueMode)
             {
                 case AutoCrudMassTransitQueueMode.OneQueue:
-                    return new Dictionary<string, List<AutoCrudMassTransitConsumerInfo>> {{prefix, consumerInfos}};
+                    return new Dictionary<string, List<AutoCrudMassTransitConsumerInfo>> { { prefix, consumerInfos } };
 
                 case AutoCrudMassTransitQueueMode.QueuePerAction:
                     return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityActionDescription}")
@@ -139,7 +139,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                             consumerInfo.ServiceDescriptor.ImplementationType,
                             consumerInfo.EntityActionDescription
                         );
-                        dictionary.Add(queueName, new List<AutoCrudMassTransitConsumerInfo>{ consumerInfo});
+                        dictionary.Add(queueName, new List<AutoCrudMassTransitConsumerInfo> { consumerInfo });
                     }
 
                     return dictionary;

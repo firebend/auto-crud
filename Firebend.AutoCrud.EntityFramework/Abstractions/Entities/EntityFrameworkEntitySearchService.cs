@@ -55,7 +55,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
             }
 
             var paged = await _searchClient
-                .GetPagedResponseAsync(query, request,true, cancellationToken)
+                .GetPagedResponseAsync(query, request, true, cancellationToken)
                 .ConfigureAwait(false);
 
             return paged;

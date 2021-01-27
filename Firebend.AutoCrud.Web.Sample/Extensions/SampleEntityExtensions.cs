@@ -62,7 +62,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
                         {
-                            if(!string.IsNullOrWhiteSpace(parameters?.NickName))
+                            if (!string.IsNullOrWhiteSpace(parameters?.NickName))
                             {
                                 query = query.Where(x => x.NickName == parameters.NickName);
                             }
@@ -101,7 +101,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             generator.AddEntity<Guid, EfPet>(person =>
                 person.WithDbContext<PersonDbContext>()
                     .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPet>>()
-                    .WithIncludes(pets => pets.Include(x =>x.Person))
+                    .WithIncludes(pets => pets.Include(x => x.Person))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");

@@ -30,14 +30,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
                 throw new Exception($"Configuration Error! This builder is not a {nameof(MongoDbEntityBuilder<Guid, FooEntity>)}");
             }
 
-            configurator.Builder.WithRegistration<IMongoCreateClient<Guid, ChangeTrackingEntity<TKey,TEntity>>,
+            configurator.Builder.WithRegistration<IMongoCreateClient<Guid, ChangeTrackingEntity<TKey, TEntity>>,
                 MongoCreateClient<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
 
-            configurator.Builder.WithRegistration<IMongoReadClient<Guid, ChangeTrackingEntity<TKey,TEntity>>,
-                MongoReadClient<Guid, ChangeTrackingEntity<TKey,TEntity>>>(false);
+            configurator.Builder.WithRegistration<IMongoReadClient<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                MongoReadClient<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
             configurator.Builder.WithRegistration<IMongoIndexClient<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-                MongoIndexClient<Guid, ChangeTrackingEntity<TKey,TEntity>>>(false);
+                MongoIndexClient<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
             configurator.Builder.WithRegistration<IMongoIndexProvider<ChangeTrackingEntity<TKey, TEntity>>,
                 AbstractMongoChangeTrackingIndexProvider<TKey, TEntity>>(false);
@@ -52,43 +52,43 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
                 DefaultEntityOrderByProviderModified<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
             configurator.Builder.WithRegistration<IEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-                DefaultEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey,TEntity>>>(false);
+                DefaultEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
             configurator.Builder.WithRegistration<
                 IEntitySearchHandler<Guid, ChangeTrackingEntity<TKey, TEntity>, ChangeTrackingSearchRequest<TKey>>,
-                MongoFullTextSearchHandler<Guid, ChangeTrackingEntity<TKey,TEntity>, ChangeTrackingSearchRequest<TKey>>>(false);
+                MongoFullTextSearchHandler<Guid, ChangeTrackingEntity<TKey, TEntity>, ChangeTrackingSearchRequest<TKey>>>(false);
 
             if (configurator.Builder.IsTenantEntity)
             {
-                configurator.Builder.WithRegistration<IMongoEntityConfigurationTenantTransformService<Guid, ChangeTrackingEntity<TKey,TEntity>>,
-                    MongoEntityConfigurationTenantTransformService<Guid, ChangeTrackingEntity<TKey,TEntity>>>(false);
+                configurator.Builder.WithRegistration<IMongoEntityConfigurationTenantTransformService<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                    MongoEntityConfigurationTenantTransformService<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
-                configurator.Builder.WithRegistration<IMongoConfigurationAllShardsProvider<Guid, ChangeTrackingEntity<TKey,TEntity>>,
-                    MongoConfigurationAllShardsProvider<Guid, ChangeTrackingEntity<TKey,TEntity>>>(false);
+                configurator.Builder.WithRegistration<IMongoConfigurationAllShardsProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                    MongoConfigurationAllShardsProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
-                configurator.Builder.WithRegistration<IConfigureCollection<Guid, ChangeTrackingEntity<TKey,TEntity>>,
-                    MongoConfigureShardedCollection<Guid, ChangeTrackingEntity<TKey,TEntity>>>(false);
+                configurator.Builder.WithRegistration<IConfigureCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                    MongoConfigureShardedCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
                 configurator.Builder.WithRegistration<IConfigureCollection,
-                    MongoConfigureShardedCollection<Guid, ChangeTrackingEntity<TKey,TEntity>>>(false);
+                    MongoConfigureShardedCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
-                configurator.Builder.WithRegistrationInstance<IMongoEntityDefaultConfiguration<Guid, ChangeTrackingEntity<TKey,TEntity>>>(
+                configurator.Builder.WithRegistrationInstance<IMongoEntityDefaultConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>(
                     new MongoEntityDefaultConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>(mongoDbEntityBuilder.CollectionName + "_ChangeTracking",
                         mongoDbEntityBuilder.Database,
                         mongoDbEntityBuilder.ShardMode));
 
-                configurator.Builder.WithRegistration<IMongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey,TEntity>>,
-                    MongoTenantEntityConfiguration<Guid, ChangeTrackingEntity<TKey,TEntity>>>();
+                configurator.Builder.WithRegistration<IMongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                    MongoTenantEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
             }
             else
             {
-                configurator.Builder.WithRegistration<IConfigureCollection<Guid, ChangeTrackingEntity<TKey,TEntity>>,
-                    MongoConfigureCollection<Guid, ChangeTrackingEntity<TKey,TEntity>>>(false);
+                configurator.Builder.WithRegistration<IConfigureCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>,
+                    MongoConfigureCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
                 configurator.Builder.WithRegistration<IConfigureCollection, MongoConfigureCollection<Guid,
-                    ChangeTrackingEntity<TKey,TEntity>>>(false);
+                    ChangeTrackingEntity<TKey, TEntity>>>(false);
 
-                configurator.Builder.WithRegistrationInstance<IMongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey,TEntity>>>(
+                configurator.Builder.WithRegistrationInstance<IMongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>(
                     new MongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>(mongoDbEntityBuilder.CollectionName + "_ChangeTracking",
                         mongoDbEntityBuilder.Database,
                         mongoDbEntityBuilder.ShardMode));
