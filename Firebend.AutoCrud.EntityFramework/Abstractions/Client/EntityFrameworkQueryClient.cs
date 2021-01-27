@@ -28,16 +28,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _includesProvider = includesProvider;
         }
 
-        private async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter, bool track, CancellationToken cancellationToken = default)
+        private async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-            var query = await GetFilteredQueryableAsync(context, cancellationToken);
-
-            if (!track)
-            {
-                query = query.AsNoTracking();
-            }
+            var query = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken);
 
             query = await ModifyQueryableAsync(query);
 
@@ -49,26 +46,30 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return query;
         }
 
-        public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, bool track, CancellationToken cancellationToken = default)
+        public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, track, cancellationToken);
+            var query = await GetQueryableAsync(filter, asNoTracking, cancellationToken);
             var entity =  await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
             return entity;
         }
 
-        public Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default)
-            => GetQueryableAsync(null, true, cancellationToken);
+        public Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking, CancellationToken cancellationToken = default)
+            => GetQueryableAsync(null, asNoTracking, cancellationToken);
 
         public async Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, false, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableAsync(filter, true, cancellationToken).ConfigureAwait(false);
             var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
             return count;
         }
 
-        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, true, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableAsync(filter, asNoTracking, cancellationToken).ConfigureAwait(false);
             var list = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
             return list;
         }
@@ -76,16 +77,22 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, false, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableAsync(filter, true, cancellationToken).ConfigureAwait(false);
             var exists = await query.AnyAsync(cancellationToken).ConfigureAwait(false);
 
             return exists;
         }
 
-        public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable, TSearchRequest searchRequest, CancellationToken cancellationToken = default)
+        public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
+            TSearchRequest searchRequest,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default)
             where TSearchRequest : EntitySearchRequest
         {
-            queryable = queryable.AsNoTracking();
+            if (asNoTracking)
+            {
+                queryable = queryable.AsNoTracking();
+            }
 
             int? count = null;
 

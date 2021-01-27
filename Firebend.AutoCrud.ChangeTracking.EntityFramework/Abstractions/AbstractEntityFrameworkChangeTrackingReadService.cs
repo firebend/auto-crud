@@ -37,7 +37,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 throw new ArgumentNullException(nameof(searchRequest));
             }
 
-            var query = await _queryClient.GetQueryableAsync(cancellationToken);
+            var query = await _queryClient
+                .GetQueryableAsync(true, cancellationToken)
+                .ConfigureAwait(false);
 
             query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
 
@@ -54,7 +56,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             }
 
             var paged = await _queryClient
-                .GetPagedResponseAsync(query, searchRequest, cancellationToken)
+                .GetPagedResponseAsync(query, searchRequest, true, cancellationToken)
                 .ConfigureAwait(false);
 
             return paged;

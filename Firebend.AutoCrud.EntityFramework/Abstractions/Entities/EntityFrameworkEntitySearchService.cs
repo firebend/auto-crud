@@ -30,7 +30,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         {
             request.DoCount = false;
 
-            var results = await PageAsync(request, cancellationToken).ConfigureAwait(false);
+            var results = await PageAsync(request, cancellationToken)
+                .ConfigureAwait(false);
 
             return results?.Data?.ToList();
         }
@@ -38,7 +39,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
         {
             var query = await _searchClient
-                .GetQueryableAsync(cancellationToken).ConfigureAwait(false);
+                .GetQueryableAsync(true, cancellationToken)
+                .ConfigureAwait(false);
 
             var expression = GetSearchExpression(request);
 
@@ -53,7 +55,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
             }
 
             var paged = await _searchClient
-                .GetPagedResponseAsync(query, request, cancellationToken)
+                .GetPagedResponseAsync(query, request,true, cancellationToken)
                 .ConfigureAwait(false);
 
             return paged;

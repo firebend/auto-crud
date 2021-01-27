@@ -30,7 +30,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         }
 
         public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
-        {var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+        {
+            var context = await GetDbContextAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             var entity = new TEntity { Id = key };
             var entry = context.Entry(entity);
@@ -39,7 +41,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             {
                 var set = GetDbSet(context);
 
-                var found = await GetByEntityKeyAsync(context, key, false, cancellationToken);
+                var found = await GetByEntityKeyAsync(context, key, false, cancellationToken)
+                    .ConfigureAwait(false);
 
                 if (found != null)
                 {
@@ -69,7 +72,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public virtual async Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var query = await GetFilteredQueryableAsync(context, cancellationToken);
+            var query = await GetFilteredQueryableAsync(context, false, cancellationToken);
             var set = context.Set<TEntity>();
             var list = await query
                 .Where(filter)

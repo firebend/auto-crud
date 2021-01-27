@@ -25,7 +25,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             _provider = provider;
         }
 
-        protected async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default) => _context ??= await _provider
+        protected async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+            => _context ??= await _provider
             .GetDbContextAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -33,15 +34,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected async Task<TEntity> GetByEntityKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
         {
-            var queryable = await GetFilteredQueryableAsync(context,  cancellationToken)
+            var queryable = await GetFilteredQueryableAsync(context,  asNoTracking, cancellationToken)
                 .ConfigureAwait(false);
-
-            if (asNoTracking)
-            {
-                queryable = queryable.AsNoTracking();
-            }
-
-            queryable = AddIncludes(queryable);
 
             var first = await queryable.FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
 
@@ -50,13 +44,22 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
             IDbContext context,
+            bool asNoTracking,
             CancellationToken cancellationToken = default)
         {
             var set = GetDbSet(context);
 
             var queryable = set.AsQueryable();
 
-            var filters = await BuildFilters(cancellationToken: cancellationToken);
+            if (asNoTracking)
+            {
+                queryable = queryable.AsNoTracking();
+            }
+
+            queryable = AddIncludes(queryable);
+
+            var filters = await BuildFilters(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
             return filters == null ? queryable : queryable.Where(filters);
         }
@@ -64,7 +67,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
         protected async Task<Expression<Func<TEntity, bool>>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null,
             CancellationToken cancellationToken = default)
         {
-            var securityFilters = await GetSecurityFiltersAsync(cancellationToken) ?? new List<Expression<Func<TEntity, bool>>>();
+            var securityFilters = await GetSecurityFiltersAsync(cancellationToken).ConfigureAwait(false)
+                                  ?? new List<Expression<Func<TEntity, bool>>>();
 
             var filters = securityFilters
                 .Where(x => x != null)
@@ -91,7 +95,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected override void DisposeManagedObjects()
         {
-            if (_context == null || _context is not DbContext dbContext)
+            if (_context is not DbContext dbContext)
             {
                 return;
             }

@@ -24,18 +24,18 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
         {
             IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> order;
 
-            var orderByArrays = orderBys as (Expression<Func<TEntity, object>> order, bool ascending)[] ?? orderBys.ToArray();
+            var orderByArrays = orderBys as (Expression<Func<TEntity, object>> order, bool ascending)[] ?? orderBys?.ToArray();
 
-            if (orderByArrays.IsEmpty())
+            if (orderByArrays?.HasValues() ?? false)
+            {
+                order = orderByArrays;
+            }
+            else
             {
                 order = new[]
                 {
                     _defaultEntityOrderByProvider.GetOrderBy()
                 };
-            }
-            else
-            {
-                order = orderByArrays;
             }
 
             IOrderedQueryable<TEntity> ordered = null;
