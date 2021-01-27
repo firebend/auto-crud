@@ -18,7 +18,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.2
+        dotnet-version: 5.0.102
 
     - name: Add dotnet-format problem matcher
       uses: xt0rted/dotnet-format-problem-matcher@v1
