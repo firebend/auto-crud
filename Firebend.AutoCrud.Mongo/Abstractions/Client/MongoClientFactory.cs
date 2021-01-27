@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
     public class MongoClientFactory : IMongoClientFactory
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public MongoClientFactory(ILogger<MongoClient> logger)
         {

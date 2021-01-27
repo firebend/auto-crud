@@ -58,11 +58,11 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
             configurator.Configure();
 
-            services.AddScoped<IMongoClientFactory, MongoClientFactory>();
-            services.AddScoped(provider =>
+            services.AddSingleton<IMongoClientFactory, MongoClientFactory>();
+            services.AddSingleton(provider =>
             {
                 var factory = provider.GetService<IMongoClientFactory>();
-                var client = factory.CreateClient(connectionString, enableCommandLogging);
+                var client = factory?.CreateClient(connectionString, enableCommandLogging);
                 return client;
             });
 
