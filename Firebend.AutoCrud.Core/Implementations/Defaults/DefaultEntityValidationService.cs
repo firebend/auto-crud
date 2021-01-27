@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Implementations.Defaults
 {
-    public class DefaultEntityValidationService<TKey, TEntity> : IEntityValidationService<TKey, TEntity>
+    public abstract class DefaultEntityValidationService<TKey, TEntity> : IEntityValidationService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

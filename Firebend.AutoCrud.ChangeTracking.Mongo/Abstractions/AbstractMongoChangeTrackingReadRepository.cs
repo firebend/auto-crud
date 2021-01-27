@@ -8,7 +8,6 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
@@ -40,7 +39,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 
             Func<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>, IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>> firstStageFilter = null;
 
-            if (_searchHandler != null && !string.IsNullOrWhiteSpace(searchRequest?.Search))
+            if (!string.IsNullOrWhiteSpace(searchRequest?.Search))
             {
                 firstStageFilter = x => (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)_searchHandler.HandleSearch(x, searchRequest);
             }

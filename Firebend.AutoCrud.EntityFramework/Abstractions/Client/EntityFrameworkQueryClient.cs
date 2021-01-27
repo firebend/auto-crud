@@ -94,7 +94,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 count = await queryable.CountAsync(cancellationToken);
             }
 
-            queryable = _orderByHandler?.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
+            if (_orderByHandler != null)
+            {
+                queryable = _orderByHandler.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
+            }
 
             if ((searchRequest?.PageNumber ?? 0) > 0 && (searchRequest.PageSize ?? 0) > 0)
             {

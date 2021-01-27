@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
-using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
