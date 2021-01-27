@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
-using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
+using Firebend.AutoCrud.EntityFramework.Connections;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
 using Firebend.AutoCrud.EntityFramework.Including;
-using Firebend.AutoCrud.EntityFramework.Indexing;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,9 +66,14 @@ namespace Firebend.AutoCrud.EntityFramework
                 WithRegistration<IEntityFrameworkDeleteClient<TKey, TEntity>, EntityFrameworkDeleteClient<TKey, TEntity>>(false);
             }
 
-            WithRegistration<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>, DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(false);
-            WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>, DefaultEntityFrameworkIncludesProvider<TKey, TEntity>>(false);
-            WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>, DefaultEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>>(false);
+            WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>,
+                DefaultEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>>(false);
+
+            WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>,
+                DefaultEntityFrameworkIncludesProvider<TKey, TEntity>>(false);
+
+            EnsureRegistered<IDbContextConnectionStringProvider<TKey, TEntity>>();
+            EnsureRegistered(typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType));
         }
 
         /// <summary>
@@ -109,59 +114,108 @@ namespace Firebend.AutoCrud.EntityFramework
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext<TContext>()
             where TContext : IDbContext => WithDbContext(typeof(TContext));
 
-
         /// <summary>
-        /// Adds a search filter for the entity
+        /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
         /// </summary>
-        /// <param name="type">The type of the search filter to use</param>
+        /// <param name="type">
+        /// The <see cref="Type"/> that specifies a class that implements <see cref="IDbContextOptionsProvider{TKey,TEntity}"/>
+        /// </param>
         /// <example>
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithSearchFilter(typeof(SearchFilter))
+        ///        .WithDbOptionsProvider(typeof(AppDbContextOptionsProvider))
         ///        .AddCrud()
         ///        .AddControllers()
         /// </code>
         /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Type type)
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Type type)
         {
-            WithRegistration<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(type);
+            WithRegistration<IDbContextOptionsProvider<TKey, TEntity>>(type);
             return this;
         }
 
         /// <summary>
-        /// Adds a search filter for the entity
+        /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
         /// </summary>
-        /// <typeparam name="T">The type of the search filter to use</typeparam>
+        /// <typeparam name="TProvider">The type that implements <see cref="IDbContextOptionsProvider{TKey,TEntity}"/></typeparam>
         /// <example>
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithSearchFilter<SearchFilter>()
+        ///        .WithDbOptionsProvider<AppDbContextOptionsProvider>()
         ///        .AddCrud()
         ///        .AddControllers()
         /// </code>
         /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter<T>() => WithSearchFilter(typeof(T));
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TProvider>()
+        where TProvider : IDbContextOptionsProvider<TKey, TEntity>
+        {
+            WithRegistration<IDbContextOptionsProvider<TKey, TEntity>, TProvider>();
+            return this;
+        }
 
         /// <summary>
-        /// Adds a search filter for the entity
+        /// Specifies EntityFramework Db Context options.
         /// </summary>
-        /// <param name="filter">A callback function returning whether to include the object in results for the search</param>
+        /// <param name="dbContextOptionsFunc">
+        /// A <see cref="Func{TResult}"/> that accepts the connection string and returns a <see cref="DbContextOptions"/>
+        /// </param>
         /// <example>
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithSearchFilter((e, s) => e.TemperatureC > s)
+        ///        .WithDbOptionsProvider(new DbContextOptionsBuilder().AddSqlServer().Options)
         ///        .AddCrud()
         ///        .AddControllers()
         /// </code>
         /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithSearchFilter(Expression<Func<TEntity, string, bool>> filter)
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Func<string, DbContextOptions> dbContextOptionsFunc)
         {
-            WithRegistrationInstance<IEntityFrameworkFullTextExpressionProvider<TKey, TEntity>>(
-                new DefaultEntityFrameworkFullTextExpressionProvider<TKey, TEntity>(filter));
+            WithRegistrationInstance<IDbContextOptionsProvider<TKey, TEntity>>(new DbContextOptionsProvider<TKey, TEntity>(dbContextOptionsFunc));
+            return this;
+        }
 
+        /// <summary>
+        /// Specifies the connection string to use for the db context associated to this crud builder.
+        /// </summary>
+        /// <param name="connectionString">
+        /// A <see cref="string"/> represending the connection string for the <see cref="DbContext"/>
+        /// </param>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithDbOptionsProvider(new DbContextOptionsBuilder().AddSqlServer().Options)
+        ///        .WithConnectionString(Configuration.ConnectionStrings["MyDbConnection"])
+        ///        .AddCrud()
+        ///        .AddControllers()
+        /// </code>
+        /// </example>
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithConnectionString(string connectionString)
+        {
+            WithRegistrationInstance<IDbContextConnectionStringProvider<TKey, TEntity>>(new DefaultDbContextConnectionStringProvider<TKey, TEntity>(connectionString));
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies the connection string to use for the db context associated to this crud builder.
+        /// </summary>
+        /// <typeparam name="TProvider">The type that implements <see cref="IDbContextConnectionStringProvider{TKey,TEntity}"/></typeparam>
+        /// <example>
+        /// <code>
+        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///    forecast.WithDbContext<AppDbContext>()
+        ///        .WithDbOptionsProvider<AppDbContextOptionsProvider>()
+        ///        .WithConnectionStringProvider<AppDbContextConnectionStringProvider>()
+        ///        .AddCrud()
+        ///        .AddControllers()
+        /// </code>
+        /// </example>
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithConnectionStringProvider<TProvider>()
+            where TProvider : IDbContextConnectionStringProvider<TKey, TEntity>
+        {
+            WithRegistration<IDbContextConnectionStringProvider<TKey, TEntity>, TProvider>();
             return this;
         }
 
@@ -224,67 +278,6 @@ namespace Firebend.AutoCrud.EntityFramework
             WithRegistrationInstance<IEntityFrameworkIncludesProvider<TKey, TEntity>>(
                 new FunctionIncludesProvider<TKey, TEntity>(func));
 
-            return this;
-        }
-
-        /// <summary>
-        /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type"/> that specifies a class that implements <see cref="IDbContextOptionsProvider{TKey,TEntity}"/>
-        /// </param>
-        /// <example>
-        /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithDbOptionsProvider(typeof(AppDbContextOptionsProvider))
-        ///        .AddCrud()
-        ///        .AddControllers()
-        /// </code>
-        /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Type type)
-        {
-            WithRegistration<IDbContextOptionsProvider<TKey, TEntity>>(type);
-            return this;
-        }
-
-        /// <summary>
-        /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
-        /// </summary>
-        /// <typeparam name="TProvider">The type that implements <see cref="IDbContextOptionsProvider{TKey,TEntity}"/></typeparam>
-        /// <example>
-        /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithDbOptionsProvider<AppDbContextOptionsProvider>()
-        ///        .AddCrud()
-        ///        .AddControllers()
-        /// </code>
-        /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TProvider>()
-        {
-            WithRegistration<IDbContextOptionsProvider<TKey, TEntity>, TProvider>();
-            return this;
-        }
-
-        /// <summary>
-        /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
-        /// </summary>
-        /// <param name="dbContextOptionsFunc">
-        /// A <see cref="Func{TResult}"/> that accepts the connection string and returns a <see cref="DbContextOptions"/>
-        /// </param>
-        /// <example>
-        /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithDbOptionsProvider(new DbContextOptionsBuilder().AddSqlServer().Options)
-        ///        .AddCrud()
-        ///        .AddControllers()
-        /// </code>
-        /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Func<string, DbContextOptions> dbContextOptionsFunc)
-        {
-            WithRegistrationInstance<IDbContextOptionsProvider<TKey, TEntity>>(new DbContextOptionsProvider<TKey, TEntity>(dbContextOptionsFunc));
             return this;
         }
     }

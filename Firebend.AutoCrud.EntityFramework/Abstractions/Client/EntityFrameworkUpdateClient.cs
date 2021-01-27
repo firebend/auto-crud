@@ -10,7 +10,6 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
-using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
@@ -41,7 +40,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
-        private static string[] GetIgnoredProperties() => Run.Once($"IgnoreKeys.{typeof(TEntity).FullName}", () =>
+        private readonly Lazy<string[]> _ignoredProperties = new(() =>
         {
             var props = typeof(TEntity)
                 .GetProperties()
@@ -58,7 +57,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-            var model = await GetByKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
+            var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
 
             if (model == null)
             {
@@ -67,7 +66,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var original = model.Clone();
 
-            model = entity.CopyPropertiesTo(model, GetIgnoredProperties());
+            model = entity.CopyPropertiesTo(model, _ignoredProperties.Value);
 
             if (model is IModifiedEntity modified)
             {
@@ -103,7 +102,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public virtual async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var entity = await GetByKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
+            var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
 
             if (entity == null)
             {

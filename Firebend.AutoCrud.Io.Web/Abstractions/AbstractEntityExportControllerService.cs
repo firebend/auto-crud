@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Firebend.AutoCrud.Io.Web.Abstractions
 {
     public abstract class AbstractEntityExportControllerService<TKey, TEntity, TSearch, TMapped> :
+        BaseDisposable,
         IEntityExportControllerService<TKey, TEntity, TSearch, TMapped>
         where TSearch : EntitySearchRequest
         where TMapped : class
@@ -52,19 +54,19 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
 
             var records = MapRecords(entities);
 
-            var stream = await _exportService
+            var fileContents = await _exportService
                 .ExportAsync(fileType, records, cancellationToken)
                 .ConfigureAwait(false);
 
             var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
             var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
 
-            var fileResult = new FileStreamResult(stream, mimeType) { FileDownloadName = $"{fileName}{extension}" };
+            var fileResult = new FileContentResult(fileContents, mimeType) { FileDownloadName = $"{fileName}{extension}" };
 
             return fileResult;
         }
 
-        private TMapped[] MapRecords(IEnumerable<TEntity> data)
+        private IEnumerable<TMapped> MapRecords(IEnumerable<TEntity> data)
         {
             if (data == null)
             {
@@ -77,5 +79,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
 
             return mappedRecords;
         }
+
+        protected override void DisposeManagedObjects() => _searchService?.Dispose();
     }
 }

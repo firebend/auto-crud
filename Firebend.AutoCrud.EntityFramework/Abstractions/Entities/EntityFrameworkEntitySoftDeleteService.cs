@@ -1,12 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public abstract class EntityFrameworkEntitySoftDeleteService<TKey, TEntity> : IEntityDeleteService<TKey, TEntity>
+    public abstract class EntityFrameworkEntitySoftDeleteService<TKey, TEntity> : BaseDisposable, IEntityDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, IActiveEntity, new()
     {
@@ -25,5 +26,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 
             return _updateService.PatchAsync(key, patch, cancellationToken);
         }
+
+        protected override void DisposeManagedObjects() => _updateService?.Dispose();
     }
 }

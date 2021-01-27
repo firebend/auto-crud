@@ -10,6 +10,7 @@ namespace Firebend.AutoCrud.Io.Implementations
         {
             EntityFileType.Csv => "text/csv",
             EntityFileType.Spreadsheet => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            EntityFileType.Unknown => throw new ArgumentException($"{nameof(EntityFileType.Unknown)} is not a valid entity file type"),
             _ => throw new ArgumentException($"Could not map mime type. Entity File Type: {entityFileType}")
         };
 
@@ -17,6 +18,7 @@ namespace Firebend.AutoCrud.Io.Implementations
         {
             EntityFileType.Csv => ".csv",
             EntityFileType.Spreadsheet => ".xlsx",
+            EntityFileType.Unknown => throw new ArgumentException($"{nameof(EntityFileType.Unknown)} is not a valid entity file type"),
             _ => throw new ArgumentException($"Could not map extension. Entity File Type: {entityFileType}")
         };
     }

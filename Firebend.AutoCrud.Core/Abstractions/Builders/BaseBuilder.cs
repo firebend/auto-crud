@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
+using System.Text;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +21,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
 
+        // ReSharper disable once UnassignedGetOnlyAutoProperty
         public virtual string SignatureBase { get; }
 
         public void Build()
@@ -155,5 +159,25 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public bool HasRegistration(Type type) => Registrations != null && Registrations.ContainsKey(type);
 
         public bool HasRegistration<TRegistration>() => HasRegistration(typeof(TRegistration));
+
+        public void EnsureRegistered(Type type)
+        {
+            if (!HasRegistration(type))
+            {
+                string argsString = null;
+
+                if (type.GenericTypeArguments.HasValues())
+                {
+                    var args = type
+                        .GenericTypeArguments
+                        .Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+
+                    argsString = args.ToString(0, args.Length - 1);
+
+                }
+                throw new Exception($"Please register a {type.Name} {argsString}");
+            }
+        }
+        public void EnsureRegistered<TRegistration>() => EnsureRegistered(typeof(TRegistration));
     }
 }

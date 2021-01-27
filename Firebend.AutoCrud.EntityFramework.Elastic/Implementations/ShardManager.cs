@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
+using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations

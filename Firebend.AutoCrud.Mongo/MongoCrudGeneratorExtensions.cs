@@ -9,6 +9,7 @@ namespace Firebend.AutoCrud.Mongo
         /// Generates and adds configured Mongo entities to application's service collection
         /// </summary>
         /// <param name="connectionString">The connection string to your mongo database</param>
+        /// <param name="enableLogging">True if a logger can be configured to log commands; otherwise, false.</param>
         /// <example>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
@@ -20,13 +21,14 @@ namespace Firebend.AutoCrud.Mongo
         /// </code>
         /// </example>
         public static MongoEntityCrudGenerator UsingMongoCrud(this IServiceCollection serviceCollection,
-            string connectionString) => new MongoEntityCrudGenerator(serviceCollection, connectionString);
+            string connectionString, bool enableLogging = true) => new(serviceCollection, connectionString, enableLogging);
 
 
         /// <summary>
         /// Generates and adds configured Mongo entities to application's service collection
         /// </summary>
         /// <param name="connectionString">The connection string to your mongo database</param>
+        /// <param name="enableLogging">True if a logger can be configured to log commands; otherwise, false.</param>
         /// <param name="configure">A callback function that allows configuring entities</param>
         /// <example>
         /// <code>
@@ -43,9 +45,10 @@ namespace Firebend.AutoCrud.Mongo
         /// See <see cref="MongoEntityCrudGenerator.AddEntity"/> for configuring entities
         public static IServiceCollection UsingMongoCrud(this IServiceCollection serviceCollection,
             string connectionString,
+            bool enableLogging,
             Action<MongoEntityCrudGenerator> configure)
         {
-            var mongo = serviceCollection.UsingMongoCrud(connectionString);
+            var mongo = serviceCollection.UsingMongoCrud(connectionString, enableLogging);
             configure(mongo);
             return mongo.Generate();
         }

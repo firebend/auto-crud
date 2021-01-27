@@ -15,7 +15,12 @@ namespace Firebend.AutoCrud.Web.Sample
 {
     public class Program
     {
-        public static void Main(string[] args) => CreateHostBuilder(args).Build().Run();
+        public static void Main(string[] args)
+        {
+            var processId = System.Diagnostics.Process.GetCurrentProcess().Id;
+            System.Console.WriteLine($"Running Auto Crud Web Sample. Process Id: {processId}");
+            CreateHostBuilder(args).Build().Run();
+        }
 
         public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((hostingContext, builder) =>
@@ -33,7 +38,7 @@ namespace Firebend.AutoCrud.Web.Sample
             {
                 services
                     .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
-                    .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"), mongo =>
+                    .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"), true, mongo =>
                     {
                         mongo.AddMongoPerson();
                     })

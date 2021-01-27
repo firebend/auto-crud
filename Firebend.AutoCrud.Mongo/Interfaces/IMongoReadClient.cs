@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
+using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
@@ -12,39 +13,19 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        Task<TEntity> SingleOrDefaultAsync(
-            Expression<Func<TEntity, bool>> filter,
-            CancellationToken cancellationToken = default);
+        Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
 
-        Task<List<TEntity>> GetAllAsync(
-            CancellationToken cancellationToken = default);
+        Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters, CancellationToken cancellationToken = default);
 
-        Task<EntityPagedResponse<TEntity>> PageAsync(
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            bool doCount = true,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
-            CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
 
-        Task<EntityPagedResponse<TOut>> PageAsync<TOut>(
-            Expression<Func<TEntity, TOut>> projection,
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            bool doCount = false,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
-            CancellationToken cancellationToken = default);
+        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
 
-        Task<int> CountAsync(
-            string search,
-            Expression<Func<TEntity, bool>> expression,
-            CancellationToken cancellationToken = default);
+        Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
 
-        Task<bool> ExistsAsync(
-            Expression<Func<TEntity, bool>> filter,
-            CancellationToken cancellationToken = default);
+        Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,
+            TSearchRequest searchRequest,
+            CancellationToken cancellationToken = default)
+            where TSearchRequest : EntitySearchRequest;
     }
 }

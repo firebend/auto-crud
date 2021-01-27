@@ -1,4 +1,4 @@
-POST https://localhost:5001/api/v1/ef-person/cf8f6e10-c203-465b-20f5-08d8b65581d6/pets
+POST https://localhost:5001/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/pets
 Content-Type: application/json
 
 {
@@ -6,10 +6,15 @@ Content-Type: application/json
     "petType": "Dog"
 }
 ###
-GET https://localhost:5001/api/v1/ef-person/cf8f6e10-c203-465b-20f5-08d8b65581d6/pets?pageNumber=1&pageSize=10
+GET https://localhost:5001/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/pets?pageNumber=1&pageSize=10
 
 ###
-GET https://localhost:5001/api/v1/ef-person/cf8f6e10-c203-465b-20f5-08d8b65581d6/pets/1b3e5104-3e6c-4707-2fe0-08d8b6558ebc/changes?pageNumber=1&pageSize=10
+GET https://localhost:5001/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/pets/1aef5d21-baba-4223-d514-08d8c2d966ed
 
 ###
-GET https://localhost:5001/api/v1/ef-person/cf8f6e10-c203-465b-20f5-08d8b65581d6/pets/export/csv?pageNumber=1&pageSize=10&fileName=test
+GET https://localhost:5001/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/pets/all
+###
+GET https://localhost:5001/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/pets/1aef5d21-baba-4223-d514-08d8c2d966ed/changes?pageNumber=1&pageSize=10
+
+###
+GET https://localhost:5001/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/pets/export/csv?pageNumber=1&pageSize=10&fileName=test

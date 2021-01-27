@@ -1,18 +1,15 @@
 using System;
+using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.HostedServices;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.Core.Events;
 using Scrutor;
 
 namespace Firebend.AutoCrud.Mongo.Configuration
 {
     public static class MongoBootstrapper
     {
-        private static readonly object BootStrapLock = new object();
+        private static readonly object BootStrapLock = new();
         private static bool _isBootstrapped;
 
         public static IServiceCollection ConfigureMongoDb(
@@ -59,34 +56,14 @@ namespace Firebend.AutoCrud.Mongo.Configuration
                 .WithTransientLifetime()
             );
 
-            var mongoUrl = new MongoUrl(connectionString);
-
             configurator.Configure();
 
-            services.AddScoped<IMongoClient>(x =>
+            services.AddSingleton<IMongoClientFactory, MongoClientFactory>();
+            services.AddSingleton(provider =>
             {
-                var logger = x.GetService<ILogger<MongoClient>>();
-
-                var mongoClientSettings = MongoClientSettings.FromUrl(mongoUrl);
-
-                if (enableCommandLogging)
-                {
-                    mongoClientSettings.ClusterConfigurator = cb =>
-                    {
-                        cb.Subscribe<CommandStartedEvent>(e =>
-                            logger.LogDebug("MONGO: {CommandName} - {Command}", e.CommandName, e.Command.ToJson()));
-
-                        cb.Subscribe<CommandSucceededEvent>(e =>
-                            logger.LogDebug("SUCCESS: {CommandName}({Duration}) - {Reply}", e.CommandName, e.Duration,
-                                e.Reply.ToJson()));
-
-                        cb.Subscribe<CommandFailedEvent>(e =>
-                            logger.LogError("ERROR: {CommandName}({Duration}) - {Error}", e.CommandName, e.Duration,
-                                e.Failure));
-                    };
-                }
-
-                return new MongoClient(mongoClientSettings);
+                var factory = provider.GetService<IMongoClientFactory>();
+                var client = factory?.CreateClient(connectionString, enableCommandLogging);
+                return client;
             });
 
             services.AddHostedService<ConfigureCollectionsHostedService>();

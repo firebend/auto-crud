@@ -3,32 +3,32 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
-using Firebend.AutoCrud.ChangeTracking.Mongo.Implementations;
+using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 {
     public abstract class AbstractMongoChangeTrackingReadRepository<TEntityKey, TEntity> :
-        MongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>,
+        AbstractEntitySearchService<ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>>,
         IChangeTrackingReadService<TEntityKey, TEntity>
         where TEntityKey : struct
         where TEntity : class, IEntity<TEntityKey>
     {
-        protected AbstractMongoChangeTrackingReadRepository(IMongoClient client,
-            ILogger<MongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>> logger,
-            IMongoEntityConfiguration<TEntityKey, TEntity> entityConfiguration) :
-            base(client,
-                logger,
-                new MongoChangeTrackingEntityConfiguration<TEntityKey, TEntity>(entityConfiguration))
+        private readonly IMongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _queryClient;
+        private readonly IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> _searchHandler;
+
+        protected AbstractMongoChangeTrackingReadRepository(IMongoReadClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> queryClient,
+            IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> searchHandler)
         {
+            _queryClient = queryClient;
+            _searchHandler = searchHandler;
         }
 
-        public Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
+        public async Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
             ChangeTrackingSearchRequest<TEntityKey> searchRequest,
             CancellationToken cancellationToken = default)
         {
@@ -37,11 +37,34 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
                 throw new ArgumentNullException(nameof(searchRequest));
             }
 
-            return PageAsync(null,
-                x => x.EntityId.Equals(searchRequest.EntityId),
-                searchRequest.PageNumber.GetValueOrDefault(),
-                searchRequest.PageSize.GetValueOrDefault(),
-                cancellationToken: cancellationToken);
+            Func<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>, IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>> firstStageFilter = null;
+
+            if (!string.IsNullOrWhiteSpace(searchRequest?.Search))
+            {
+                firstStageFilter = x => (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)_searchHandler.HandleSearch(x, searchRequest);
+            }
+
+            var query = await _queryClient.GetQueryableAsync(firstStageFilter, cancellationToken);
+
+            query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
+
+            var filter = GetSearchExpression(searchRequest);
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (searchRequest.OrderBy == null)
+            {
+                query = query.OrderByDescending(x => x.ModifiedDate);
+            }
+
+            var paged = await _queryClient
+                .GetPagedResponseAsync(query, searchRequest, cancellationToken)
+                .ConfigureAwait(false);
+
+            return paged;
         }
     }
 }

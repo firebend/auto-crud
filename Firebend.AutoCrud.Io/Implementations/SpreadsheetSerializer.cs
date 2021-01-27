@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             _disposeWorkbook = dispose;
 
             Configuration = configuration ?? new CsvConfiguration(CultureInfo.InvariantCulture);
-            Configuration.ShouldQuote = (s, context) => false;
+            Configuration.ShouldQuote = (_, _) => false;
             Context = new WritingContext(TextWriter.Null, Configuration, false);
 
             Workbook = new XLWorkbook();

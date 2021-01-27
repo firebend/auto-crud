@@ -3,7 +3,6 @@ using System.Threading;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Sample.Models;
-using Firebend.AutoCrud.Mongo.Sample.Tenant;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +17,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
 
             using var host = CreateHostBuilder(args).Build();
             host.StartAsync(cancellationToken.Token)
-                .ContinueWith(task => { Console.WriteLine("Sample complete. type 'quit' to exit."); }, cancellationToken.Token);
+                .ContinueWith(_ => { Console.WriteLine("Sample complete. type 'quit' to exit."); }, cancellationToken.Token);
 
             while (!Console.ReadLine().Equals("quit", StringComparison.InvariantCultureIgnoreCase))
             {

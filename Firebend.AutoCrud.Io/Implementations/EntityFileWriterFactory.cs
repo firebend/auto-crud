@@ -22,6 +22,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             {
                 EntityFileType.Csv => scope.ServiceProvider.GetService<IEntityFileWriterCsv>(),
                 EntityFileType.Spreadsheet => scope.ServiceProvider.GetService<IEntityFileWriterSpreadSheet>(),
+                EntityFileType.Unknown => throw new Exception($"{nameof(EntityFileType.Unknown)} is not a valid export type."),
                 _ => throw new Exception($"Could not find file writer for {type}")
             };
         }

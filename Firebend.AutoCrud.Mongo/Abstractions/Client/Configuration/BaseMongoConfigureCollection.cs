@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
         where TKey : struct
     {
         private readonly ILogger _logger;
-        private IMongoIndexClient<TKey, TEntity> _indexClient;
+        private readonly IMongoIndexClient<TKey, TEntity> _indexClient;
 
         protected BaseMongoConfigureCollection(ILogger logger, IMongoIndexClient<TKey, TEntity> indexClient)
         {

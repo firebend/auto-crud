@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
@@ -26,7 +27,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
         }
 
-        public List<BaseBuilder> Builders { get; } = new List<BaseBuilder>();
+        public List<BaseBuilder> Builders { get; } = new();
 
         public IServiceCollection ServiceCollection { get; }
 
@@ -271,7 +272,13 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
                     if (!key.IsAssignableFrom(value))
                     {
-                        throw new InvalidCastException($"Cannot use custom configuration {value.Name} to implement {key.Name}");
+                        var args = value.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+                        var args2 = key.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+
+                        var argsStr = args.Length > 0 ? args.ToString(0, args.Length - 1) : string.Empty;
+                        var args2Str = args2.Length > 0 ? args2.ToString(0, args2.Length - 1) : string.Empty;
+
+                        throw new InvalidCastException($"Cannot use custom configuration {value.Name} to implement {key.Name}. {argsStr} {args2Str}");
                     }
 
                     var implementedInterfaces = value.GetInterfaces();

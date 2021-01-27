@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;
 using MassTransit;
 using MassTransit.ExtensionsDependencyInjectionIntegration;
@@ -16,9 +16,11 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 {
     public static class MassTransitExtensions
     {
-        private static ServiceDescriptor[] _listeners;
+        private const string QueuePrefix = "FB_AC_DV_";
 
-        private static ServiceDescriptor[] GetListeners(IServiceCollection serviceCollection)
+        private static List<AutoCrudMassTransitConsumerInfo> _listeners;
+
+        private static IEnumerable<AutoCrudMassTransitConsumerInfo> GetListeners(IServiceCollection serviceCollection)
         {
             if (_listeners != null && _listeners.Any())
             {
@@ -27,7 +29,8 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 
             var listeners = serviceCollection
                 .Where(x => IsMessageListener(x.ServiceType))
-                .ToArray();
+                .Select(x => new AutoCrudMassTransitConsumerInfo(x))
+                .ToList();
 
             _listeners = listeners;
 
@@ -47,10 +50,8 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 
             foreach (var listener in GetListeners(serviceCollection))
             {
-                var (consumerType, domainEventType, _) = GetConsumerInfo(listener);
-
                 addConsumer
-                    .MakeGenericMethod(listener.ImplementationType, domainEventType, consumerType)
+                    .MakeGenericMethod(listener.ServiceDescriptor.ImplementationType, listener.DomainEventType, listener.ConsumerType)
                     .Invoke(null, new object[] { busConfigurator, serviceCollection });
             }
         }
@@ -59,13 +60,10 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             this IBusRegistrationContext busRegistrationContext,
             IBusFactoryConfigurator bus,
             IServiceCollection serviceCollection,
+            AutoCrudMassTransitQueueMode queueMode,
             string receiveEndpointPrefix = null,
             Action<IReceiveEndpointConfigurator> configureReceiveEndpoint = null)
         {
-            var listeners = GetListeners(serviceCollection);
-
-            var queueNames = new List<string>();
-
             var configureConsumer = typeof(MassTransitExtensions).GetMethod(nameof(ConfigureConsumer),
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Static);
 
@@ -74,28 +72,23 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 return;
             }
 
-            foreach (var listener in listeners)
+            var queues = GetQueues(queueMode, receiveEndpointPrefix, _listeners);
+
+            foreach (var (queueName, consumerInfos) in queues)
             {
-                var (consumerType, domainEventType, desc) = GetConsumerInfo(listener);
-
-                if (consumerType == null || domainEventType == null)
-                {
-                    continue;
-                }
-
-                var genericMessageType = listener.ServiceType.GenericTypeArguments.FirstOrDefault() ?? listener.ServiceType;
-
-                var queueName = GetQueueName(queueNames,
-                    receiveEndpointPrefix,
-                    genericMessageType,
-                    listener.ImplementationType,
-                    desc);
-
                 bus.ReceiveEndpoint(queueName, re =>
                 {
-                    configureConsumer.MakeGenericMethod(listener.ImplementationType, domainEventType, consumerType)
-                        .Invoke(null, new object[] { busRegistrationContext, re });
-
+                    foreach (var consumerInfo in consumerInfos)
+                    {
+                        configureConsumer.MakeGenericMethod(consumerInfo.ServiceDescriptor.ImplementationType,
+                                consumerInfo.DomainEventType,
+                                consumerInfo.ConsumerType)
+                            .Invoke(null, new object[]
+                            {
+                                busRegistrationContext,
+                                re
+                            });
+                    }
                     configureReceiveEndpoint?.Invoke(re);
                 });
             }
@@ -103,7 +96,64 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             _listeners = null;
         }
 
-        private static void AddConsumer<TDomainEventHandler, TDomainEvent, TDomainEventConsumer>(IServiceCollectionBusConfigurator busConfigurator,
+        private static Dictionary<string, List<AutoCrudMassTransitConsumerInfo>> GetQueues(AutoCrudMassTransitQueueMode queueMode,
+            string receiveEndpointPrefix,
+            List<AutoCrudMassTransitConsumerInfo> consumerInfos)
+        {
+            if (queueMode == AutoCrudMassTransitQueueMode.Unknown)
+            {
+                throw new ArgumentException("Qeue mode is unknown", nameof(queueMode));
+            }
+
+            var prefix = QueuePrefix;
+
+            if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
+            {
+                prefix = $"{prefix}_{receiveEndpointPrefix}";
+            }
+
+            switch (queueMode)
+            {
+                case AutoCrudMassTransitQueueMode.OneQueue:
+                    return new Dictionary<string, List<AutoCrudMassTransitConsumerInfo>> { { prefix, consumerInfos } };
+
+                case AutoCrudMassTransitQueueMode.QueuePerAction:
+                    return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityActionDescription}")
+                        .ToDictionary(x => x.Key,
+                            x => x.ToList());
+
+                case AutoCrudMassTransitQueueMode.QueuePerEntity:
+                    return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityType.Name}")
+                        .ToDictionary(x => x.Key, x => x.ToList());
+
+                case AutoCrudMassTransitQueueMode.QueuePerEntityAction:
+                {
+                    var dictionary = new Dictionary<string, List<AutoCrudMassTransitConsumerInfo>>();
+                    var queueNames = new List<string>();
+
+                    foreach (var consumerInfo in consumerInfos)
+                    {
+                        var queueName = GetQueueName(queueNames,
+                            prefix,
+                            consumerInfo.MessageType,
+                            consumerInfo.ServiceDescriptor.ImplementationType,
+                            consumerInfo.EntityActionDescription
+                        );
+                        dictionary.Add(queueName, new List<AutoCrudMassTransitConsumerInfo> { consumerInfo });
+                    }
+
+                    return dictionary;
+                }
+                case AutoCrudMassTransitQueueMode.Unknown:
+                    throw new ArgumentException($"{nameof(AutoCrudMassTransitQueueMode)} {nameof(AutoCrudMassTransitQueueMode.Unknown)} is not a valid mode.",
+                        nameof(queueMode));
+                default:
+                    throw new ArgumentException($"{nameof(AutoCrudMassTransitQueueMode)} is not a valid mode.",
+                        nameof(queueMode));
+            }
+        }
+
+        private static void AddConsumer<TDomainEventHandler, TDomainEvent, TDomainEventConsumer>(IRegistrationConfigurator busConfigurator,
             IServiceCollection serviceCollection)
             where TDomainEvent : DomainEventBase
             where TDomainEventHandler : class, IDomainEventSubscriber
@@ -121,64 +171,46 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             where TDomainEventConsumer : AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler> =>
             context.ConfigureConsumer<TDomainEventConsumer>(receiveEndpointConfigurator);
 
-        private static (Type consumerType, Type domainEventType, string desc) GetConsumerInfo(ServiceDescriptor serviceDescriptor)
-        {
-            var listenerImplementationType = serviceDescriptor.ImplementationType;
-            var serviceType = serviceDescriptor.ServiceType;
-            var entity = serviceType.GenericTypeArguments[0];
-
-            Type consumerType = null;
-            string description = null;
-            Type domainEventType = null;
-
-            if (typeof(IEntityAddedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
-            {
-                consumerType = typeof(MassTransitEntityAddedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
-                description = "EntityAdded";
-                domainEventType = typeof(EntityAddedDomainEvent<>).MakeGenericType(entity);
-            }
-            else if (typeof(IEntityUpdatedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
-            {
-                consumerType = typeof(MassTransitEntityUpdatedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
-                description = "EntityUpdated";
-                domainEventType = typeof(EntityUpdatedDomainEvent<>).MakeGenericType(entity);
-            }
-            else if (typeof(IEntityDeletedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
-            {
-                consumerType = typeof(MassTransitEntityDeletedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
-                description = "EntityDeleted";
-                domainEventType = typeof(EntityDeletedDomainEvent<>).MakeGenericType(entity);
-            }
-
-            return (consumerType, domainEventType, description);
-        }
-
         private static string GetQueueName(ICollection<string> queueNames,
             string receiveEndpointPrefix,
             MemberInfo genericMessageType,
             MemberInfo listenerImplementationType,
             string handlerTypeDesc)
         {
-            var sb = new StringBuilder();
+            var sb = AutoCrudObjectPool.StringBuilder.Get();
+            string sbBuilt;
 
-            if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
+            try
             {
-                sb.Append(receiveEndpointPrefix);
-                sb.Append("-");
-            }
+                if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
+                {
+                    sb.Append(receiveEndpointPrefix);
+                    sb.Append("-");
+                }
 
-            sb.Append(genericMessageType.Name);
+                sb.Append(genericMessageType.Name);
 
-            if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
-            {
+                if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
+                {
+                    sb.Append("_");
+                    sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
+                }
+
                 sb.Append("_");
-                sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
+                sb.Append(handlerTypeDesc);
+                sbBuilt = sb.ToString();
+            }
+            finally
+            {
+                AutoCrudObjectPool.StringBuilder.Return(sb);
             }
 
-            sb.Append("_");
-            sb.Append(handlerTypeDesc);
+            if (string.IsNullOrWhiteSpace(sbBuilt))
+            {
+                throw new Exception("Error building queue name");
+            }
 
-            var queueName = sb.ToString().Replace("`1", null).Replace("`2", null);
+            var queueName = sbBuilt.Replace("`2", null);
 
             while (queueNames.Contains(queueName))
             {

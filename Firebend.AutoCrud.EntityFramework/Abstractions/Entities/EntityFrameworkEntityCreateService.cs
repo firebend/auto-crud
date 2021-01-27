@@ -1,12 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public abstract class EntityFrameworkEntityCreateService<TKey, TEntity> : IEntityCreateService<TKey, TEntity>
+    public abstract class EntityFrameworkEntityCreateService<TKey, TEntity> : BaseDisposable, IEntityCreateService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
@@ -19,5 +20,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 
         public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
             => _createClient.AddAsync(entity, cancellationToken);
+
+        protected override void DisposeManagedObjects() => _createClient?.Dispose();
     }
 }

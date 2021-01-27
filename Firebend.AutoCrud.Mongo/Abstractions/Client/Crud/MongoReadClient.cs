@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -16,144 +19,89 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        private readonly IEntityQueryOrderByHandler<TKey, TEntity> _orderByHandler;
         protected MongoReadClient(IMongoClient client,
             ILogger<MongoReadClient<TKey, TEntity>> logger,
-            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger, entityConfiguration)
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
+            IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler) : base(client, logger, entityConfiguration)
         {
+            _orderByHandler = orderByHandler;
         }
 
-        public async Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        private async Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            Expression<Func<TEntity, bool>> additionalFilter,
+            CancellationToken cancellationToken)
         {
-            var queryable = await BuildQueryAsync(filter: filter, cancellationToken: cancellationToken);
+            var queryable = await GetFilteredCollectionAsync(firstStageFilters, cancellationToken).ConfigureAwait(false);
 
-            return await RetryErrorAsync(() => queryable.SingleOrDefaultAsync(cancellationToken));
-        }
-
-        public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            var queryable = await BuildQueryAsync(cancellationToken: cancellationToken);
-
-            return await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken));
-        }
-
-        public async Task<EntityPagedResponse<TEntity>> PageAsync(
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            bool doCount = true,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
-            CancellationToken cancellationToken = default)
-        {
-            int? count = null;
-
-            if (doCount)
+            if (additionalFilter != null)
             {
-                count = await CountAsync(search, filter, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            var queryable = await BuildQueryAsync(search, filter, pageNumber, pageSize, orderBys, cancellationToken).ConfigureAwait(false);
-
-            var data = await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken))
-                .ConfigureAwait(false);
-
-            return new EntityPagedResponse<TEntity> { TotalRecords = count, Data = data, CurrentPage = pageNumber, CurrentPageSize = pageSize };
-        }
-
-        public async Task<EntityPagedResponse<TOut>> PageAsync<TOut>(
-            Expression<Func<TEntity, TOut>> projection,
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            bool doCount = false,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
-            CancellationToken cancellationToken = default)
-        {
-            int? count = null;
-
-            if (doCount)
-            {
-                count = await CountAsync(search, filter, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            var queryable = await BuildQueryAsync(search, filter, pageNumber, pageSize, orderBys, cancellationToken).ConfigureAwait(false);
-
-            var project = queryable.Select(projection);
-
-            var data = await RetryErrorAsync(() => project.ToListAsync(cancellationToken))
-                .ConfigureAwait(false);
-
-            return new EntityPagedResponse<TOut> { TotalRecords = count, Data = data, CurrentPage = pageNumber, CurrentPageSize = pageSize };
-        }
-
-        public async Task<int> CountAsync(string search, Expression<Func<TEntity, bool>> expression, CancellationToken cancellationToken = default)
-        {
-            var queryable = await BuildQueryAsync(search, expression, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            return await RetryErrorAsync(() => queryable.CountAsync(cancellationToken)).ConfigureAwait(false);
-        }
-
-        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
-        {
-            var queryable = await BuildQueryAsync(filter: filter, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            return await RetryErrorAsync(() => queryable.AnyAsync(cancellationToken)).ConfigureAwait(false);
-        }
-
-        protected async Task<IMongoQueryable<TEntity>> BuildQueryAsync(
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
-            CancellationToken cancellationToken = default)
-        {
-            FilterDefinition<TEntity> firstStageFilter = null;
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                firstStageFilter = Builders<TEntity>.Filter.Text(search);
-            }
-
-            var queryable = await GetFilteredCollectionAsync(firstStageFilter, cancellationToken).ConfigureAwait(false);
-
-            if (filter != null)
-            {
-                queryable = queryable.Where(filter);
-            }
-
-            if (orderBys != null)
-            {
-                IOrderedMongoQueryable<TEntity> ordered = null;
-
-                foreach (var orderBy in orderBys)
-                {
-                    if (orderBy != default)
-                    {
-                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
-                            queryable.OrderByDescending(orderBy.order) :
-                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
-                            ordered.ThenByDescending(orderBy.order);
-                    }
-                }
-
-                if (ordered != null)
-                {
-                    queryable = ordered;
-                }
-            }
-
-            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
-            {
-                queryable = queryable
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value);
+                queryable = queryable.Where(additionalFilter);
             }
 
             return queryable;
         }
+
+
+        public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
+        {
+            var query = await GetQueryableInternalAsync(null, filter, cancellationToken).ConfigureAwait(false);
+            var entity = await RetryErrorAsync(() => query.FirstOrDefaultAsync(cancellationToken)).ConfigureAwait(false);
+            return entity;
+        }
+
+        public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            CancellationToken cancellationToken = default) => GetQueryableInternalAsync(firstStageFilters, null, cancellationToken);
+
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
+        {
+            var query = await GetQueryableInternalAsync(null, filter, cancellationToken).ConfigureAwait(false);
+            var list = await RetryErrorAsync(() => query.ToListAsync(cancellationToken)).ConfigureAwait(false);
+
+            return list;
+        }
+
+        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableInternalAsync(null, filter, cancellationToken).ConfigureAwait(false);
+            var exists = await RetryErrorAsync(() => query.AnyAsync(cancellationToken)).ConfigureAwait(false);
+            return exists;
+        }
+
+        public async Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableInternalAsync(null, filter, cancellationToken).ConfigureAwait(false);
+            var exists = await RetryErrorAsync(() => query.LongCountAsync(cancellationToken)).ConfigureAwait(false);
+            return exists;
+        }
+
+        public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,
+            TSearchRequest searchRequest,
+            CancellationToken cancellationToken = default)
+            where TSearchRequest : EntitySearchRequest
+        {
+            long? count = null;
+
+            if (searchRequest?.DoCount ?? false)
+            {
+                var queryable1 = queryable;
+                count = await RetryErrorAsync(() => queryable1.LongCountAsync(cancellationToken)).ConfigureAwait(false);
+            }
+
+            queryable = _orderByHandler.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
+
+            if ((searchRequest?.PageNumber ?? 0) > 0 && (searchRequest.PageSize ?? 0) > 0)
+            {
+                queryable = queryable
+                    .Skip((searchRequest.PageNumber.Value - 1) * searchRequest.PageSize.Value)
+                    .Take(searchRequest.PageSize.Value);
+            }
+
+            var data = await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken))
+                .ConfigureAwait(false);
+
+            return new EntityPagedResponse<TEntity> { TotalRecords = count, Data = data, CurrentPage = searchRequest?.PageNumber, CurrentPageSize = searchRequest?.PageSize };
+        }
+
     }
 }

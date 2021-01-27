@@ -1,27 +1,34 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
+using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
-using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
     public abstract class AbstractEntityFrameworkChangeTrackingReadService<TEntityKey, TEntity> :
-        EntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>,
+        AbstractEntitySearchService<ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>>,
         IChangeTrackingReadService<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
-        public AbstractEntityFrameworkChangeTrackingReadService(IChangeTrackingDbContextProvider<TEntityKey, TEntity> contextProvider) :
-            base(contextProvider, null, null)
+        private readonly IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _queryClient;
+        private readonly IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> _searchHandler;
+
+        public AbstractEntityFrameworkChangeTrackingReadService(IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> queryClient,
+            IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> searchHandler)
         {
+            _queryClient = queryClient;
+            _searchHandler = searchHandler;
         }
 
-        public Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
+        public async Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
             ChangeTrackingSearchRequest<TEntityKey> searchRequest,
             CancellationToken cancellationToken = default)
         {
@@ -30,11 +37,29 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 throw new ArgumentNullException(nameof(searchRequest));
             }
 
-            return PageAsync(null,
-                x => x.EntityId.Equals(searchRequest.EntityId),
-                searchRequest.PageNumber.GetValueOrDefault(),
-                searchRequest.PageSize.GetValueOrDefault(),
-                cancellationToken: cancellationToken);
+            var query = await _queryClient
+                .GetQueryableAsync(true, cancellationToken)
+                .ConfigureAwait(false);
+
+            query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
+
+            var filter = GetSearchExpression(searchRequest);
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (_searchHandler != null)
+            {
+                query = _searchHandler.HandleSearch(query, searchRequest);
+            }
+
+            var paged = await _queryClient
+                .GetPagedResponseAsync(query, searchRequest, true, cancellationToken)
+                .ConfigureAwait(false);
+
+            return paged;
         }
     }
 }

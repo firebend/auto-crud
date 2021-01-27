@@ -1,3 +1,5 @@
+GET https://localhost:5001/api/v1/gc-collect
+###
 POST https://localhost:5001/api/v1/ef-person
 Content-Type: application/json
 
@@ -42,22 +44,22 @@ Content-Type: application/json
     }
 ]
 ###
-DELETE https://localhost:5001/api/v1/ef-person/73686799-cf49-40f8-12e1-08d89c52a9fc
+DELETE https://localhost:5001/api/v1/ef-person/7ee52d91-16d3-474f-8d50-08d8be84119e
 
 ###
-https://localhost:5001/api/v1/ef-person/73686799-cf49-40f8-12e1-08d89c52a9fc
+https://localhost:5001/api/v1/ef-person/f2551c62-aa41-4643-bca4-08d8bea18a03
 
 ###
 https://localhost:5001/api/v1/ef-person/all
 
 ###
-https://localhost:5001/api/v1/ef-person?search=Peggy&pageSize=20&pageNumber=1&modifiedStartDate=2020-11-05T15:24:22.285552-06:00
+https://localhost:5001/api/v1/ef-person?search=Fox&pageSize=10&pageNumber=1&modifiedStartDate=2021-01-12T15:24:22.285552-06:00
 
 ###
-http://localhost:5000/api/v1/ef-person/73686799-cf49-40f8-12e1-08d89c52a9fc/changes?pageNumber=1&pageSize=20
+http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/changes?search=spooky&pageNumber=1&pageSize=20&modifiedStartDate=2021-01-12T15:24:22.285552-06:00
 
 ###
-http://localhost:5000/api/v1/ef-person/export/csv?filename=export&pageSize=50&pageNumber=1
+http://localhost:5000/api/v1/ef-person/export/spreadSheet?filename=export&pageSize=50&pageNumber=1
 
 ###
-http://localhost:5000/api/v1/ef-person/export/csv?filename=export
+http://localhost:5000/api/v1/ef-person/export/csv?filename=export&pageNumber=1&pageSize=10

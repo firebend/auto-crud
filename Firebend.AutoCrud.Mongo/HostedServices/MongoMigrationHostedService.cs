@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
 {
     public class MongoMigrationHostedService : IHostedService
     {
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly IMongoDefaultDatabaseSelector _databaseSelector;
         private readonly ILogger _logger;
         private readonly IEnumerable<IMongoMigration> _migrations;

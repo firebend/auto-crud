@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -16,28 +15,23 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
             _logger = logger;
         }
 
-        public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
+        public async Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 
-            var key = $"{connBuilder.DataSource}-{dbName}";
+            _logger.LogDebug($"Creating database. DbName: {dbName}. DataSource: {connBuilder.DataSource}");
 
-            var runKey = $"{GetType().FullName}.{key}";
+            var cString = connBuilder.ConnectionString;
+            await using var conn = new SqlConnection(cString);
+            await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-            return Run.OnceAsync(runKey, async ct =>
-            {
-                _logger.LogDebug($"Creating database. Key {key}");
+            await using var command = conn.CreateCommand();
+            command.CommandText = GetSqlCommand(dbName);
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-                var cString = connBuilder.ConnectionString;
-                await using var conn = new SqlConnection(cString);
-                await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+            _logger.LogDebug($"Database is created. DbName: {dbName}. DataSource: {connBuilder.DataSource}");
 
-                await using var command = conn.CreateCommand();
-                command.CommandText = GetSqlCommand(dbName);
-                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-
-                _logger.LogDebug($"Database is created. Key {key}");
-            }, cancellationToken);
+            connBuilder = null;
         }
 
         protected abstract string GetSqlCommand(string dbName);

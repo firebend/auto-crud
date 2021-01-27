@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Io.Interfaces;
@@ -21,7 +20,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             _autoMapper = autoMapper;
         }
 
-        public Task<Stream> ExportAsync(EntityFileType exportType,
+        public Task<byte[]> ExportAsync(EntityFileType exportType,
             IEnumerable<T> records,
             CancellationToken cancellationToken = default)
         {

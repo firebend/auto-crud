@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Models;
@@ -10,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 {
-    public class EfPersonDomainEventHandler : IEntityAddedDomainEventSubscriber<EfPerson>,
+    public class EfPersonDomainEventHandler : BaseDisposable, IEntityAddedDomainEventSubscriber<EfPerson>,
         IEntityUpdatedDomainEventSubscriber<EfPerson>
     {
         private readonly ILogger _logger;

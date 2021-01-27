@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
-    public abstract class EntityFrameworkEntityUpdateService<TKey, TEntity> : IEntityUpdateService<TKey, TEntity>
+    public abstract class EntityFrameworkEntityUpdateService<TKey, TEntity> : BaseDisposable, IEntityUpdateService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
@@ -23,5 +24,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 
         public virtual Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
             => _updateClient.UpdateAsync(key, jsonPatchDocument, cancellationToken);
+
+        protected override void DisposeManagedObjects() => _updateClient?.Dispose();
     }
 }

@@ -8,13 +8,13 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
     public class MassTransitEntityUpdatedDomainEventHandler<TDomainEventHandler, TEntity> :
         AbstractMassTransitDomainEventHandler<EntityUpdatedDomainEvent<TEntity>, TDomainEventHandler>
         where TEntity : class
-        where TDomainEventHandler : IEntityUpdatedDomainEventSubscriber<TEntity>
+        where TDomainEventHandler : class, IEntityUpdatedDomainEventSubscriber<TEntity>
     {
         public MassTransitEntityUpdatedDomainEventHandler(TDomainEventHandler updated) : base(updated)
         {
         }
 
-        public override Task Consume(ConsumeContext<EntityUpdatedDomainEvent<TEntity>> context)
+        protected override Task ConsumeEvent(ConsumeContext<EntityUpdatedDomainEvent<TEntity>> context)
             => Handler.EntityUpdatedAsync(context.Message, context.CancellationToken);
     }
 }

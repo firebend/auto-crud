@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class CustomSearchParameters : EntitySearchRequest
+    public class CustomSearchParameters : ModifiedEntitySearchRequest
     {
         public string NickName { get; set; }
     }

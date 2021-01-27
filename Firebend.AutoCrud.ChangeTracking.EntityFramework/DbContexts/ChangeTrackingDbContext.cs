@@ -1,9 +1,11 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
-using Firebend.AutoCrud.ChangeTracking.EntityFramework.Comparers;
-using Firebend.AutoCrud.ChangeTracking.EntityFramework.Converters;
+using System.Reflection;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.EntityFramework.Comparers;
+using Firebend.AutoCrud.EntityFramework.Converters;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -41,16 +43,37 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
 
             modelBuilder.Entity<ChangeTrackingEntity<TKey, TEntity>>(changes =>
             {
-                changes.ToTable($"{typeof(TEntity).Name}_Changes");
+                var (table, schema) = GetTableName();
+
+                changes.ToTable(table, schema);
                 changes.HasKey(x => x.Id);
                 changes.Property(x => x.Action).HasMaxLength(25);
-                changes.Property(x => x.Modified);
+                changes.Property(x => x.ModifiedDate);
                 changes.Property(x => x.Source).HasMaxLength(500);
                 changes.Property(x => x.UserEmail).HasMaxLength(250);
                 changes.Property(x => x.EntityId);
+
                 MapJson(changes, x => x.Changes);
                 MapJson(changes, x => x.Entity);
             });
+        }
+
+        private static (string, string) GetTableName()
+        {
+            var entityType = typeof(TEntity);
+
+            var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
+            var tableName = tableAttribute?.Name;
+            var schema = tableAttribute?.Schema;
+
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                tableName = entityType.Name;
+            }
+
+            tableName += "_Changes";
+
+            return (tableName, schema);
         }
 
         private static void MapJson<TProperty>(EntityTypeBuilder<ChangeTrackingEntity<TKey, TEntity>> changes,

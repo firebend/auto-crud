@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
     /// Encapsulates data when searching for change tracking events.
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public class ChangeTrackingSearchRequest<TKey> : EntitySearchRequest
+    public class ChangeTrackingSearchRequest<TKey> : ModifiedEntitySearchRequest
     {
         /// <summary>
         /// Gets or sets a value indicating the id of the affected entity.

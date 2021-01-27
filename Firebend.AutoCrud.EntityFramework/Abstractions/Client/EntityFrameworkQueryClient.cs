@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -16,214 +17,116 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        private readonly IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> _fullTextSearchProvider;
+        private readonly IEntityQueryOrderByHandler<TKey, TEntity> _orderByHandler;
         private readonly IEntityFrameworkIncludesProvider<TKey, TEntity> _includesProvider;
 
         protected EntityFrameworkQueryClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityFrameworkFullTextExpressionProvider<TKey, TEntity> fullTextSearchProvider,
+            IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler,
             IEntityFrameworkIncludesProvider<TKey, TEntity> includesProvider) : base(contextProvider)
         {
-            _fullTextSearchProvider = fullTextSearchProvider;
+            _orderByHandler = orderByHandler;
             _includesProvider = includesProvider;
         }
 
-        public async Task<TEntity> GetByKeyAsync(TKey key, bool asNoTracking, CancellationToken cancellationToken = default)
+        private async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-            var entity = await base
-                .GetByKeyAsync(context, key, asNoTracking, cancellationToken)
-                .ConfigureAwait(false);
+            var query = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken);
 
+            query = await ModifyQueryableAsync(query);
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return query;
+        }
+
+        public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableAsync(filter, asNoTracking, cancellationToken);
+            var entity = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
             return entity;
         }
 
-        public async Task<List<TEntity>> GetAllAsync(bool asNoTracking = true, CancellationToken cancellationToken = default)
-        {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var queryable = await GetFilteredQueryableAsync(context, null, asNoTracking, cancellationToken).ConfigureAwait(false);
-            var list = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
+        public Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking, CancellationToken cancellationToken = default)
+            => GetQueryableAsync(null, asNoTracking, cancellationToken);
 
+        public async Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableAsync(filter, true, cancellationToken).ConfigureAwait(false);
+            var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
+            return count;
+        }
+
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default)
+        {
+            var query = await GetQueryableAsync(filter, asNoTracking, cancellationToken).ConfigureAwait(false);
+            var list = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
             return list;
         }
-
-        public async Task<EntityPagedResponse<TEntity>> PageAsync(string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            bool doCount = true,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
-            bool asNoTracking = true,
-            CancellationToken cancellationToken = default)
-        {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-
-            int? count = null;
-
-            if (doCount)
-            {
-                count = await CountAsync(search, filter, context, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            var queryable = await BuildQueryAsync(context, search, filter, pageNumber, pageSize, orderBys, asNoTracking, cancellationToken
-            ).ConfigureAwait(false);
-
-            var data = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
-
-            return new EntityPagedResponse<TEntity> { TotalRecords = count, Data = data, CurrentPage = pageNumber, CurrentPageSize = pageSize };
-        }
-
-        public async Task<EntityPagedResponse<TOut>> PageAsync<TOut>(Expression<Func<TEntity, TOut>> projection,
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            bool doCount = false,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
-            bool asNoTracking = true,
-            CancellationToken cancellationToken = default)
-        {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-
-            int? count = null;
-
-            if (doCount)
-            {
-                count = await CountAsync(search, filter, context, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            var queryable = await BuildQueryAsync(context,
-                search,
-                filter,
-                pageNumber,
-                pageSize,
-                orderBys,
-                asNoTracking,
-                cancellationToken).ConfigureAwait(false);
-
-
-            var project = queryable.Select(projection);
-
-            var data = await project.ToListAsync(cancellationToken).ConfigureAwait(false);
-
-            return new EntityPagedResponse<TOut> { TotalRecords = count, Data = data, CurrentPage = pageNumber, CurrentPageSize = pageSize };
-        }
-
-        public Task<int> CountAsync(
-            string search,
-            Expression<Func<TEntity, bool>> expression,
-            CancellationToken cancellationToken = default)
-            => CountAsync(search, expression, null, cancellationToken);
 
         public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
             CancellationToken cancellationToken = default)
         {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var queryable = await BuildQueryAsync(context,
-                null,
-                filter,
-                null,
-                null,
-                null,
-                true,
-                cancellationToken).ConfigureAwait(false);
-
-            var exists = await queryable
-                .AnyAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var query = await GetQueryableAsync(filter, true, cancellationToken).ConfigureAwait(false);
+            var exists = await query.AnyAsync(cancellationToken).ConfigureAwait(false);
 
             return exists;
         }
 
-        private async Task<int> CountAsync(
-            string search,
-            Expression<Func<TEntity, bool>> expression,
-            IDbContext dbContext = null,
+        public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
+            TSearchRequest searchRequest,
+            bool asNoTracking,
             CancellationToken cancellationToken = default)
+            where TSearchRequest : EntitySearchRequest
         {
-            dbContext ??= await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-
-            var queryable = await BuildQueryAsync(dbContext,
-                search,
-                expression,
-                null,
-                null,
-                null,
-                true,
-                cancellationToken).ConfigureAwait(false);
-
-            var count = await queryable
-                .CountAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            return count;
-        }
-
-        protected async Task<IQueryable<TEntity>> BuildQueryAsync(
-            IDbContext context,
-            string search = null,
-            Expression<Func<TEntity, bool>> filter = null,
-            int? pageNumber = null,
-            int? pageSize = null,
-            IEnumerable<(Expression<Func<TEntity, object>> order, bool ascending)> orderBys = null,
-            bool asNoTracking = true,
-            CancellationToken cancellationToken = default)
-        {
-            var queryable = await GetFilteredQueryableAsync(context,
-                null,
-                asNoTracking,
-                cancellationToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(search))
+            if (asNoTracking)
             {
-                var searchWhere = _fullTextSearchProvider?.Filter;
-
-                if (searchWhere != null)
-                {
-                    var temp = searchWhere.FixParam(search);
-                    queryable = queryable.Where(temp);
-                }
+                queryable = queryable.AsNoTracking();
             }
 
-            if (filter != null)
+            int? count = null;
+
+            if (searchRequest?.DoCount ?? false)
             {
-                queryable = queryable.Where(filter);
+                count = await queryable.CountAsync(cancellationToken);
             }
 
-            if (orderBys != null)
+            if (_orderByHandler != null)
             {
-                IOrderedQueryable<TEntity> ordered = null;
-
-                foreach (var orderBy in orderBys)
-                {
-                    if (orderBy != default)
-                    {
-                        ordered = ordered == null ? orderBy.ascending ? queryable.OrderBy(orderBy.order) :
-                            queryable.OrderByDescending(orderBy.order) :
-                            orderBy.ascending ? ordered.ThenBy(orderBy.order) :
-                            ordered.ThenByDescending(orderBy.order);
-                    }
-                }
-
-                if (ordered != null)
-                {
-                    queryable = ordered;
-                }
+                queryable = _orderByHandler.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
             }
 
-            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
+            if ((searchRequest?.PageNumber ?? 0) > 0 && (searchRequest.PageSize ?? 0) > 0)
             {
                 queryable = queryable
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value);
+                    .Skip((searchRequest.PageNumber.Value - 1) * searchRequest.PageSize.Value)
+                    .Take(searchRequest.PageSize.Value);
             }
 
-            return queryable;
+            var list = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
+
+            return new EntityPagedResponse<TEntity>
+            {
+                Data = list,
+                CurrentPage = searchRequest?.PageNumber,
+                TotalRecords = count,
+                CurrentPageSize = searchRequest?.PageSize
+            };
         }
 
+        protected virtual Task<IQueryable<TEntity>> ModifyQueryableAsync(IQueryable<TEntity> queryable) => Task.FromResult(queryable);
+
         protected override IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable)
-            => _includesProvider == null ? queryable : _includesProvider.AddIncludes(queryable);
+            => _includesProvider != null ? _includesProvider.AddIncludes(queryable) : queryable;
     }
 }

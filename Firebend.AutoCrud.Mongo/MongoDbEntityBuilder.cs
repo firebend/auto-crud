@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
@@ -19,6 +20,8 @@ namespace Firebend.AutoCrud.Mongo
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
+        private bool _hasFullText;
+
         public MongoDbEntityBuilder()
         {
             CreateType = typeof(MongoEntityCreateService<TKey, TEntity>);
@@ -106,6 +109,21 @@ namespace Firebend.AutoCrud.Mongo
                     typeof(IMongoCollectionKeyGenerator<,>).MakeGenericType(EntityKeyType, EntityType),
                     false);
             }
+
+            var searchHandlerInterfaceType = typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
+
+            if (!HasRegistration(searchHandlerInterfaceType))
+            {
+                if (_hasFullText)
+                {
+                    var fullTextType = typeof(MongoFullTextSearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
+                    WithRegistration(searchHandlerInterfaceType, fullTextType);
+                }
+                else
+                {
+                    throw new Exception($"Please register a {searchHandlerInterfaceType.Name}");
+                }
+            }
         }
 
         private void RegisterEntityConfiguration()
@@ -134,19 +152,8 @@ namespace Firebend.AutoCrud.Mongo
                     throw new Exception($"Please set a {nameof(ShardMode)}");
                 }
 
-                var shardProviderType = typeof(IMongoShardKeyProvider);
-
-                if (!Registrations.ContainsKey(shardProviderType))
-                {
-                    throw new Exception($"Please register a {nameof(IMongoShardKeyProvider)}");
-                }
-
-                var allShardsProvider = typeof(IMongoAllShardsProvider);
-
-                if (!Registrations.ContainsKey(allShardsProvider))
-                {
-                    throw new Exception($"Please register a {nameof(IMongoAllShardsProvider)}");
-                }
+                EnsureRegistered<IMongoShardKeyProvider>();
+                EnsureRegistered<IMongoAllShardsProvider>();
 
                 WithRegistrationInstance<IMongoEntityDefaultConfiguration<TKey, TEntity>>(
                     new MongoEntityDefaultConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode));
@@ -291,6 +298,8 @@ namespace Firebend.AutoCrud.Mongo
             {
                 WithRegistration<IMongoIndexProvider<TEntity>, FullTextIndexProvider<TEntity>>();
             }
+
+            _hasFullText = true;
 
             return this;
         }

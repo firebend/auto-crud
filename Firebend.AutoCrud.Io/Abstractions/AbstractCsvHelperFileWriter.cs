@@ -17,12 +17,12 @@ namespace Firebend.AutoCrud.Io.Abstractions
     {
         public abstract EntityFileType FileType { get; }
 
-        public async Task<Stream> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
+        public async Task<byte[]> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
             IEnumerable<T> records,
             CancellationToken cancellationToken = default)
             where T : class
         {
-            var stream = new MemoryStream();
+            var stream = AutoCrudPooledStream.GetStream("AutoCrudPooledStreamExport");
 
             var (serializer, textWriter) = GetSerializer(stream);
 
@@ -68,10 +68,29 @@ namespace Firebend.AutoCrud.Io.Abstractions
 
             stream.Seek(0, SeekOrigin.Begin);
 
-            return stream;
+            var bytes = stream.ToArray();
+
+            await DisposeAll(csvWriter, serializer, textWriter, stream);
+
+            return bytes;
         }
 
-        private static CsvConfiguration GetCsvConfiguration() => new CsvConfiguration(CultureInfo.InvariantCulture) { IgnoreBlankLines = true };
+        private static async Task DisposeAll(params IAsyncDisposable[] disposables)
+        {
+            foreach (var disposable in disposables)
+            {
+                try
+                {
+                    await disposable.DisposeAsync();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+        }
+
+        private static CsvConfiguration GetCsvConfiguration() => new(CultureInfo.InvariantCulture) { IgnoreBlankLines = true };
 
         private (ISerializer serializer, TextWriter writer) GetSerializer(Stream stream)
         {
@@ -86,6 +105,8 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 }
                 case EntityFileType.Spreadsheet:
                     return (new SpreadsheetSerializer(stream, "Export", false, GetCsvConfiguration()), null);
+                case EntityFileType.Unknown:
+                    return (null, null);
                 default:
                     return (null, null);
             }

@@ -7,7 +7,7 @@ namespace Firebend.AutoCrud.EntityFramework
     public static class EntityFrameworkEntityCrudGeneratorExtensions
     {
         public static EntityFrameworkEntityCrudGenerator UsingEfCrud(this IServiceCollection serviceCollection) =>
-            new EntityFrameworkEntityCrudGenerator(new DynamicClassGenerator(), serviceCollection);
+            new(new DynamicClassGenerator(), serviceCollection);
 
         public static IServiceCollection UsingEfCrud(this IServiceCollection serviceCollection,
             Action<EntityFrameworkEntityCrudGenerator> configure)

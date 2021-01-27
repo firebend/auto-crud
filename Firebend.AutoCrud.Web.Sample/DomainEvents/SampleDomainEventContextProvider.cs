@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 
     public class SampleDomainEventContextProvider : IDomainEventContextProvider
     {
-        public DomainEventContext GetContext() => new DomainEventContext
+        public DomainEventContext GetContext() => new()
         {
             Source = "My Sample",
             UserEmail = "sample@firebend.com",

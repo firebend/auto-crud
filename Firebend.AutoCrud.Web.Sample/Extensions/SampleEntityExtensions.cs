@@ -1,11 +1,12 @@
 using System;
+using System.Linq;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
-using Firebend.AutoCrud.EntityFramework.Elastic.CustomCommands;
+using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
@@ -33,9 +34,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
                         .WithMassTransit())
-                    .AddCrud(x => x
-                        .WithCrud()
-                        .WithOrderBy(m => m.LastName))
+                    .AddCrud()
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
@@ -50,8 +49,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             IConfiguration configuration) =>
             generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithDbOptionsProvider(PersonDbContextOptions.GetOptions)
-                    .WithSearchFilter((efPerson, s) => EF.Functions.ContainsAny(efPerson.FirstName, s))
+                    .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPerson>>()
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -62,17 +60,22 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
                     .AddCrud(crud => crud
-                        .WithCrud()
-                        .WithOrderBy(efPerson => efPerson.LastName)
-                        .WithSearch<CustomSearchParameters>(search =>
+                        .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
                         {
-                            if (!string.IsNullOrWhiteSpace(search?.NickName))
+                            if (!string.IsNullOrWhiteSpace(parameters?.NickName))
                             {
-                                return p => p.NickName.Contains(search.NickName);
+                                query = query.Where(x => x.NickName == parameters.NickName);
                             }
 
-                            return null;
-                        }))
+                            if (!string.IsNullOrWhiteSpace(parameters?.Search))
+                            {
+                                query = query.Where(x => EF.Functions.ContainsAny(x.FirstName, parameters.Search));
+                            }
+
+                            return query;
+                        })
+                        .WithCrud()
+                        )
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()
@@ -84,7 +87,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithReadViewModel(entity => new GetPersonViewModel(entity))
-                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((model, viewModel) => new EfPerson(viewModel))
+                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, viewModel) => new EfPerson(viewModel))
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
@@ -97,12 +100,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             IConfiguration configuration) =>
             generator.AddEntity<Guid, EfPet>(person =>
                 person.WithDbContext<PersonDbContext>()
-                    .WithSearchFilter((efPet, s) => efPet.PetName.Contains(s) ||
-                                                    efPet.PetType.Contains(s) ||
-                                                    EF.Functions.ContainsAny(efPet.Person.FirstName, s)
-                                                    )
-                    .WithDbOptionsProvider(PersonDbContextOptions.GetOptions)
-                    .WithIncludes(pets => pets.Include(p => p.Person))
+                    .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPet>>()
+                    .WithIncludes(pets => pets.Include(x => x.Person))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -112,18 +111,15 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCrud(crud => crud
-                        .WithCrud()
-                        .WithOrderBy(efPet => efPet.PetName)
-                        .WithSearch<PetSearch>(search =>
+                    .AddCrud(crud => crud.WithSearchHandler<CustomSearchParameters>((pets, parameters) =>
+                    {
+                        if (!string.IsNullOrWhiteSpace(parameters.Search))
                         {
-                            if (search.PersonId.HasValue)
-                            {
-                                return p => p.EfPersonId == search.PersonId;
-                            }
+                            pets = pets.Where(x => x.PetName.Contains(parameters.Search));
+                        }
 
-                            return null;
-                        }))
+                        return pets;
+                    }).WithCrud())
                     .AddDomainEvents(events => events
                         .WithEfChangeTracking()
                         .WithMassTransit()

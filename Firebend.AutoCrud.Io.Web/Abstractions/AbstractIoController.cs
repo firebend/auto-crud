@@ -38,6 +38,8 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
         {
+            Response.RegisterForDispose(_exportService);
+
             if (string.IsNullOrWhiteSpace(filename))
             {
                 ModelState.AddModelError(nameof(filename), $"{nameof(filename)} is invalid.");
@@ -47,14 +49,6 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             if (string.IsNullOrWhiteSpace(exportType))
             {
                 ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is required.");
-                return BadRequest(ModelState);
-            }
-
-            var entityExportType = exportType.ParseEnum<EntityFileType>();
-
-            if (!entityExportType.HasValue || entityExportType.Value == EntityFileType.Unknown)
-            {
-                ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is invalid");
                 return BadRequest(ModelState);
             }
 
@@ -80,6 +74,14 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), $"Page size must be between 1 and {_maxExportPageSize.MaxPageSize}");
 
+                return BadRequest(ModelState);
+            }
+
+            var entityExportType = exportType.ParseEnum<EntityFileType>();
+
+            if (!entityExportType.HasValue || entityExportType.Value == EntityFileType.Unknown)
+            {
+                ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is invalid");
                 return BadRequest(ModelState);
             }
 

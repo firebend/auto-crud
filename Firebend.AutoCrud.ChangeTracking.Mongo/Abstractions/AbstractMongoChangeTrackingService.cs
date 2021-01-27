@@ -1,22 +1,25 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
-using Firebend.AutoCrud.ChangeTracking.Mongo.Interfaces;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 {
     public class AbstractMongoChangeTrackingService<TEntityKey, TEntity> :
+        BaseDisposable,
         IChangeTrackingService<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
-        private readonly IMongoChangeTrackingCreateClient<TEntityKey, TEntity> _createClient;
+        private readonly IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _createClient;
 
-        public AbstractMongoChangeTrackingService(IMongoChangeTrackingCreateClient<TEntityKey, TEntity> createClient)
+        public AbstractMongoChangeTrackingService(IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> createClient)
         {
             _createClient = createClient;
         }
@@ -51,15 +54,15 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
             TEntity entity,
             TEntityKey id,
             JsonPatchDocument<TEntity> patchDocument = null)
-            => new ChangeTrackingEntity<TEntityKey, TEntity>
-            {
-                Modified = domainEvent.Time,
-                Source = domainEvent.EventContext?.Source,
-                UserEmail = domainEvent.EventContext?.UserEmail,
-                Action = action,
-                Changes = patchDocument?.Operations,
-                Entity = entity,
-                EntityId = id
-            };
+            => new()
+        {
+            ModifiedDate = domainEvent.Time,
+            Source = domainEvent.EventContext?.Source,
+            UserEmail = domainEvent.EventContext?.UserEmail,
+            Action = action,
+            Changes = patchDocument?.Operations,
+            Entity = entity,
+            EntityId = id
+        };
     }
 }
