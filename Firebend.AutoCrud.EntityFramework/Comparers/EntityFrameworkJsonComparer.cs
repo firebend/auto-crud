@@ -2,7 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Newtonsoft.Json;
 
-namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Comparers
+namespace Firebend.AutoCrud.EntityFramework.Comparers
 {
     public class EntityFrameworkJsonComparer<T> : ValueComparer<T>
     {

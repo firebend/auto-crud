@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Newtonsoft.Json;
 
-namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Converters
+namespace Firebend.AutoCrud.EntityFramework.Converters
 {
     public class EntityFrameworkJsonValueConverter<T> : ValueConverter<T, string>
     {
