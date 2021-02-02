@@ -7,6 +7,7 @@ using Firebend.AutoCrud.CustomFields.Web.Models;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
@@ -22,7 +23,11 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
             _createService = createService;
         }
 
-        [HttpPost("{entityId}")]
+        [HttpPost("{entityId}/custom-fields")]
+        [SwaggerOperation("Creates a custom field for a given {entityName}")]
+        [SwaggerResponse(201, "A custom field  was created successfully..")]
+        [SwaggerResponse(400, "The request is invalid.")]
+        [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> PostAsync(
             [FromRoute] string key,
             [FromBody] CustomAttributeViewModelCreate viewModel,
@@ -57,7 +62,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return NotFound(new {key});
             }
 
-            return Ok(entity);
+            return Ok(result);
         }
     }
 }
