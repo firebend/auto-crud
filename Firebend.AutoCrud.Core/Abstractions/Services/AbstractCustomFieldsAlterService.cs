@@ -18,9 +18,9 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 {
     public abstract class AbstractCustomFieldsAlterService<TKey, TEntity> :
         BaseDisposable,
-        ICustomFieldsCreateService<TKey>,
-        ICustomFieldsDeleteService<TKey>,
-        ICustomFieldsUpdateService<TKey>
+        ICustomFieldsCreateService<TKey, TEntity>,
+        ICustomFieldsDeleteService<TKey, TEntity>,
+        ICustomFieldsUpdateService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     {

@@ -14,12 +14,12 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
     public class AbstractCustomAttributeDeleteController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
-        private readonly ICustomFieldsDeleteService<TKey> _deleteService;
+        private readonly ICustomFieldsDeleteService<TKey, TEntity> _deleteService;
 
         public AbstractCustomAttributeDeleteController(IEntityKeyParser<TKey, TEntity> keyParser,
-            ICustomFieldsDeleteService<TKey> deleteService) : base(keyParser)
+            ICustomFieldsDeleteService<TKey, TEntity> deleteService) : base(keyParser)
         {
             _deleteService = deleteService;
         }
@@ -30,18 +30,18 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> DeleteAsync(
-            [Required] [FromRoute] string key,
+            [Required] [FromRoute] string entityId,
             [Required] [FromRoute] Guid id,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_deleteService);
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var rootKey = GetKey(key);
+            var rootKey = GetKey(entityId);
 
             if (rootKey == null)
             {
@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key, id});
+                return NotFound(new {key = entityId, id});
             }
 
             return Ok(result);

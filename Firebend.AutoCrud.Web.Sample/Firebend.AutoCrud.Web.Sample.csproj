@@ -11,6 +11,8 @@
     <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking.Mongo\Firebend.AutoCrud.ChangeTracking.Mongo.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking.Web\Firebend.AutoCrud.ChangeTracking.Web.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking\Firebend.AutoCrud.ChangeTracking.csproj" />
+    <ProjectReference Include="..\Firebend.AutoCrud.CustomFields.Mongo\Firebend.AutoCrud.CustomFields.Mongo.csproj" />
+    <ProjectReference Include="..\Firebend.AutoCrud.CustomFields.Web\Firebend.AutoCrud.CustomFields.Web.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.DomainEvents.MassTransit\Firebend.AutoCrud.DomainEvents.MassTransit.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.EntityFramework.Elastic\Firebend.AutoCrud.EntityFramework.Elastic.csproj" />
     <ProjectReference Include="..\Firebend.AutoCrud.EntityFramework\Firebend.AutoCrud.EntityFramework.csproj" />

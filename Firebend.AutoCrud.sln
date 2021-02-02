@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.Io.Web", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.CustomFields.Web", "Firebend.AutoCrud.CustomFields.Web\Firebend.AutoCrud.CustomFields.Web.csproj", "{031F9FE8-FB06-4571-9657-ED269EE99239}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.CustomFields.Mongo", "Firebend.AutoCrud.CustomFields.Mongo\Firebend.AutoCrud.CustomFields.Mongo.csproj", "{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,5 +117,9 @@ Global
 		{031F9FE8-FB06-4571-9657-ED269EE99239}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{031F9FE8-FB06-4571-9657-ED269EE99239}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{031F9FE8-FB06-4571-9657-ED269EE99239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -4,6 +4,8 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.CustomFields.Mongo;
+using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.CustomCommands;
@@ -36,11 +38,13 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithMassTransit())
                     .AddCrud()
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
+                    .AddCustomFields()
                     .AddControllers(controllers => controllers
                         //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
+                        .WithCustomFieldsControllers()
                         .WithOpenApiGroupName("The Beautiful Mongo People")
                         .WithRoute("api/v1/mongo-person"))
         );

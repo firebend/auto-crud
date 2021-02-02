@@ -16,35 +16,35 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
     public class AbstractCustomAttributeUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
-        private readonly ICustomFieldsUpdateService<TKey> _updateService;
+        private readonly ICustomFieldsUpdateService<TKey, TEntity> _updateService;
 
         public AbstractCustomAttributeUpdateController(IEntityKeyParser<TKey, TEntity> keyParser,
-            ICustomFieldsUpdateService<TKey> updateService) : base(keyParser)
+            ICustomFieldsUpdateService<TKey, TEntity> updateService) : base(keyParser)
         {
             _updateService = updateService;
         }
 
-        [HttpPost("{entityId}/custom-fields/{id:guid}")]
+        [HttpPut("{entityId}/custom-fields/{id:guid}")]
         [SwaggerOperation("Updates a custom field for a given {entityName}")]
         [SwaggerResponse(201, "A custom field  was updated successfully.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> PostAsync(
-            [Required] [FromRoute] string key,
+            [Required] [FromRoute] string entityId,
             [Required] [FromRoute] Guid id,
             [FromBody] CustomAttributeViewModelCreate viewModel,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_updateService);
 
-            if (ModelState.IsValid || !TryValidateModel(viewModel))
+            if (!ModelState.IsValid || !TryValidateModel(viewModel))
             {
                 return BadRequest(ModelState);
             }
 
-            var rootKey = GetKey(key);
+            var rootKey = GetKey(entityId);
 
             if (rootKey == null)
             {
@@ -53,7 +53,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             var entity = new CustomFieldsEntity<TKey> {Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value, Id = id};
 
-            if (ModelState.IsValid || !TryValidateModel(entity))
+            if (!ModelState.IsValid || !TryValidateModel(entity))
             {
                 return BadRequest(ModelState);
             }
@@ -64,7 +64,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key, id});
+                return NotFound(new {key = entityId, id});
             }
 
             return Ok(result);
@@ -76,19 +76,19 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> PatchAsync(
-            [Required] [FromRoute] string key,
+            [Required] [FromRoute] string entityId,
             [Required] [FromRoute] Guid id,
             [FromBody] JsonPatchDocument<CustomFieldsEntity<TKey>> patchDocument,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_updateService);
 
-            if (ModelState.IsValid || !TryValidateModel(patchDocument))
+            if (!ModelState.IsValid || !TryValidateModel(patchDocument))
             {
                 return BadRequest(ModelState);
             }
 
-            var rootKey = GetKey(key);
+            var rootKey = GetKey(entityId);
 
             if (rootKey == null)
             {
@@ -101,7 +101,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key, id});
+                return NotFound(new {key = entityId, id});
             }
 
             return Ok(result);

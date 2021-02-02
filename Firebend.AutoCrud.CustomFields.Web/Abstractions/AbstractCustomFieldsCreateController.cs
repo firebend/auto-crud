@@ -13,12 +13,12 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
     public class AbstractCustomAttributeCreateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
-        private readonly ICustomFieldsCreateService<TKey> _createService;
+        private readonly ICustomFieldsCreateService<TKey, TEntity> _createService;
 
         public AbstractCustomAttributeCreateController(IEntityKeyParser<TKey, TEntity> keyParser,
-            ICustomFieldsCreateService<TKey> createService) : base(keyParser)
+            ICustomFieldsCreateService<TKey, TEntity> createService) : base(keyParser)
         {
             _createService = createService;
         }
@@ -29,18 +29,18 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> PostAsync(
-            [FromRoute] string key,
+            [FromRoute] string entityId,
             [FromBody] CustomAttributeViewModelCreate viewModel,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_createService);
 
-            if (ModelState.IsValid || !TryValidateModel(viewModel))
+            if (!ModelState.IsValid || !TryValidateModel(viewModel))
             {
                 return BadRequest(ModelState);
             }
 
-            var rootKey = GetKey(key);
+            var rootKey = GetKey(entityId);
 
             if (rootKey == null)
             {
@@ -49,7 +49,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             var entity = new CustomFieldsEntity<TKey> {Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value,};
 
-            if (ModelState.IsValid || !TryValidateModel(entity))
+            if (!ModelState.IsValid || !TryValidateModel(entity))
             {
                 return BadRequest(ModelState);
             }
@@ -59,7 +59,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key});
+                return NotFound(new {key = entityId});
             }
 
             return Ok(result);
