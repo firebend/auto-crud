@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
@@ -5,21 +6,22 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.Searching;
-using Firebend.AutoCrud.Mongo.Interfaces;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
+using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
-namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
+namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public class AbstractMongoCustomFieldsSearchService<TKey, TEntity> : BaseDisposable, ICustomFieldsSearchService<TKey, TEntity>
-        where TKey : struct
+    public abstract class AbstractEfCustomFieldSearchService<TKey, TEntity> :
+        BaseDisposable,
+        ICustomFieldsSearchService<TKey, TEntity>
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TKey : struct
     {
-        private readonly IMongoReadClient<TKey, TEntity> _readClient;
+        private readonly IEntityFrameworkQueryClient<TKey, TEntity> _queryClient;
 
-        public AbstractMongoCustomFieldsSearchService(IMongoReadClient<TKey, TEntity> readClient)
+        public AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<TKey, TEntity> queryClient)
         {
-            _readClient = readClient;
+            _queryClient = queryClient;
         }
 
         public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(string key,
@@ -28,8 +30,8 @@ namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
             int? pageSize,
             CancellationToken cancellationToken = default)
         {
-            var query = await _readClient
-                .GetQueryableAsync(null, cancellationToken)
+            var query = await _queryClient
+                .GetQueryableAsync(true,  cancellationToken)
                 .ConfigureAwait(false);
 
             var fieldsQuery = query.SelectMany(x => x.CustomFields);
@@ -62,5 +64,7 @@ namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
                 Data = records, CurrentPage = pageNumber, TotalRecords = count, CurrentPageSize = pageSize
             };
         }
+
+        protected override void DisposeManagedObjects() => _queryClient?.Dispose();
     }
 }

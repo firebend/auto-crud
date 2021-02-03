@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.CustomFie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.CustomFields.Mongo", "Firebend.AutoCrud.CustomFields.Mongo\Firebend.AutoCrud.CustomFields.Mongo.csproj", "{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.CustomFields.EntityFramework", "Firebend.AutoCrud.CustomFields.EntityFramework\Firebend.AutoCrud.CustomFields.EntityFramework.csproj", "{4355AF57-6665-4623-B326-62B4C6BC0C07}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,5 +123,9 @@ Global
 		{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABB539BA-9854-493C-AD3D-AD2DB4C7F158}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4355AF57-6665-4623-B326-62B4C6BC0C07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4355AF57-6665-4623-B326-62B4C6BC0C07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4355AF57-6665-4623-B326-62B4C6BC0C07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4355AF57-6665-4623-B326-62B4C6BC0C07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
