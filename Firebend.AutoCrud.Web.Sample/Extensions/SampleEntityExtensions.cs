@@ -4,6 +4,7 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.CustomFields.EntityFramework;
 using Firebend.AutoCrud.CustomFields.Mongo;
 using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
@@ -33,12 +34,12 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithShardKeyProvider<SampleKeyProviderMongo>()
                     .WithAllShardsProvider<SampleAllShardsMongoProvider>()
                     .WithShardMode(MongoTenantShardMode.Database)
+                    .AddCustomFields()
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
                         .WithMassTransit())
                     .AddCrud()
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
-                    .AddCustomFields()
                     .AddControllers(controllers => controllers
                         //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
                         .WithAllControllers(true)
@@ -63,6 +64,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
+                    .AddCustomFields()
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
                         {
@@ -95,6 +97,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
+                        .WithCustomFieldsControllers()
                         .WithIoControllers()
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)

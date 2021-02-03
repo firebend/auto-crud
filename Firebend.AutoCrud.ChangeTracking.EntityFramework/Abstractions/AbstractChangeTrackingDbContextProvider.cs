@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
-    public static class ChangeTrackingCaches
+    internal static class ChangeTrackingCaches
     {
         public static readonly ConcurrentDictionary<string, Task<bool>> InitCaches = new();
     }

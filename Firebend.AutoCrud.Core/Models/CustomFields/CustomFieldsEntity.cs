@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Models.CustomFields
@@ -12,6 +13,7 @@ namespace Firebend.AutoCrud.Core.Models.CustomFields
 
         public string Value { get; set; }
 
+        [Key]
         public Guid Id { get; set; }
     }
 }

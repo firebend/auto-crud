@@ -18,10 +18,13 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         where TKey : struct
     {
         private readonly IEntityFrameworkQueryClient<TKey, TEntity> _queryClient;
+        private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
 
-        public AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<TKey, TEntity> queryClient)
+        public AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<TKey, TEntity> queryClient,
+            ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _queryClient = queryClient;
+            _customFieldsStorageCreator = customFieldsStorageCreator;
         }
 
         public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(string key,
@@ -30,6 +33,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             int? pageSize,
             CancellationToken cancellationToken = default)
         {
+            await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
+
             var query = await _queryClient
                 .GetQueryableAsync(true,  cancellationToken)
                 .ConfigureAwait(false);

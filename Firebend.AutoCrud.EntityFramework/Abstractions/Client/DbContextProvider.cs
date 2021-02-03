@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
-    public static class DbContextProviderCaches
+    internal static class DbContextProviderCaches
     {
         public static readonly ConcurrentDictionary<string, Task<bool>> InitCache = new();
     }

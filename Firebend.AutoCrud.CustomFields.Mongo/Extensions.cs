@@ -4,15 +4,16 @@ using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.CustomFields.Mongo.Abstractions;
+using Firebend.AutoCrud.Mongo;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo
 {
     public static class Extensions
     {
         public static EntityCrudBuilder<TKey, TEntity> AddCustomFields<TKey, TEntity>(
-            this EntityCrudBuilder<TKey, TEntity> builder)
+            this MongoDbEntityBuilder<TKey, TEntity> builder)
             where TKey : struct
-            where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+            where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
         {
             builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>, AbstractCustomFieldsAlterService<TKey, TEntity>>();
             builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>, AbstractCustomFieldsAlterService<TKey, TEntity>>();

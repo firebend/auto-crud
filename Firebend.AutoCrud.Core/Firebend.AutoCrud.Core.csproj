@@ -24,4 +24,10 @@
       <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.7.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="System.ComponentModel.Annotations, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+        <HintPath>..\..\..\..\..\..\..\usr\local\share\dotnet\packs\Microsoft.NETCore.App.Ref\5.0.0\ref\net5.0\System.ComponentModel.Annotations.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>
