@@ -1,11 +1,9 @@
 ﻿using System;
-using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
-using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
@@ -17,7 +15,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 {
     public static class Extensions
     {
-        public static EntityCrudBuilder<TKey, TEntity> AddCustomFields<TKey, TEntity>(
+        public static EntityFrameworkEntityBuilder<TKey, TEntity> AddCustomFields<TKey, TEntity>(
             this EntityFrameworkEntityBuilder<TKey, TEntity> builder)
             where TKey : struct
             where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()

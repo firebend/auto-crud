@@ -13,15 +13,20 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
     {
+        private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
         private readonly IEntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>> _createClient;
 
-        protected AbstractEfCustomFieldsCreateService(IEntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>> createClient)
+        protected AbstractEfCustomFieldsCreateService(IEntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>> createClient,
+            ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _createClient = createClient;
+            _customFieldsStorageCreator = customFieldsStorageCreator;
         }
 
         public async Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> entity, CancellationToken cancellationToken = default)
         {
+            await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
+
             var customFieldsEntity = new CustomFieldsEntity<TKey, TEntity>(entity) {EntityId = rootEntityKey};
             var added = await _createClient.AddAsync(customFieldsEntity, cancellationToken).ConfigureAwait(false);
 
@@ -35,6 +40,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             return returnEntity;
         }
 
-        protected override void DisposeManagedObjects() => _createClient?.Dispose();
+        protected override void DisposeManagedObjects()
+        {
+            _createClient?.Dispose();
+            _customFieldsStorageCreator?.Dispose();
+        }
     }
 }

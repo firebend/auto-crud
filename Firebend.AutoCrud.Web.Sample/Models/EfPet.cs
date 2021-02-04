@@ -1,11 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Models.CustomFields;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class EfPet : IEntity<Guid>, IModifiedEntity, ITenantEntity<int>, IActiveEntity
+    public class EfPet : IEntity<Guid>, IModifiedEntity, ITenantEntity<int>, IActiveEntity, ICustomFieldsEntity<Guid>
     {
         public EfPet()
         {
@@ -41,5 +43,6 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public DateTimeOffset ModifiedDate { get; set; }
         public int TenantId { get; set; }
         public bool IsDeleted { get; set; }
+        public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
     }
 }

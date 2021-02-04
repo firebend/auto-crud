@@ -18,16 +18,20 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         private readonly IEntityFrameworkUpdateClient<Guid, CustomFieldsEntity<TKey, TEntity>> _updateClient;
+        private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
 
-        protected AbstractEfCustomFieldsUpdateService(IEntityFrameworkUpdateClient<Guid, CustomFieldsEntity<TKey, TEntity>> updateClient)
+        protected AbstractEfCustomFieldsUpdateService(IEntityFrameworkUpdateClient<Guid, CustomFieldsEntity<TKey, TEntity>> updateClient,
+            ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _updateClient = updateClient;
+            _customFieldsStorageCreator = customFieldsStorageCreator;
         }
 
         public async Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
             CustomFieldsEntity<TKey> entity,
             CancellationToken cancellationToken = default)
         {
+            await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
             entity.EntityId = rootEntityKey;
             var updated = await _updateClient
                 .UpdateAsync(new CustomFieldsEntity<TKey, TEntity>(entity), cancellationToken)
@@ -47,6 +51,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
             CancellationToken cancellationToken = default)
         {
+            await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
+
             var operations = jsonPatchDocument
                 .Operations
                 .Select(x => new Operation<CustomFieldsEntity<TKey, TEntity>> {from = x.from, op = x.op, path = x.path, value = x.value})
@@ -67,6 +73,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             return retEntity;
         }
 
-        protected override void DisposeManagedObjects() => _updateClient?.Dispose();
+        protected override void DisposeManagedObjects()
+        {
+            _updateClient?.Dispose();
+            _customFieldsStorageCreator.Dispose();
+        }
     }
 }

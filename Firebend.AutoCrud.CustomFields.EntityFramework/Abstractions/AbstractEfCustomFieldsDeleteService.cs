@@ -9,19 +9,24 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public class AbstractEfCustomFieldsDeleteService<TKey, TEntity> : BaseDisposable, ICustomFieldsDeleteService<TKey, TEntity>
+    public abstract class AbstractEfCustomFieldsDeleteService<TKey, TEntity> : BaseDisposable, ICustomFieldsDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
+        private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
         private readonly IEntityFrameworkDeleteClient<Guid, CustomFieldsEntity<TKey, TEntity>> _deleteClient;
 
-        public AbstractEfCustomFieldsDeleteService(IEntityFrameworkDeleteClient<Guid, CustomFieldsEntity<TKey, TEntity>> deleteClient)
+        protected AbstractEfCustomFieldsDeleteService(IEntityFrameworkDeleteClient<Guid, CustomFieldsEntity<TKey, TEntity>> deleteClient,
+            ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _deleteClient = deleteClient;
+            _customFieldsStorageCreator = customFieldsStorageCreator;
         }
 
         public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken = default)
         {
+            await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
+
             var deleted = await _deleteClient
                 .DeleteAsync(key, cancellationToken)
                 .ConfigureAwait(false);
@@ -36,6 +41,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             return retDeleted;
         }
 
-        protected override void DisposeManagedObjects() => _deleteClient.Dispose();
+        protected override void DisposeManagedObjects()
+        {
+            _deleteClient?.Dispose();
+            _customFieldsStorageCreator?.Dispose();
+        }
     }
 }

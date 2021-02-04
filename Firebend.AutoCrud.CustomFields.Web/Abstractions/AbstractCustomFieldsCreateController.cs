@@ -47,7 +47,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            var entity = new CustomFieldsEntity<TKey, TEntity> {Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value,};
+            var entity = new CustomFieldsEntity<TKey> {Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value};
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {

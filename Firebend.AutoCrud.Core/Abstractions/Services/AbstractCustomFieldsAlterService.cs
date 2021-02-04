@@ -29,19 +29,16 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
         private readonly IJsonPatchDocumentGenerator _patchDocumentGenerator;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
-        private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
 
         protected AbstractCustomFieldsAlterService(IEntityReadService<TKey, TEntity> readService,
             IEntityUpdateService<TKey, TEntity> updateService,
             IDomainEventContextProvider domainEventContextProvider,
             IEntityDomainEventPublisher eventPublisher,
-            IJsonPatchDocumentGenerator patchDocumentGenerator,
-            ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator = null)
+            IJsonPatchDocumentGenerator patchDocumentGenerator)
         {
             _domainEventContextProvider = domainEventContextProvider;
             _eventPublisher = eventPublisher;
             _patchDocumentGenerator = patchDocumentGenerator;
-            _customFieldsStorageCreator = customFieldsStorageCreator;
             _updateService = updateService;
             _readService = readService;
         }
@@ -69,11 +66,6 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
             if (afterModified == null || customAttributeEntity == null)
             {
                 return null;
-            }
-
-            if (_customFieldsStorageCreator != null)
-            {
-                await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
             }
 
             var entity = await _updateService.UpdateAsync(afterModified, cancellationToken).ConfigureAwait(false);

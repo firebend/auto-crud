@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +30,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public PersonViewModelBase Body { get; set; }
     }
 
-    public class PersonViewModelBase
+    public class PersonViewModelBase: ICustomFieldsEntity<Guid>
     {
         public PersonViewModelBase()
         {
@@ -52,6 +54,8 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         [StringLength(100)]
         public string NickName { get; set; }
+
+        public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
     }
 
     public class GetPersonViewModel : PersonViewModelBase

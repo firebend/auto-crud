@@ -70,6 +70,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             };
         }
 
-        protected override void DisposeManagedObjects() => _queryClient?.Dispose();
+        protected override void DisposeManagedObjects()
+        {
+            _queryClient?.Dispose();
+            _customFieldsStorageCreator.Dispose();
+        }
     }
 }

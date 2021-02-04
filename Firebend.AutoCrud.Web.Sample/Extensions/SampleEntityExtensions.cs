@@ -118,12 +118,15 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCrud(crud => crud.WithSearchHandler<CustomSearchParameters>((pets, parameters) =>
+                    .AddCustomFields()
+                    .AddCrud(crud => crud.WithSearchHandler<PetSearch>((pets, parameters) =>
                     {
                         if (!string.IsNullOrWhiteSpace(parameters.Search))
                         {
                             pets = pets.Where(x => x.PetName.Contains(parameters.Search));
                         }
+
+                        pets = pets.Where(x => x.EfPersonId == parameters.PersonId);
 
                         return pets;
                     }).WithCrud())
@@ -141,6 +144,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
+                        .WithCustomFieldsControllers()
                     ));
     }
 }
