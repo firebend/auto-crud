@@ -16,4 +16,10 @@ namespace Firebend.AutoCrud.Core.Models.CustomFields
         [Key]
         public Guid Id { get; set; }
     }
+
+    public class CustomFieldsEntity<TKey, TEntity> : CustomFieldsEntity<TKey>
+        where TKey : struct
+    {
+        public TEntity Entity { get; set; }
+    }
 }

@@ -13,9 +13,12 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
-        public AbstractTenantSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider, IEntityTableCreator tableCreator)
+        public AbstractTenantSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider,
+            IEntityTableCreator tableCreator,
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider)
             : base(contextProvider, tableCreator)
         {
+            _tenantEntityProvider = tenantEntityProvider;
         }
 
         protected override async Task<string> GetCacheKey(CancellationToken cancellationToken)

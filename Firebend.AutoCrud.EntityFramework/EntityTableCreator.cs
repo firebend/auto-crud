@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,8 +14,8 @@ namespace Firebend.AutoCrud.EntityFramework
     {
         public async Task<bool> EnsureExistsAsync<TEntity>(IDbContext dbContext, CancellationToken cancellationToken)
         {
-            var schema = dbContext.GetSchemaName<TEntity>();
-            var table = dbContext.GetTableName<TEntity>();
+            var schema = dbContext.Model.GetSchemaName<TEntity>();
+            var table = dbContext.Model.GetTableName<TEntity>();
 
             var exists = await DoesTableExist(dbContext, schema, table, cancellationToken).ConfigureAwait(false);
 
@@ -30,14 +29,14 @@ namespace Firebend.AutoCrud.EntityFramework
             return created;
         }
 
-        private async Task<bool> CreateTableAsync(IDbContext dbContext, string tableName, CancellationToken cancellationToken)
+        private static async Task<bool> CreateTableAsync(IDbContext dbContext, string tableName, CancellationToken cancellationToken)
         {
             var script = dbContext.Database.GenerateCreateScript();
 
             var split = script.Split(new[] { "CREATE TABLE " }, StringSplitOptions.RemoveEmptyEntries);
             string commandText = null;
 
-            foreach (string sql in split)
+            foreach (var sql in split)
             {
                 var scriptTableName = sql.Substring(0, sql.IndexOf("(", StringComparison.OrdinalIgnoreCase));
                 scriptTableName = scriptTableName.Split('.').Last();
@@ -52,16 +51,17 @@ namespace Firebend.AutoCrud.EntityFramework
                 break;
             }
 
-            if (!string.IsNullOrWhiteSpace(commandText))
+            if (string.IsNullOrWhiteSpace(commandText))
             {
-                await using var connection = await GetDbConnection(dbContext, cancellationToken).ConfigureAwait(false);
-                await using var command = connection.CreateCommand();
-                command.CommandText = commandText;
-                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-                return true;
+                return false;
             }
 
-            return false;
+            await using var connection = await GetDbConnection(dbContext, cancellationToken).ConfigureAwait(false);
+            await using var command = connection.CreateCommand();
+            command.CommandText = commandText;
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+            return true;
         }
 
         private static async Task<DbConnection> GetDbConnection(IDbContext context, CancellationToken cancellationToken)
@@ -78,7 +78,7 @@ namespace Firebend.AutoCrud.EntityFramework
             return connection;
         }
 
-        private async static Task<bool> DoesTableExist(
+        private static async Task<bool> DoesTableExist(
             IDbContext dbContext,
             string schema,
             string table,
@@ -107,7 +107,7 @@ namespace Firebend.AutoCrud.EntityFramework
         private static void AddStringParameter(string name, string value, DbCommand command)
         {
             var parameter = command.CreateParameter();
-            parameter.Value = value;
+            parameter.Value = (object) value ?? DBNull.Value;
             parameter.ParameterName = name;
             parameter.DbType = DbType.String;
             command.Parameters.Add(parameter);
@@ -119,7 +119,7 @@ IF (EXISTS ( SELECT *
     [INFORMATION_SCHEMA].[TABLES] [Tables]
     WHERE [Tables].[TABLE_TYPE] = @TableType
     AND [Tables].TABLE_NAME = @TableName
-    AND [Tables].[TABLE_SCHEMA] = @SchemaName
+    AND ([Tables].[TABLE_SCHEMA] = @SchemaName OR @SchemaName IS NULL OR @SchemaName = '')
 ))
 SELECT CAST(1 as BIT)
 ELSE

@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
             _searchService = searchService;
         }
 
-        [HttpGet("/custom-fields")]
+        [HttpGet("custom-fields")]
         [SwaggerOperation("Searches for custom fields assigned to a given {entityName}")]
         [SwaggerResponse(200, "All the custom fields for {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.")]

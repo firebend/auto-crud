@@ -1,17 +1,20 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
-    public static class IDbContextExtensions
+    public static class EfModelExtensions
     {
-        public static string GetTableName<TEntity>(this IDbContext context)
-        {
-            var entityType = typeof(TEntity);
+        public static string GetTableName<TEntity>(this IModel model)
+            => GetTableName(model, typeof(TEntity));
 
-            var efType = context.Model.FindEntityType(entityType);
+        public static string GetTableName(this IModel model, Type entityType)
+        {
+            var efType = model.FindEntityType(entityType);
 
             if (efType != null)
             {
@@ -30,11 +33,12 @@ namespace Firebend.AutoCrud.EntityFramework
         }
 
 
-        public static string GetSchemaName<TEntity>(this IDbContext context)
-        {
-            var entityType = typeof(TEntity);
+        public static string GetSchemaName<TEntity>(this IModel model)
+            => GetSchemaName(model, typeof(TEntity));
 
-            var efType = context.Model.FindEntityType(entityType);
+        public static string GetSchemaName(this IModel model, Type entityType)
+        {
+            var efType = model.FindEntityType(entityType);
 
             if (efType != null)
             {

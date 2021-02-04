@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
                         .ConfigureAwait(false);
 
                     var created = await _tableCreator
-                        .EnsureExistsAsync<CustomFieldsEntity<TKey>>(context, cancellationToken)
+                        .EnsureExistsAsync<CustomFieldsEntity<TKey, TEntity>>(context, cancellationToken)
                         .ConfigureAwait(false);
 
                     return created;
