@@ -1,8 +1,11 @@
 ﻿using System;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
+using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
@@ -23,7 +26,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
                 AbstractCustomFieldsDbContextProvider<TKey, TEntity>>();
 
             builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                DefaultEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey,TEntity>>>(false);
+                DefaultEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
 
             builder.WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<Guid, CustomFieldsEntity<TKey, TEntity>>,
                 DefaultEntityFrameworkDbUpdateExceptionHandler<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
@@ -45,6 +48,15 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
             builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>,
                 AbstractEfCustomFieldsDeleteService<TKey, TEntity>>(false);
+
+            builder.WithRegistration<IEntityFrameworkQueryClient<Guid, CustomFieldsEntity<TKey, TEntity>>,
+                EntityFrameworkQueryClient<Guid, CustomFieldsEntity<TKey, TEntity>>>();
+
+            builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>,
+                DefaultEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
+
+            builder.WithRegistration<IEntityQueryOrderByHandler<Guid, CustomFieldsEntity<TKey, TEntity>>,
+                DefaultEntityQueryOrderByHandler<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
 
             builder.WithRegistration<ICustomFieldsSearchService<TKey, TEntity>, AbstractEfCustomFieldSearchService<TKey, TEntity>>(false);
 
