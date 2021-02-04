@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         private readonly IEntityFrameworkQueryClient<TKey, TEntity> _queryClient;
         private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
 
-        public AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<TKey, TEntity> queryClient,
+        protected AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<TKey, TEntity> queryClient,
             ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _queryClient = queryClient;

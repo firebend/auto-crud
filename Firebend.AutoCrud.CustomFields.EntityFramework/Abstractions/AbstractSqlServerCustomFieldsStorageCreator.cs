@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         private readonly IDbContextProvider<TKey, TEntity> _contextProvider;
         private readonly IEntityTableCreator _tableCreator;
 
-        public AbstractSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider,
+        protected AbstractSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityTableCreator tableCreator)
         {
             _contextProvider = contextProvider;

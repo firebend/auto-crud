@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
         protected MongoTenantDeleteClient(IMongoClient client,
-            ILogger<MongoDeleteClient<TKey, TEntity>> logger,
+            ILogger<MongoTenantDeleteClient<TKey, TEntity, TTenantKey>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IEntityDomainEventPublisher entityDomainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,

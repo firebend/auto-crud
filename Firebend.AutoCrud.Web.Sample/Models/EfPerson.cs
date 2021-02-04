@@ -11,8 +11,6 @@ namespace Firebend.AutoCrud.Web.Sample.Models
     [Table("EfPeople")]
     public class EfPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity, ITenantEntity<int>, ICustomFieldsEntity<Guid>
     {
-        private List<CustomFieldsEntity<Guid>> _customFields;
-
         public EfPerson()
         {
         }

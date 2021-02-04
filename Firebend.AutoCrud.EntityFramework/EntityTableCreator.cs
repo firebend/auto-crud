@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.EntityFramework
                     continue;
                 }
 
-                commandText =  "CREATE TABLE " + sql.Substring(0, sql.LastIndexOf(";"));
+                commandText =  "CREATE TABLE " + sql.Substring(0, sql.LastIndexOf(";", StringComparison.InvariantCulture));
                 break;
             }
 

@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             var options = _optionsProvider.GetDbContextOptions(connectionString);
             var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
 
-            await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName, async _ =>
+            await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName ?? string.Empty, async _ =>
                 {
                     try
                     {
@@ -59,7 +59,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                     {
                         if (!ex.Message.StartsWith("There is already an object named"))
                         {
-                            _logger.LogError("Error creating change tracking tables for context", ex);
+                            _logger.LogError(ex, "Error creating change tracking tables for context");
                         }
                     }
 

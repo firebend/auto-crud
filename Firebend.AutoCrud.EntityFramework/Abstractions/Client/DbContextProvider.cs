@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (context is DbContext dbContext)
             {
-                await DbContextProviderCaches.InitCache.GetOrAdd(contextType.FullName, async _ =>
+                await DbContextProviderCaches.InitCache.GetOrAdd(contextType.FullName ?? string.Empty, async _ =>
                 {
                     await dbContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
                     await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);

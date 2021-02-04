@@ -1,9 +1,14 @@
-﻿using Firebend.AutoCrud.Core.Abstractions.Builders;
+﻿using System;
+using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Services;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
+using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions;
 using Firebend.AutoCrud.EntityFramework;
+using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
+using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework
@@ -15,7 +20,21 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             where TKey : struct
             where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
         {
-            builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>, AbstractCustomFieldsAlterService<TKey, TEntity>>(false);
+            builder.WithRegistration<IDbContextProvider<Guid, CustomFieldsEntity<TKey, TEntity>>,
+                AbstractCustomFieldsDbContextProvider<TKey, TEntity>>();
+
+            builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>,
+                DefaultEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey,TEntity>>>(false);
+
+            builder.WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<Guid, CustomFieldsEntity<TKey, TEntity>>,
+                DefaultEntityFrameworkDbUpdateExceptionHandler<Guid, CustomFieldsEntity<TKey, TEntity>>>();
+
+            builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>,
+                AbstractEfCustomFieldsCreateService<TKey, TEntity>>(false);
+
+            builder.WithRegistration<IEntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>>,
+                EntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>>>();
+
             builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>, AbstractCustomFieldsAlterService<TKey, TEntity>>(false);
             builder.WithRegistration<ICustomFieldsUpdateService<TKey, TEntity>, AbstractCustomFieldsAlterService<TKey, TEntity>>(false);
 
