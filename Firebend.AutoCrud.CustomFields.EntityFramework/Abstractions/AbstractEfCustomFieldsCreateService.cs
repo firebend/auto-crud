@@ -24,7 +24,14 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         {
             var customFieldsEntity = new CustomFieldsEntity<TKey, TEntity>(entity) {EntityId = rootEntityKey};
             var added = await _createClient.AddAsync(customFieldsEntity, cancellationToken).ConfigureAwait(false);
+
+            if (added == null)
+            {
+                return null;
+            }
+
             var returnEntity = CustomFieldsEntity<TKey>.Create(added);
+
             return returnEntity;
         }
 
