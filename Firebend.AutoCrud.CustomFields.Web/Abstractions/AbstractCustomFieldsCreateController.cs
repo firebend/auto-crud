@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.Web.Models;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -47,7 +48,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            var entity = new CustomFieldsEntity<TKey> {Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value,};
+            var entity = new CustomFieldsEntity<TKey, TEntity> {Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value,};
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {

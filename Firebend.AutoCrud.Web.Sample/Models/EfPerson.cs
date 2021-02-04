@@ -9,8 +9,10 @@ using Firebend.AutoCrud.Core.Models.CustomFields;
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
     [Table("EfPeople")]
-    public class EfPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity, ITenantEntity<int>, ICustomFieldsEntity<Guid, EfPerson>
+    public class EfPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity, ITenantEntity<int>, ICustomFieldsEntity<Guid>
     {
+        private List<CustomFieldsEntity<Guid>> _customFields;
+
         public EfPerson()
         {
         }
@@ -45,6 +47,6 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         public ICollection<EfPet> Pets { get; set; }
 
-        public List<CustomFieldsEntity<Guid, EfPerson>> CustomFields { get; set; }
+        public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
     }
 }

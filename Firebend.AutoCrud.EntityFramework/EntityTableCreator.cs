@@ -14,22 +14,26 @@ namespace Firebend.AutoCrud.EntityFramework
     {
         public async Task<bool> EnsureExistsAsync<TEntity>(IDbContext dbContext, CancellationToken cancellationToken)
         {
+            await using var connection = await GetDbConnectionAsync(dbContext, cancellationToken).ConfigureAwait(false);
             var schema = dbContext.Model.GetSchemaName<TEntity>();
             var table = dbContext.Model.GetTableName<TEntity>();
 
-            var exists = await DoesTableExist(dbContext, schema, table, cancellationToken).ConfigureAwait(false);
+            var exists = await DoesTableExistAsync(connection, schema, table, cancellationToken).ConfigureAwait(false);
 
             if (exists)
             {
                 return false;
             }
 
-            var created = await CreateTableAsync(dbContext,table, cancellationToken);
+            var created = await CreateTableAsync(dbContext, connection, table, cancellationToken);
 
             return created;
         }
 
-        private static async Task<bool> CreateTableAsync(IDbContext dbContext, string tableName, CancellationToken cancellationToken)
+        private static async Task<bool> CreateTableAsync(IDbContext dbContext,
+            DbConnection dbConnection,
+            string tableName,
+            CancellationToken cancellationToken)
         {
             var script = dbContext.Database.GenerateCreateScript();
 
@@ -56,19 +60,18 @@ namespace Firebend.AutoCrud.EntityFramework
                 return false;
             }
 
-            await using var connection = await GetDbConnection(dbContext, cancellationToken).ConfigureAwait(false);
-            await using var command = connection.CreateCommand();
+            await using var command = dbConnection.CreateCommand();
             command.CommandText = commandText;
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
             return true;
         }
 
-        private static async Task<DbConnection> GetDbConnection(IDbContext context, CancellationToken cancellationToken)
+        private static async Task<DbConnection> GetDbConnectionAsync(IDbContext context, CancellationToken cancellationToken)
         {
             var connection = context.Database.GetDbConnection();
 
-            bool isConnectionClosed = connection.State == ConnectionState.Closed;
+            var isConnectionClosed = connection.State == ConnectionState.Closed;
 
             if (isConnectionClosed)
             {
@@ -78,15 +81,13 @@ namespace Firebend.AutoCrud.EntityFramework
             return connection;
         }
 
-        private static async Task<bool> DoesTableExist(
-            IDbContext dbContext,
+        private static async Task<bool> DoesTableExistAsync(
+            DbConnection dbConnection,
             string schema,
             string table,
             CancellationToken cancellationToken)
         {
-            await using var connection = await GetDbConnection(dbContext, cancellationToken).ConfigureAwait(false);
-
-            await using var command = connection.CreateCommand();
+            await using var command = dbConnection.CreateCommand();
 
             AddStringParameter("TableName", table, command);
             AddStringParameter("SchemaName", schema, command);

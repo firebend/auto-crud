@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 {
     public class CustomFieldEntityTypeConfiguration<TKey, TEntity> : IEntityTypeConfiguration<CustomFieldsEntity<TKey, TEntity>>
         where TKey : struct
-        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey, TEntity>
+        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         private readonly string _tableName;
         private readonly string _schema;
@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             builder.ToTable(_tableName, _schema);
             builder.Property(x => x.Key).IsRequired().HasMaxLength(250);
             builder.Property(x => x.Value).IsRequired().HasMaxLength(250);
-            builder.HasOne(x => x.Entity).WithMany(x => x.CustomFields);
+            builder.HasOne(x => x.Entity).WithMany(nameof(ICustomFieldsEntity<TKey>.CustomFields));
             builder.HasIndex(x => x.EntityId).IsClustered();
         }
     }
@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
                 .Where(x =>
                 {
                     var args = x.PropertyType.GetGenericArguments().First();
-                    var isCustomFieldEntity = args.IsAssignableToGenericType(typeof(ICustomFieldsEntity<,>)) &&
+                    var isCustomFieldEntity = args.IsAssignableToGenericType(typeof(ICustomFieldsEntity<>)) &&
                                               args.IsAssignableToGenericType(typeof(IEntity<>));
                     return isCustomFieldEntity;
                 })
