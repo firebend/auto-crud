@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
@@ -47,7 +47,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            var entity = new CustomFieldsEntity<TKey> {Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value};
+            var entity = new CustomFieldsEntity<TKey> { Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value };
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {
@@ -59,7 +59,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key = entityId});
+                return NotFound(new { key = entityId });
             }
 
             return Ok(result);

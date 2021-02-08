@@ -30,8 +30,8 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> DeleteAsync(
-            [Required] [FromRoute] string entityId,
-            [Required] [FromRoute] Guid id,
+            [Required][FromRoute] string entityId,
+            [Required][FromRoute] Guid id,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_deleteService);
@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key = entityId, id});
+                return NotFound(new { key = entityId, id });
             }
 
             return Ok(result);

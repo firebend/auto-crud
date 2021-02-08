@@ -25,10 +25,10 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(200, "All the custom fields for {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.")]
         public async Task<ActionResult<EntityPagedResponse<CustomFieldsEntity<TKey>>>> GetAsync(
-                [FromQuery]string key,
-                [FromQuery]string value,
-                [FromQuery]int pageNumber,
-                [FromQuery]int pageSize,
+                [FromQuery] string key,
+                [FromQuery] string value,
+                [FromQuery] int pageNumber,
+                [FromQuery] int pageSize,
                 CancellationToken cancellationToken)
         {
 

@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             CancellationToken cancellationToken = default)
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
-            var efEntity = new TCustomFieldsEntity {EntityId = rootEntityKey};
+            var efEntity = new TCustomFieldsEntity { EntityId = rootEntityKey };
             entity.CopyPropertiesTo(efEntity);
 
             var updated = await _updateClient

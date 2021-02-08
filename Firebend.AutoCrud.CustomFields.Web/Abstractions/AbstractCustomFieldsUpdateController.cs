@@ -32,8 +32,8 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> PostAsync(
-            [Required] [FromRoute] string entityId,
-            [Required] [FromRoute] Guid id,
+            [Required][FromRoute] string entityId,
+            [Required][FromRoute] Guid id,
             [FromBody] CustomAttributeViewModelCreate viewModel,
             CancellationToken cancellationToken)
         {
@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            var entity = new CustomFieldsEntity<TKey> {Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value, Id = id};
+            var entity = new CustomFieldsEntity<TKey> { Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value, Id = id };
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {
@@ -64,7 +64,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key = entityId, id});
+                return NotFound(new { key = entityId, id });
             }
 
             return Ok(result);
@@ -76,8 +76,8 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> PatchAsync(
-            [Required] [FromRoute] string entityId,
-            [Required] [FromRoute] Guid id,
+            [Required][FromRoute] string entityId,
+            [Required][FromRoute] Guid id,
             [FromBody] JsonPatchDocument<CustomFieldsEntity<TKey>> patchDocument,
             CancellationToken cancellationToken)
         {
@@ -101,7 +101,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key = entityId, id});
+                return NotFound(new { key = entityId, id });
             }
 
             return Ok(result);

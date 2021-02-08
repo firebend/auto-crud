@@ -177,7 +177,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 
             var domainEvent = new EntityUpdatedDomainEvent<TEntity>
             {
-                Previous = entity,
+                Previous = beforeModified,
                 Patch = _patchDocumentGenerator?.Generate(beforeModified, entity),
                 EventContext = _domainEventContextProvider?.GetContext()
             };
@@ -189,8 +189,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
         public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootKey, CustomFieldsEntity<TKey> entity, CancellationToken cancellationToken = default)
             => SaveAsync(rootKey, root => AddCustomAttribute(entity, root), cancellationToken);
 
-        public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootKey,  CustomFieldsEntity<TKey> entity, CancellationToken cancellationToken = default)
-            => SaveAsync(rootKey, root => UpdateCustomAttribute(entity.Id, entity, root),  cancellationToken);
+        public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootKey, CustomFieldsEntity<TKey> entity, CancellationToken cancellationToken = default)
+            => SaveAsync(rootKey, root => UpdateCustomAttribute(entity.Id, entity, root), cancellationToken);
 
         public Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootKey, Guid key, CancellationToken cancellationToken = default)
             => SaveAsync(rootKey, root => RemoveCustomAttribute(key, root), cancellationToken);

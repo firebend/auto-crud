@@ -59,7 +59,10 @@ namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
 
             return new EntityPagedResponse<CustomFieldsEntity<TKey>>
             {
-                Data = records, CurrentPage = pageNumber, TotalRecords = count, CurrentPageSize = pageSize
+                Data = records,
+                CurrentPage = pageNumber,
+                TotalRecords = count,
+                CurrentPageSize = pageSize
             };
         }
     }

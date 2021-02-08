@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public PersonViewModelBase Body { get; set; }
     }
 
-    public class PersonViewModelBase: ICustomFieldsEntity<Guid>
+    public class PersonViewModelBase : ICustomFieldsEntity<Guid>
     {
         public PersonViewModelBase()
         {

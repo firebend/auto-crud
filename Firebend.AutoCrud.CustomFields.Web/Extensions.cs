@@ -17,27 +17,27 @@ namespace Firebend.AutoCrud.CustomFields.Web
                 .MakeGenericType(configurator.Builder.EntityKeyType,
                     configurator.Builder.EntityType);
 
-             configurator.WithController(createController, createController);
+            configurator.WithController(createController, createController);
 
-             var updateController = typeof(AbstractCustomAttributeUpdateController<,>)
-                 .MakeGenericType(configurator.Builder.EntityKeyType,
-                     configurator.Builder.EntityType);
+            var updateController = typeof(AbstractCustomAttributeUpdateController<,>)
+                .MakeGenericType(configurator.Builder.EntityKeyType,
+                    configurator.Builder.EntityType);
 
-             configurator.WithController(updateController, updateController);
+            configurator.WithController(updateController, updateController);
 
-             var deleteController = typeof(AbstractCustomAttributeDeleteController<,>)
-                 .MakeGenericType(configurator.Builder.EntityKeyType,
-                     configurator.Builder.EntityType);
+            var deleteController = typeof(AbstractCustomAttributeDeleteController<,>)
+                .MakeGenericType(configurator.Builder.EntityKeyType,
+                    configurator.Builder.EntityType);
 
-             configurator.WithController(deleteController, deleteController);
+            configurator.WithController(deleteController, deleteController);
 
-             var searchController = typeof(AbstractCustomFieldsSearchController<,>)
-                 .MakeGenericType(configurator.Builder.EntityKeyType,
-                     configurator.Builder.EntityType);
+            var searchController = typeof(AbstractCustomFieldsSearchController<,>)
+                .MakeGenericType(configurator.Builder.EntityKeyType,
+                    configurator.Builder.EntityType);
 
-             configurator.WithController(searchController, searchController);
+            configurator.WithController(searchController, searchController);
 
-             return configurator;
+            return configurator;
         }
     }
 }

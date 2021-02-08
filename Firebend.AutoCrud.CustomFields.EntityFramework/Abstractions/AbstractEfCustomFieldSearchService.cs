@@ -40,7 +40,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
             var query = await _queryClient
-                .GetQueryableAsync(true,  cancellationToken)
+                .GetQueryableAsync(true, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(key))

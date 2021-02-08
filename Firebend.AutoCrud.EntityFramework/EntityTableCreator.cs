@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.EntityFramework
                     continue;
                 }
 
-                commandText =  "CREATE TABLE " + sql.Substring(0, sql.LastIndexOf(";", StringComparison.InvariantCulture));
+                commandText = "CREATE TABLE " + sql.Substring(0, sql.LastIndexOf(";", StringComparison.InvariantCulture));
                 break;
             }
 
@@ -108,7 +108,7 @@ namespace Firebend.AutoCrud.EntityFramework
         private static void AddStringParameter(string name, string value, DbCommand command)
         {
             var parameter = command.CreateParameter();
-            parameter.Value = (object) value ?? DBNull.Value;
+            parameter.Value = (object)value ?? DBNull.Value;
             parameter.ParameterName = name;
             parameter.DbType = DbType.String;
             command.Parameters.Add(parameter);
