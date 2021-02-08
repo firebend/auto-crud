@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.Searching;
+using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,10 +19,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
         where TKey : struct
     {
-        private readonly IEntityFrameworkQueryClient<Guid, CustomFieldsEntity<TKey, TEntity>> _queryClient;
+        private readonly IEntityFrameworkQueryClient<Guid, EfCustomFieldsModel<TKey, TEntity>> _queryClient;
         private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
 
-        protected AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<Guid, CustomFieldsEntity<TKey, TEntity>> queryClient,
+        protected AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<Guid, EfCustomFieldsModel<TKey, TEntity>> queryClient,
             ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _queryClient = queryClient;
@@ -66,7 +67,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 
             return new EntityPagedResponse<CustomFieldsEntity<TKey>>
             {
-                Data = records.Select(CustomFieldsEntity<TKey>.Create), CurrentPage = pageNumber, TotalRecords = count, CurrentPageSize = pageSize
+                Data = records.Select(x => x.ToCustomFields()).ToList(),
+                CurrentPage = pageNumber,
+                TotalRecords = count,
+                CurrentPageSize = pageSize
             };
         }
 

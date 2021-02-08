@@ -124,16 +124,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             };
         }
 
-        protected virtual Task<IQueryable<TEntity>> ModifyQueryableAsync(IQueryable<TEntity> queryable) => Task.FromResult(queryable);
+        protected virtual Task<IQueryable<TEntity>> ModifyQueryableAsync(IQueryable<TEntity> queryable)
+            => Task.FromResult(queryable);
 
         protected override IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable)
-        {
-            if(typeof(TEntity).IsAssignableToGenericType(typeof(ICustomFieldsEntity<>)))
-            {
-                queryable = queryable.Include(nameof(ICustomFieldsEntity<Guid>.CustomFields));
-            }
-
-            return _includesProvider != null ? _includesProvider.AddIncludes(queryable) : queryable;
-        }
+            => _includesProvider != null ? _includesProvider.AddIncludes(queryable) : queryable;
     }
 }

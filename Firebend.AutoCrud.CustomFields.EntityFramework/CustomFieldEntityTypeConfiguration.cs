@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Models.CustomFields;
+using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework
 {
-    public class CustomFieldEntityTypeConfiguration<TKey, TEntity> : IEntityTypeConfiguration<CustomFieldsEntity<TKey, TEntity>>
+    public class CustomFieldEntityTypeConfiguration<TKey, TEntity> : IEntityTypeConfiguration<EfCustomFieldsModel<TKey, TEntity>>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             _tableName = tableName;
             _schema = schema;
         }
-        public void Configure(EntityTypeBuilder<CustomFieldsEntity<TKey, TEntity>> builder)
+        public void Configure(EntityTypeBuilder<EfCustomFieldsModel<TKey, TEntity>> builder)
         {
             builder.ToTable(_tableName, _schema);
             builder.Property(x => x.Key).IsRequired().HasMaxLength(250);
@@ -56,7 +56,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
                 .GetMethods()
                 .FirstOrDefault(x => x.Name == nameof(ModelBuilder.Entity) && x.IsGenericMethod);
 
-            var customFieldsEntityType = typeof(CustomFieldsEntity<,>);
+            var customFieldsEntityType = typeof(EfCustomFieldsModel<,>);
             var configType = typeof(CustomFieldEntityTypeConfiguration<,>);
 
             foreach (var entityType in entityTypes)

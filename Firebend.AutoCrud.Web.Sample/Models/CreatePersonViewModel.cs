@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -62,7 +63,9 @@ namespace Firebend.AutoCrud.Web.Sample.Models
     {
         public GetPersonViewModel(EfPerson entity)
         {
-            entity.CopyPropertiesTo(this);
+            entity.CopyPropertiesTo(this, nameof(CustomFields));
+
+            CustomFields = entity.CustomFields?.Select(x => new CustomFieldsEntity<Guid>(x)).ToList();
         }
 
         public Guid Id { get; set; }

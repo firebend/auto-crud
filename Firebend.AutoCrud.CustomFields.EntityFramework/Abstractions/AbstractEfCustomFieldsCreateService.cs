@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
+using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
@@ -14,9 +15,9 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
     {
         private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
-        private readonly IEntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>> _createClient;
+        private readonly IEntityFrameworkCreateClient<Guid, EfCustomFieldsModel<TKey, TEntity>> _createClient;
 
-        protected AbstractEfCustomFieldsCreateService(IEntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>> createClient,
+        protected AbstractEfCustomFieldsCreateService(IEntityFrameworkCreateClient<Guid, EfCustomFieldsModel<TKey, TEntity>> createClient,
             ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _createClient = createClient;
@@ -27,15 +28,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
-            var customFieldsEntity = new CustomFieldsEntity<TKey, TEntity>(entity) {EntityId = rootEntityKey};
+            var customFieldsEntity = new EfCustomFieldsModel<TKey, TEntity>(entity) {EntityId = rootEntityKey};
             var added = await _createClient.AddAsync(customFieldsEntity, cancellationToken).ConfigureAwait(false);
 
-            if (added == null)
-            {
-                return null;
-            }
-
-            var returnEntity = CustomFieldsEntity<TKey>.Create(added);
+            var returnEntity = added?.ToCustomFields();
 
             return returnEntity;
         }

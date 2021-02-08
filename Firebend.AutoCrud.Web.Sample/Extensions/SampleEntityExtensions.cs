@@ -55,6 +55,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
                     .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPerson>>()
+                    .WithIncludes(x => x.Include(y => y.CustomFields))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");

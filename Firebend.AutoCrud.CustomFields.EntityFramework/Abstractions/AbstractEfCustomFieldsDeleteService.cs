@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
+using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
@@ -14,9 +15,9 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
-        private readonly IEntityFrameworkDeleteClient<Guid, CustomFieldsEntity<TKey, TEntity>> _deleteClient;
+        private readonly IEntityFrameworkDeleteClient<Guid, EfCustomFieldsModel<TKey, TEntity>> _deleteClient;
 
-        protected AbstractEfCustomFieldsDeleteService(IEntityFrameworkDeleteClient<Guid, CustomFieldsEntity<TKey, TEntity>> deleteClient,
+        protected AbstractEfCustomFieldsDeleteService(IEntityFrameworkDeleteClient<Guid, EfCustomFieldsModel<TKey, TEntity>> deleteClient,
             ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _deleteClient = deleteClient;
@@ -31,12 +32,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
                 .DeleteAsync(key, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (deleted == null)
-            {
-                return null;
-            }
-
-            var retDeleted = CustomFieldsEntity<TKey>.Create(deleted);
+            var retDeleted = deleted?.ToCustomFields();
 
             return retDeleted;
         }

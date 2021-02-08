@@ -5,14 +5,17 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Models.CustomFields
 {
-    public class CustomFieldsEntity<TKey> : IEntity<Guid>
+    public class CustomFieldsEntity<TKey> : IEntity<Guid>, IModifiedEntity
         where TKey : struct
     {
-        public static CustomFieldsEntity<TKey> Create<TEntity>(CustomFieldsEntity<TKey, TEntity> entity)
+        public CustomFieldsEntity()
         {
-            var fields = new CustomFieldsEntity<TKey>();
-            entity.CopyPropertiesTo(fields);
-            return fields;
+
+        }
+
+        public CustomFieldsEntity(CustomFieldsEntity<TKey> customFieldsEntity)
+        {
+            customFieldsEntity?.CopyPropertiesTo(this);
         }
 
         public TKey EntityId { get; set; }
@@ -23,21 +26,8 @@ namespace Firebend.AutoCrud.Core.Models.CustomFields
 
         [Key]
         public Guid Id { get; set; }
-    }
 
-    public class CustomFieldsEntity<TKey, TEntity> : CustomFieldsEntity<TKey>
-        where TKey : struct
-    {
-        public CustomFieldsEntity()
-        {
-
-        }
-
-        public CustomFieldsEntity(CustomFieldsEntity<TKey> customFieldsEntity)
-        {
-            customFieldsEntity.CopyPropertiesTo(this);
-        }
-
-        public TEntity Entity { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 }

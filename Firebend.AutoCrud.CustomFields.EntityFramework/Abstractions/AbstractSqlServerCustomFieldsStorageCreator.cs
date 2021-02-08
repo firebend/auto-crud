@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
-using Firebend.AutoCrud.Core.Models.CustomFields;
+using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
                         .ConfigureAwait(false);
 
                     var created = await _tableCreator
-                        .EnsureExistsAsync<CustomFieldsEntity<TKey, TEntity>>(context, cancellationToken)
+                        .EnsureExistsAsync<EfCustomFieldsModel<TKey, TEntity>>(context, cancellationToken)
                         .ConfigureAwait(false);
 
                     return created;

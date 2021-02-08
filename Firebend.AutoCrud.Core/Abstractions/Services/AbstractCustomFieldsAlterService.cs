@@ -89,6 +89,9 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                 fieldsEntity.Id = Guid.NewGuid();
             }
 
+            fieldsEntity.CreatedDate = DateTimeOffset.UtcNow;
+            fieldsEntity.ModifiedDate = DateTimeOffset.UtcNow;
+
             rootEntity.CustomFields.Add(fieldsEntity);
 
             return (rootEntity, fieldsEntity);
@@ -137,6 +140,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                 return (null, null);
             }
 
+            customFieldsEntity.ModifiedDate = DateTimeOffset.UtcNow;
+
             rootEntity.CustomFields[index.Value] = customFieldsEntity;
 
             return (rootEntity, customFieldsEntity);
@@ -155,6 +160,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 
             var attribute = rootEntity.CustomFields[index.Value];
             patchDocument.ApplyTo(attribute);
+
+            attribute.ModifiedDate = DateTimeOffset.UtcNow;
 
             rootEntity.CustomFields[index.Value] = attribute;
 

@@ -3,8 +3,8 @@ using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions;
+using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
@@ -20,41 +20,41 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             where TKey : struct
             where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
         {
-            builder.WithRegistration<IDbContextProvider<Guid, CustomFieldsEntity<TKey, TEntity>>,
+            builder.WithRegistration<IDbContextProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>,
                 AbstractCustomFieldsDbContextProvider<TKey, TEntity>>();
 
-            builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                DefaultEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
+            builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>,
+                DefaultEntityFrameworkIncludesProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
 
-            builder.WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                DefaultEntityFrameworkDbUpdateExceptionHandler<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
+            builder.WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<Guid, EfCustomFieldsModel<TKey, TEntity>>,
+                DefaultEntityFrameworkDbUpdateExceptionHandler<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
 
             builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>,
                 AbstractEfCustomFieldsCreateService<TKey, TEntity>>(false);
 
-            builder.WithRegistration<IEntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                EntityFrameworkCreateClient<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
+            builder.WithRegistration<IEntityFrameworkCreateClient<Guid, EfCustomFieldsModel<TKey, TEntity>>,
+                EntityFrameworkCreateClient<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
 
-            builder.WithRegistration<IEntityFrameworkUpdateClient<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                EntityFrameworkUpdateClient<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
+            builder.WithRegistration<IEntityFrameworkUpdateClient<Guid, EfCustomFieldsModel<TKey, TEntity>>,
+                EntityFrameworkUpdateClient<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
 
             builder.WithRegistration<ICustomFieldsUpdateService<TKey, TEntity>,
                 AbstractEfCustomFieldsUpdateService<TKey, TEntity>>(false);
 
-            builder.WithRegistration<IEntityFrameworkDeleteClient<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                EntityFrameworkDeleteClient<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
+            builder.WithRegistration<IEntityFrameworkDeleteClient<Guid, EfCustomFieldsModel<TKey, TEntity>>,
+                EntityFrameworkDeleteClient<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
 
             builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>,
                 AbstractEfCustomFieldsDeleteService<TKey, TEntity>>(false);
 
-            builder.WithRegistration<IEntityFrameworkQueryClient<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                EntityFrameworkQueryClient<Guid, CustomFieldsEntity<TKey, TEntity>>>();
+            builder.WithRegistration<IEntityFrameworkQueryClient<Guid, EfCustomFieldsModel<TKey, TEntity>>,
+                EntityFrameworkQueryClient<Guid, EfCustomFieldsModel<TKey, TEntity>>>();
 
-            builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                DefaultEntityFrameworkIncludesProvider<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
+            builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>,
+                DefaultEntityFrameworkIncludesProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
 
-            builder.WithRegistration<IEntityQueryOrderByHandler<Guid, CustomFieldsEntity<TKey, TEntity>>,
-                DefaultEntityQueryOrderByHandler<Guid, CustomFieldsEntity<TKey, TEntity>>>(false);
+            builder.WithRegistration<IEntityQueryOrderByHandler<Guid, EfCustomFieldsModel<TKey, TEntity>>,
+                DefaultEntityQueryOrderByHandler<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
 
             builder.WithRegistration<ICustomFieldsSearchService<TKey, TEntity>, AbstractEfCustomFieldSearchService<TKey, TEntity>>(false);
 
