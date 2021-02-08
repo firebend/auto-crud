@@ -112,17 +112,10 @@ namespace Firebend.AutoCrud.Mongo
 
             var searchHandlerInterfaceType = typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
 
-            if (!HasRegistration(searchHandlerInterfaceType))
+            if (!HasRegistration(searchHandlerInterfaceType) && _hasFullText)
             {
-                if (_hasFullText)
-                {
-                    var fullTextType = typeof(MongoFullTextSearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
-                    WithRegistration(searchHandlerInterfaceType, fullTextType);
-                }
-                else
-                {
-                    throw new Exception($"Please register a {searchHandlerInterfaceType.Name}");
-                }
+                var fullTextType = typeof(MongoFullTextSearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
+                WithRegistration(searchHandlerInterfaceType, fullTextType);
             }
         }
 
