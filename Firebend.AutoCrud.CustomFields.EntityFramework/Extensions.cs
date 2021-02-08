@@ -98,7 +98,6 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
             builder.WithRegistration<ICustomFieldsStorageCreator<TKey, TEntity>>(creatorType, false);
 
-
             builder.WithRegistration<IEntityTableCreator, EntityTableCreator>(false);
 
             return builder;
