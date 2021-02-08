@@ -4,7 +4,7 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
 {
     public abstract class AbstractDbCreator : IDbCreator
     {

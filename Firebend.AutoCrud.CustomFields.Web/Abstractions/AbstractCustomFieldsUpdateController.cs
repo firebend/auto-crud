@@ -14,13 +14,13 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
-    public class AbstractCustomAttributeUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractCustomAttributeUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         private readonly ICustomFieldsUpdateService<TKey, TEntity> _updateService;
 
-        public AbstractCustomAttributeUpdateController(IEntityKeyParser<TKey, TEntity> keyParser,
+        protected AbstractCustomAttributeUpdateController(IEntityKeyParser<TKey, TEntity> keyParser,
             ICustomFieldsUpdateService<TKey, TEntity> updateService) : base(keyParser)
         {
             _updateService = updateService;

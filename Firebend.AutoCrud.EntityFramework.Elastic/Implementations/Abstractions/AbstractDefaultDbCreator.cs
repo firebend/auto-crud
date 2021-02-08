@@ -4,14 +4,14 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
 {
-    public class DefaultDbCreator : IDbCreator
+    public abstract class AbstractDefaultDbCreator : IDbCreator
     {
         private readonly ShardMapMangerConfiguration _configuration;
         private readonly ILoggerFactory _loggerFactory;
 
-        public DefaultDbCreator(ShardMapMangerConfiguration configuration, ILoggerFactory loggerFactory)
+        protected AbstractDefaultDbCreator(ShardMapMangerConfiguration configuration, ILoggerFactory loggerFactory)
         {
             _configuration = configuration;
             _loggerFactory = loggerFactory;

@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
         private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
 
-        public AbstractChangeTrackingDbContextProvider(ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
+        protected AbstractChangeTrackingDbContextProvider(ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
             IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
             IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider)
         {

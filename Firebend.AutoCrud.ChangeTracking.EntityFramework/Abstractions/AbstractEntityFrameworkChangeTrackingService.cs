@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         where TEntityKey : struct
         where TEntity : class, IEntity<TEntityKey>
     {
-        public AbstractEntityFrameworkChangeTrackingService(
+        protected AbstractEntityFrameworkChangeTrackingService(
             IChangeTrackingDbContextProvider<TEntityKey, TEntity> provider) :
             base(provider, null, null, null)
         {

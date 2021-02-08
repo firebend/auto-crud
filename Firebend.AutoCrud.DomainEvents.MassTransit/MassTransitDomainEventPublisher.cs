@@ -6,11 +6,11 @@ using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit
 {
-    public class MassTransitDomainEventPublisher : IEntityDomainEventPublisher
+    public abstract class MassTransitDomainEventPublisher : IEntityDomainEventPublisher
     {
         private readonly IBus _bus;
 
-        public MassTransitDomainEventPublisher(IBus bus)
+        protected MassTransitDomainEventPublisher(IBus bus)
         {
             _bus = bus;
         }

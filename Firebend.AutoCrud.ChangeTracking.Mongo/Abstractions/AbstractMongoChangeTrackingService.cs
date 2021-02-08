@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 {
-    public class AbstractMongoChangeTrackingService<TEntityKey, TEntity> :
+    public abstract class AbstractMongoChangeTrackingService<TEntityKey, TEntity> :
         BaseDisposable,
         IChangeTrackingService<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
     {
         private readonly IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _createClient;
 
-        public AbstractMongoChangeTrackingService(IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> createClient)
+        protected AbstractMongoChangeTrackingService(IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> createClient)
         {
             _createClient = createClient;
         }

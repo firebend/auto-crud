@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         public static readonly ConcurrentDictionary<string, Task<bool>> ExistsCache = new ConcurrentDictionary<string, Task<bool>>();
     }
 
-    public class AbstractSqlServerCustomFieldsStorageCreator<TKey, TEntity, TEfModelType> : BaseDisposable, ICustomFieldsStorageCreator<TKey, TEntity>
+    public abstract class AbstractSqlServerCustomFieldsStorageCreator<TKey, TEntity, TEfModelType> : BaseDisposable, ICustomFieldsStorageCreator<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
         where TEfModelType : EfCustomFieldsModel<TKey, TEntity>

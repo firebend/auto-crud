@@ -11,13 +11,13 @@ using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
 {
-    public class AbstractMongoCustomFieldsSearchService<TKey, TEntity> : BaseDisposable, ICustomFieldsSearchService<TKey, TEntity>
+    public abstract class AbstractMongoCustomFieldsSearchService<TKey, TEntity> : BaseDisposable, ICustomFieldsSearchService<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         private readonly IMongoReadClient<TKey, TEntity> _readClient;
 
-        public AbstractMongoCustomFieldsSearchService(IMongoReadClient<TKey, TEntity> readClient)
+        protected AbstractMongoCustomFieldsSearchService(IMongoReadClient<TKey, TEntity> readClient)
         {
             _readClient = readClient;
         }

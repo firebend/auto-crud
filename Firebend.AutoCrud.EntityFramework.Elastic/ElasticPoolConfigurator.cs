@@ -2,6 +2,7 @@ using System;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
+using Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 
@@ -24,10 +25,10 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
             }
 
             Builder.WithRegistrationInstance(shardConfiguration);
-            Builder.WithRegistration<IShardManager, ShardManager>();
-            Builder.WithConnectionStringProvider<ShardDbContextConnectionStringProvider<TKey, TEntity>>();
+            Builder.WithRegistration<IShardManager, AbstractShardManager>();
+            Builder.WithConnectionStringProvider<AbstractShardDbContextConnectionStringProvider<TKey, TEntity>>();
 
-            WithDbCreator<DefaultDbCreator>();
+            WithDbCreator<AbstractDefaultDbCreator>();
 
             return this;
         }

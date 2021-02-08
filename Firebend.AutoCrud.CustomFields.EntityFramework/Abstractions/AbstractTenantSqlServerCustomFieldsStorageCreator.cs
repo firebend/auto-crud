@@ -7,7 +7,7 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public class AbstractTenantSqlServerCustomFieldsStorageCreator<TKey, TEntity, TTenantKey, TEfModelType> :
+    public abstract class AbstractTenantSqlServerCustomFieldsStorageCreator<TKey, TEntity, TTenantKey, TEfModelType> :
         AbstractSqlServerCustomFieldsStorageCreator<TKey, TEntity, TEfModelType>
         where TKey : struct
         where TTenantKey : struct
@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
-        public AbstractTenantSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider,
+        protected AbstractTenantSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityTableCreator tableCreator,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider)
             : base(contextProvider, tableCreator)

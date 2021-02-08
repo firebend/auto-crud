@@ -12,13 +12,13 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
-    public class AbstractCustomAttributeDeleteController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractCustomFieldsDeleteController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         private readonly ICustomFieldsDeleteService<TKey, TEntity> _deleteService;
 
-        public AbstractCustomAttributeDeleteController(IEntityKeyParser<TKey, TEntity> keyParser,
+        protected AbstractCustomFieldsDeleteController(IEntityKeyParser<TKey, TEntity> keyParser,
             ICustomFieldsDeleteService<TKey, TEntity> deleteService) : base(keyParser)
         {
             _deleteService = deleteService;

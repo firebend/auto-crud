@@ -9,13 +9,13 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
-    public class AbstractCustomFieldsSearchController<TKey, TEntity> : ControllerBase
+    public abstract class AbstractCustomFieldsSearchController<TKey, TEntity> : ControllerBase
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         private readonly ICustomFieldsSearchService<TKey, TEntity> _searchService;
 
-        public AbstractCustomFieldsSearchController(ICustomFieldsSearchService<TKey, TEntity> searchService)
+        protected AbstractCustomFieldsSearchController(ICustomFieldsSearchService<TKey, TEntity> searchService)
         {
             _searchService = searchService;
         }

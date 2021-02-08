@@ -7,14 +7,14 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
 {
-    public class ShardManager : IShardManager
+    public abstract class AbstractShardManager : IShardManager
     {
         private readonly IDbCreator _dbCreator;
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
 
-        public ShardManager(IDbCreator dbCreator,
+        protected AbstractShardManager(IDbCreator dbCreator,
             ShardMapMangerConfiguration shardMapMangerConfiguration)
         {
             _dbCreator = dbCreator;

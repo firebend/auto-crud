@@ -1,4 +1,5 @@
 using System;
+using Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 using Microsoft.Extensions.Logging;
 

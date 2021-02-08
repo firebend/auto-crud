@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         private readonly IEntityExportMapper<TEntity, TMapped> _mapper;
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
 
-        public AbstractEntityExportControllerService(IEntityFileTypeMimeTypeMapper entityFileTypeMimeTypeMapper,
+        protected AbstractEntityExportControllerService(IEntityFileTypeMimeTypeMapper entityFileTypeMimeTypeMapper,
             IEntityExportService<TMapped> exportService,
             IEntityExportMapper<TEntity, TMapped> mapper,
             IEntitySearchService<TKey, TEntity, TSearch> searchService)

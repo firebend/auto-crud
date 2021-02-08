@@ -13,7 +13,7 @@ namespace Firebend.AutoCrud.CustomFields.Web
             where TKey : struct
             where TEntity : class, IEntity<TKey>
         {
-            var createController = typeof(AbstractCustomAttributeCreateController<,>)
+            var createController = typeof(AbstractCustomFieldsCreateController<,>)
                 .MakeGenericType(configurator.Builder.EntityKeyType,
                     configurator.Builder.EntityType);
 
@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.CustomFields.Web
 
             configurator.WithController(updateController, updateController);
 
-            var deleteController = typeof(AbstractCustomAttributeDeleteController<,>)
+            var deleteController = typeof(AbstractCustomFieldsDeleteController<,>)
                 .MakeGenericType(configurator.Builder.EntityKeyType,
                     configurator.Builder.EntityType);
 
