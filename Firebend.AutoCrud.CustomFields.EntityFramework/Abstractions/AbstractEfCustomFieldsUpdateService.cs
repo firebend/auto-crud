@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
@@ -14,14 +15,15 @@ using Newtonsoft.Json.Serialization;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public abstract class AbstractEfCustomFieldsUpdateService<TKey, TEntity> : BaseDisposable, ICustomFieldsUpdateService<TKey, TEntity>
+    public abstract class AbstractEfCustomFieldsUpdateService<TKey, TEntity, TCustomFieldsEntity> : BaseDisposable, ICustomFieldsUpdateService<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TCustomFieldsEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>, new()
     {
-        private readonly IEntityFrameworkUpdateClient<Guid, EfCustomFieldsModel<TKey, TEntity>> _updateClient;
+        private readonly IEntityFrameworkUpdateClient<Guid, TCustomFieldsEntity> _updateClient;
         private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
 
-        protected AbstractEfCustomFieldsUpdateService(IEntityFrameworkUpdateClient<Guid, EfCustomFieldsModel<TKey, TEntity>> updateClient,
+        protected AbstractEfCustomFieldsUpdateService(IEntityFrameworkUpdateClient<Guid, TCustomFieldsEntity> updateClient,
             ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _updateClient = updateClient;
@@ -33,9 +35,11 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             CancellationToken cancellationToken = default)
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
-            entity.EntityId = rootEntityKey;
+            var efEntity = new TCustomFieldsEntity {EntityId = rootEntityKey};
+            entity.CopyPropertiesTo(efEntity);
+
             var updated = await _updateClient
-                .UpdateAsync(new EfCustomFieldsModel<TKey, TEntity>(entity), cancellationToken)
+                .UpdateAsync(efEntity, cancellationToken)
                 .ConfigureAwait(false);
 
             var retEntity = updated?.ToCustomFields();
@@ -51,10 +55,16 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 
             var operations = jsonPatchDocument
                 .Operations
-                .Select(x => new Operation<EfCustomFieldsModel<TKey, TEntity>> {from = x.from, op = x.op, path = x.path, value = x.value})
+                .Select(x => new Operation<TCustomFieldsEntity>
+                {
+                    from = x.from,
+                    op = x.op,
+                    path = x.path,
+                    value = x.value
+                })
                 .ToList();
 
-            var patch = new JsonPatchDocument<EfCustomFieldsModel<TKey, TEntity>>(operations, new DefaultContractResolver());
+            var patch = new JsonPatchDocument<TCustomFieldsEntity>(operations, new DefaultContractResolver());
 
             var updated = await _updateClient
                 .UpdateAsync(key, patch, cancellationToken)

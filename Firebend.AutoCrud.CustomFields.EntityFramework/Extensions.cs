@@ -20,55 +20,84 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             where TKey : struct
             where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
         {
-            builder.WithRegistration<IDbContextProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                AbstractCustomFieldsDbContextProvider<TKey, TEntity>>();
+            var guidType = typeof(Guid);
 
-            builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                DefaultEntityFrameworkIncludesProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
+            var efModelType = builder.IsTenantEntity
+                ? typeof(EfCustomFieldsModelTenant<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, builder.TenantEntityKeyType)
+                : typeof(EfCustomFieldsModel<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
 
-            builder.WithRegistration<IEntityFrameworkDbUpdateExceptionHandler<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                DefaultEntityFrameworkDbUpdateExceptionHandler<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
+            builder.WithRegistration(
+                typeof(IDbContextProvider<,>).MakeGenericType(guidType, efModelType),
+                typeof(AbstractCustomFieldsDbContextProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+                false);
 
-            builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>,
-                AbstractEfCustomFieldsCreateService<TKey, TEntity>>(false);
+            builder.WithRegistration(
+                typeof(IEntityFrameworkIncludesProvider<,>).MakeGenericType(guidType, efModelType),
+                typeof(DefaultEntityFrameworkIncludesProvider<,>).MakeGenericType(guidType, efModelType),
+                false);
 
-            builder.WithRegistration<IEntityFrameworkCreateClient<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                EntityFrameworkCreateClient<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
+            builder.WithRegistration(
+                typeof(IEntityFrameworkDbUpdateExceptionHandler<,>).MakeGenericType(guidType, efModelType),
+                typeof(DefaultEntityFrameworkDbUpdateExceptionHandler<,>).MakeGenericType(guidType, efModelType),
+                false);
 
-            builder.WithRegistration<IEntityFrameworkUpdateClient<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                EntityFrameworkUpdateClient<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
+            builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>>(
+                typeof(AbstractEfCustomFieldsCreateService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+                false);
 
-            builder.WithRegistration<ICustomFieldsUpdateService<TKey, TEntity>,
-                AbstractEfCustomFieldsUpdateService<TKey, TEntity>>(false);
+            builder.WithRegistration(
+                typeof(IEntityFrameworkCreateClient<,>).MakeGenericType(guidType, efModelType),
+                builder.IsTenantEntity
+                    ? typeof(EntityFrameworkTenantCreateClient<,,>).MakeGenericType(guidType, efModelType, builder.TenantEntityKeyType)
+                    : typeof(EntityFrameworkCreateClient<,>).MakeGenericType(guidType, efModelType),
+                false);
 
-            builder.WithRegistration<IEntityFrameworkDeleteClient<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                EntityFrameworkDeleteClient<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
+            builder.WithRegistration<ICustomFieldsUpdateService<TKey, TEntity>>(
+                typeof(AbstractEfCustomFieldsUpdateService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+                false);
 
-            builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>,
-                AbstractEfCustomFieldsDeleteService<TKey, TEntity>>(false);
+            builder.WithRegistration(
+                typeof(IEntityFrameworkUpdateClient<,>).MakeGenericType(guidType, efModelType),
+                builder.IsTenantEntity
+                    ? typeof(EntityFrameworkTenantUpdateClient<,,>).MakeGenericType(guidType, efModelType, builder.TenantEntityKeyType)
+                    : typeof(EntityFrameworkUpdateClient<,>).MakeGenericType(guidType, efModelType),
+                false);
 
-            builder.WithRegistration<IEntityFrameworkQueryClient<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                EntityFrameworkQueryClient<Guid, EfCustomFieldsModel<TKey, TEntity>>>();
+            builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>>(
+                typeof(AbstractEfCustomFieldsDeleteService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+                false);
 
-            builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                DefaultEntityFrameworkIncludesProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
+            builder.WithRegistration(
+                typeof(IEntityFrameworkDeleteClient<,>).MakeGenericType(guidType, efModelType),
+                builder.IsTenantEntity
+                    ? typeof(EntityFrameworkTenantDeleteClient<,,>).MakeGenericType(guidType, efModelType, builder.TenantEntityKeyType)
+                    : typeof(EntityFrameworkDeleteClient<,>).MakeGenericType(guidType, efModelType),
+                false);
 
-            builder.WithRegistration<IEntityQueryOrderByHandler<Guid, EfCustomFieldsModel<TKey, TEntity>>,
-                DefaultEntityQueryOrderByHandler<Guid, EfCustomFieldsModel<TKey, TEntity>>>(false);
+            builder.WithRegistration<ICustomFieldsSearchService<TKey, TEntity>>(
+                typeof(AbstractEfCustomFieldSearchService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+                false);
 
-            builder.WithRegistration<ICustomFieldsSearchService<TKey, TEntity>, AbstractEfCustomFieldSearchService<TKey, TEntity>>(false);
+            builder.WithRegistration(
+                typeof(IEntityFrameworkQueryClient<,>).MakeGenericType(guidType, efModelType),
+                builder.IsTenantEntity
+                    ? typeof(EntityFrameworkTenantQueryClient<,,>).MakeGenericType(guidType, efModelType, builder.TenantEntityKeyType)
+                    : typeof(EntityFrameworkQueryClient<,>).MakeGenericType(guidType, efModelType),
+                false);
 
-            if (builder.IsTenantEntity)
-            {
-                var creatorType = typeof(AbstractTenantSqlServerCustomFieldsStorageCreator<,,>)
-                    .MakeGenericType(builder.EntityKeyType, builder.EntityType, builder.TenantEntityKeyType);
+            builder.WithRegistration(
+                typeof(IEntityQueryOrderByHandler<,>).MakeGenericType(guidType, efModelType),
+                typeof(DefaultEntityQueryOrderByHandler<,>).MakeGenericType(guidType, efModelType),
+                false);
 
-                builder.WithRegistration<ICustomFieldsStorageCreator<TKey, TEntity>>(creatorType, false);
-            }
-            else
-            {
-                builder.WithRegistration<ICustomFieldsStorageCreator<TKey, TEntity>, AbstractSqlServerCustomFieldsStorageCreator<TKey, TEntity>>(false);
-            }
+            var creatorType = builder.IsTenantEntity
+                ? typeof(AbstractTenantSqlServerCustomFieldsStorageCreator<,,,>)
+                    .MakeGenericType(builder.EntityKeyType, builder.EntityType, builder.TenantEntityKeyType, efModelType)
+                : typeof(AbstractSqlServerCustomFieldsStorageCreator<,,>)
+                    .MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType);
+
+            builder.WithRegistration<ICustomFieldsStorageCreator<TKey, TEntity>>(creatorType, false);
+
 
             builder.WithRegistration<IEntityTableCreator, EntityTableCreator>(false);
 

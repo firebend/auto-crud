@@ -14,9 +14,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         public static readonly ConcurrentDictionary<string, Task<bool>> ExistsCache = new ConcurrentDictionary<string, Task<bool>>();
     }
 
-    public class AbstractSqlServerCustomFieldsStorageCreator<TKey, TEntity> : BaseDisposable, ICustomFieldsStorageCreator<TKey, TEntity>
+    public class AbstractSqlServerCustomFieldsStorageCreator<TKey, TEntity, TEfModelType> : BaseDisposable, ICustomFieldsStorageCreator<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TEfModelType : EfCustomFieldsModel<TKey, TEntity>
     {
         private readonly IDbContextProvider<TKey, TEntity> _contextProvider;
         private readonly IEntityTableCreator _tableCreator;
@@ -38,7 +39,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
                         .ConfigureAwait(false);
 
                     var created = await _tableCreator
-                        .EnsureExistsAsync<EfCustomFieldsModel<TKey, TEntity>>(context, cancellationToken)
+                        .EnsureExistsAsync<TEfModelType>(context, cancellationToken)
                         .ConfigureAwait(false);
 
                     return created;

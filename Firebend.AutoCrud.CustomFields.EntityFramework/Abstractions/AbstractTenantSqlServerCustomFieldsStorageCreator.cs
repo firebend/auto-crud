@@ -2,14 +2,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public class AbstractTenantSqlServerCustomFieldsStorageCreator<TKey, TEntity, TTenantKey> : AbstractSqlServerCustomFieldsStorageCreator<TKey, TEntity>
+    public class AbstractTenantSqlServerCustomFieldsStorageCreator<TKey, TEntity, TTenantKey, TEfModelType> :
+        AbstractSqlServerCustomFieldsStorageCreator<TKey, TEntity, TEfModelType>
         where TKey : struct
         where TTenantKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>, ITenantEntity<TTenantKey>
+        where TEfModelType : EfCustomFieldsModel<TKey, TEntity>
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 

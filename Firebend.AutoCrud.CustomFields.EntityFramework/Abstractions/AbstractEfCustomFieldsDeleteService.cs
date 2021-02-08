@@ -10,14 +10,15 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public abstract class AbstractEfCustomFieldsDeleteService<TKey, TEntity> : BaseDisposable, ICustomFieldsDeleteService<TKey, TEntity>
+    public abstract class AbstractEfCustomFieldsDeleteService<TKey, TEntity, TCustomFieldsEntity> : BaseDisposable, ICustomFieldsDeleteService<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TCustomFieldsEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>
     {
         private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
-        private readonly IEntityFrameworkDeleteClient<Guid, EfCustomFieldsModel<TKey, TEntity>> _deleteClient;
+        private readonly IEntityFrameworkDeleteClient<Guid, TCustomFieldsEntity> _deleteClient;
 
-        protected AbstractEfCustomFieldsDeleteService(IEntityFrameworkDeleteClient<Guid, EfCustomFieldsModel<TKey, TEntity>> deleteClient,
+        protected AbstractEfCustomFieldsDeleteService(IEntityFrameworkDeleteClient<Guid, TCustomFieldsEntity> deleteClient,
             ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _deleteClient = deleteClient;

@@ -13,16 +13,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public abstract class AbstractEfCustomFieldSearchService<TKey, TEntity> :
+    public abstract class AbstractEfCustomFieldSearchService<TKey, TEntity, TCustomFieldsEntity> :
         BaseDisposable,
         ICustomFieldsSearchService<TKey, TEntity>
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
         where TKey : struct
+        where TCustomFieldsEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>
     {
-        private readonly IEntityFrameworkQueryClient<Guid, EfCustomFieldsModel<TKey, TEntity>> _queryClient;
+        private readonly IEntityFrameworkQueryClient<Guid, TCustomFieldsEntity> _queryClient;
         private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
 
-        protected AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<Guid, EfCustomFieldsModel<TKey, TEntity>> queryClient,
+        protected AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<Guid, TCustomFieldsEntity> queryClient,
             ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
         {
             _queryClient = queryClient;

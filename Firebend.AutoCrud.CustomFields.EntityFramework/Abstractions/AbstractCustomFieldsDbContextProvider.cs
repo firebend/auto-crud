@@ -7,9 +7,10 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public abstract class AbstractCustomFieldsDbContextProvider<TKey, TEntity> : IDbContextProvider<Guid, EfCustomFieldsModel<TKey, TEntity>>
+    public abstract class AbstractCustomFieldsDbContextProvider<TKey, TEntity, TCustomFieldsEntity> : IDbContextProvider<Guid, TCustomFieldsEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TCustomFieldsEntity : EfCustomFieldsModel<TKey, TEntity>
     {
         private readonly IDbContextProvider<TKey, TEntity> _rootProvider;
 
