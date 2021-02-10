@@ -66,6 +66,12 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
                     .AddCustomFields()
+                    .AddCustomFieldsTenant<Guid, EfPerson, int>(cf =>
+                        cf.AddDomainEvents(de =>
+                        {
+                            de.WithEfChangeTracking()
+                                .WithMassTransit();
+                        }))
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
                         {

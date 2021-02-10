@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
     public abstract class BaseBuilder
     {
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         public bool IsBuilt { get; private set; }
 
@@ -21,8 +21,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
 
-        // ReSharper disable once UnassignedGetOnlyAutoProperty
-        public virtual string SignatureBase { get; }
+        public virtual string SignatureBase { get; set; }
 
         public void Build()
         {

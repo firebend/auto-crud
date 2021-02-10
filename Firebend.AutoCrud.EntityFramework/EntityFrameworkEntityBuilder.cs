@@ -72,8 +72,8 @@ namespace Firebend.AutoCrud.EntityFramework
             WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>,
                 DefaultEntityFrameworkIncludesProvider<TKey, TEntity>>(false);
 
-            EnsureRegistered<IDbContextConnectionStringProvider<TKey, TEntity>>();
-            EnsureRegistered(typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType));
+            //EnsureRegistered<IDbContextConnectionStringProvider<TKey, TEntity>>();
+            //EnsureRegistered(typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType));
         }
 
         /// <summary>

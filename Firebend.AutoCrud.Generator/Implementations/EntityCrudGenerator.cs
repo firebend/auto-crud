@@ -110,7 +110,9 @@ namespace Firebend.AutoCrud.Generator.Implementations
                             {
                                 services.Add(type, new List<ServiceRegistration> { serviceRegistration });
                             }
-
+                            break;
+                        case BuilderRegistration builderRegistration:
+                            Generate(serviceCollection, builderRegistration.Builder);
                             break;
                     }
                 }
