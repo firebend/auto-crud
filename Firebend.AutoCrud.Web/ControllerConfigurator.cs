@@ -120,8 +120,12 @@ namespace Firebend.AutoCrud.Web
             Builder.WithAttribute(controllerType, routeType, attributeBuilder);
         }
 
-        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo()
+        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo(string openApiName)
         {
+            if (string.IsNullOrWhiteSpace(openApiName))
+            {
+                openApiName = OpenApiGroupName;
+            }
             var attributeType = typeof(OpenApiGroupNameAttribute);
             var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
 
@@ -130,13 +134,23 @@ namespace Firebend.AutoCrud.Web
                 return default;
             }
 
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { OpenApiGroupName });
+            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { openApiName });
 
             return (attributeType, attributeBuilder);
         }
 
-        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiEntityNameAttribute()
+        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiEntityNameAttribute(string name, string plural)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = OpenApiEntityName;
+            }
+
+            if (string.IsNullOrWhiteSpace(plural))
+            {
+                plural = name;
+            }
+
             var attributeType = typeof(OpenApiEntityNameAttribute);
 
             var attributeCtor = attributeType.GetConstructor(new[] { typeof(string), typeof(string) });
@@ -146,20 +160,20 @@ namespace Firebend.AutoCrud.Web
                 return default;
             }
 
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { OpenApiEntityName, OpenApiEntityNamePlural });
+            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { name, plural });
 
             return (attributeType, attributeBuilder);
         }
 
-        private void AddOpenApiGroupNameAttribute(Type controllerType)
+        private void AddOpenApiGroupNameAttribute(Type controllerType, string openApiName)
         {
-            var (attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo();
+            var (attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo(openApiName);
             Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
-        private void AddOpenApiEntityNameAttribute(Type controllerType)
+        private void AddOpenApiEntityNameAttribute(Type controllerType, string name, string plural)
         {
-            var (attributeType, attributeBuilder) = GetOpenApiEntityNameAttribute();
+            var (attributeType, attributeBuilder) = GetOpenApiEntityNameAttribute(name, plural);
             Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
@@ -203,6 +217,9 @@ namespace Firebend.AutoCrud.Web
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type,
             Type typeToCheck,
+            string entityName = null,
+            string entityNamePlural = null,
+            string openApiName = null,
             params Type[] genericArgs)
         {
             var hasGenerics = genericArgs != null && genericArgs.Length > 0;
@@ -218,8 +235,8 @@ namespace Firebend.AutoCrud.Web
             Builder.WithRegistration(registrationType, registrationType);
 
             AddRouteAttribute(registrationType);
-            AddOpenApiGroupNameAttribute(registrationType);
-            AddOpenApiEntityNameAttribute(registrationType);
+            AddOpenApiGroupNameAttribute(registrationType, openApiName);
+            AddOpenApiEntityNameAttribute(registrationType, entityName, entityNamePlural);
 
             if (HasDefaultAuthorizationPolicy)
             {
@@ -340,7 +357,7 @@ namespace Firebend.AutoCrud.Web
         {
             OpenApiGroupName = openApiGroupName;
 
-            var (aType, aBuilder) = GetOpenApiGroupAttributeInfo();
+            var (aType, aBuilder) = GetOpenApiGroupAttributeInfo(openApiGroupName);
 
             AddAttributeToAllControllers(aType, aBuilder);
 
@@ -370,7 +387,7 @@ namespace Firebend.AutoCrud.Web
             OpenApiEntityName = name;
             OpenApiEntityNamePlural = plural ?? name.Pluralize();
 
-            var (aType, aBuilder) = GetOpenApiEntityNameAttribute();
+            var (aType, aBuilder) = GetOpenApiEntityNameAttribute(OpenApiEntityName, OpenApiEntityNamePlural);
 
             AddAttributeToAllControllers(aType, aBuilder);
 

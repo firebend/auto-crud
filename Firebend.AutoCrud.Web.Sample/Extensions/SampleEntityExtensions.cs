@@ -45,7 +45,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
-                        .WithCustomFieldsControllers()
+                        .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                         .WithOpenApiGroupName("The Beautiful Mongo People")
                         .WithRoute("api/v1/mongo-person"))
         );
@@ -73,7 +73,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }).AddControllers(controllers => controllers
                             .WithChangeTrackingControllers()
                             .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
-                            .WithOpenApiGroupName("The Beautiful Sql People")
+                            .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
                             .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
@@ -107,7 +107,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
-                        .WithCustomFieldsControllers()
+                        .WithCustomFieldsControllers(openApiName:"The Beautiful Sql People Custom Fields")
                         .WithIoControllers()
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)

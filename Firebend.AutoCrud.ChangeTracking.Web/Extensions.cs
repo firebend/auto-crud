@@ -8,7 +8,10 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
     public static class Extensions
     {
         public static ControllerConfigurator<TBuilder, TKey, TEntity> WithChangeTrackingControllers<TBuilder, TKey, TEntity>(
-            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
+            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+            string entityName = null,
+            string entityNamePlural = null,
+            string openApiName = null)
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
             where TKey : struct
             where TEntity : class, IEntity<TKey>
@@ -18,7 +21,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
                     configurator.Builder.EntityType,
                     configurator.ReadViewModelType);
 
-            return configurator.WithController(controller, controller);
+            return configurator.WithController(controller, controller, entityName, entityNamePlural, openApiName);
         }
     }
 }

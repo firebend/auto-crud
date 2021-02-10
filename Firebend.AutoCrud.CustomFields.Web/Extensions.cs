@@ -8,7 +8,10 @@ namespace Firebend.AutoCrud.CustomFields.Web
     public static class Extensions
     {
         public static ControllerConfigurator<TBuilder, TKey, TEntity> WithCustomFieldsControllers<TBuilder, TKey, TEntity>(
-            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
+            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+            string entityName = null,
+            string entityNamePlural = null,
+            string openApiName = null)
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
             where TKey : struct
             where TEntity : class, IEntity<TKey>
@@ -17,25 +20,25 @@ namespace Firebend.AutoCrud.CustomFields.Web
                 .MakeGenericType(configurator.Builder.EntityKeyType,
                     configurator.Builder.EntityType);
 
-            configurator.WithController(createController, createController);
+            configurator.WithController(createController, createController, entityName, entityNamePlural, openApiName);
 
             var updateController = typeof(AbstractCustomAttributeUpdateController<,>)
                 .MakeGenericType(configurator.Builder.EntityKeyType,
                     configurator.Builder.EntityType);
 
-            configurator.WithController(updateController, updateController);
+            configurator.WithController(updateController, updateController, entityName, entityNamePlural, openApiName);
 
             var deleteController = typeof(AbstractCustomFieldsDeleteController<,>)
                 .MakeGenericType(configurator.Builder.EntityKeyType,
                     configurator.Builder.EntityType);
 
-            configurator.WithController(deleteController, deleteController);
+            configurator.WithController(deleteController, deleteController, entityName, entityNamePlural, openApiName);
 
             var searchController = typeof(AbstractCustomFieldsSearchController<,>)
                 .MakeGenericType(configurator.Builder.EntityKeyType,
                     configurator.Builder.EntityType);
 
-            configurator.WithController(searchController, searchController);
+            configurator.WithController(searchController, searchController, entityName, entityNamePlural, openApiName);
 
             return configurator;
         }
