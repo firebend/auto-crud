@@ -65,7 +65,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCustomFields()
                     .AddCustomFieldsTenant<Guid, EfPerson, int>(cf =>
                         cf.AddDomainEvents(de =>
                         {
