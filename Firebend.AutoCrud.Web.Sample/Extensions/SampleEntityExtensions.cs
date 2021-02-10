@@ -65,12 +65,16 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCustomFieldsTenant<Guid, EfPerson, int>(cf =>
-                        cf.AddDomainEvents(de =>
+                    .AddCustomFields(cf =>
+                        cf.AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                         {
                             de.WithEfChangeTracking()
                                 .WithMassTransit();
-                        }))
+                        }).AddControllers(controllers => controllers
+                            .WithChangeTrackingControllers()
+                            .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
+                            .WithOpenApiGroupName("The Beautiful Sql People")
+                            .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
                         {

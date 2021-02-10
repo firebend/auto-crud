@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
-using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -16,10 +15,6 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Models
     public class EfCustomFieldsModel<TKey, TEntity> : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>, IEntityName
         where TKey : struct
     {
-        public EfCustomFieldsModel()
-        {
-        }
-
         public TEntity Entity { get; set; }
 
         public CustomFieldsEntity<TKey> ToCustomFields()
