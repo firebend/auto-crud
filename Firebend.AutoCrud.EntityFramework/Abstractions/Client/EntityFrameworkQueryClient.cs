@@ -106,7 +106,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 queryable = _orderByHandler.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
             }
 
-            if(searchRequest?.PageNumber != null && searchRequest.PageSize != null && searchRequest.PageNumber > 0 && searchRequest.PageSize > 0)
+            if (searchRequest?.PageNumber != null && searchRequest.PageSize != null && searchRequest.PageNumber > 0 && searchRequest.PageSize > 0)
             {
                 queryable = queryable
                     .Skip((searchRequest.PageNumber.Value - 1) * searchRequest.PageSize.Value)

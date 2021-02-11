@@ -107,7 +107,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
-                        .WithCustomFieldsControllers(openApiName:"The Beautiful Sql People Custom Fields")
+                        .WithCustomFieldsControllers(openApiName: "The Beautiful Sql People Custom Fields")
                         .WithIoControllers()
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)
