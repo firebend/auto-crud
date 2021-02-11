@@ -12,6 +12,9 @@
   - [Change Tracking](#change-tracking)
   - [Elastic Pool with Sharding](#elastic-pool-with-sharding)
   - [Mongo Sharding](#mongo-sharding)
+- [Custom Fields](#custom-fields)
+    - [Mongo](#mongo-1)
+    - [EF](#ef)
 - [Example Project](#example-project)
 
 # Firebend.AutoCrud
@@ -247,7 +250,16 @@ To enable searching objects in `GET` requests, include the following in `CreateH
 // ... previous setup
 ef.AddEntity<Guid, WeatherForecast>(forecast => 
     forecast.WithDbContext<AppDbContext>()
-        .WithSearchFilter((f, s) => f.Summary.Contains(s))
+    .AddCrud(crud => 
+        crud.WithSearchHandler<EntitySearchRequest>((query, parameters) =>
+        {
+            if (!string.IsNullOrWhiteSpace(parameters?.Summary))
+            {
+                query = query.Where(x => x.Summary.Contains(parameters.Summary));
+            }
+
+            return query;
+        }).WithCrud())
 // ... rest of your setup
 ```
 Now, when appending the query param `Search={your search}` to your url, you'll only get results with `'{your search}'` in the Summary.
@@ -380,8 +392,16 @@ To enable ordering of results, include the following in `CreateHostBuilder` in t
 ```csharp
 // ... previous setup
 forecast.WithDbContext<AppDbContext>()
-    .WithSearchFilter((f, s) => f.Summary.Contains(s))
-    .AddCrud(crud => crud
+    .AddCrud(crud => 
+        crud.WithSearchHandler<EntitySearchRequest>((query, parameters) =>
+        {
+            if (!string.IsNullOrWhiteSpace(parameters?.Summary))
+            {
+                query = query.Where(x => x.Summary.Contains(parameters.Summary));
+            }
+
+            return query;
+        })
         .WithCrud()
         .WithOrderBy(f => f.TemperatureC)
 // ... rest of your setup
@@ -394,10 +414,9 @@ To include custom search parameters for an entity, include the following in `Cre
 // ... previous setup
 ef.AddEntity<Guid, WeatherForecast>(forecast => 
     forecast.WithDbContext<AppDbContext>()
-        .WithSearchFilter((f, s) => f.Summary.Contains(s))
         .AddCrud(crud => crud
             .WithCrud()
-            .WithSearch<CustomSearchParameters>(search => {
+            .WithSearch<EntitySearchRequest>(search => {
                 if (!string.IsNullOrWhiteSpace(search?.CustomField))
                 {
                     return f => f.Summary.Contains(search.CustomField);
@@ -650,7 +669,6 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
     {
         ef.AddEntity<Guid, WeatherForecast>(forecast => 
             forecast.WithDbContext<AppDbContext>()
-                .WithSearchFilter((f, s) => f.Summary.Contains(s))
                 .AddElasticPool( // add
                     manager => {
                         manager.ConnectionString = "connString";
@@ -724,6 +742,59 @@ namespace AutoCrudSampleApi
         public string GetShardKey() => "Firebend";
     }
 }
+```
+
+# Custom Fields
+Auto Crud allows you to store key value pair custom fields for entities. In no sql data stores like MongoDB this will be an additional array added to the entity to house the key value pairs. For realational data stores like Sql Server using Entity Framework, the custom fields will be stored in an additional table. 
+
+### Mongo
+```csharp
+// ...
+  services
+    .UsingMongoCrud("connString", mongo => {
+        mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+            forecast.WithDefaultDatabase("Samples")
+                .WithCollection("WeatherForecasts")
+                .WithFullTextSearch()
+                .WithShardKeyProvider<KeyProviderMongo>()
+                .WithShardMode(MongoTenantShardMode.Database)
+                .AddCustomFields()
+    // ... rest of your setup
+```
+
+### EF
+```csharp
+// ...
+  .UsingEfCrud(ef =>
+    {
+        ef.AddEntity<Guid, WeatherForecast>(forecast => 
+            forecast.WithDbContext<AppDbContext>()
+            .AddCustomFields())
+    // ... rest of your setup
+```
+
+The EF variant of `.AddCustomFields` also allows you to configure additional options. Since the EF Custom fields are stored in an additional table, you may want to configure them more fully. An example would be change tracking on custom fields. With EF custom fields we need to explicitly add that. 
+
+The below example configures custom fields for the Weather Forecast Tenant and:
+1) Adds change tracking to the custom fields
+2) Adds Controllers to view and search change tracking operations
+3) Adds a custom open api group name for the endpoints
+
+```csharp
+// ...
+  .UsingEfCrud(ef =>
+    {
+        ef.AddEntity<Guid, WeatherForecast>(forecast => 
+            forecast.WithDbContext<AppDbContext>()
+            .AddCustomFields(cf => 
+                cf.AddCustomFieldsTenant<int>(c => 
+                    c.AdddDomainEvents(de => de.WithEfChangeTracking().WithMassTransit)
+                .AddControllers(controllers => controllers
+                    .WithChangeTrackingControllers()
+                    .WithRoute("/api/v1/forecasts/{forecastId}/custom-fields")
+                    .WithOpenApiGroupName("Weather Forecast Custom Fields")
+                    .WithOpenApiEntityName("Weather Forecast Custom Field", "Weather Forecast Custom Fields")))))
+    // ... rest of your setup
 ```
 
 # Example Project
