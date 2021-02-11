@@ -6,6 +6,24 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 {
     public static class Extensions
     {
+        /// <summary>
+        /// Adds custom fields functionality to this entity.
+        /// </summary>
+        /// <param name="builder">
+        /// The builder to configure custom fields against.
+        /// </param>
+        /// <param name="configure">
+        /// A call back to add any additional configuration.
+        /// </param>
+        /// <typeparam name="TKey">
+        /// The entity's key type.
+        /// </typeparam>
+        /// <typeparam name="TEntity">
+        /// The entity type.
+        /// </typeparam>
+        /// <returns>
+        /// The EF Builder.
+        /// </returns>
         public static EntityFrameworkEntityBuilder<TKey, TEntity> AddCustomFields<TKey, TEntity>(
             this EntityFrameworkEntityBuilder<TKey, TEntity> builder,
             Action<EfCustomFieldsConfigurator<EntityFrameworkEntityBuilder<TKey, TEntity>, TKey, TEntity>> configure = null)

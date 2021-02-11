@@ -17,6 +17,18 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework
 {
+    /// <summary>
+    /// Encapsulates logic to configure custom fields.
+    /// </summary>
+    /// <typeparam name="TBuilder">
+    /// The type of builder custom fields is being configured for.
+    /// </typeparam>
+    /// <typeparam name="TKey">
+    /// The entity's key type.
+    /// </typeparam>
+    /// <typeparam name="TEntity">
+    /// The entity type.
+    /// </typeparam>
     public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudConfigurator<TBuilder, TKey, TEntity>
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
@@ -26,14 +38,25 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
         {
         }
 
+        /// <summary>
+        /// Configures custom fields for this entity.
+        /// </summary>
+        /// <param name="configure">
+        ///  A call back to add any additional configurations. This could be change tracking, web controllers, etc.
+        /// </param>
+        /// <returns>
+        /// The EF Custom Fields Configurator
+        /// </returns>
         public EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> AddCustomFields(Action<EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>> configure = null)
         {
             AddCustomFields(Builder, false);
 
             if (configure != null)
             {
-                var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>();
-                customFieldsBuilder.SignatureBase = $"{typeof(TEntity).Name}_CustomFields";
+                var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>
+                {
+                    SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
+                };
                 configure(customFieldsBuilder);
                 Builder.Registrations.Add(typeof(object), new List<Registration>
                 {
@@ -47,6 +70,17 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             return this;
         }
 
+        /// <summary>
+        /// Configures custom fields for this entity. Use this variation of <see cref="AddCustomFields"/> when
+        /// each custom field record should have the tenant key associated to it.
+        /// </summary>
+        /// <param name="configure">
+        ///  A call back to add any additional configurations. This could be change tracking, web controllers, etc.
+        /// </param>
+        /// <typeparam name="TTenantKey">The type corresponding to the entity's tenant key.</typeparam>
+        /// <returns>
+        /// The EF Custom Fields Configurator
+        /// </returns>
         public EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> AddCustomFieldsTenant<TTenantKey>(
             Action<EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>> configure = null)
             where TTenantKey : struct
@@ -55,8 +89,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
             if (configure != null)
             {
-                var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>();
-                customFieldsBuilder.SignatureBase = $"{typeof(TEntity).Name}_CustomFields";
+                var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>
+                {
+                    SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
+                };
                 configure(customFieldsBuilder);
                 Builder.Registrations.Add(typeof(object), new List<Registration>
                 {

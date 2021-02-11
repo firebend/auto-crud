@@ -9,7 +9,19 @@ namespace Firebend.AutoCrud.CustomFields.Mongo
 {
     public static class Extensions
     {
-        public static EntityCrudBuilder<TKey, TEntity> AddCustomFields<TKey, TEntity>(
+        /// <summary>
+        /// Adds custom fields functionality to this entity.
+        /// </summary>
+        /// <typeparam name="TKey">
+        /// The entity's key type.
+        /// </typeparam>
+        /// <typeparam name="TEntity">
+        /// The entity type.
+        /// </typeparam>
+        /// <returns>
+        /// The Mongo Builder.
+        /// </returns>
+        public static MongoDbEntityBuilder<TKey, TEntity> AddCustomFields<TKey, TEntity>(
             this MongoDbEntityBuilder<TKey, TEntity> builder)
             where TKey : struct
             where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
