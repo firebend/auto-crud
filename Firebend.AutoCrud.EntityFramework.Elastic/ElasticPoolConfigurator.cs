@@ -47,7 +47,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithSearchFilter((f, s) => f.Summary.Contains(s))
         ///        .AddElasticPool(
         ///            manager => {
         ///                manager.ConnectionString = "connString";
@@ -76,7 +75,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithSearchFilter((f, s) => f.Summary.Contains(s))
         ///        .AddElasticPool(
         ///            manager => {
         ///                manager.ConnectionString = "connString";
