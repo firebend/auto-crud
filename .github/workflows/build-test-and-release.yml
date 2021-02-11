@@ -112,3 +112,24 @@ jobs:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Io.Web/Firebend.AutoCrud.Io.Web.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
          TAG_COMMIT: false
+
+    - name: Publish Custom Fields EF
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.EntityFramework/Firebend.AutoCrud.CustomFields.EntityFramework.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
+
+    - name: Publish Custom Fields Mongo
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.Mongo/Firebend.AutoCrud.CustomFields.Mongo.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
+
+    - name: Publish Custom Fields Web
+      uses: rohith/publish-nuget@v2
+      with:
+         PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.Web/Firebend.AutoCrud.CustomFields.Web.csproj
+         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+         TAG_COMMIT: false
