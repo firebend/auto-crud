@@ -110,11 +110,11 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             return WithRegistration(registrationType, serviceType, replace, allowMany);
         }
 
-        public BaseBuilder WithRegistrationInstance(Type registrationType, object instance)
+        public BaseBuilder WithRegistrationInstance(Type registrationType, object instance, bool replace = true, bool allowMany = false)
         {
             var registration = new InstanceRegistration { Instance = instance, Lifetime = ServiceLifetime.Singleton };
 
-            return WithRegistration(registrationType, registration);
+            return WithRegistration(registrationType, registration, replace, allowMany);
         }
 
         public BaseBuilder WithRegistrationInstance<TInstance>(TInstance instance) => WithRegistrationInstance(typeof(TInstance), instance);
