@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>1.0.0</Version>
+        <Version>1.1.0</Version>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
@@ -20,7 +20,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-      <PackageReference Include="MongoDB.Driver" Version="2.11.5" />
+      <PackageReference Include="MongoDB.Driver" Version="2.11.6" />
       <PackageReference Include="Scrutor" Version="3.3.0" />
     </ItemGroup>
 

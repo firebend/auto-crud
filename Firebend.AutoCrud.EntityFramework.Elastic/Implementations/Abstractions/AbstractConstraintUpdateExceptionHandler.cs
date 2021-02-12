@@ -10,10 +10,10 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
 {
     [SuppressMessage("ReSharper", "EF1001")]
-    public class ConstraintUpdateExceptionHandler<TKey, TEntity>
+    public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
         : IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>

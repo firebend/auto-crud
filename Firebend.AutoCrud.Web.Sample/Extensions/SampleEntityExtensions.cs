@@ -4,6 +4,9 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.CustomFields.EntityFramework;
+using Firebend.AutoCrud.CustomFields.Mongo;
+using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.CustomCommands;
@@ -31,6 +34,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithShardKeyProvider<SampleKeyProviderMongo>()
                     .WithAllShardsProvider<SampleAllShardsMongoProvider>()
                     .WithShardMode(MongoTenantShardMode.Database)
+                    .AddCustomFields()
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
                         .WithMassTransit())
@@ -41,6 +45,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
+                        .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                         .WithOpenApiGroupName("The Beautiful Mongo People")
                         .WithRoute("api/v1/mongo-person"))
         );
@@ -50,6 +55,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
                     .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPerson>>()
+                    .WithIncludes(x => x.Include(y => y.CustomFields))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -59,6 +65,16 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
+                    .AddCustomFields(cf =>
+                        cf.AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
+                        {
+                            de.WithEfChangeTracking()
+                                .WithMassTransit();
+                        }).AddControllers(controllers => controllers
+                            .WithChangeTrackingControllers()
+                            .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
+                            .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
+                            .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
                         {
@@ -91,6 +107,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
+                        .WithCustomFieldsControllers(openApiName: "The Beautiful Sql People Custom Fields")
                         .WithIoControllers()
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)
@@ -111,12 +128,15 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCrud(crud => crud.WithSearchHandler<CustomSearchParameters>((pets, parameters) =>
+                    .AddCustomFields()
+                    .AddCrud(crud => crud.WithSearchHandler<PetSearch>((pets, parameters) =>
                     {
                         if (!string.IsNullOrWhiteSpace(parameters.Search))
                         {
                             pets = pets.Where(x => x.PetName.Contains(parameters.Search));
                         }
+
+                        pets = pets.Where(x => x.EfPersonId == parameters.PersonId);
 
                         return pets;
                     }).WithCrud())
@@ -134,6 +154,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
+                        .WithCustomFieldsControllers()
                     ));
     }
 }

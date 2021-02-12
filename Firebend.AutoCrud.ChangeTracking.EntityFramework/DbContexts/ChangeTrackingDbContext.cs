@@ -37,6 +37,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
         /// Gets or sets a value indicating the <see cref="DbSet{TEntity}"/> comprised of <see cref="ChangeTrackingEntity{TKey,TEntity}"/>.
         /// </summary>
         public DbSet<ChangeTrackingEntity<TKey, TEntity>> Changes { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -61,10 +62,32 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
         private static (string, string) GetTableName()
         {
             var entityType = typeof(TEntity);
+            string tableName = null;
+
+            if (typeof(IEntityName).IsAssignableFrom(entityType))
+            {
+                try
+                {
+                    var instance = Activator.CreateInstance(entityType);
+
+                    if (instance is IEntityName entityName)
+                    {
+                        tableName = entityName.GetEntityName();
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
 
             var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
-            var tableName = tableAttribute?.Name;
             var schema = tableAttribute?.Schema;
+
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                tableName = tableAttribute?.Name;
+            }
 
             if (string.IsNullOrWhiteSpace(tableName))
             {

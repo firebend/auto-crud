@@ -39,7 +39,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
 
             Func<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>, IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>> firstStageFilter = null;
 
-            if (!string.IsNullOrWhiteSpace(searchRequest?.Search))
+            if (!string.IsNullOrWhiteSpace(searchRequest.Search))
             {
                 firstStageFilter = x => (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)_searchHandler.HandleSearch(x, searchRequest);
             }

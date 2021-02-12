@@ -60,9 +60,6 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
             configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>,
                 AbstractChangeTrackingDbContextProvider<TKey, TEntity>>();
 
-            configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>,
-                AbstractChangeTrackingDbContextProvider<TKey, TEntity>>();
-
             configurator.Builder.WithRegistration<IChangeTrackingReadService<TKey, TEntity>,
                 AbstractEntityFrameworkChangeTrackingReadService<TKey, TEntity>>();
 

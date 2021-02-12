@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
-    public static class ChangeTrackingCaches
+    internal static class ChangeTrackingCaches
     {
         public static readonly ConcurrentDictionary<string, Task<bool>> InitCaches = new();
     }
@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
         private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
 
-        public AbstractChangeTrackingDbContextProvider(ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
+        protected AbstractChangeTrackingDbContextProvider(ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
             IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
             IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider)
         {
@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             var options = _optionsProvider.GetDbContextOptions(connectionString);
             var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
 
-            await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName, async _ =>
+            await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName ?? string.Empty, async _ =>
                 {
                     try
                     {
@@ -59,7 +59,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                     {
                         if (!ex.Message.StartsWith("There is already an object named"))
                         {
-                            _logger.LogError("Error creating change tracking tables for context", ex);
+                            _logger.LogError(ex, "Error creating change tracking tables for context");
                         }
                     }
 

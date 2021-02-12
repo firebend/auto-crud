@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
     {
         private readonly ILogger _logger;
 
-        public MongoClientFactory(ILogger<MongoClient> logger)
+        public MongoClientFactory(ILogger<MongoClientFactory> logger)
         {
             _logger = logger;
         }
@@ -34,7 +34,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
             cb.Subscribe<CommandSucceededEvent>(e => _logger.LogDebug("SUCCESS: {CommandName}({Duration}) - {Reply}", e.CommandName, e.Duration, e.Reply.ToJson()));
 
-            cb.Subscribe<CommandFailedEvent>(e => _logger.LogError("ERROR: {CommandName}({Duration}) - {Error}", e.CommandName, e.Duration, e.Failure));
+            cb.Subscribe<CommandFailedEvent>(e => _logger.LogError(e.Failure, "ERROR: {CommandName}({Duration})}", e.CommandName, e.Duration));
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
     {
         private readonly IDefaultEntityOrderByProvider<TKey, TEntity> _defaultEntityOrderByProvider;
 
-        public DefaultEntityQueryOrderByHandler(IDefaultEntityOrderByProvider<TKey, TEntity> defaultEntityOrderByProvider)
+        protected DefaultEntityQueryOrderByHandler(IDefaultEntityOrderByProvider<TKey, TEntity> defaultEntityOrderByProvider = null)
         {
             _defaultEntityOrderByProvider = defaultEntityOrderByProvider;
         }
@@ -32,10 +32,17 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
             }
             else
             {
-                order = new[]
+                if (_defaultEntityOrderByProvider != null)
                 {
-                    _defaultEntityOrderByProvider.GetOrderBy()
-                };
+                    order = new[]
+                    {
+                        _defaultEntityOrderByProvider.GetOrderBy()
+                    };
+                }
+                else
+                {
+                    order = Enumerable.Empty<(Expression<Func<TEntity, object>> order, bool ascending)>();
+                }
             }
 
             IOrderedQueryable<TEntity> ordered = null;

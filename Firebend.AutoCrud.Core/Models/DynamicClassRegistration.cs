@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,5 +28,10 @@ namespace Firebend.AutoCrud.Core.Models
     public class ServiceRegistration : Registration
     {
         public Type ServiceType { get; set; }
+    }
+
+    public class BuilderRegistration : Registration
+    {
+        public BaseBuilder Builder { get; set; }
     }
 }

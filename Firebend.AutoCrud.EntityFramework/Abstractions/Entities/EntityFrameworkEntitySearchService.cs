@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         private readonly IEntityFrameworkQueryClient<TKey, TEntity> _searchClient;
         private readonly IEntitySearchHandler<TKey, TEntity, TSearch> _searchHandler;
 
-        public EntityFrameworkEntitySearchService(IEntityFrameworkQueryClient<TKey, TEntity> searchClient,
+        protected EntityFrameworkEntitySearchService(IEntityFrameworkQueryClient<TKey, TEntity> searchClient,
             IEntitySearchHandler<TKey, TEntity, TSearch> searchHandler)
         {
             _searchClient = searchClient;

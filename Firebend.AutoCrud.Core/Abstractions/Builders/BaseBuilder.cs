@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
     public abstract class BaseBuilder
     {
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         public bool IsBuilt { get; private set; }
 
@@ -21,8 +21,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
 
-        // ReSharper disable once UnassignedGetOnlyAutoProperty
-        public virtual string SignatureBase { get; }
+        public virtual string SignatureBase { get; set; }
 
         public void Build()
         {
@@ -111,11 +110,11 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             return WithRegistration(registrationType, serviceType, replace, allowMany);
         }
 
-        public BaseBuilder WithRegistrationInstance(Type registrationType, object instance)
+        public BaseBuilder WithRegistrationInstance(Type registrationType, object instance, bool replace = true, bool allowMany = false)
         {
             var registration = new InstanceRegistration { Instance = instance, Lifetime = ServiceLifetime.Singleton };
 
-            return WithRegistration(registrationType, registration);
+            return WithRegistration(registrationType, registration, replace, allowMany);
         }
 
         public BaseBuilder WithRegistrationInstance<TInstance>(TInstance instance) => WithRegistrationInstance(typeof(TInstance), instance);

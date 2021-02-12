@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         private Type _tenantEntityKeyType;
 
-        public EntityCrudBuilder()
+        protected EntityCrudBuilder()
         {
             if (IsActiveEntity && IsModifiedEntity)
             {

@@ -26,7 +26,10 @@ namespace Firebend.AutoCrud.Io.Web
         /// </code>
         /// </example>
         public static ControllerConfigurator<TBuilder, TKey, TEntity> WithIoControllers<TBuilder, TKey, TEntity>(
-            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
+            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+            string entityName = null,
+            string entityNamePlural = null,
+            string openApiName = null)
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
             where TKey : struct
             where TEntity : class, IEntity<TKey>
@@ -55,7 +58,11 @@ namespace Firebend.AutoCrud.Io.Web
 
             configurator.Builder.WithRegistration(iface, impl, iface);
 
-            return configurator.WithController(controllerType, controllerType, configurator.Builder.EntityKeyType,
+            return configurator.WithController(controllerType, controllerType,
+                entityName,
+                entityNamePlural,
+                openApiName,
+                configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
                 configurator.Builder.SearchRequestType,
                 configurator.Builder.ExportType);

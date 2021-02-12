@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.Connections;
@@ -72,8 +71,8 @@ namespace Firebend.AutoCrud.EntityFramework
             WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>,
                 DefaultEntityFrameworkIncludesProvider<TKey, TEntity>>(false);
 
-            EnsureRegistered<IDbContextConnectionStringProvider<TKey, TEntity>>();
-            EnsureRegistered(typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType));
+            //EnsureRegistered<IDbContextConnectionStringProvider<TKey, TEntity>>();
+            //EnsureRegistered(typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType));
         }
 
         /// <summary>

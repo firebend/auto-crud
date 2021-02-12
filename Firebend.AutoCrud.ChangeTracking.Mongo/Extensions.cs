@@ -70,7 +70,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
                     MongoConfigureShardedCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
                 configurator.Builder.WithRegistration<IConfigureCollection,
-                    MongoConfigureShardedCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
+                    MongoConfigureShardedCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false, true);
 
                 configurator.Builder.WithRegistrationInstance<IMongoEntityDefaultConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>(
                     new MongoEntityDefaultConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>(mongoDbEntityBuilder.CollectionName + "_ChangeTracking",
@@ -78,15 +78,15 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
                         mongoDbEntityBuilder.ShardMode));
 
                 configurator.Builder.WithRegistration<IMongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-                    MongoTenantEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
+                    MongoTenantEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
             }
             else
             {
                 configurator.Builder.WithRegistration<IConfigureCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-                    MongoConfigureCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
+                    MongoConfigureCollection<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
 
                 configurator.Builder.WithRegistration<IConfigureCollection, MongoConfigureCollection<Guid,
-                    ChangeTrackingEntity<TKey, TEntity>>>(false);
+                    ChangeTrackingEntity<TKey, TEntity>>>(false, true);
 
                 configurator.Builder.WithRegistrationInstance<IMongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>(
                     new MongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>(mongoDbEntityBuilder.CollectionName + "_ChangeTracking",

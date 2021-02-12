@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
             _indexClient = indexClient;
         }
 
-        public virtual async Task ConfigureAsync(IMongoEntityConfiguration<TKey, TEntity> configuration,
+        protected virtual async Task ConfigureAsync(IMongoEntityConfiguration<TKey, TEntity> configuration,
             CancellationToken cancellationToken)
         {
             var fullCollectionName = $"{configuration.DatabaseName}.{configuration.CollectionName}";

@@ -69,8 +69,8 @@ namespace Firebend.AutoCrud.Mongo
                 WithRegistration<IMongoDeleteClient<TKey, TEntity>>(
                     typeof(MongoTenantDeleteClient<,,>).MakeGenericType(EntityKeyType, EntityType, TenantEntityKeyType), false);
 
-                WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureShardedCollection<TKey, TEntity>>(false);
-                WithRegistration<IConfigureCollection, MongoConfigureShardedCollection<TKey, TEntity>>(false);
+                WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureShardedCollection<TKey, TEntity>>(false, true);
+                WithRegistration<IConfigureCollection, MongoConfigureShardedCollection<TKey, TEntity>>(false, true);
 
                 WithRegistration<IMongoEntityConfigurationTenantTransformService<TKey, TEntity>,
                     MongoEntityConfigurationTenantTransformService<TKey, TEntity>>(false);
@@ -80,8 +80,8 @@ namespace Firebend.AutoCrud.Mongo
             }
             else
             {
-                WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false);
-                WithRegistration<IConfigureCollection, MongoConfigureCollection<TKey, TEntity>>(false);
+                WithRegistration<IConfigureCollection<TKey, TEntity>, MongoConfigureCollection<TKey, TEntity>>(false, true);
+                WithRegistration<IConfigureCollection, MongoConfigureCollection<TKey, TEntity>>(false, true);
 
                 WithRegistration<IMongoCreateClient<TKey, TEntity>, MongoCreateClient<TKey, TEntity>>(false);
                 WithRegistration<IMongoReadClient<TKey, TEntity>, MongoReadClient<TKey, TEntity>>(false);
@@ -112,17 +112,10 @@ namespace Firebend.AutoCrud.Mongo
 
             var searchHandlerInterfaceType = typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
 
-            if (!HasRegistration(searchHandlerInterfaceType))
+            if (!HasRegistration(searchHandlerInterfaceType) && _hasFullText)
             {
-                if (_hasFullText)
-                {
-                    var fullTextType = typeof(MongoFullTextSearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
-                    WithRegistration(searchHandlerInterfaceType, fullTextType);
-                }
-                else
-                {
-                    throw new Exception($"Please register a {searchHandlerInterfaceType.Name}");
-                }
+                var fullTextType = typeof(MongoFullTextSearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
+                WithRegistration(searchHandlerInterfaceType, fullTextType);
             }
         }
 
@@ -158,11 +151,11 @@ namespace Firebend.AutoCrud.Mongo
                 WithRegistrationInstance<IMongoEntityDefaultConfiguration<TKey, TEntity>>(
                     new MongoEntityDefaultConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode));
 
-                WithRegistration<IMongoEntityConfiguration<TKey, TEntity>, MongoTenantEntityConfiguration<TKey, TEntity>>();
+                WithRegistration<IMongoEntityConfiguration<TKey, TEntity>, MongoTenantEntityConfiguration<TKey, TEntity>>(false, true);
             }
             else
             {
-                WithRegistrationInstance(iFaceType, new MongoEntityConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode));
+                WithRegistrationInstance(iFaceType, new MongoEntityConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode), false, true);
             }
         }
 

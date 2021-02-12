@@ -1,6 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
+using Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
@@ -17,7 +17,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Extensions
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithSearchFilter((f, s) => f.Summary.Contains(s))
         ///        .AddElasticPool(
         ///            manager => {
         ///                manager.ConnectionString = "connString";
@@ -46,7 +45,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Extensions
 
             config.Builder.WithRegistration<
                 IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>,
-                ConstraintUpdateExceptionHandler<TKey, TEntity>>();
+                AbstractConstraintUpdateExceptionHandler<TKey, TEntity>>();
 
             configure(config);
 

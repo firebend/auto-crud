@@ -53,7 +53,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 
                     if (existingTextIndex != null && indexesToAdd.Any(y => y?.Options?.Name != null && y.Options.Name.Equals("text")))
                     {
-                        Logger.LogDebug($"Dropping text index {existingTextIndex["name"].AsString} for collection {EntityConfiguration.CollectionName}");
+                        Logger.LogDebug("Dropping text index {IndexName} for collection {CollectionName}",
+                            existingTextIndex["name"].AsString,
+                            configuration.CollectionName);
 
                         await RetryErrorAsync(() => dbCollection
                                 .Indexes

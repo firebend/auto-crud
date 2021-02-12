@@ -35,11 +35,11 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
 
                 await Task.WhenAll(configureTasks).ConfigureAwait(false);
 
-                _logger.LogDebug("Finished Configuring Mongo Collections.");
+                _logger.LogDebug("Finished Configuring Mongo Collections");
             }
             else
             {
-                _logger.LogError("No Collections to Configure, but Mongo still registered.");
+                _logger.LogError("No Collections to Configure, but Mongo still registered");
             }
         }
 

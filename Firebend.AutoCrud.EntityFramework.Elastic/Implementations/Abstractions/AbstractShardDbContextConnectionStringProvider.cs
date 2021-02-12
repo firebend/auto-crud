@@ -10,7 +10,7 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Data.SqlClient;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
 {
     internal static class ShardDbContextProviderCaches
     {
@@ -29,7 +29,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         public static readonly ConcurrentDictionary<string, Task<string>> ConnectionStringCaches = new();
     }
 
-    public class ShardDbContextConnectionStringProvider<TKey, TEntity> : IDbContextConnectionStringProvider<TKey, TEntity>
+    public abstract class AbstractShardDbContextConnectionStringProvider<TKey, TEntity> : IDbContextConnectionStringProvider<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
         private readonly IShardNameProvider _shardNameProvider;
 
-        public ShardDbContextConnectionStringProvider(
+        protected AbstractShardDbContextConnectionStringProvider(
             IShardManager shardManager,
             IShardKeyProvider shardKeyProvider,
             IShardNameProvider shardNameProvider,

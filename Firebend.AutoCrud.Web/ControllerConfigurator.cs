@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
-using Firebend.AutoCrud.Core.Configurators;
+using Firebend.AutoCrud.Core.Abstractions.Configurators;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.Web
         public static readonly object Lock = new();
     }
 
-    public class ControllerConfigurator<TBuilder, TKey, TEntity> : EntityCrudConfigurator<TBuilder, TKey, TEntity>
+    public class ControllerConfigurator<TBuilder, TKey, TEntity> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
@@ -54,11 +54,9 @@ namespace Firebend.AutoCrud.Web
                 throw new ArgumentException("Please configure an entity key type for this entity first.", nameof(builder));
             }
 
-            CrudBuilder = builder;
-
-            var name = (string.IsNullOrWhiteSpace(CrudBuilder.EntityName)
-                ? CrudBuilder.EntityType.Name
-                : CrudBuilder.EntityName).Humanize(LetterCasing.Title);
+            var name = (string.IsNullOrWhiteSpace(Builder.EntityName)
+                ? Builder.EntityType.Name
+                : Builder.EntityName).Humanize(LetterCasing.Title);
 
             OpenApiEntityName = name;
             OpenApiEntityNamePlural = name.Pluralize();
@@ -68,7 +66,7 @@ namespace Firebend.AutoCrud.Web
 
             WithValidationService<DefaultEntityValidationService<TKey, TEntity>>(false);
 
-            CrudBuilder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
+            Builder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
 
             WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity>>();
             WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
@@ -82,9 +80,6 @@ namespace Firebend.AutoCrud.Web
         public bool HasDefaultAuthorizationPolicy => DefaultAuthorizationPolicy != default
                                                      && DefaultAuthorizationPolicy.attributeBuilder != null
                                                      && DefaultAuthorizationPolicy.attributeType != null;
-
-        private TBuilder CrudBuilder { get; }
-
         public string Route { get; private set; }
 
         public string OpenApiGroupName { get; private set; }
@@ -122,11 +117,15 @@ namespace Firebend.AutoCrud.Web
         {
             var (routeType, attributeBuilder) = GetRouteAttributeInfo();
 
-            CrudBuilder.WithAttribute(controllerType, routeType, attributeBuilder);
+            Builder.WithAttribute(controllerType, routeType, attributeBuilder);
         }
 
-        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo()
+        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo(string openApiName)
         {
+            if (string.IsNullOrWhiteSpace(openApiName))
+            {
+                openApiName = OpenApiGroupName;
+            }
             var attributeType = typeof(OpenApiGroupNameAttribute);
             var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
 
@@ -135,13 +134,23 @@ namespace Firebend.AutoCrud.Web
                 return default;
             }
 
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { OpenApiGroupName });
+            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { openApiName });
 
             return (attributeType, attributeBuilder);
         }
 
-        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiEntityNameAttribute()
+        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiEntityNameAttribute(string name, string plural)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = OpenApiEntityName;
+            }
+
+            if (string.IsNullOrWhiteSpace(plural))
+            {
+                plural = name;
+            }
+
             var attributeType = typeof(OpenApiEntityNameAttribute);
 
             var attributeCtor = attributeType.GetConstructor(new[] { typeof(string), typeof(string) });
@@ -151,21 +160,21 @@ namespace Firebend.AutoCrud.Web
                 return default;
             }
 
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { OpenApiEntityName, OpenApiEntityNamePlural });
+            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { name, plural });
 
             return (attributeType, attributeBuilder);
         }
 
-        private void AddOpenApiGroupNameAttribute(Type controllerType)
+        private void AddOpenApiGroupNameAttribute(Type controllerType, string openApiName)
         {
-            var (attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo();
-            CrudBuilder.WithAttribute(controllerType, attributeType, attributeBuilder);
+            var (attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo(openApiName);
+            Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
-        private void AddOpenApiEntityNameAttribute(Type controllerType)
+        private void AddOpenApiEntityNameAttribute(Type controllerType, string name, string plural)
         {
-            var (attributeType, attributeBuilder) = GetOpenApiEntityNameAttribute();
-            CrudBuilder.WithAttribute(controllerType, attributeType, attributeBuilder);
+            var (attributeType, attributeBuilder) = GetOpenApiEntityNameAttribute(name, plural);
+            Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
         private static (Type attributeType, CustomAttributeBuilder attributeBuilder) GetAuthorizationAttributeInfo(string authorizePolicy = "")
@@ -208,6 +217,9 @@ namespace Firebend.AutoCrud.Web
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type,
             Type typeToCheck,
+            string entityName = null,
+            string entityNamePlural = null,
+            string openApiName = null,
             params Type[] genericArgs)
         {
             var hasGenerics = genericArgs != null && genericArgs.Length > 0;
@@ -220,15 +232,15 @@ namespace Firebend.AutoCrud.Web
                 throw new Exception($"Registration type {registrationType} is not assignable to {typeToCheckGeneric}");
             }
 
-            CrudBuilder.WithRegistration(registrationType, registrationType);
+            Builder.WithRegistration(registrationType, registrationType);
 
             AddRouteAttribute(registrationType);
-            AddOpenApiGroupNameAttribute(registrationType);
-            AddOpenApiEntityNameAttribute(registrationType);
+            AddOpenApiGroupNameAttribute(registrationType, openApiName);
+            AddOpenApiEntityNameAttribute(registrationType, entityName, entityNamePlural);
 
             if (HasDefaultAuthorizationPolicy)
             {
-                CrudBuilder.WithAttribute(registrationType, DefaultAuthorizationPolicy.attributeType, DefaultAuthorizationPolicy.attributeBuilder);
+                Builder.WithAttribute(registrationType, DefaultAuthorizationPolicy.attributeType, DefaultAuthorizationPolicy.attributeBuilder);
             }
 
             return this;
@@ -271,9 +283,9 @@ namespace Firebend.AutoCrud.Web
 
         private void AddAttributeToAllControllers(Type attributeType, CustomAttributeBuilder attributeBuilder) => GetRegisteredControllers()
             .ToList()
-            .ForEach(x => { CrudBuilder.WithAttribute(x.Key, attributeType, attributeBuilder); });
+            .ForEach(x => { Builder.WithAttribute(x.Key, attributeType, attributeBuilder); });
 
-        private IEnumerable<KeyValuePair<Type, Registration>> GetRegisteredControllers() => CrudBuilder
+        private IEnumerable<KeyValuePair<Type, Registration>> GetRegisteredControllers() => Builder
             .Registrations
             .SelectMany(x => x.Value, (pair, registration) => new KeyValuePair<Type, Registration>(pair.Key, registration))
             .Where(x => x.Value is ServiceRegistration)
@@ -345,7 +357,7 @@ namespace Firebend.AutoCrud.Web
         {
             OpenApiGroupName = openApiGroupName;
 
-            var (aType, aBuilder) = GetOpenApiGroupAttributeInfo();
+            var (aType, aBuilder) = GetOpenApiGroupAttributeInfo(openApiGroupName);
 
             AddAttributeToAllControllers(aType, aBuilder);
 
@@ -375,7 +387,7 @@ namespace Firebend.AutoCrud.Web
             OpenApiEntityName = name;
             OpenApiEntityNamePlural = plural ?? name.Pluralize();
 
-            var (aType, aBuilder) = GetOpenApiEntityNameAttribute();
+            var (aType, aBuilder) = GetOpenApiEntityNameAttribute(OpenApiEntityName, OpenApiEntityNamePlural);
 
             AddAttributeToAllControllers(aType, aBuilder);
 
@@ -399,10 +411,10 @@ namespace Firebend.AutoCrud.Web
             if (makeControllerTypeGeneric)
             {
                 controller = controllerType
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
 
                 mapper = mapperInterfaceType
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
             }
             else
             {
@@ -413,14 +425,14 @@ namespace Firebend.AutoCrud.Web
             if (makeRegistrationTypeGeneric)
             {
                 registrationType = registrationType
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
             }
 
             WithController(controller, registrationType);
 
             if (viewModelMapper != null)
             {
-                CrudBuilder.WithRegistration(mapper, viewModelMapper, mapper);
+                Builder.WithRegistration(mapper, viewModelMapper, mapper);
             }
 
             return this;
@@ -453,31 +465,31 @@ namespace Firebend.AutoCrud.Web
             bool makeServiceGeneric)
         {
             var controller = typeof(AbstractEntityCreateController<,,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType,
-                    CrudBuilder.EntityType,
+                .MakeGenericType(Builder.EntityKeyType,
+                    Builder.EntityType,
                     viewModelType,
                     resultModelType);
 
             if (viewModelMapper != null)
             {
                 var createViewModelMapperInterface = typeof(ICreateViewModelMapper<,,>)
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, viewModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, viewModelType);
 
-                CrudBuilder.WithRegistration(createViewModelMapperInterface, viewModelMapper, createViewModelMapperInterface);
+                Builder.WithRegistration(createViewModelMapperInterface, viewModelMapper, createViewModelMapperInterface);
             }
 
             if (resultModelTypeMapper != null)
             {
                 var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, resultModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
 
-                CrudBuilder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
+                Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
             }
 
             if (makeServiceGeneric)
             {
-                serviceType = serviceType.MakeGenericType(CrudBuilder.EntityKeyType,
-                        CrudBuilder.EntityType,
+                serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
+                        Builder.EntityType,
                         viewModelType,
                         resultModelType);
             }
@@ -639,7 +651,7 @@ namespace Firebend.AutoCrud.Web
         /// </code>
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController<TRegistrationType>() =>
-            WithGetAllController(typeof(TRegistrationType), CrudBuilder.EntityType);
+            WithGetAllController(typeof(TRegistrationType), Builder.EntityType);
 
         /// <summary>
         /// Registers a GET `/all` controller for the entity using auto-generated types
@@ -748,15 +760,15 @@ namespace Firebend.AutoCrud.Web
             bool makeRegistrationTypeGeneric = false)
         {
             var controller = typeof(AbstractEntitySearchController<,,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchRequestType, viewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchRequestType, viewModelType);
 
             var mapperInterface = typeof(IReadViewModelMapper<,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
 
             if (makeRegistrationTypeGeneric)
             {
                 registrationType = registrationType
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchRequestType, viewModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchRequestType, viewModelType);
             }
 
             return WithControllerHelper(controller,
@@ -829,31 +841,31 @@ namespace Firebend.AutoCrud.Web
             bool makeServiceTypeGeneric)
         {
             var controller = typeof(AbstractEntityUpdateController<,,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType,
-                    CrudBuilder.EntityType,
+                .MakeGenericType(Builder.EntityKeyType,
+                    Builder.EntityType,
                     viewModelType,
                     resultModelType);
 
             if (viewModelMapper != null)
             {
                 var updateMapperInterface = typeof(IUpdateViewModelMapper<,,>)
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, viewModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, viewModelType);
 
-                CrudBuilder.WithRegistration(updateMapperInterface, viewModelMapper, updateMapperInterface);
+                Builder.WithRegistration(updateMapperInterface, viewModelMapper, updateMapperInterface);
             }
 
             if (resultModelTypeMapper != null)
             {
                 var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, resultModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
 
-                CrudBuilder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
+                Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
             }
 
             if (makeServiceTypeGeneric)
             {
-                serviceType = serviceType.MakeGenericType(CrudBuilder.EntityKeyType,
-                        CrudBuilder.EntityType,
+                serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
+                        Builder.EntityType,
                         viewModelType,
                         resultModelType);
             }
@@ -933,8 +945,8 @@ namespace Firebend.AutoCrud.Web
             bool makeServiceGeneric)
         {
             var controller = typeof(AbstractEntityCreateMultipleController<,,,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType,
-                    CrudBuilder.EntityType,
+                .MakeGenericType(Builder.EntityKeyType,
+                    Builder.EntityType,
                     viewModelWrapperType,
                     viewModelType,
                     resultModelType);
@@ -942,23 +954,23 @@ namespace Firebend.AutoCrud.Web
             if (viewModelMapper != null)
             {
                 var createMultipleViewModelMapperInterface = typeof(ICreateMultipleViewModelMapper<,,,>)
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelWrapperType, viewModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelWrapperType, viewModelType);
 
-                CrudBuilder.WithRegistration(createMultipleViewModelMapperInterface, viewModelMapper, createMultipleViewModelMapperInterface);
+                Builder.WithRegistration(createMultipleViewModelMapperInterface, viewModelMapper, createMultipleViewModelMapperInterface);
             }
 
             if (resultModelTypeMapper != null)
             {
                 var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                    .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityKeyType, resultModelType);
+                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
 
-                CrudBuilder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
+                Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
             }
 
             if (makeServiceGeneric)
             {
-                serviceType = serviceType.MakeGenericType(CrudBuilder.EntityKeyType,
-                        CrudBuilder.EntityType,
+                serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
+                        Builder.EntityType,
                         viewModelWrapperType,
                         viewModelType,
                         resultModelType);
@@ -1069,7 +1081,7 @@ namespace Firebend.AutoCrud.Web
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy(Type type, string authorizePolicy = "")
         {
             var (attributeType, attributeBuilder) = GetAuthorizationAttributeInfo(authorizePolicy);
-            CrudBuilder.WithAttribute(type, attributeType, attributeBuilder);
+            Builder.WithAttribute(type, attributeType, attributeBuilder);
             return this;
         }
 
@@ -1109,7 +1121,7 @@ namespace Firebend.AutoCrud.Web
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CreateViewModelType, ReadViewModelType), policy);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType), policy);
 
         /// <summary>
         /// Adds an authorization policy to DELETE requests using the abstract delete controller
@@ -1128,7 +1140,7 @@ namespace Firebend.AutoCrud.Web
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType), policy);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
 
         /// <summary>
         /// Adds an authorization policy to GET requests using the abstract read controller
@@ -1147,7 +1159,7 @@ namespace Firebend.AutoCrud.Web
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityReadController<,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType), policy);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
 
         /// <summary>
         /// Adds an authorization policy to GET `/all` requests using the abstract read all controller
@@ -1166,7 +1178,7 @@ namespace Firebend.AutoCrud.Web
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityReadAllController<,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType), policy);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
 
         /// <summary>
         /// Adds an authorization policy to search requests using the abstract search controller
@@ -1186,7 +1198,7 @@ namespace Firebend.AutoCrud.Web
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddSearchAuthorizationPolicy(string policy)
         {
             var type = typeof(AbstractEntitySearchController<,,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, CrudBuilder.SearchType, ReadViewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchType, ReadViewModelType);
 
             return AddAuthorizationPolicy(type, policy);
         }
@@ -1208,7 +1220,7 @@ namespace Firebend.AutoCrud.Web
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
             => AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, ReadViewModelType, UpdateViewModelType), policy);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType, UpdateViewModelType), policy);
 
         /// <summary>
         /// Adds an authorization policies to all requests that modify an entity (Create, Update, and Delete) and use the abstract controllers
@@ -1301,7 +1313,7 @@ namespace Firebend.AutoCrud.Web
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidationService<TService>(bool replace = true)
             where TService : IEntityValidationService<TKey, TEntity>
         {
-            CrudBuilder.WithRegistration<IEntityValidationService<TKey, TEntity>, TService>(replace);
+            Builder.WithRegistration<IEntityValidationService<TKey, TEntity>, TService>(replace);
             return this;
         }
 
@@ -1336,9 +1348,9 @@ namespace Firebend.AutoCrud.Web
             CreateViewModelType = viewModelType;
 
             var mapper = typeof(ICreateViewModelMapper<,,>)
-                .MakeGenericType(CrudBuilder.EntityType, CrudBuilder.EntityType, viewModelType);
+                .MakeGenericType(Builder.EntityType, Builder.EntityType, viewModelType);
 
-            CrudBuilder.WithRegistration(mapper, viewModelMapper, mapper);
+            Builder.WithRegistration(mapper, viewModelMapper, mapper);
 
             return this;
         }
@@ -1367,7 +1379,7 @@ namespace Firebend.AutoCrud.Web
 
             CreateViewModelType = typeof(TViewModel);
 
-            CrudBuilder.WithRegistration<ICreateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
+            Builder.WithRegistration<ICreateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
 
             return this;
         }
@@ -1401,7 +1413,7 @@ namespace Firebend.AutoCrud.Web
 
             CreateViewModelType = typeof(TViewModel);
 
-            CrudBuilder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+            Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
 
             return this;
         }
@@ -1429,9 +1441,9 @@ namespace Firebend.AutoCrud.Web
             ReadViewModelType = viewModelType;
 
             var mapper = typeof(IReadViewModelMapper<,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
 
-            CrudBuilder.WithRegistration(mapper, viewModelMapper, mapper);
+            Builder.WithRegistration(mapper, viewModelMapper, mapper);
 
             return this;
         }
@@ -1460,7 +1472,7 @@ namespace Firebend.AutoCrud.Web
 
             ReadViewModelType = typeof(TViewModel);
 
-            CrudBuilder.WithRegistration<IReadViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
+            Builder.WithRegistration<IReadViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
 
             return this;
         }
@@ -1490,7 +1502,7 @@ namespace Firebend.AutoCrud.Web
 
             ReadViewModelType = typeof(TViewModel);
 
-            CrudBuilder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+            Builder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
 
             return this;
         }
@@ -1518,9 +1530,9 @@ namespace Firebend.AutoCrud.Web
             UpdateViewModelType = viewModelType;
 
             var mapper = typeof(IUpdateViewModelMapper<,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
 
-            CrudBuilder.WithRegistration(mapper, viewModelMapper, mapper);
+            Builder.WithRegistration(mapper, viewModelMapper, mapper);
 
             return this;
         }
@@ -1549,7 +1561,7 @@ namespace Firebend.AutoCrud.Web
 
             UpdateViewModelType = typeof(TViewModel);
 
-            CrudBuilder.WithRegistration<IUpdateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
+            Builder.WithRegistration<IUpdateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
 
             return this;
         }
@@ -1583,7 +1595,7 @@ namespace Firebend.AutoCrud.Web
 
             UpdateViewModelType = typeof(TViewModel);
 
-            CrudBuilder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+            Builder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
 
             return this;
         }
@@ -1615,9 +1627,9 @@ namespace Firebend.AutoCrud.Web
             CreateMultipleViewModelWrapperType = viewWrapper;
 
             var mapper = typeof(ICreateMultipleViewModelMapper<,,,>)
-                .MakeGenericType(CrudBuilder.EntityKeyType, CrudBuilder.EntityType, viewWrapper, view);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewWrapper, view);
 
-            CrudBuilder.WithRegistration(mapper, viewMapper, mapper);
+            Builder.WithRegistration(mapper, viewMapper, mapper);
 
             return this;
         }
@@ -1647,7 +1659,7 @@ namespace Firebend.AutoCrud.Web
             CreateMultipleViewModelType = typeof(TView);
             CreateMultipleViewModelWrapperType = typeof(TViewWrapper);
 
-            CrudBuilder.WithRegistration<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>, TMapper>();
+            Builder.WithRegistration<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>, TMapper>();
 
             return this;
         }
@@ -1686,7 +1698,7 @@ namespace Firebend.AutoCrud.Web
                 Func = mapperFunc
             };
 
-            CrudBuilder.WithRegistrationInstance<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>>(instance);
+            Builder.WithRegistrationInstance<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>>(instance);
 
             return this;
         }
@@ -1782,9 +1794,9 @@ namespace Firebend.AutoCrud.Web
             UpdateViewModelType = typeof(TViewModel);
             ReadViewModelType = typeof(TViewModel);
 
-            CrudBuilder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-            CrudBuilder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-            CrudBuilder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+            Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+            Builder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+            Builder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
 
             return this;
         }
@@ -1806,7 +1818,7 @@ namespace Firebend.AutoCrud.Web
         /// </example>
         public ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxPageSize(int size = 100)
         {
-            CrudBuilder.WithRegistrationInstance<IMaxPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(size));
+            Builder.WithRegistrationInstance<IMaxPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(size));
 
             return this;
         }

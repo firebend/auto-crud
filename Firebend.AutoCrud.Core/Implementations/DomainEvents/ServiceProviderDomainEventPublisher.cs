@@ -58,7 +58,7 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
 
             var services = scope
                 .ServiceProvider
-                .GetServices<T>() ?? Enumerable.Empty<T>();
+                .GetServices<T>();
 
             return services.Where(x => x != null);
         }

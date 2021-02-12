@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
@@ -19,5 +20,7 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
             where TEntity : class;
 
         DatabaseFacade Database { get; }
+
+        IModel Model { get; }
     }
 }
