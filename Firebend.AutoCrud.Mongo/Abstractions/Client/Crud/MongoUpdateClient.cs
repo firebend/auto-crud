@@ -10,10 +10,10 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         private readonly IDomainEventContextProvider _domainEventContextProvider;
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
         private readonly bool _isDefaultPublisher;
-        private readonly IJsonPatchDocumentGenerator _jsonPatchDocumentGenerator;
+        private readonly IJsonPatchGenerator _jsonPatchDocumentGenerator;
         private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
 
         protected MongoUpdateClient(IMongoClient client,
@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
             IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchDocumentGenerator jsonPatchDocumentGenerator,
+            IJsonPatchGenerator jsonPatchDocumentGenerator,
             IEntityDomainEventPublisher domainEventPublisher) : base(client, logger, entityConfiguration)
         {
             _keyGenerator = keyGenerator;
