@@ -8,9 +8,9 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.EntityFrameworkCore;
@@ -24,13 +24,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly IDomainEventContextProvider _domainEventContextProvider;
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
         private readonly bool _isDefaultPublisher;
-        private readonly IJsonPatchDocumentGenerator _jsonPatchDocumentGenerator;
+        private readonly IJsonPatchGenerator _jsonPatchDocumentGenerator;
         private readonly IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> _exceptionHandler;
 
         protected EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityDomainEventPublisher domainEventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchDocumentGenerator jsonPatchDocumentGenerator,
+            IJsonPatchGenerator jsonPatchDocumentGenerator,
             IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(contextProvider)
         {
             _domainEventPublisher = domainEventPublisher;

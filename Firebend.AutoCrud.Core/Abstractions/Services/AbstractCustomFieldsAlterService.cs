@@ -9,9 +9,9 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Services
@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
     {
         private readonly IDomainEventContextProvider _domainEventContextProvider;
         private readonly IEntityDomainEventPublisher _eventPublisher;
-        private readonly IJsonPatchDocumentGenerator _patchDocumentGenerator;
+        private readonly IJsonPatchGenerator _patchDocumentGenerator;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
 
@@ -34,7 +34,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
             IEntityUpdateService<TKey, TEntity> updateService,
             IDomainEventContextProvider domainEventContextProvider,
             IEntityDomainEventPublisher eventPublisher,
-            IJsonPatchDocumentGenerator patchDocumentGenerator)
+            IJsonPatchGenerator patchDocumentGenerator)
         {
             _domainEventContextProvider = domainEventContextProvider;
             _eventPublisher = eventPublisher;

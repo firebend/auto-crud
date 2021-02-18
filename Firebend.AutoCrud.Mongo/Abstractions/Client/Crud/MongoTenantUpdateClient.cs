@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
             IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchDocumentGenerator jsonPatchDocumentGenerator,
+            IJsonPatchGenerator jsonPatchDocumentGenerator,
             IEntityDomainEventPublisher domainEventPublisher,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider)
             : base(client, logger, entityConfiguration, keyGenerator, domainEventContextProvider,

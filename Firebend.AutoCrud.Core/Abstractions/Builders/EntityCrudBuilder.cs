@@ -1,12 +1,11 @@
 using System;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
-using Firebend.AutoCrud.Core.Implementations.JsonPatch;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Interfaces.Services.JsonPatch;
 using Firebend.AutoCrud.Core.Models.Searching;
+using Firebend.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
@@ -43,7 +42,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
             WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
             WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
-            WithRegistration<IJsonPatchDocumentGenerator, JsonPatchDocumentDocumentGenerator>(false);
+            WithRegistration<IJsonPatchGenerator, JsonPatchGenerator>(false);
             WithRegistration<IEntityQueryOrderByHandler<TKey, TEntity>, DefaultEntityQueryOrderByHandler<TKey, TEntity>>(false);
 
             if (IsModifiedEntity)
