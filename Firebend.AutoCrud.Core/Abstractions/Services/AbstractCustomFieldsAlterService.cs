@@ -13,6 +13,7 @@ using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
+using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Services
 {
@@ -142,9 +143,11 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 
             customFieldsEntity.ModifiedDate = DateTimeOffset.UtcNow;
 
-            rootEntity.CustomFields[index.Value] = customFieldsEntity;
+            var old = rootEntity.CustomFields[index.Value];
+            customFieldsEntity.CopyPropertiesTo(old, nameof(IModifiedEntity.CreatedDate));
+            rootEntity.CustomFields[index.Value] = old;
 
-            return (rootEntity, customFieldsEntity);
+            return (rootEntity, old);
         }
 
         private static (TEntity, CustomFieldsEntity<TKey>) UpdateCustomAttribute(Guid customAttributeId,
@@ -175,10 +178,12 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                 return Task.CompletedTask;
             }
 
+            var patch = _patchDocumentGenerator?.Generate(beforeModified, entity);
+
             var domainEvent = new EntityUpdatedDomainEvent<TEntity>
             {
                 Previous = beforeModified,
-                Patch = _patchDocumentGenerator?.Generate(beforeModified, entity),
+                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
                 EventContext = _domainEventContextProvider?.GetContext()
             };
 

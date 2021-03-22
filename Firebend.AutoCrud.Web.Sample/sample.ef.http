@@ -63,3 +63,21 @@ http://localhost:5000/api/v1/ef-person/export/spreadSheet?filename=export&pageSi
 
 ###
 http://localhost:5000/api/v1/ef-person/export/csv?filename=export&pageNumber=1&pageSize=10
+
+###
+POST http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/custom-fields
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "large"
+}
+
+###
+PUT http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/custom-fields/86e47644-6e61-4763-4031-08d8ed650141
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "medium"
+}
