@@ -256,7 +256,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 var domainEvent = new EntityUpdatedDomainEvent<TEntity>
                 {
                     Previous = previous,
-                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings(){ TypeNameHandling = TypeNameHandling.All}),
+                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
                     EventContext = _domainEventContextProvider?.GetContext()
                 };
 

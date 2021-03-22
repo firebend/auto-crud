@@ -143,9 +143,11 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 
             customFieldsEntity.ModifiedDate = DateTimeOffset.UtcNow;
 
-            rootEntity.CustomFields[index.Value] = customFieldsEntity;
+            var old = rootEntity.CustomFields[index.Value];
+            customFieldsEntity.CopyPropertiesTo(old, nameof(IModifiedEntity.CreatedDate));
+            rootEntity.CustomFields[index.Value] = old;
 
-            return (rootEntity, customFieldsEntity);
+            return (rootEntity, old);
         }
 
         private static (TEntity, CustomFieldsEntity<TKey>) UpdateCustomAttribute(Guid customAttributeId,
@@ -181,7 +183,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
             var domainEvent = new EntityUpdatedDomainEvent<TEntity>
             {
                 Previous = beforeModified,
-                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings(){ TypeNameHandling = TypeNameHandling.All}),
+                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
                 EventContext = _domainEventContextProvider?.GetContext()
             };
 

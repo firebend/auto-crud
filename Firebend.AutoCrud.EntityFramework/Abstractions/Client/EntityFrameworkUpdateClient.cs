@@ -149,7 +149,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 var domainEvent = new EntityUpdatedDomainEvent<TEntity>
                 {
                     Previous = previous,
-                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings(){ TypeNameHandling = TypeNameHandling.All}),
+                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
                     EventContext = _domainEventContextProvider?.GetContext()
                 };
 

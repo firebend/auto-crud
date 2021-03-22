@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.Core.Models.DomainEvents
 
         public List<Operation<T>> Operations => _operations ??=
             JsonConvert.DeserializeObject(OperationsJson, typeof(List<Operation<T>>),
-                new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.All}) as List<Operation<T>>;
+                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }) as List<Operation<T>>;
 
         public JsonPatchDocument<T> Patch => _patch ??= new JsonPatchDocument<T>(Operations, new DefaultContractResolver());
 
