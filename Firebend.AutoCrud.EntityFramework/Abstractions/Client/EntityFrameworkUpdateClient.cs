@@ -14,6 +14,7 @@ using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -148,7 +149,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 var domainEvent = new EntityUpdatedDomainEvent<TEntity>
                 {
                     Previous = previous,
-                    Patch = patch,
+                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings(){ TypeNameHandling = TypeNameHandling.All}),
                     EventContext = _domainEventContextProvider?.GetContext()
                 };
 

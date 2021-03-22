@@ -58,3 +58,12 @@ Content-Type: application/json
         "lastName": "Scully"
     }
 ]
+
+###
+POST http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "large"
+}
