@@ -28,12 +28,15 @@ namespace Firebend.AutoCrud.Core.Models.DomainEvents
             }
         }
 
+        [JsonIgnore]
         public List<Operation<T>> Operations => _operations ??=
             JsonConvert.DeserializeObject(OperationsJson, typeof(List<Operation<T>>),
                 new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }) as List<Operation<T>>;
 
+        [JsonIgnore]
         public JsonPatchDocument<T> Patch => _patch ??= new JsonPatchDocument<T>(Operations, new DefaultContractResolver());
 
+        [JsonIgnore]
         public T Modified
         {
             get
