@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
@@ -7,6 +8,6 @@ namespace Firebend.AutoCrud.Core.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        Task<IEntityTransaction> StartTransactionAsync();
+        Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken);
     }
 }
