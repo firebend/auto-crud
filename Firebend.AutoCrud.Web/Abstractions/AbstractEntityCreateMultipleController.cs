@@ -71,11 +71,21 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 {
                     isValid.Model = entityToCreate;
                     errorEntities.Add(isValid);
+                    continue;
                 }
 
                 if (isValid.Model != null)
                 {
                     entityToCreate = isValid.Model;
+                }
+
+                if (entityToCreate == null)
+                {
+                    var result = new ModelStateResult<TEntity>();
+                    result.AddError(nameof(TEntity), "The entity to create is null");
+                    errorEntities.Add(result);
+                    continue;
+
                 }
 
                 TEntity entity = null;
