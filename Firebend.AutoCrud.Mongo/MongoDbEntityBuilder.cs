@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
@@ -117,6 +118,8 @@ namespace Firebend.AutoCrud.Mongo
                 var fullTextType = typeof(MongoFullTextSearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
                 WithRegistration(searchHandlerInterfaceType, fullTextType);
             }
+
+            WithRegistration<IEntityTransactionFactory<TKey, TEntity>, MongoEntityTransactionFactory<TKey, TEntity>>();
         }
 
         private void RegisterEntityConfiguration()

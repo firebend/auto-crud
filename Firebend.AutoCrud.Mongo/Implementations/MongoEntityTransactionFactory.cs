@@ -4,15 +4,15 @@ using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using MongoClientBase = Firebend.AutoCrud.Mongo.Abstractions.Client.MongoClientBase;
 
 namespace Firebend.AutoCrud.Mongo.Implementations
 {
-    public class MongoEntityTransactionFactory<TKey, TEntity> : MongoClientBase, IEntityTransactionFactory<TKey, TEntity>
+    public class MongoEntityTransactionFactory<TKey, TEntity> : Firebend.AutoCrud.Mongo.Abstractions.Client.MongoClientBase, IEntityTransactionFactory<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        public MongoEntityTransactionFactory(IMongoClient client, ILogger logger) : base(client, logger)
+        public MongoEntityTransactionFactory(IMongoClient client, ILoggerFactory loggerFactory) :
+            base(client, loggerFactory.CreateLogger<MongoEntityTransactionFactory<TKey, TEntity>>())
         {
         }
 
