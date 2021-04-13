@@ -13,9 +13,9 @@ namespace Firebend.AutoCrud.Io.Implementations
         private int _index = 1;
         private int _row = 1;
 
-        protected bool LeaveOpen {get;}
-        protected bool SanitizeForInjection {get;}
-        protected Stream Stream {get;}
+        protected bool LeaveOpen { get; }
+        protected bool IsSanitizeForInjection { get; }
+        protected Stream Stream { get; }
 
         protected IXLWorksheet Worksheet { get; }
         protected XLWorkbook Workbook { get; }
@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             Stream = stream;
 
             LeaveOpen = configuration.LeaveOpen;
-            SanitizeForInjection = configuration.SanitizeForInjection;
+            IsSanitizeForInjection = configuration.SanitizeForInjection;
         }
 
         private static IXLWorksheet GetOrAddWorksheet(IXLWorkbook workbook, string sheetName)
@@ -45,7 +45,7 @@ namespace Firebend.AutoCrud.Io.Implementations
         /// <inheritdoc />
         public override void WriteField(string field, bool shouldQuote)
         {
-            if (SanitizeForInjection)
+            if (IsSanitizeForInjection)
             {
                 field = SanitizeForInjection(field);
             }
