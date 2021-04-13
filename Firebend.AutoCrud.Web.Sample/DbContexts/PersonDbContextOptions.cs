@@ -1,4 +1,3 @@
-using System.Data;
 using System.Data.Common;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.CustomCommands;

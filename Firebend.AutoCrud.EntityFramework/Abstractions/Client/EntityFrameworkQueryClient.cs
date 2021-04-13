@@ -30,9 +30,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         protected virtual  async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
             bool asNoTracking,
+            IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            var context = await GetDbContextAsync(null, cancellationToken).ConfigureAwait(false);
+            var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
 
             var query = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken);
 
@@ -48,36 +49,65 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
             bool asNoTracking,
+            IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, asNoTracking, cancellationToken);
+            var query = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken);
             var entity = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
             return entity;
         }
 
-        public Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking, CancellationToken cancellationToken = default)
-            => GetQueryableAsync(null, asNoTracking, cancellationToken);
+        public Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default)
+            => GetFirstOrDefaultAsync(filter, asNoTracking, null, cancellationToken);
 
-        public async Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking,
+            CancellationToken cancellationToken = default)
+            => GetQueryableAsync(asNoTracking, null, cancellationToken);
+
+        public Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => GetQueryableAsync(null, asNoTracking, entityTransaction, cancellationToken);
+
+        public Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default)
+            => GetCountAsync(filter, null, cancellationToken);
+
+        public async Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, true, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableAsync(filter, true,  entityTransaction, cancellationToken).ConfigureAwait(false);
             var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
             return count;
         }
 
-        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+        public Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
             bool asNoTracking,
             CancellationToken cancellationToken = default)
+            => GetAllAsync(filter, asNoTracking, null, cancellationToken);
+
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, asNoTracking, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken).ConfigureAwait(false);
             var list = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
             return list;
         }
 
+        public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default)
+            => ExistsAsync(filter, null, cancellationToken);
+
         public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, true, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
             var exists = await query.AnyAsync(cancellationToken).ConfigureAwait(false);
 
             return exists;

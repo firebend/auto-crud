@@ -24,6 +24,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default) =>
             _readClient.GetFirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
 
+        public Task<TEntity> GetByKeyAsync(TKey key, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+            => _readClient.GetFirstOrDefaultAsync(x => x.Id.Equals(key), transaction, cancellationToken);
+
         public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default) =>
             _readClient.GetAllAsync(null, cancellationToken);
 
@@ -32,5 +35,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 
         public Task<TEntity> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             => _readClient.GetFirstOrDefaultAsync(filter, cancellationToken);
+
+        public Task<TEntity> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => _readClient.GetFirstOrDefaultAsync(filter, entityTransaction, cancellationToken);
     }
 }

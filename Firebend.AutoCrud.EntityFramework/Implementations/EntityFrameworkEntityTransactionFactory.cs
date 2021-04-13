@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.EntityFramework.Implementations
         public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
         {
             var context = await _dbContextProvider.GetDbContextAsync(cancellationToken);
-            var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.ReadUncommitted, cancellationToken);
+            var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
             return new EntityFrameworkEntityTransaction(transaction);
         }
     }

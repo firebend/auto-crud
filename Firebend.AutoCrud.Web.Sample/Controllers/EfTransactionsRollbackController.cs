@@ -9,14 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace Firebend.AutoCrud.Web.Sample.Controllers
 {
     [ApiController]
-    [Route("/api/v1/ef/transactions/commit")]
-    public class EfTransactionsController : ControllerBase
+    [Route("/api/v1/ef/transactions/rollback")]
+    public class EfTransactionsRollbackController : ControllerBase
     {
         private readonly IEntityTransactionFactory<Guid, EfPerson> _personTransactionFactory;
         private readonly IEntityReadService<Guid, EfPerson> _personRead;
         private readonly IEntityCreateService<Guid, EfPerson> _personCreate;
 
-        public EfTransactionsController(IEntityTransactionFactory<Guid, EfPerson> personTransactionFactory,
+        public EfTransactionsRollbackController(IEntityTransactionFactory<Guid, EfPerson> personTransactionFactory,
             IEntityReadService<Guid, EfPerson> personRead,
             IEntityCreateService<Guid, EfPerson> personCreate)
         {
@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
         [HttpPost]
         public async Task<ActionResult<EfPerson>> PostAsync(CancellationToken cancellationToken)
         {
-            var person = new EfPerson {FirstName = "Transaction", LastName = "Test", NickName = "Mr. T"};
+            var person = new EfPerson {FirstName = "Transaction", LastName = "Rollback", NickName = "Mr. T"};
             using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);
             Response.RegisterForDispose(transaction);
 
@@ -41,7 +41,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
                 read = await _personRead.FindFirstOrDefaultAsync(x => !x.IsDeleted, transaction, cancellationToken);
                 created = await _personCreate.CreateAsync(person, transaction, cancellationToken);
                 createdRead = await _personRead.GetByKeyAsync(created.Id, transaction, cancellationToken);
-                await transaction.CompleteAsync(cancellationToken);
+                await transaction.RollbackAsync(cancellationToken);
             }
             catch(Exception ex)
             {
@@ -57,6 +57,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
                 Created = new GetPersonViewModel(created),
                 CreatedRead = new GetPersonViewModel(createdRead),
                 ReadAgain = new GetPersonViewModel(readAgain),
+                DoesItExits = readAgain != null
             });
         }
     }

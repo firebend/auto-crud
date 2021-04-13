@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             }
             else
             {
-                if (!(entityTransaction is EntityFrameworkEntityTransaction efTransaction))
+                if (entityTransaction is not EntityFrameworkEntityTransaction efTransaction)
                 {
                     throw new ArgumentException($"Transaction is not a {nameof(EntityFrameworkEntityTransaction)}", nameof(entityTransaction));
                 }
@@ -46,7 +46,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
                 _context ??= await _provider.GetDbContextAsync(transaction.Connection, cancellationToken);
 
-                await _context.Database.UseTransactionAsync(transaction, cancellationToken);
+                if (_context.Database.CurrentTransaction == null)
+                {
+                    await _context.Database.UseTransactionAsync(transaction, cancellationToken);
+                }
             }
 
             return _context;
