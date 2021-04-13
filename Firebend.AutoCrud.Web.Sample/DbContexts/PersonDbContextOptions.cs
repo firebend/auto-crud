@@ -1,3 +1,5 @@
+using System.Data;
+using System.Data.Common;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -20,6 +22,13 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
             .UseLoggerFactory(loggerFactory)
             .EnableSensitiveDataLogging()
             .Options;
+
+        public static DbContextOptions GetOptions(DbConnection connection, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder()
+            .UseSqlServer(connection)
+            .AddFirebendFunctions()
+            .UseLoggerFactory(loggerFactory)
+            .EnableSensitiveDataLogging()
+            .Options;
     }
 
     public class PersonDbContextOptionsProvider<TKey, TEntity> : IDbContextOptionsProvider<TKey, TEntity>
@@ -34,5 +43,6 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
         }
 
         public DbContextOptions GetDbContextOptions(string connectionString) => PersonDbContextOptions.GetOptions(connectionString, _loggerFactory);
+        public DbContextOptions GetDbContextOptions(DbConnection connection) => PersonDbContextOptions.GetOptions(connection, _loggerFactory);
     }
 }

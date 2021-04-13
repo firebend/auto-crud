@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -28,14 +29,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _optionsProvider = optionsProvider;
         }
 
-        public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+        private async Task<IDbContext> CreateContextAsync(DbContextOptions options, CancellationToken cancellationToken)
         {
-            var connectionString = await _connectionStringProvider
-                .GetConnectionStringAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            var options = _optionsProvider.GetDbContextOptions(connectionString);
-
             var contextType = typeof(TContext);
             var instance = Activator.CreateInstance(contextType, options);
             var context = instance as TContext;
@@ -53,5 +48,26 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return context;
         }
 
+        public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+        {
+            var connectionString = await _connectionStringProvider
+                .GetConnectionStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var options = _optionsProvider.GetDbContextOptions(connectionString);
+
+            var context = await CreateContextAsync(options, cancellationToken);
+
+            return context;
+        }
+
+        public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
+        {
+           var options = _optionsProvider.GetDbContextOptions(connection);
+
+            var context = await CreateContextAsync(options, cancellationToken);
+
+            return context;
+        }
     }
 }

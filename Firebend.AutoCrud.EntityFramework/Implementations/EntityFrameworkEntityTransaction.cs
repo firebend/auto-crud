@@ -4,7 +4,7 @@ using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Firebend.AutoCrud.EntityFramework.Implmentations
+namespace Firebend.AutoCrud.EntityFramework.Implementations
 {
     public class EntityFrameworkEntityTransaction : BaseDisposable, IEntityTransaction
     {

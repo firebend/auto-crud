@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,5 +9,7 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         where TEntity : IEntity<TKey>
     {
         DbContextOptions GetDbContextOptions(string connectionString);
+
+        DbContextOptions GetDbContextOptions(DbConnection connection);
     }
 }
