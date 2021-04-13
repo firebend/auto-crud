@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public virtual async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        protected virtual async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
 
@@ -39,16 +39,29 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 modified.ModifiedDate = now;
             }
 
-            await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))
-                .ConfigureAwait(false);
+            if (transaction != null)
+            {
+                var session = UnwrapSession(transaction);
+
+                await RetryErrorAsync(() => mongoCollection.InsertOneAsync(session, entity, null, cancellationToken))
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))
+                    .ConfigureAwait(false);
+            }
 
             await PublishDomainEventAsync(entity, cancellationToken).ConfigureAwait(false);
 
             return entity;
         }
 
+        public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+            => CreateInternalAsync(entity, null, cancellationToken);
+
         public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
-            => throw new NotImplementedException(); //todo;
+            => CreateInternalAsync(entity, entityTransaction, cancellationToken);
 
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {

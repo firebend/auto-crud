@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -76,5 +77,20 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken) =>
             Task.FromResult<IEnumerable<Expression<Func<TEntity, bool>>>>(null);
+
+        protected virtual IClientSessionHandle UnwrapSession(IEntityTransaction entityTransaction)
+        {
+            if (entityTransaction == null)
+            {
+                return null;
+            }
+
+            if (entityTransaction is MongoEntityTransaction mongoTransaction)
+            {
+                return mongoTransaction.ClientSessionHandle;
+            }
+
+            throw new ArgumentException($"Is not a {nameof(MongoEntityTransaction)}", nameof(entityTransaction));
+        }
     }
 }

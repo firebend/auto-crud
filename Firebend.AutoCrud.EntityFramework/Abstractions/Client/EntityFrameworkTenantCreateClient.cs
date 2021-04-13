@@ -51,5 +51,15 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             return await base.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         }
+        public override async Task<TEntity> AddAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken)
+        {
+            var tenant = await _tenantEntityProvider
+                .GetTenantAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            entity.TenantId = tenant.TenantId;
+
+            return await base.AddAsync(entity, entityTransaction, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

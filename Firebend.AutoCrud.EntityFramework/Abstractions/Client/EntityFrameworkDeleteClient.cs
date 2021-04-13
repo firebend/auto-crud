@@ -29,9 +29,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
+        protected virtual async Task<TEntity> DeleteInternalAsync(TKey key, IEntityTransaction transaction, CancellationToken cancellationToken)
         {
-            var context = await GetDbContextAsync(cancellationToken)
+            var context = await GetDbContextAsync(transaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var entity = new TEntity { Id = key };
@@ -69,9 +69,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return entity;
         }
 
-        public virtual async Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
+        protected virtual async Task<IEnumerable<TEntity>> DeleteInternalAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken)
         {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
             var query = await GetFilteredQueryableAsync(context, false, cancellationToken);
             var set = context.Set<TEntity>();
             var list = await query
@@ -95,10 +97,22 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return list;
         }
 
+        public virtual Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken)
+            => DeleteInternalAsync(filter, null, cancellationToken);
+
+        public Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken)
+            => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
+
         public Task<TEntity> DeleteAsync(TKey filter,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken)
-            => throw new NotImplementedException(); //todo
+            => DeleteInternalAsync(filter, null, cancellationToken);
+
+        public virtual Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
+            => DeleteInternalAsync(key, null, cancellationToken);
 
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {

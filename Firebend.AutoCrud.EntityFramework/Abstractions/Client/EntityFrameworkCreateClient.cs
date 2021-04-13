@@ -28,9 +28,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _exceptionHandler = exceptionHandler;
         }
 
-        public virtual async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
+        protected virtual async Task<TEntity> AddInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
         {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
+
             var set = GetDbSet(context);
 
             if (entity is IModifiedEntity modified)
@@ -66,8 +67,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return savedEntity;
         }
 
-        public Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
-            => throw new NotImplementedException(); //todo
+        public virtual Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)
+            => AddInternalAsync(entity, null, cancellationToken);
+
+        public virtual Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
+            => AddInternalAsync(entity, transaction, cancellationToken);
 
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {

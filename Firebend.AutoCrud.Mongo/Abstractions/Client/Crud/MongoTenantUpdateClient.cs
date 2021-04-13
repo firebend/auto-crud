@@ -36,11 +36,28 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _tenantEntityProvider = tenantEntityProvider;
         }
 
+
+        private static JsonPatchDocument<TEntity> RemoveTenantId(JsonPatchDocument<TEntity> jsonPatchDocument)
+        {
+            jsonPatchDocument?.Operations.RemoveAll(x => x.path == "/tenantId");
+
+            return jsonPatchDocument;
+        }
+
         public override Task<TEntity> UpdateAsync(TKey id,
             JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken = default)
         {
-            patch?.Operations.RemoveAll(x => x.path == "/tenantId");
+            patch = RemoveTenantId(patch);
+            return base.UpdateAsync(id, patch, cancellationToken);
+        }
+
+        public override Task<TEntity> UpdateAsync(TKey id,
+            JsonPatchDocument<TEntity> patch,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
+        {
+            patch = RemoveTenantId(patch);
             return base.UpdateAsync(id, patch, cancellationToken);
         }
 
@@ -55,11 +72,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new[] { tenantFilter };
         }
 
+
         protected override async Task<TEntity> UpdateInternalAsync(TEntity entity,
             Expression<Func<TEntity, bool>> filter,
             bool doUpsert,
-            CancellationToken cancellationToken,
-            JsonPatchDocument<TEntity> patchDocument = null)
+            IEntityTransaction entityTransaction,
+            JsonPatchDocument<TEntity> patchDocument,
+            CancellationToken cancellationToken)
         {
             var tenant = await _tenantEntityProvider
                 .GetTenantAsync(cancellationToken)
@@ -69,7 +88,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             patchDocument?.Operations.RemoveAll(x => x.path == "/tenantId");
 
             return await base
-                .UpdateInternalAsync(entity, filter, doUpsert, cancellationToken, patchDocument)
+                .UpdateInternalAsync(entity, filter, doUpsert, entityTransaction, patchDocument, cancellationToken)
                 .ConfigureAwait(false);
         }
     }

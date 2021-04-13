@@ -28,11 +28,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _includesProvider = includesProvider;
         }
 
-        private async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
+        protected virtual  async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
             bool asNoTracking,
             CancellationToken cancellationToken = default)
         {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            var context = await GetDbContextAsync(null, cancellationToken).ConfigureAwait(false);
 
             var query = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken);
 

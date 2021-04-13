@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.EntityFramework.Implmentations
         {
             var context = await _dbContextProvider.GetDbContextAsync(cancellationToken);
             var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
-            return new EntityFrameworkEntityTransaction(transaction, context);
+            return new EntityFrameworkEntityTransaction(transaction);
         }
     }
 }

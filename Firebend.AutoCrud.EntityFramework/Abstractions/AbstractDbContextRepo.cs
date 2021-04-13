@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.EntityFramework.Implmentations;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions
 {
@@ -25,10 +27,24 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             _provider = provider;
         }
 
-        protected async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
-            => _context ??= await _provider
-            .GetDbContextAsync(cancellationToken)
-            .ConfigureAwait(false);
+        protected async Task<IDbContext> GetDbContextAsync(IEntityTransaction transaction, CancellationToken cancellationToken)
+        {
+            _context ??= await _provider
+                .GetDbContextAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (transaction != null)
+            {
+                if (!(transaction is EntityFrameworkEntityTransaction efTransaction))
+                {
+                    throw new ArgumentException($"Transaction is not a {nameof(EntityFrameworkEntityTransaction)}", nameof(transaction));
+                }
+
+                await _context.Database.UseTransactionAsync(efTransaction.ContextTransaction.GetDbTransaction(), cancellationToken);
+            }
+
+            return _context;
+        }
 
         protected DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
 

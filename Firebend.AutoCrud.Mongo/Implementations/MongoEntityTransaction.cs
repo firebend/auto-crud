@@ -9,19 +9,19 @@ namespace Firebend.AutoCrud.Mongo.Implementations
 {
     public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
     {
-        private readonly IClientSessionHandle _clientSessionHandle;
+        public IClientSessionHandle ClientSessionHandle { get; }
 
         public MongoEntityTransaction(IClientSessionHandle clientSessionHandle)
         {
-            _clientSessionHandle = clientSessionHandle;
+            ClientSessionHandle = clientSessionHandle;
         }
 
         public Task CompleteAsync(CancellationToken cancellationToken)
-            => _clientSessionHandle.CommitTransactionAsync(cancellationToken);
+            => ClientSessionHandle.CommitTransactionAsync(cancellationToken);
 
         public Task RollbackAsync(CancellationToken cancellationToken)
-            => _clientSessionHandle.AbortTransactionAsync(cancellationToken);
+            => ClientSessionHandle.AbortTransactionAsync(cancellationToken);
 
-        protected override void DisposeManagedObjects() => _clientSessionHandle?.Dispose();
+        protected override void DisposeManagedObjects() => ClientSessionHandle?.Dispose();
     }
 }

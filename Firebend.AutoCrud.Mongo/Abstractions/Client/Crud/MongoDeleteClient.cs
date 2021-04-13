@@ -29,15 +29,29 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+        public async Task<TEntity> DeleteInternalAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
             filter = await BuildFiltersAsync(filter, cancellationToken);
 
             var mongoCollection = GetCollection();
 
-            var result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken))
-                .ConfigureAwait(false);
+
+            TEntity result;
+
+            if (transaction != null)
+            {
+                var session = UnwrapSession(transaction);
+
+                result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(session, filter, null, cancellationToken))
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken))
+                    .ConfigureAwait(false);
+            }
 
             if (result != null)
             {
@@ -48,9 +62,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         }
 
         public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default)
+            => DeleteInternalAsync(filter, null, cancellationToken);
+
+        public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
-            => throw new NotImplementedException(); //todo
+            => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
 
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {
