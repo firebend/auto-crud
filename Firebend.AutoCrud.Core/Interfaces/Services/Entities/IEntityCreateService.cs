@@ -11,6 +11,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
     {
         Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-        Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction transaction,  CancellationToken cancellationToken = default);
+        Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default);
     }
 }

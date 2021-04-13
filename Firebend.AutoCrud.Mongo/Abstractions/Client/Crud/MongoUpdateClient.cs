@@ -80,7 +80,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             Expression<Func<TEntity, bool>> filter,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
-            => UpdateInternalAsync(entity, filter,  true, transaction, null, cancellationToken);
+            => UpdateInternalAsync(entity, filter, true, transaction, null, cancellationToken);
 
         public virtual Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities,
             CancellationToken cancellationToken = default)
@@ -327,14 +327,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
                         session,
                         writes,
-                        new BulkWriteOptions {IsOrdered = true}, cancellationToken))
+                        new BulkWriteOptions { IsOrdered = true }, cancellationToken))
                     .ConfigureAwait(false);
             }
             else
             {
                 await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
                         writes,
-                        new BulkWriteOptions {IsOrdered = true}, cancellationToken))
+                        new BulkWriteOptions { IsOrdered = true }, cancellationToken))
                     .ConfigureAwait(false);
             }
 

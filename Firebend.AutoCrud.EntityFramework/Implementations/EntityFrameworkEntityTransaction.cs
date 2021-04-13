@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.EntityFramework.Implementations
 {
     public class EntityFrameworkEntityTransaction : BaseDisposable, IEntityTransaction
     {
-        public IDbContextTransaction ContextTransaction { get;}
+        public IDbContextTransaction ContextTransaction { get; }
 
         public EntityFrameworkEntityTransaction(IDbContextTransaction contextTransaction)
         {

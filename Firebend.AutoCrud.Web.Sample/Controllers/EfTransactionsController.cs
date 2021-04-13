@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
         [HttpPost]
         public async Task<ActionResult<EfPerson>> PostAsync(CancellationToken cancellationToken)
         {
-            var person = new EfPerson {FirstName = "Transaction", LastName = "Test", NickName = "Mr. T"};
+            var person = new EfPerson { FirstName = "Transaction", LastName = "Test", NickName = "Mr. T" };
             using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);
             Response.RegisterForDispose(transaction);
 
@@ -43,7 +43,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
                 createdRead = await _personRead.GetByKeyAsync(created.Id, transaction, cancellationToken);
                 await transaction.CompleteAsync(cancellationToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return BadRequest(ex.ToString());

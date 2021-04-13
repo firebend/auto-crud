@@ -63,7 +63,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
         {
-           var options = _optionsProvider.GetDbContextOptions(connection);
+            var options = _optionsProvider.GetDbContextOptions(connection);
 
             var context = await CreateContextAsync(options, cancellationToken);
 

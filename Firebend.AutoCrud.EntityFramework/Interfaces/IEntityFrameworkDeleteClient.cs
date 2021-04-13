@@ -17,6 +17,6 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
 
         Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
 
-        Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction,  CancellationToken cancellationToken);
+        Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
     }
 }

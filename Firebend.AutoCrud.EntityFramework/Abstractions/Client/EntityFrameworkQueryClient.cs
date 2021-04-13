@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _includesProvider = includesProvider;
         }
 
-        protected virtual  async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
+        protected virtual async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
             bool asNoTracking,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
@@ -79,7 +79,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, true,  entityTransaction, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
             var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
             return count;
         }

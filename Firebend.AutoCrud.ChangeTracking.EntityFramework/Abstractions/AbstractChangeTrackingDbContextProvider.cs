@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             _connectionStringProvider = connectionStringProvider;
         }
 
-        private async Task<IDbContext> GetDbContextAsync(DbContextOptions options,  CancellationToken cancellationToken)
+        private async Task<IDbContext> GetDbContextAsync(DbContextOptions options, CancellationToken cancellationToken)
         {
             var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
 
