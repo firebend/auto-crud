@@ -66,10 +66,24 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public Task<TEntity> UpsertAsync(TEntity entity, CancellationToken cancellationToken = default) =>
             UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, cancellationToken);
 
-        public Task<TEntity> UpsertAsync(TEntity entity, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) =>
-            UpdateInternalAsync(entity, filter, true, cancellationToken);
+        public Task<TEntity> UpsertAsync(TEntity entity,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();// todo
 
-        public async Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities, CancellationToken cancellationToken = default)
+        public Task<TEntity> UpsertAsync(TEntity entity,
+            Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default)
+            => UpdateInternalAsync(entity, filter, true, cancellationToken);
+
+        public Task<TEntity> UpsertAsync(TEntity entity,
+            Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
+            => throw new NotImplementedException(); //todo
+
+        public async Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities,
+            CancellationToken cancellationToken = default)
         {
             var collection = GetCollection();
 
@@ -91,6 +105,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             return new List<TEntity>();
         }
+
+        public Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
+            => throw new NotImplementedException(); //todo
 
         public async Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities,
             Expression<Func<TEntity, TOut>> projection,
@@ -118,6 +137,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new List<TOut>();
         }
 
+        public Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities, Expression<Func<TEntity, TOut>> projection, IEntityTransaction transaction, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
         public virtual async Task<TEntity> UpdateAsync(TKey id, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
         {
             var mongoCollection = GetCollection();
@@ -138,6 +159,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             return await UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, cancellationToken).ConfigureAwait(false);
         }
+
+        public Task<TEntity> UpdateAsync(TKey id,
+            JsonPatchDocument<TEntity> patch,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
+            => throw new NotImplementedException(); //todo;
 
         protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
             Expression<Func<TEntity, bool>> filter,

@@ -45,7 +45,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return new[] { tenantFilter };
         }
 
-        public override Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        public override Task<TEntity> UpdateAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
             if (jsonPatchDocument != null)
             {

@@ -29,7 +29,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public async Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default)
         {
             filter = await BuildFiltersAsync(filter, cancellationToken);
 
@@ -45,6 +46,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             return result;
         }
+
+        public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => throw new NotImplementedException(); //todo
 
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {

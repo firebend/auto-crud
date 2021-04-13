@@ -54,7 +54,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return props.ToArray();
         });
 
-        public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> UpdateAsync(TEntity entity,
+            CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
 
@@ -100,7 +101,20 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return model;
         }
 
-        public virtual async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        public Task<TEntity> UpdateAsync(TEntity entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => throw new NotImplementedException(); //todo
+
+        public Task<TEntity> UpdateAsync(TKey key,
+            JsonPatchDocument<TEntity> patch,
+            CancellationToken cancellationToken = default)
+            => throw new NotImplementedException(); //todo
+
+        public virtual async Task<TEntity> UpdateAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
             var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
             var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
@@ -142,7 +156,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return entity;
         }
 
-        private Task PublishDomainEventAsync(TEntity previous, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
+        private Task PublishDomainEventAsync(TEntity previous,
+            JsonPatchDocument<TEntity> patch,
+            CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher != null && !_isDefaultPublisher)
             {

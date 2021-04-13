@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
@@ -24,5 +26,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 
         public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default) =>
             _readClient.GetAllAsync(null, cancellationToken);
+
+        public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+            => _readClient.ExistsAsync(filter, cancellationToken);
+
+        public Task<TEntity> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+            => _readClient.GetFirstOrDefaultAsync(filter, cancellationToken);
     }
 }

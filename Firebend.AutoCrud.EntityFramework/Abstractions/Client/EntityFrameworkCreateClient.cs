@@ -66,6 +66,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return savedEntity;
         }
 
+        public Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
+            => throw new NotImplementedException(); //todo
+
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher == null || _domainEventPublisher is DefaultEntityDomainEventPublisher)

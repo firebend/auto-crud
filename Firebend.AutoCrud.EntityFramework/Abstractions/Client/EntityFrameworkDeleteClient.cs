@@ -95,6 +95,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return list;
         }
 
+        public Task<TEntity> DeleteAsync(TKey filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken)
+            => throw new NotImplementedException(); //todo
+
         private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher == null || _domainEventPublisher is DefaultEntityDomainEventPublisher)
