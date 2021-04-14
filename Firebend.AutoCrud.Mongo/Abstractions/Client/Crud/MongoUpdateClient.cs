@@ -250,14 +250,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             {
                 patchDocument ??= _jsonPatchDocumentGenerator.Generate(original, modified);
 
-                await PublishUpdatedDomainEventAsync(original, patchDocument, cancellationToken).ConfigureAwait(false);
+                await PublishUpdatedDomainEventAsync(original, patchDocument, transaction, cancellationToken).ConfigureAwait(false);
 
                 return result;
             }
 
             if (doUpsert)
             {
-                await PublishAddedDomainEventAsync(result, cancellationToken).ConfigureAwait(false);
+                await PublishAddedDomainEventAsync(result, transaction, cancellationToken).ConfigureAwait(false);
 
                 return result;
             }
@@ -341,7 +341,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return ids;
         }
 
-        private Task PublishUpdatedDomainEventAsync(TEntity previous, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
+        private Task PublishUpdatedDomainEventAsync(TEntity previous,
+            JsonPatchDocument<TEntity> patch,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher != null && !_isDefaultPublisher)
             {
@@ -352,13 +355,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     EventContext = _domainEventContextProvider?.GetContext()
                 };
 
-                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
+                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
             }
 
             return Task.CompletedTask;
         }
 
-        private Task PublishAddedDomainEventAsync(TEntity entity, CancellationToken cancellationToken = default)
+        private Task PublishAddedDomainEventAsync(TEntity entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher == null || _isDefaultPublisher)
             {
@@ -367,7 +372,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = entity, EventContext = _domainEventContextProvider?.GetContext() };
 
-            return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
+            return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, entityTransaction, cancellationToken);
 
         }
     }

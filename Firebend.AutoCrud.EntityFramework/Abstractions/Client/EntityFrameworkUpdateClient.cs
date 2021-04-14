@@ -94,7 +94,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 }
             }
 
-            await PublishDomainEventAsync(original, jsonPatchDocument, cancellationToken);
+            await PublishDomainEventAsync(original, jsonPatchDocument, entityTransaction, cancellationToken);
 
             return entity;
         }
@@ -144,7 +144,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 jsonPatchDocument = _jsonPatchDocumentGenerator.Generate(original, model);
             }
 
-            await PublishDomainEventAsync(original, jsonPatchDocument, cancellationToken);
+            await PublishDomainEventAsync(original, jsonPatchDocument, transaction, cancellationToken);
 
             return model;
         }
@@ -171,6 +171,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         private Task PublishDomainEventAsync(TEntity previous,
             JsonPatchDocument<TEntity> patch,
+            IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher != null && !_isDefaultPublisher)
@@ -182,7 +183,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     EventContext = _domainEventContextProvider?.GetContext()
                 };
 
-                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
+                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, transaction, cancellationToken);
             }
 
             return Task.CompletedTask;

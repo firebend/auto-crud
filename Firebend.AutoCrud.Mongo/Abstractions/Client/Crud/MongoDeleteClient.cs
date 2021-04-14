@@ -55,7 +55,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (result != null)
             {
-                await PublishDomainEventAsync(result, cancellationToken).ConfigureAwait(false);
+                await PublishDomainEventAsync(result, transaction, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
@@ -70,7 +70,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             CancellationToken cancellationToken = default)
             => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
 
-        private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
+        private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
             if (_entityDomainEventPublisher == null || _entityDomainEventPublisher is DefaultEntityDomainEventPublisher)
             {
@@ -79,7 +79,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
-            return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
+            return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, transaction, cancellationToken);
         }
     }
 }

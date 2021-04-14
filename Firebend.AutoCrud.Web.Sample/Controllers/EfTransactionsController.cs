@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Mvc;

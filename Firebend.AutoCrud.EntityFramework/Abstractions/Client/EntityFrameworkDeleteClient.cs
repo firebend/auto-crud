@@ -64,7 +64,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            await PublishDomainEventAsync(entity, cancellationToken).ConfigureAwait(false);
+            await PublishDomainEventAsync(entity, transaction, cancellationToken).ConfigureAwait(false);
 
             return entity;
         }
@@ -90,7 +90,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             await context.SaveChangesAsync(cancellationToken);
 
-            var tasks = list.Select(entity => PublishDomainEventAsync(entity, cancellationToken)).ToList();
+            var tasks = list.Select(entity => PublishDomainEventAsync(entity, transaction, cancellationToken)).ToList();
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -114,7 +114,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public virtual Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
             => DeleteInternalAsync(key, null, cancellationToken);
 
-        private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
+        private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher == null || _domainEventPublisher is DefaultEntityDomainEventPublisher)
             {
@@ -123,7 +123,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
-            return _domainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
+            return _domainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, transaction, cancellationToken);
         }
     }
 }
