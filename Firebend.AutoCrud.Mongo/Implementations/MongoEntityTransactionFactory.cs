@@ -21,8 +21,8 @@ namespace Firebend.AutoCrud.Mongo.Implementations
 
         public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
         {
-            var transactionOptions =  new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority);
-            var sessionOptions = new ClientSessionOptions {DefaultTransactionOptions = transactionOptions};
+            var transactionOptions = new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority);
+            var sessionOptions = new ClientSessionOptions { DefaultTransactionOptions = transactionOptions };
             var session = await Client.StartSessionAsync(sessionOptions, cancellationToken);
             session.StartTransaction(transactionOptions);
             return new MongoEntityTransaction(session, _outbox);

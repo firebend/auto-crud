@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
 
             if (!_enrollments.ContainsKey(transactionId))
             {
-                _enrollments[transactionId] = new List<IEntityTransactionOutboxEnrollment> {enrollment};
+                _enrollments[transactionId] = new List<IEntityTransactionOutboxEnrollment> { enrollment };
                 return;
             }
 
@@ -50,7 +50,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
                         await x.ActAsync(cancellationToken);
                         return null;
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         return ex;
                     }

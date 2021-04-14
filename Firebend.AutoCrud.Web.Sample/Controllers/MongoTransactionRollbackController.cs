@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
         [HttpPost]
         public async Task<ActionResult<EfPerson>> PostAsync(CancellationToken cancellationToken)
         {
-            var person = new MongoTenantPerson { FirstName = "Transaction", LastName = "Test", IgnoreMe = "Mr T."};
+            var person = new MongoTenantPerson { FirstName = "Transaction", LastName = "Test", IgnoreMe = "Mr T." };
 
             using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);
             Response.RegisterForDispose(transaction);

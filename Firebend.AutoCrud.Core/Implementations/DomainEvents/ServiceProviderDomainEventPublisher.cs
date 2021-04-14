@@ -89,7 +89,7 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
                         await func(x, domainEvent, cancellationToken);
                         return null;
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         return ex;
                     }
