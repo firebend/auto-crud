@@ -16,6 +16,13 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
         public async Task AddEnrollmentAsync(Guid transactionId, IEntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
         {
             using var loc = await new AsyncDuplicateLock().LockAsync(transactionId, cancellationToken);
+
+            if (!_enrollments.ContainsKey(transactionId))
+            {
+                _enrollments[transactionId] = new List<IEntityTransactionOutboxEnrollment> {enrollment};
+                return;
+            }
+
             _enrollments[transactionId] ??= new List<IEntityTransactionOutboxEnrollment>();
             _enrollments[transactionId].Add(enrollment);
         }

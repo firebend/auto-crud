@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         {
             ClientSessionHandle = clientSessionHandle;
             Outbox = outbox;
-            Id = new Guid();
+            Id = Guid.NewGuid();
         }
 
         public Guid Id { get; }

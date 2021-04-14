@@ -55,7 +55,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
                 ReadRandom = new GetPersonViewModel(read),
                 Created = new GetPersonViewModel(created),
                 CreatedRead = new GetPersonViewModel(createdRead),
-                ReadAgain = new GetPersonViewModel(readAgain),
+                ReadAgain = readAgain,
             });
         }
     }
