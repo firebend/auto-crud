@@ -15,6 +15,9 @@ namespace Firebend.AutoCrud.Generator.Implementations
 {
     public abstract class EntityCrudGenerator : IEntityCrudGenerator
     {
+        private readonly object _lock = new();
+        private bool _isGenerated;
+
         private readonly IDynamicClassGenerator _classGenerator;
 
         protected EntityCrudGenerator(IDynamicClassGenerator classGenerator, IServiceCollection serviceCollection)
@@ -33,6 +36,27 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         public IServiceCollection Generate()
         {
+            if (_isGenerated)
+            {
+                return ServiceCollection;
+            }
+
+            lock (_lock)
+            {
+                if (_isGenerated)
+                {
+                    return ServiceCollection;
+                }
+
+                OnGenerate();
+                _isGenerated = true;
+                return ServiceCollection;
+
+            }
+        }
+
+        private void OnGenerate()
+        {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -48,8 +72,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
             stopwatch.Stop();
 
             Console.WriteLine($"All entities generated in {stopwatch.ElapsedMilliseconds} (ms)");
-
-            return ServiceCollection;
         }
 
         protected virtual void Generate(IServiceCollection serviceCollection, BaseBuilder builder)
