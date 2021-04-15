@@ -56,7 +56,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     {
                         await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         _logger.LogError(ex, "Fail to call migrations");
                     }
