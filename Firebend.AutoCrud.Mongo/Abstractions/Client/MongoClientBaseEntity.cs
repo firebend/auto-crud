@@ -83,19 +83,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
         protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken) =>
             Task.FromResult<IEnumerable<Expression<Func<TEntity, bool>>>>(null);
 
-        protected virtual IClientSessionHandle UnwrapSession(IEntityTransaction entityTransaction)
+        protected virtual IClientSessionHandle UnwrapSession(IEntityTransaction entityTransaction) => entityTransaction switch
         {
-            if (entityTransaction == null)
-            {
-                return null;
-            }
-
-            if (entityTransaction is MongoEntityTransaction mongoTransaction)
-            {
-                return mongoTransaction.ClientSessionHandle;
-            }
-
-            throw new ArgumentException($"Is not a {nameof(MongoEntityTransaction)}", nameof(entityTransaction));
-        }
+            null => null,
+            MongoEntityTransaction mongoTransaction => mongoTransaction.ClientSessionHandle,
+            _ => throw new ArgumentException($"Is not a {nameof(MongoEntityTransaction)}", nameof(entityTransaction))
+        };
     }
 }

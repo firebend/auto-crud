@@ -86,7 +86,7 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
                 {
                     try
                     {
-                        await func(x, domainEvent, cancellationToken);
+                        await func(x, domainEvent, cancellationToken).ConfigureAwait(false);
                         return null;
                     }
                     catch (Exception ex)
@@ -95,7 +95,9 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
                     }
                 });
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task
+                .WhenAll(tasks)
+                .ConfigureAwait(false);
 
             foreach (var subscriber in subscribersArray)
             {

@@ -47,10 +47,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public override Task<TEntity> UpdateAsync(TKey id,
             JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken = default)
-        {
-            patch = RemoveTenantId(patch);
-            return base.UpdateAsync(id, patch, cancellationToken);
-        }
+            => UpdateAsync(id, patch, null, cancellationToken);
 
         public override Task<TEntity> UpdateAsync(TKey id,
             JsonPatchDocument<TEntity> patch,
@@ -58,7 +55,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             CancellationToken cancellationToken = default)
         {
             patch = RemoveTenantId(patch);
-            return base.UpdateAsync(id, patch, cancellationToken);
+            return base.UpdateAsync(id, patch, transaction, cancellationToken);
         }
 
         protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(
@@ -78,6 +75,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             bool doUpsert,
             IEntityTransaction entityTransaction,
             JsonPatchDocument<TEntity> patchDocument,
+            TEntity original,
             CancellationToken cancellationToken)
         {
             var tenant = await _tenantEntityProvider
@@ -85,10 +83,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 .ConfigureAwait(false);
 
             entity.TenantId = tenant.TenantId;
-            patchDocument?.Operations.RemoveAll(x => x.path == "/tenantId");
+            patchDocument = RemoveTenantId(patchDocument);
 
             return await base
-                .UpdateInternalAsync(entity, filter, doUpsert, entityTransaction, patchDocument, cancellationToken)
+                .UpdateInternalAsync(entity, filter, doUpsert, entityTransaction, patchDocument, original, cancellationToken)
                 .ConfigureAwait(false);
         }
     }

@@ -61,26 +61,26 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         });
 
         public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, null, null, cancellationToken);
+            UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, null, null, null, cancellationToken);
 
         public virtual Task<TEntity> UpsertAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, null, null, cancellationToken);
+            UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, null, null, null, cancellationToken);
 
         public virtual Task<TEntity> UpsertAsync(TEntity entity,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
-            => UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, transaction, null, cancellationToken);
+            => UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, transaction, null, null, cancellationToken);
 
         public virtual Task<TEntity> UpsertAsync(TEntity entity,
             Expression<Func<TEntity, bool>> filter,
             CancellationToken cancellationToken = default)
-            => UpdateInternalAsync(entity, filter, true, null, null, cancellationToken);
+            => UpdateInternalAsync(entity, filter, true, null, null, null, cancellationToken);
 
         public virtual Task<TEntity> UpsertAsync(TEntity entity,
             Expression<Func<TEntity, bool>> filter,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
-            => UpdateInternalAsync(entity, filter, true, transaction, null, cancellationToken);
+            => UpdateInternalAsync(entity, filter, true, transaction, null, null, cancellationToken);
 
         public virtual Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities,
             CancellationToken cancellationToken = default)
@@ -153,20 +153,21 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            var mongoCollection = GetCollection();
-
-            var filter = await BuildFiltersAsync(x => x.Id.Equals(id), cancellationToken)
+            var queryable = await GetFilteredCollectionAsync(
+                entities => entities.Where(x => x.Id.Equals(id)),
+                        transaction,
+                        cancellationToken)
                 .ConfigureAwait(false);
 
-            var entity = await mongoCollection
-                .AsQueryable()
-                .Where(filter)
-                .FirstOrDefaultAsync(cancellationToken);
+            var entity = await queryable.FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             if (entity == null)
             {
                 return null;
             }
+
+            var original = entity.Clone();
 
             patch.ApplyTo(entity);
 
@@ -175,6 +176,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 false,
                 transaction,
                 patch,
+                original,
                 cancellationToken).ConfigureAwait(false);
         }
 
@@ -183,6 +185,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             bool doUpsert,
             IEntityTransaction transaction,
             JsonPatchDocument<TEntity> patchDocument,
+            TEntity original,
             CancellationToken cancellationToken)
         {
             var filters = await BuildFiltersAsync(filter, cancellationToken).ConfigureAwait(false);
@@ -196,23 +199,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 modifiedEntity.ModifiedDate = now;
             }
 
-
-            TEntity original;
-            IClientSessionHandle session = null;
-
-            if (transaction != null)
+            if (original == null)
             {
-                session = UnwrapSession(transaction);
+                var query = await GetFilteredCollectionAsync(
+                    entities => entities.Where(x => x.Id.Equals(entity.Id)),
+                    transaction,
+                    cancellationToken);
 
-                original = await RetryErrorAsync(() =>
-                        mongoCollection.Find(session, filtersDefinition).SingleOrDefaultAsync(cancellationToken))
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                original = await RetryErrorAsync(() =>
-                        mongoCollection.Find(filtersDefinition).SingleOrDefaultAsync(cancellationToken))
-                    .ConfigureAwait(false);
+                original = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
             }
 
             var modified = original == null ? new TEntity() : original.Clone();
@@ -225,6 +219,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             }
 
             TEntity result;
+            var session = UnwrapSession(transaction);
 
             if (session != null)
             {
