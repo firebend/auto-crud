@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
@@ -20,7 +21,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
         protected AbstractEntityDeleteController(IEntityDeleteService<TKey, TEntity> deleteService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(entityKeyParser)
+            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
         {
             _deleteService = deleteService;
             _viewModelMapper = viewModelMapper;
@@ -30,7 +32,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Deletes {entityNamePlural}.")]
         [SwaggerResponse(200, "A {entityName} with the given key was deleted.")]
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public virtual async Task<ActionResult<TViewModel>> Delete(
             [Required][FromRoute] string id,
@@ -42,7 +44,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (!key.HasValue)
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var deleted = await _deleteService

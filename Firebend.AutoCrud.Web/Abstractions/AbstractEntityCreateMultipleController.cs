@@ -9,11 +9,12 @@ using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.AutoCrud.Web.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel> : ControllerBase
+    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TMultipleViewModel : class
@@ -28,7 +29,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         protected AbstractEntityCreateMultipleController(IEntityCreateService<TKey, TEntity> createService,
             IEntityValidationService<TKey, TEntity> entityValidationService,
             ICreateMultipleViewModelMapper<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel> multipleMapper,
-            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper)
+            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _createService = createService;
             _entityValidationService = entityValidationService;
@@ -40,7 +42,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [Route("multiple")]
         [SwaggerOperation("Creates multiple {entityNamePlural}")]
         [SwaggerResponse(201, "Multiple {entityNamePlural} were created successfully.")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public virtual async Task<ActionResult<CreateMultipleActionResult<TEntity, TReadViewModel>>> PostMultiple(
             TMultipleViewModelWrapper body,
@@ -51,7 +53,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             if (body?.Entities?.IsEmpty() ?? true)
             {
                 ModelState.AddModelError("body", "A body is required");
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var createdEntities = new List<TReadViewModel>();

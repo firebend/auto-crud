@@ -7,12 +7,13 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch, TViewModel> : ControllerBase
+    public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch, TViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest
@@ -24,7 +25,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
         protected AbstractEntitySearchController(IEntitySearchService<TKey, TEntity, TSearch> searchService,
             IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
-            IMaxPageSize<TKey, TEntity> maxPageSize)
+            IMaxPageSize<TKey, TEntity> maxPageSize,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _searchService = searchService;
             _viewModelMapper = viewModelMapper;
@@ -34,7 +36,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [HttpGet]
         [SwaggerOperation("Searches for {entityNamePlural}")]
         [SwaggerResponse(200, "All the {entityNamePlural} that match the search criteria.")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         public virtual async Task<ActionResult<EntityPagedResponse<TViewModel>>> Search(
             [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)
@@ -45,14 +47,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
             {
                 ModelState.AddModelError(nameof(searchRequest), "Search parameters are required.");
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (!searchRequest.PageNumber.HasValue)
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), "Page number must have a value");
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var pageSize = _maxPageSize?.MaxPageSize ?? 100;
@@ -61,7 +63,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), $"Page size must be between 1 and {pageSize}");
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (searchRequest is IModifiedEntitySearchRequest modifiedEntitySearchRequest)
@@ -72,7 +74,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     {
                         ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.CreatedStartDate), "Created date cannot be after modified date.");
 
-                        return BadRequest(ModelState);
+                        return GetInvalidModelStateResult();
                     }
                 }
 
@@ -82,7 +84,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     {
                         ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.CreatedStartDate), "Created start date must be before end date.");
 
-                        return BadRequest(ModelState);
+                        return GetInvalidModelStateResult();
                     }
                 }
 
@@ -92,7 +94,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     {
                         ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.ModifiedStartDate), "Modified start date must be before end date.");
 
-                        return BadRequest(ModelState);
+                        return GetInvalidModelStateResult();
                     }
                 }
             }

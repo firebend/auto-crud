@@ -7,6 +7,7 @@ using Firebend.AutoCrud.CustomFields.Web.Models;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
@@ -18,7 +19,8 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         private readonly ICustomFieldsCreateService<TKey, TEntity> _createService;
 
         protected AbstractCustomFieldsCreateController(IEntityKeyParser<TKey, TEntity> keyParser,
-            ICustomFieldsCreateService<TKey, TEntity> createService) : base(keyParser)
+            ICustomFieldsCreateService<TKey, TEntity> createService,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
         {
             _createService = createService;
         }
@@ -26,7 +28,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [HttpPost("{entityId}/custom-fields")]
         [SwaggerOperation("Creates a custom field for a given {entityName}")]
         [SwaggerResponse(201, "A custom field  was created successfully..")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> PostAsync(
             [FromRoute] string entityId,
@@ -37,21 +39,21 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (!ModelState.IsValid || !TryValidateModel(viewModel))
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var rootKey = GetKey(entityId);
 
             if (rootKey == null)
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var entity = new CustomFieldsEntity<TKey> { Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value };
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var result = await _createService

@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
@@ -20,7 +21,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
         protected AbstractEntityReadController(IEntityReadService<TKey, TEntity> readService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper) : base(entityKeyParser)
+            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
         {
             _readService = readService;
             _viewModelMapper = viewModelMapper;
@@ -41,7 +43,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (!key.HasValue)
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var entity = await _readService

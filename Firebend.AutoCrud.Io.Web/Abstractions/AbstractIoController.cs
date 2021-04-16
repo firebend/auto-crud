@@ -6,13 +6,15 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Io.Models;
 using Firebend.AutoCrud.Io.Web.Interfaces;
+using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Io.Web.Abstractions
 {
-    public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : ControllerBase
+    public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : AbstractEntityControllerBase
         where TSearch : EntitySearchRequest
         where TKey : struct
         where TEntity : IEntity<TKey>
@@ -22,7 +24,8 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         private readonly IMaxExportPageSize<TKey, TEntity> _maxExportPageSize;
 
         protected AbstractIoController(IEntityExportControllerService<TKey, TEntity, TSearch, TMapped> exportService,
-            IMaxExportPageSize<TKey, TEntity> maxExportPageSize = null)
+            IOptions<ApiBehaviorOptions> apiOptions,
+            IMaxExportPageSize<TKey, TEntity> maxExportPageSize = null) : base(apiOptions)
         {
             _exportService = exportService;
             _maxExportPageSize = maxExportPageSize;
@@ -31,7 +34,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         [HttpGet("export/{exportType}")]
         [SwaggerOperation("Exports {entityNamePlural} to a file.")]
         [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         public virtual async Task<IActionResult> Search(
             [Required][FromRoute] string exportType,
             [Required][FromQuery] string filename,
@@ -43,38 +46,37 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             if (string.IsNullOrWhiteSpace(filename))
             {
                 ModelState.AddModelError(nameof(filename), $"{nameof(filename)} is invalid.");
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (string.IsNullOrWhiteSpace(exportType))
             {
                 ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is required.");
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (searchRequest.PageNumber.HasValue && searchRequest.PageNumber <= 0)
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), $"{nameof(searchRequest.PageNumber)} must be greater than zero.");
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (searchRequest.PageSize.HasValue && searchRequest.PageSize <= 0)
             {
                 ModelState.AddModelError(nameof(searchRequest.PageSize), $"{nameof(searchRequest.PageSize)} must be greater than zero.");
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if ((searchRequest.PageSize ?? 0) > 0 && (searchRequest.PageNumber ?? 0) <= 0)
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), $"{nameof(searchRequest.PageNumber)} must be greater than zero.");
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if ((_maxExportPageSize?.MaxPageSize ?? 0) > 0 && !searchRequest.PageSize.IsBetween(1, _maxExportPageSize.MaxPageSize))
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), $"Page size must be between 1 and {_maxExportPageSize.MaxPageSize}");
-
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var entityExportType = exportType.ParseEnum<EntityFileType>();
@@ -82,7 +84,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             if (!entityExportType.HasValue || entityExportType.Value == EntityFileType.Unknown)
             {
                 ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is invalid");
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var fileResult = await _exportService.ExportEntitiesAsync(

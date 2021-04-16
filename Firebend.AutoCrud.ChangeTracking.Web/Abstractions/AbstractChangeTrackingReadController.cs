@@ -10,6 +10,7 @@ using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
@@ -26,7 +27,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
         protected AbstractChangeTrackingReadController(IChangeTrackingReadService<TKey, TEntity> read,
             IEntityKeyParser<TKey, TEntity> keyParser,
             IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
-            IMaxPageSize<TKey, TEntity> maxPageSize) : base(keyParser)
+            IMaxPageSize<TKey, TEntity> maxPageSize,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
         {
             _read = read;
             _viewModelMapper = viewModelMapper;
@@ -55,14 +57,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
             {
                 ModelState.AddModelError(nameof(changeSearchRequest), "Search parameters are required.");
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (!changeSearchRequest.PageNumber.HasValue)
             {
                 ModelState.AddModelError(nameof(changeSearchRequest.PageNumber), "Page number must have a value");
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var maxPageSize = _maxPageSize?.MaxPageSize ?? 100;
@@ -71,7 +73,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
             {
                 ModelState.AddModelError(nameof(changeSearchRequest.PageNumber), $"Page size must be between 1 and {maxPageSize}");
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             changeSearchRequest.DoCount ??= true;

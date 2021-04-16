@@ -29,7 +29,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [HttpGet("all")]
         [SwaggerOperation("Gets all {entityNamePlural}")]
         [SwaggerResponse(200, "All the {entityNamePlural}.")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         public virtual async Task<ActionResult<IEnumerable<TViewModel>>> GetAll(CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_readService);
