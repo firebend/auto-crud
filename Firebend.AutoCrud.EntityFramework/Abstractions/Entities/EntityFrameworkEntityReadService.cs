@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
@@ -22,8 +24,28 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
             => _readClient.GetFirstOrDefaultAsync(x => x.Id.Equals(key), true, cancellationToken);
 
+        public Task<TEntity> GetByKeyAsync(TKey key, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+            => _readClient.GetFirstOrDefaultAsync(x => x.Id.Equals(key), true, transaction, cancellationToken);
+
         public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
             => _readClient.GetAllAsync(null, true, cancellationToken);
+
+        public Task<List<TEntity>> GetAllAsync(IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+            => _readClient.GetAllAsync(null, true, entityTransaction, cancellationToken);
+
+        public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+            => _readClient.ExistsAsync(filter, cancellationToken);
+
+        public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+            => _readClient.ExistsAsync(filter, transaction, cancellationToken);
+
+        public Task<TEntity> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+            => FindFirstOrDefaultAsync(filter, null, cancellationToken);
+
+        public Task<TEntity> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => _readClient.GetFirstOrDefaultAsync(filter, true, entityTransaction, cancellationToken);
 
         protected override void DisposeManagedObjects() => _readClient?.Dispose();
     }

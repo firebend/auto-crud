@@ -9,5 +9,7 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TKey : struct
     {
         Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+
+        Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default);
     }
 }

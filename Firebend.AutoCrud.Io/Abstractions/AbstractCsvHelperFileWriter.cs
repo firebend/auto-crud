@@ -24,35 +24,37 @@ namespace Firebend.AutoCrud.Io.Abstractions
         {
             var stream = AutoCrudPooledStream.GetStream("AutoCrudPooledStreamExport");
 
-            var (serializer, textWriter) = GetSerializer(stream);
-
-            if (serializer == null)
-            {
-                throw new Exception($"Could not find serializer. Type: {FileType}");
-            }
-
             var fieldArray = fields
                 .OrderBy(x => x.FieldIndex)
                 .ToArray();
 
-            var csvWriter = new CsvWriter(serializer);
+            TextWriter textWriter = null;
+
+            if (FileType == EntityFileType.Csv)
+            {
+                textWriter = new StreamWriter(stream);
+            }
+
+            IWriter writer = FileType == EntityFileType.Csv ?
+                new CsvWriter(textWriter, GetCsvConfiguration())
+                : new SpreadsheetWriter(stream, "Export", GetCsvConfiguration());
 
             foreach (var fileField in fieldArray)
             {
-                csvWriter.WriteField(fileField.FieldName);
+                writer.WriteField(fileField.FieldName);
             }
 
-            await csvWriter.NextRecordAsync().ConfigureAwait(false);
+            await writer.NextRecordAsync().ConfigureAwait(false);
 
             foreach (var record in records)
             {
                 foreach (var field in fieldArray)
                 {
                     var value = field.Writer(record);
-                    csvWriter.WriteField(value);
+                    writer.WriteField(value);
                 }
 
-                await csvWriter.NextRecordAsync().ConfigureAwait(false);
+                await writer.NextRecordAsync().ConfigureAwait(false);
             }
 
             if (textWriter != null)
@@ -60,17 +62,17 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 await textWriter.FlushAsync().ConfigureAwait(false);
             }
 
-            if (serializer is SpreadsheetSerializer spreadsheetSerializer)
+            if (writer is SpreadsheetWriter excelWriter)
             {
-                spreadsheetSerializer.SetWidths();
-                spreadsheetSerializer.SaveWorkbook();
+                excelWriter.SetWidths();
+                excelWriter.SaveWorkbook();
             }
 
             stream.Seek(0, SeekOrigin.Begin);
 
             var bytes = stream.ToArray();
 
-            await DisposeAll(csvWriter, serializer, textWriter, stream);
+            await DisposeAll(writer, textWriter, stream);
 
             return bytes;
         }
@@ -79,6 +81,11 @@ namespace Firebend.AutoCrud.Io.Abstractions
         {
             foreach (var disposable in disposables)
             {
+                if (disposable == null)
+                {
+                    continue;
+                }
+
                 try
                 {
                     await disposable.DisposeAsync();
@@ -90,26 +97,10 @@ namespace Firebend.AutoCrud.Io.Abstractions
             }
         }
 
-        private static CsvConfiguration GetCsvConfiguration() => new(CultureInfo.InvariantCulture) { IgnoreBlankLines = true };
-
-        private (ISerializer serializer, TextWriter writer) GetSerializer(Stream stream)
+        private static CsvConfiguration GetCsvConfiguration() => new(CultureInfo.InvariantCulture)
         {
-            switch (FileType)
-            {
-                case EntityFileType.Csv:
-                {
-                    var writer = new StreamWriter(stream);
-                    var serializer = new CsvSerializer(writer, GetCsvConfiguration());
-
-                    return (serializer, writer);
-                }
-                case EntityFileType.Spreadsheet:
-                    return (new SpreadsheetSerializer(stream, "Export", false, GetCsvConfiguration()), null);
-                case EntityFileType.Unknown:
-                    return (null, null);
-                default:
-                    return (null, null);
-            }
-        }
+            IgnoreBlankLines = true,
+            LeaveOpen = true
+        };
     }
 }

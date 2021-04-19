@@ -10,9 +10,13 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.CustomFields
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
+        Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
+            CustomFieldsEntity<TKey> entity,
+            CancellationToken cancellationToken = default);
 
         Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
             CustomFieldsEntity<TKey> entity,
+            IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default);
     }
 }

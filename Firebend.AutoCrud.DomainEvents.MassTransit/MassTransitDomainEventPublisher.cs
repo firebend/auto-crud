@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using MassTransit;
@@ -15,16 +16,33 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit
             _bus = bus;
         }
 
-        public Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+        public Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
             where TEntity : class
-            => _bus.Publish(domainEvent, cancellationToken);
+            => PublishAsync(domainEvent, transaction, cancellationToken);
 
-        public Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+        public Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
             where TEntity : class
-            => _bus.Publish(domainEvent, cancellationToken);
+            => PublishAsync(domainEvent, transaction, cancellationToken);
 
-        public Task PublishEntityUpdatedEventAsync<TEntity>(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+        public Task PublishEntityUpdatedEventAsync<TEntity>(EntityUpdatedDomainEvent<TEntity> domainEvent,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
             where TEntity : class
-            => _bus.Publish(domainEvent, cancellationToken);
+            => PublishAsync(domainEvent, transaction, cancellationToken);
+
+        private Task PublishAsync<TDomainEvent>(TDomainEvent domainEvent, IEntityTransaction transaction, CancellationToken cancellationToken)
+        {
+            if (transaction == null)
+            {
+                return _bus.Publish(domainEvent, cancellationToken);
+            }
+
+            return transaction.AddFunctionEnrollmentAsync(ct =>
+                _bus.Publish(domainEvent, cancellationToken), cancellationToken);
+        }
     }
 }

@@ -45,14 +45,30 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return new[] { tenantFilter };
         }
 
-        public override Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        private static JsonPatchDocument<TEntity> RemoveTenantId(JsonPatchDocument<TEntity> jsonPatchDocument)
         {
-            if (jsonPatchDocument != null)
-            {
-                jsonPatchDocument.Operations.RemoveAll(x => x.path == "/tenantId");
-            }
+            jsonPatchDocument?.Operations.RemoveAll(x => x.path == "/tenantId");
+
+            return jsonPatchDocument;
+        }
+
+        public override Task<TEntity> UpdateAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            CancellationToken cancellationToken = default)
+        {
+            jsonPatchDocument = RemoveTenantId(jsonPatchDocument);
 
             return base.UpdateAsync(key, jsonPatchDocument, cancellationToken);
+        }
+
+        public override Task<TEntity> UpdateAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+        {
+            jsonPatchDocument = RemoveTenantId(jsonPatchDocument);
+
+            return base.UpdateAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
         }
 
         public override async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)

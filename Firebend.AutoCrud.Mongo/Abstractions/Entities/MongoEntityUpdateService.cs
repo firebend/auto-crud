@@ -20,7 +20,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
             _updateClient = updateClient;
         }
 
-        public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public Task<TEntity> UpdateAsync(TEntity entity,
+            CancellationToken cancellationToken = default)
         {
             if (entity == null)
             {
@@ -32,7 +33,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
             return _updateClient.UpsertAsync(entity, cancellationToken);
         }
 
-        public Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
+        public Task<TEntity> UpdateAsync(TEntity entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => _updateClient.UpsertAsync(entity, entityTransaction, cancellationToken);
+
+        public Task<TEntity> PatchAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            CancellationToken cancellationToken = default)
         {
             if (key.Equals(default))
             {
@@ -41,5 +49,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 
             return _updateClient.UpdateAsync(key, jsonPatchDocument, cancellationToken);
         }
+
+        public Task<TEntity> PatchAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => _updateClient.UpdateAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
     }
 }

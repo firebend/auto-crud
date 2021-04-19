@@ -41,14 +41,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new[] { tenantFilter };
         }
 
-        public override async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        protected override async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
             var tenant = await _tenantEntityProvider
                 .GetTenantAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             entity.TenantId = tenant.TenantId;
-            return await base.CreateAsync(entity, cancellationToken).ConfigureAwait(false);
+
+            return await base.CreateInternalAsync(entity, transaction, cancellationToken);
         }
     }
 }

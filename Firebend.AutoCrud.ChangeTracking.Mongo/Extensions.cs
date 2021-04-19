@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
             where TEntity : class, IEntity<TKey>, new()
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
         {
-            if (!(configurator.Builder is MongoDbEntityBuilder<TKey, TEntity> mongoDbEntityBuilder))
+            if (configurator.Builder is not MongoDbEntityBuilder<TKey, TEntity> mongoDbEntityBuilder)
             {
                 throw new Exception($"Configuration Error! This builder is not a {nameof(MongoDbEntityBuilder<Guid, FooEntity>)}");
             }

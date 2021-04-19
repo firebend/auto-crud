@@ -10,6 +10,12 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.CustomFields
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
-        Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken = default);
+        Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
+            Guid key,
+            CancellationToken cancellationToken = default);
+        Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
+            Guid key,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
     }
 }

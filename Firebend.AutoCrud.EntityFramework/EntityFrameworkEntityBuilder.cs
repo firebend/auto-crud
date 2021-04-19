@@ -1,11 +1,14 @@
 using System;
+using System.Data.Common;
 using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.Connections;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
+using Firebend.AutoCrud.EntityFramework.Implementations;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -71,8 +74,8 @@ namespace Firebend.AutoCrud.EntityFramework
             WithRegistration<IEntityFrameworkIncludesProvider<TKey, TEntity>,
                 DefaultEntityFrameworkIncludesProvider<TKey, TEntity>>(false);
 
-            //EnsureRegistered<IDbContextConnectionStringProvider<TKey, TEntity>>();
-            //EnsureRegistered(typeof(IEntitySearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType));
+            WithRegistration<IEntityTransactionFactory<TKey, TEntity>,
+                EntityFrameworkEntityTransactionFactory<TKey, TEntity>>();
         }
 
         /// <summary>
@@ -169,9 +172,13 @@ namespace Firebend.AutoCrud.EntityFramework
         ///        .AddControllers()
         /// </code>
         /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Func<string, DbContextOptions> dbContextOptionsFunc)
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(
+            Func<string, DbContextOptions> dbContextOptionsFunc,
+            Func<DbConnection, DbContextOptions> dbContextOptionsConnectionFunc)
         {
-            WithRegistrationInstance<IDbContextOptionsProvider<TKey, TEntity>>(new DbContextOptionsProvider<TKey, TEntity>(dbContextOptionsFunc));
+            WithRegistrationInstance<IDbContextOptionsProvider<TKey, TEntity>>(
+                new DbContextOptionsProvider<TKey, TEntity>(dbContextOptionsFunc, dbContextOptionsConnectionFunc));
+
             return this;
         }
 

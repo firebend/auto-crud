@@ -39,7 +39,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [HttpPost]
         [Route("multiple")]
         [SwaggerOperation("Creates multiple {entityNamePlural}")]
-        [SwaggerResponse(201, "Multiple {entityNamePlural} were created successfully.")]
+        [SwaggerResponse(200, "Multiple {entityNamePlural} were created successfully.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
         public virtual async Task<ActionResult<CreateMultipleActionResult<TEntity, TReadViewModel>>> PostMultiple(
@@ -71,11 +71,21 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 {
                     isValid.Model = entityToCreate;
                     errorEntities.Add(isValid);
+                    continue;
                 }
 
                 if (isValid.Model != null)
                 {
                     entityToCreate = isValid.Model;
+                }
+
+                if (entityToCreate == null)
+                {
+                    var result = new ModelStateResult<TEntity>();
+                    result.AddError(nameof(TEntity), "The entity to create is null");
+                    errorEntities.Add(result);
+                    continue;
+
                 }
 
                 TEntity entity = null;
@@ -124,7 +134,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (errorEntities.Count > 0)
             {
-                return BadRequest(new { errors = errorEntities });
+                return BadRequest(new CreateMultipleActionResult<TEntity, TReadViewModel>
+                {
+                    Created = createdEntities,
+                    Errors = errorEntities
+                });
             }
 
             return BadRequest();

@@ -10,6 +10,11 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
+        Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default);
+
+        Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
     }
 }

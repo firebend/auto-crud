@@ -36,12 +36,26 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _tenantEntityProvider = tenantEntityProvider;
         }
 
+
+        private static JsonPatchDocument<TEntity> RemoveTenantId(JsonPatchDocument<TEntity> jsonPatchDocument)
+        {
+            jsonPatchDocument?.Operations.RemoveAll(x => x.path == "/tenantId");
+
+            return jsonPatchDocument;
+        }
+
         public override Task<TEntity> UpdateAsync(TKey id,
             JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken = default)
+            => UpdateAsync(id, patch, null, cancellationToken);
+
+        public override Task<TEntity> UpdateAsync(TKey id,
+            JsonPatchDocument<TEntity> patch,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
         {
-            patch?.Operations.RemoveAll(x => x.path == "/tenantId");
-            return base.UpdateAsync(id, patch, cancellationToken);
+            patch = RemoveTenantId(patch);
+            return base.UpdateAsync(id, patch, transaction, cancellationToken);
         }
 
         protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(
@@ -55,21 +69,24 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new[] { tenantFilter };
         }
 
+
         protected override async Task<TEntity> UpdateInternalAsync(TEntity entity,
             Expression<Func<TEntity, bool>> filter,
             bool doUpsert,
-            CancellationToken cancellationToken,
-            JsonPatchDocument<TEntity> patchDocument = null)
+            IEntityTransaction entityTransaction,
+            JsonPatchDocument<TEntity> patchDocument,
+            TEntity original,
+            CancellationToken cancellationToken)
         {
             var tenant = await _tenantEntityProvider
                 .GetTenantAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             entity.TenantId = tenant.TenantId;
-            patchDocument?.Operations.RemoveAll(x => x.path == "/tenantId");
+            patchDocument = RemoveTenantId(patchDocument);
 
             return await base
-                .UpdateInternalAsync(entity, filter, doUpsert, cancellationToken, patchDocument)
+                .UpdateInternalAsync(entity, filter, doUpsert, entityTransaction, patchDocument, original, cancellationToken)
                 .ConfigureAwait(false);
         }
     }

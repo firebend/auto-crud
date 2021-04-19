@@ -29,24 +29,48 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public async Task<TEntity> DeleteInternalAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
         {
             filter = await BuildFiltersAsync(filter, cancellationToken);
 
             var mongoCollection = GetCollection();
 
-            var result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken))
-                .ConfigureAwait(false);
+
+            TEntity result;
+
+            if (transaction != null)
+            {
+                var session = UnwrapSession(transaction);
+
+                result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(session, filter, null, cancellationToken))
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken))
+                    .ConfigureAwait(false);
+            }
 
             if (result != null)
             {
-                await PublishDomainEventAsync(result, cancellationToken).ConfigureAwait(false);
+                await PublishDomainEventAsync(result, transaction, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
         }
 
-        private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
+        public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default)
+            => DeleteInternalAsync(filter, null, cancellationToken);
+
+        public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
+
+        private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
             if (_entityDomainEventPublisher == null || _entityDomainEventPublisher is DefaultEntityDomainEventPublisher)
             {
@@ -55,7 +79,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
-            return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
+            return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, transaction, cancellationToken);
         }
     }
 }

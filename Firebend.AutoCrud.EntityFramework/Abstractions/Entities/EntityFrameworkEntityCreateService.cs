@@ -21,6 +21,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
             => _createClient.AddAsync(entity, cancellationToken);
 
+        public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+            => _createClient.AddAsync(entity, transaction, cancellationToken);
+
         protected override void DisposeManagedObjects() => _createClient?.Dispose();
     }
 }

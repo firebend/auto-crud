@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -21,5 +22,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 
         public Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
             => _rootProvider.GetDbContextAsync(cancellationToken);
+
+        public Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
+            => _rootProvider.GetDbContextAsync(connection, cancellationToken);
     }
 }

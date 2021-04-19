@@ -13,15 +13,44 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, bool asNoTracking, CancellationToken cancellationToken = default);
+        Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default);
 
-        Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking, CancellationToken cancellationToken = default);
+        Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
 
-        Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
+        Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking,
+            CancellationToken cancellationToken = default);
 
-        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, bool asNoTracking, CancellationToken cancellationToken = default);
+        Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
 
-        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
+        Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default);
+
+        Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
+
+        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            CancellationToken cancellationToken = default);
+
+        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            bool asNoTracking,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
 
         Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
             TSearchRequest searchRequest,

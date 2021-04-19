@@ -18,6 +18,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
             _createClient = createClient;
         }
 
-        public Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) => _createClient.CreateAsync(entity, cancellationToken);
+        public Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+            => _createClient.CreateAsync(entity, cancellationToken);
+
+        public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+            => _createClient.CreateAsync(entity, transaction, cancellationToken);
     }
 }

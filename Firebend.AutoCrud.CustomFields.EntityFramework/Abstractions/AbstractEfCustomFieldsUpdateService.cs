@@ -30,8 +30,14 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             _customFieldsStorageCreator = customFieldsStorageCreator;
         }
 
+        public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
+            CustomFieldsEntity<TKey> entity,
+            CancellationToken cancellationToken = default)
+            => UpdateAsync(rootEntityKey, entity, null, cancellationToken);
+
         public async Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
             CustomFieldsEntity<TKey> entity,
+            IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
@@ -39,16 +45,23 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             entity.CopyPropertiesTo(efEntity);
 
             var updated = await _updateClient
-                .UpdateAsync(efEntity, cancellationToken)
+                .UpdateAsync(efEntity, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var retEntity = updated?.ToCustomFields();
             return retEntity;
         }
 
+        public Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
+            Guid key,
+            JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
+            CancellationToken cancellationToken = default)
+            => PatchAsync(rootEntityKey, key, jsonPatchDocument, null, cancellationToken);
+
         public async Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
             Guid key,
             JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
@@ -67,7 +80,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             var patch = new JsonPatchDocument<TCustomFieldsEntity>(operations, new DefaultContractResolver());
 
             var updated = await _updateClient
-                .UpdateAsync(key, patch, cancellationToken)
+                .UpdateAsync(key, patch, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var retEntity = updated?.ToCustomFields();

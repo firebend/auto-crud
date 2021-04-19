@@ -63,6 +63,11 @@ namespace Firebend.AutoCrud.Web.Sample.Models
     {
         public GetPersonViewModel(EfPerson entity)
         {
+            if (entity == null)
+            {
+                return;
+            }
+
             entity.CopyPropertiesTo(this, nameof(CustomFields));
 
             CustomFields = entity.CustomFields?.Select(x => new CustomFieldsEntity<Guid>(x)).ToList();

@@ -47,6 +47,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
         private async Task<CustomFieldsEntity<TKey>> SaveAsync(
             TKey? entityKey,
             Func<TEntity, (TEntity, CustomFieldsEntity<TKey>)> updateFunc,
+            IEntityTransaction entityTransaction,
             CancellationToken cancellationToken)
         {
             if (!entityKey.HasValue || entityKey.Value.Equals(default(TKey)))
@@ -54,7 +55,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                 return null;
             }
 
-            var rootEntity = await _readService.GetByKeyAsync(entityKey.Value, cancellationToken);
+            var rootEntity = await _readService.GetByKeyAsync(entityKey.Value, entityTransaction, cancellationToken);
 
             if (rootEntity == null)
             {
@@ -71,7 +72,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 
             var entity = await _updateService.UpdateAsync(afterModified, cancellationToken).ConfigureAwait(false);
 
-            await PublishDomainEventAsync(beforeModified, cancellationToken, entity);
+            await PublishDomainEventAsync(beforeModified, entity, entityTransaction, cancellationToken);
 
             return customAttributeEntity;
         }
@@ -171,7 +172,10 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
             return (rootEntity, attribute);
         }
 
-        private Task PublishDomainEventAsync(TEntity beforeModified, CancellationToken cancellationToken, TEntity entity)
+        private Task PublishDomainEventAsync(TEntity beforeModified,
+            TEntity entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken)
         {
             if (_eventPublisher == null || _eventPublisher is DefaultEntityDomainEventPublisher)
             {
@@ -183,28 +187,57 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
             var domainEvent = new EntityUpdatedDomainEvent<TEntity>
             {
                 Previous = beforeModified,
-                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
+                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }),
                 EventContext = _domainEventContextProvider?.GetContext()
             };
 
-            return _eventPublisher?.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
+            return _eventPublisher?.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
 
         }
 
-        public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootKey, CustomFieldsEntity<TKey> entity, CancellationToken cancellationToken = default)
-            => SaveAsync(rootKey, root => AddCustomAttribute(entity, root), cancellationToken);
+        public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootKey,
+            CustomFieldsEntity<TKey> entity,
+            CancellationToken cancellationToken = default)
+            => CreateAsync(rootKey, entity, null, cancellationToken);
 
-        public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootKey, CustomFieldsEntity<TKey> entity, CancellationToken cancellationToken = default)
-            => SaveAsync(rootKey, root => UpdateCustomAttribute(entity.Id, entity, root), cancellationToken);
+        public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
+            CustomFieldsEntity<TKey> entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+        => SaveAsync(rootEntityKey, root => AddCustomAttribute(entity, root), entityTransaction, cancellationToken);
+
+        public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootKey,
+            CustomFieldsEntity<TKey> entity,
+            CancellationToken cancellationToken = default)
+            => UpdateAsync(rootKey, entity, null, cancellationToken);
+
+        public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
+            CustomFieldsEntity<TKey> entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+        => SaveAsync(rootEntityKey, root => UpdateCustomAttribute(entity.Id, entity, root), entityTransaction, cancellationToken);
 
         public Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootKey, Guid key, CancellationToken cancellationToken = default)
-            => SaveAsync(rootKey, root => RemoveCustomAttribute(key, root), cancellationToken);
+            => DeleteAsync(rootKey, key, null, cancellationToken);
+
+        public Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
+            Guid key,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => SaveAsync(rootEntityKey, root => RemoveCustomAttribute(key, root), entityTransaction, cancellationToken);
 
         public Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootKey,
             Guid key,
             JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
             CancellationToken cancellationToken = default)
-            => SaveAsync(rootKey, root => UpdateCustomAttribute(key, jsonPatchDocument, root), cancellationToken);
+            => PatchAsync(rootKey, key, jsonPatchDocument, null, cancellationToken);
+
+        public Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
+            Guid key,
+            JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => SaveAsync(rootEntityKey, root => UpdateCustomAttribute(key, jsonPatchDocument, root), entityTransaction, cancellationToken);
 
 
         protected override void DisposeManagedObjects()

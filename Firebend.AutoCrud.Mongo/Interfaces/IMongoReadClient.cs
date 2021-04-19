@@ -15,13 +15,37 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
     {
         Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
 
-        Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters, CancellationToken cancellationToken = default);
+        Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken);
 
-        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
+        Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            CancellationToken cancellationToken = default);
 
-        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
+        Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
 
-        Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken);
+
+        Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken);
+
+        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
+
+        Task<long> CountAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default);
+
+        Task<long> CountAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
 
         Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,
             TSearchRequest searchRequest,

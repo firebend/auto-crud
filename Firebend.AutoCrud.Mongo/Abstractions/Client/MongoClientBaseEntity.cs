@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -36,9 +37,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
         protected IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
 
         protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var mongoQueryable = GetCollection().AsQueryable();
+            var collection = GetCollection();
+
+            var mongoQueryable = entityTransaction == null ?
+                collection.AsQueryable() :
+                collection.AsQueryable(UnwrapSession(entityTransaction));
 
             if (firstStageFilters != null)
             {
@@ -76,5 +82,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken) =>
             Task.FromResult<IEnumerable<Expression<Func<TEntity, bool>>>>(null);
+
+        protected virtual IClientSessionHandle UnwrapSession(IEntityTransaction entityTransaction) => entityTransaction switch
+        {
+            null => null,
+            MongoEntityTransaction mongoTransaction => mongoTransaction.ClientSessionHandle,
+            _ => throw new ArgumentException($"Is not a {nameof(MongoEntityTransaction)}", nameof(entityTransaction))
+        };
     }
 }

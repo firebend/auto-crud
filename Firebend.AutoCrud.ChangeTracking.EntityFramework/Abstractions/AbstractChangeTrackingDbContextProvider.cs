@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Concurrent;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -35,13 +37,8 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             _connectionStringProvider = connectionStringProvider;
         }
 
-        public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+        private async Task<IDbContext> GetDbContextAsync(DbContextOptions options, CancellationToken cancellationToken)
         {
-            var connectionString = await _connectionStringProvider
-                .GetConnectionStringAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            var options = _optionsProvider.GetDbContextOptions(connectionString);
             var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
 
             await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName ?? string.Empty, async _ =>
@@ -66,6 +63,28 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                     return true;
                 })
                 .ConfigureAwait(false);
+
+            return context;
+        }
+
+        public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+        {
+            var connectionString = await _connectionStringProvider
+                .GetConnectionStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var options = _optionsProvider.GetDbContextOptions(connectionString);
+
+            var context = await GetDbContextAsync(options, cancellationToken);
+
+            return context;
+        }
+
+        public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
+        {
+            var options = _optionsProvider.GetDbContextOptions(connection);
+
+            var context = await GetDbContextAsync(options, cancellationToken);
 
             return context;
         }
