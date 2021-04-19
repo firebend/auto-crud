@@ -4,15 +4,15 @@ using Microsoft.Extensions.Options;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public class AbstractEntityControllerBase : ControllerBase
+    public abstract class AbstractEntityControllerBase : ControllerBase
     {
         private IOptions<ApiBehaviorOptions> _apiOptions;
 
-        public AbstractEntityControllerBase(IOptions<ApiBehaviorOptions> apiOptions)
+        protected AbstractEntityControllerBase(IOptions<ApiBehaviorOptions> apiOptions)
         {
             _apiOptions = apiOptions;
         }
 
-        public WrappedActionResult GetInvalidModelStateResult() => _apiOptions.Value.WrapInvalidModelStateResult(ControllerContext);
+        protected virtual  WrappedActionResult GetInvalidModelStateResult() => _apiOptions.Value.WrapInvalidModelStateResult(ControllerContext);
     }
 }

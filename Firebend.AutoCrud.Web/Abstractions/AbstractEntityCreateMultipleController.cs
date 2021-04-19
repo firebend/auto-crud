@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
+
     public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
@@ -42,9 +44,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [Route("multiple")]
         [SwaggerOperation("Creates multiple {entityNamePlural}")]
         [SwaggerResponse(200, "Multiple {entityNamePlural} were created successfully.")]
-        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+        [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<ActionResult<CreateMultipleActionResult<TEntity, TReadViewModel>>> PostMultiple(
+        public virtual async Task<ActionResult<CreateMultipleActionResult<TReadViewModel>>> PostMultiple(
             TMultipleViewModelWrapper body,
             CancellationToken cancellationToken)
         {
@@ -57,7 +59,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             }
 
             var createdEntities = new List<TReadViewModel>();
-            var errorEntities = new List<ModelStateResult<TEntity>>();
+            var errorEntities = new List<ModelStateResult<TReadViewModel>>();
 
             foreach (var toCreate in body.Entities)
             {
@@ -71,8 +73,16 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
                 if (!isValid.WasSuccessful)
                 {
-                    isValid.Model = entityToCreate;
-                    errorEntities.Add(isValid);
+                    var vm = await _readMapper.ToAsync(entityToCreate, cancellationToken);
+                    var error = new ModelStateResult<TReadViewModel> {Message = isValid.Message};
+
+                    foreach (var modelError in isValid.Errors)
+                    {
+                        error.AddError(modelError.PropertyPath, modelError.Error);
+                    }
+
+                    error.Model = vm;
+                    errorEntities.Add(error);
                     continue;
                 }
 
@@ -83,8 +93,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
                 if (entityToCreate == null)
                 {
-                    var result = new ModelStateResult<TEntity>();
-                    result.AddError(nameof(TEntity), "The entity to create is null");
+                    var result = new ModelStateResult<TReadViewModel>();
+                    result.AddError("Entity", "The entity to create is null");
                     errorEntities.Add(result);
                     continue;
 
@@ -100,7 +110,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 }
                 catch (AutoCrudEntityException ex)
                 {
-                    var modelStateResult = new ModelStateResult<TEntity>();
+                    var modelStateResult = new ModelStateResult<TReadViewModel>();
 
                     if (ex.PropertyErrors != null)
                     {
@@ -127,7 +137,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (createdEntities.Count > 0)
             {
-                return Ok(new CreateMultipleActionResult<TEntity, TReadViewModel>
+                return Ok(new CreateMultipleActionResult<TReadViewModel>
                 {
                     Created = createdEntities,
                     Errors = errorEntities
@@ -136,7 +146,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (errorEntities.Count > 0)
             {
-                return BadRequest(new CreateMultipleActionResult<TEntity, TReadViewModel>
+                return BadRequest(new CreateMultipleActionResult<TReadViewModel>
                 {
                     Created = createdEntities,
                     Errors = errorEntities
