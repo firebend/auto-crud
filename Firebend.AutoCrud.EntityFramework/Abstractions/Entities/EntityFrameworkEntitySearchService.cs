@@ -26,20 +26,29 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
             _searchHandler = searchHandler;
         }
 
-        public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
+        public Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
+            => SearchAsync(request, null, cancellationToken);
+
+        public async Task<List<TEntity>> SearchAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
         {
             request.DoCount = false;
 
-            var results = await PageAsync(request, cancellationToken)
+            var results = await PageAsync(request, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
 
             return results?.Data?.ToList();
         }
 
-        public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
+        public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
+            => PageAsync(request, null, cancellationToken);
+
+        public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
+
             var query = await _searchClient
-                .GetQueryableAsync(true, cancellationToken)
+                .GetQueryableAsync(true, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var expression = GetSearchExpression(request);

@@ -10,5 +10,7 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         where TEntity : IEntity<TKey>
     {
         Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken);
+
+        Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken);
     }
 }

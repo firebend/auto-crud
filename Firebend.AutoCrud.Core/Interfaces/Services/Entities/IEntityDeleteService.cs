@@ -10,5 +10,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
         where TEntity : class, IEntity<TKey>
     {
         Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default);
+        Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default);
     }
 }

@@ -14,6 +14,10 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
     {
         Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default);
 
+        Task<List<TEntity>> SearchAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default);
+
         Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default);
+
+        Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default);
     }
 }

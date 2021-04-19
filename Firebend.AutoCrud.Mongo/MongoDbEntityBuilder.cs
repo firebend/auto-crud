@@ -117,6 +117,8 @@ namespace Firebend.AutoCrud.Mongo
                 var fullTextType = typeof(MongoFullTextSearchHandler<,,>).MakeGenericType(EntityKeyType, EntityType, SearchRequestType);
                 WithRegistration(searchHandlerInterfaceType, fullTextType);
             }
+
+            WithRegistration<IEntityTransactionFactory<TKey, TEntity>, MongoEntityTransactionFactory<TKey, TEntity>>();
         }
 
         private void RegisterEntityConfiguration()

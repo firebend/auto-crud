@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>1.2.1</Version>
+        <Version>1.2.2</Version>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
@@ -19,7 +19,7 @@
 
     <ItemGroup>
       <PackageReference Include="ClosedXML" Version="0.95.4" />
-      <PackageReference Include="CsvHelper" Version="18.0.0" />
+      <PackageReference Include="CsvHelper" Version="26.1.0" />
       <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.0.0" />
     </ItemGroup>
 

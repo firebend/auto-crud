@@ -60,20 +60,39 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return props.ToArray();
         });
 
-        public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, cancellationToken);
+        public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, null, null, null, cancellationToken);
 
-        public Task<TEntity> UpsertAsync(TEntity entity, CancellationToken cancellationToken = default) =>
-            UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, cancellationToken);
+        public virtual Task<TEntity> UpsertAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, null, null, null, cancellationToken);
 
-        public Task<TEntity> UpsertAsync(TEntity entity, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) =>
-            UpdateInternalAsync(entity, filter, true, cancellationToken);
+        public virtual Task<TEntity> UpsertAsync(TEntity entity,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
+            => UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, transaction, null, null, cancellationToken);
 
-        public async Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities, CancellationToken cancellationToken = default)
+        public virtual Task<TEntity> UpsertAsync(TEntity entity,
+            Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default)
+            => UpdateInternalAsync(entity, filter, true, null, null, null, cancellationToken);
+
+        public virtual Task<TEntity> UpsertAsync(TEntity entity,
+            Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
+            => UpdateInternalAsync(entity, filter, true, transaction, null, null, cancellationToken);
+
+        public virtual Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities,
+            CancellationToken cancellationToken = default)
+            => UpsertManyAsync(entities, null, cancellationToken);
+
+        public virtual async Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
         {
             var collection = GetCollection();
 
-            var ids = await UpdateManyInternalAsync(collection, entities, cancellationToken)
+            var ids = await UpdateManyInternalAsync(collection, null, entities, cancellationToken)
                 .ConfigureAwait(false);
 
             if (ids.Any())
@@ -92,13 +111,19 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new List<TEntity>();
         }
 
-        public async Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities,
+        public virtual Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities,
             Expression<Func<TEntity, TOut>> projection,
+            CancellationToken cancellationToken = default)
+            => UpsertManyAsync(entities, projection, null, cancellationToken);
+
+        public virtual async Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities,
+            Expression<Func<TEntity, TOut>> projection,
+            IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
             var collection = GetCollection();
 
-            var ids = await UpdateManyInternalAsync(collection, entities, cancellationToken)
+            var ids = await UpdateManyInternalAsync(collection, transaction, entities, cancellationToken)
                 .ConfigureAwait(false);
 
             if (ids.Any())
@@ -118,32 +143,50 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return new List<TOut>();
         }
 
-        public virtual async Task<TEntity> UpdateAsync(TKey id, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
+        public virtual Task<TEntity> UpdateAsync(TKey id,
+            JsonPatchDocument<TEntity> patch,
+            CancellationToken cancellationToken = default) =>
+            UpdateAsync(id, patch, null, cancellationToken);
+
+        public virtual async Task<TEntity> UpdateAsync(TKey id,
+            JsonPatchDocument<TEntity> patch,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
         {
-            var mongoCollection = GetCollection();
+            var queryable = await GetFilteredCollectionAsync(
+                entities => entities.Where(x => x.Id.Equals(id)),
+                        transaction,
+                        cancellationToken)
+                .ConfigureAwait(false);
 
-            var filter = await BuildFiltersAsync(x => x.Id.Equals(id), cancellationToken).ConfigureAwait(false);
-
-            var entity = await mongoCollection
-                .AsQueryable()
-                .Where(filter)
-                .FirstOrDefaultAsync(cancellationToken);
+            var entity = await queryable.FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             if (entity == null)
             {
                 return null;
             }
 
+            var original = entity.Clone();
+
             patch.ApplyTo(entity);
 
-            return await UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, cancellationToken).ConfigureAwait(false);
+            return await UpdateInternalAsync(entity,
+                x => x.Id.Equals(entity.Id),
+                false,
+                transaction,
+                patch,
+                original,
+                cancellationToken).ConfigureAwait(false);
         }
 
         protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
             Expression<Func<TEntity, bool>> filter,
             bool doUpsert,
-            CancellationToken cancellationToken,
-            JsonPatchDocument<TEntity> patchDocument = null)
+            IEntityTransaction transaction,
+            JsonPatchDocument<TEntity> patchDocument,
+            TEntity original,
+            CancellationToken cancellationToken)
         {
             var filters = await BuildFiltersAsync(filter, cancellationToken).ConfigureAwait(false);
             var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
@@ -156,8 +199,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 modifiedEntity.ModifiedDate = now;
             }
 
-            var original = await RetryErrorAsync(() =>
-                mongoCollection.Find(filtersDefinition).SingleOrDefaultAsync(cancellationToken)).ConfigureAwait(false);
+            if (original == null)
+            {
+                var query = await GetFilteredCollectionAsync(
+                    entities => entities.Where(x => x.Id.Equals(entity.Id)),
+                    transaction,
+                    cancellationToken);
+
+                original = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            }
 
             var modified = original == null ? new TEntity() : original.Clone();
 
@@ -168,25 +218,41 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 mod.CreatedDate = now;
             }
 
-            var result = await RetryErrorAsync(() =>
-                mongoCollection.FindOneAndReplaceAsync(
-                    filtersDefinition,
-                    modified,
-                    new FindOneAndReplaceOptions<TEntity, TEntity> { ReturnDocument = ReturnDocument.After, IsUpsert = doUpsert },
-                    cancellationToken)).ConfigureAwait(false);
+            TEntity result;
+            var session = UnwrapSession(transaction);
+
+            if (session != null)
+            {
+                result = await RetryErrorAsync(() =>
+                    mongoCollection.FindOneAndReplaceAsync(
+                        session,
+                        filtersDefinition,
+                        modified,
+                        new FindOneAndReplaceOptions<TEntity, TEntity> { ReturnDocument = ReturnDocument.After, IsUpsert = doUpsert },
+                        cancellationToken)).ConfigureAwait(false);
+            }
+            else
+            {
+                result = await RetryErrorAsync(() =>
+                    mongoCollection.FindOneAndReplaceAsync(
+                        filtersDefinition,
+                        modified,
+                        new FindOneAndReplaceOptions<TEntity, TEntity> { ReturnDocument = ReturnDocument.After, IsUpsert = doUpsert },
+                        cancellationToken)).ConfigureAwait(false);
+            }
 
             if (original != null)
             {
                 patchDocument ??= _jsonPatchDocumentGenerator.Generate(original, modified);
 
-                await PublishUpdatedDomainEventAsync(original, patchDocument, cancellationToken).ConfigureAwait(false);
+                await PublishUpdatedDomainEventAsync(original, patchDocument, transaction, cancellationToken).ConfigureAwait(false);
 
                 return result;
             }
 
             if (doUpsert)
             {
-                await PublishAddedDomainEventAsync(result, cancellationToken).ConfigureAwait(false);
+                await PublishAddedDomainEventAsync(result, transaction, cancellationToken).ConfigureAwait(false);
 
                 return result;
             }
@@ -195,6 +261,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         }
 
         protected virtual async Task<List<TKey>> UpdateManyInternalAsync(IMongoCollection<TEntity> mongoCollection,
+            IEntityTransaction entityTransaction,
             List<EntityUpdate<TEntity>> entities,
             CancellationToken cancellationToken = default)
         {
@@ -205,10 +272,18 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var ids = new List<TKey>();
 
+            IClientSessionHandle session = null;
+
+            if (entityTransaction != null)
+            {
+                session = UnwrapSession(entityTransaction);
+            }
+
+            var queryable = session == null ? mongoCollection.AsQueryable() : mongoCollection.AsQueryable(session);
+
             foreach (var entityUpdate in entities)
             {
-                var id = await mongoCollection
-                    .AsQueryable()
+                var id = await queryable
                     .Where(entityUpdate.Filter)
                     .Select(x => x.Id)
                     .FirstOrDefaultAsync(cancellationToken)
@@ -242,14 +317,29 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     .Where(y => y.Id.Equals(x.Entity.Id)), x.Entity)
                 { IsUpsert = true });
 
-            await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
-                writes,
-                new BulkWriteOptions { IsOrdered = true }, cancellationToken)).ConfigureAwait(false);
+            if (session != null)
+            {
+                await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
+                        session,
+                        writes,
+                        new BulkWriteOptions { IsOrdered = true }, cancellationToken))
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
+                        writes,
+                        new BulkWriteOptions { IsOrdered = true }, cancellationToken))
+                    .ConfigureAwait(false);
+            }
 
             return ids;
         }
 
-        private Task PublishUpdatedDomainEventAsync(TEntity previous, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
+        private Task PublishUpdatedDomainEventAsync(TEntity previous,
+            JsonPatchDocument<TEntity> patch,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher != null && !_isDefaultPublisher)
             {
@@ -260,13 +350,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     EventContext = _domainEventContextProvider?.GetContext()
                 };
 
-                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
+                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
             }
 
             return Task.CompletedTask;
         }
 
-        private Task PublishAddedDomainEventAsync(TEntity entity, CancellationToken cancellationToken = default)
+        private Task PublishAddedDomainEventAsync(TEntity entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher == null || _isDefaultPublisher)
             {
@@ -275,7 +367,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = entity, EventContext = _domainEventContextProvider?.GetContext() };
 
-            return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, cancellationToken);
+            return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, entityTransaction, cancellationToken);
 
         }
     }

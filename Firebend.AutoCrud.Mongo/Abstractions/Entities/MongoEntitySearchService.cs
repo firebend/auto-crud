@@ -28,13 +28,19 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
             _searchHandler = searchHandler;
         }
 
-        public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
+        public Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
+            => SearchAsync(request, null, cancellationToken);
+
+        public async Task<List<TEntity>> SearchAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
         {
-            var results = await PageAsync(request, cancellationToken).ConfigureAwait(false);
+            var results = await PageAsync(request, entityTransaction, cancellationToken).ConfigureAwait(false);
             return results?.Data?.ToList();
         }
 
-        public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
+        public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken = default)
+            => PageAsync(request, null, cancellationToken);
+
+        public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
         {
             Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilter = null;
 
@@ -44,7 +50,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
             }
 
             var query = await _readClient
-                .GetQueryableAsync(firstStageFilter, cancellationToken)
+                .GetQueryableAsync(firstStageFilter, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var expression = GetSearchExpression(request);

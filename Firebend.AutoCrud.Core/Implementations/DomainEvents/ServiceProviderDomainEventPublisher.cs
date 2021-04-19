@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,49 +18,99 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
             _serviceProvider = serviceProvider;
         }
 
-        public async Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+        public Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var subscribers = GetSubscribers<IEntityAddedDomainEventSubscriber<TEntity>>().ToList();
+            Task PublishAsync(CancellationToken token) =>
+                ExecuteSubscribers<IEntityAddedDomainEventSubscriber<TEntity>, EntityAddedDomainEvent<TEntity>>(
+                    domainEvent,
+                (subscriber, de, ct) => subscriber.EntityAddedAsync(de, ct),
+                    cancellationToken);
 
-            var tasks = subscribers
-                .Select(x => x.EntityAddedAsync(domainEvent, cancellationToken));
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            foreach (var subscriber in subscribers)
-            {
-                subscriber.Dispose();
-            }
+            return entityTransaction == null ?
+                PublishAsync(cancellationToken) :
+                entityTransaction.AddFunctionEnrollmentAsync(PublishAsync, cancellationToken);
         }
 
-        public async Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+        public Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var tasks = GetSubscribers<IEntityDeletedDomainEventSubscriber<TEntity>>()
-                .Select(x => x.EntityDeletedAsync(domainEvent, cancellationToken));
+            Task PublishAsync(CancellationToken token) =>
+                ExecuteSubscribers<IEntityDeletedDomainEventSubscriber<TEntity>, EntityDeletedDomainEvent<TEntity>>(
+                    domainEvent,
+                    (subscriber, de, ct) => subscriber.EntityDeletedAsync(de, ct),
+                    cancellationToken);
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            return entityTransaction == null ?
+                PublishAsync(cancellationToken) :
+                entityTransaction.AddFunctionEnrollmentAsync(PublishAsync, cancellationToken);
         }
 
-        public async Task PublishEntityUpdatedEventAsync<TEntity>(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+        public Task PublishEntityUpdatedEventAsync<TEntity>(EntityUpdatedDomainEvent<TEntity> domainEvent,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var tasks = GetSubscribers<IEntityUpdatedDomainEventSubscriber<TEntity>>()
-                .Select(x => x.EntityUpdatedAsync(domainEvent, cancellationToken));
+            Task PublishAsync(CancellationToken token) =>
+                ExecuteSubscribers<IEntityUpdatedDomainEventSubscriber<TEntity>, EntityUpdatedDomainEvent<TEntity>>(
+                    domainEvent,
+                    (subscriber, de, ct) => subscriber.EntityUpdatedAsync(de, ct),
+                    cancellationToken);
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            return entityTransaction == null ?
+                PublishAsync(cancellationToken) :
+                entityTransaction.AddFunctionEnrollmentAsync(PublishAsync, cancellationToken);
         }
 
-        private IEnumerable<T> GetSubscribers<T>()
+        private async Task ExecuteSubscribers<TSubscriber, TEvent>(
+            TEvent domainEvent,
+            Func<TSubscriber, TEvent, CancellationToken, Task> func,
+            CancellationToken cancellationToken)
+            where TSubscriber : IDisposable
         {
             using var scope = _serviceProvider.CreateScope();
 
-            var services = scope
+            var subscribers = scope
                 .ServiceProvider
-                .GetServices<T>();
+                .GetServices<TSubscriber>();
 
-            return services.Where(x => x != null);
+            var subscribersArray = subscribers as TSubscriber[] ?? subscribers.ToArray();
+
+            var tasks = subscribersArray
+                .Where(x => x != null)
+                .Select(async x =>
+                {
+                    try
+                    {
+                        await func(x, domainEvent, cancellationToken).ConfigureAwait(false);
+                        return null;
+                    }
+                    catch (Exception ex)
+                    {
+                        return ex;
+                    }
+                });
+
+            await Task
+                .WhenAll(tasks)
+                .ConfigureAwait(false);
+
+            foreach (var subscriber in subscribersArray)
+            {
+                try
+                {
+                    subscriber.Dispose();
+                }
+                // ReSharper disable once EmptyGeneralCatchClause
+                catch
+                {
+
+                }
+            }
         }
     }
 }

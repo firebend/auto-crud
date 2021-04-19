@@ -51,21 +51,23 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
         {
             AddCustomFields(Builder, false);
 
-            if (configure != null)
+            if (configure == null)
             {
-                var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>
-                {
-                    SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
-                };
-                configure(customFieldsBuilder);
-                Builder.Registrations.Add(typeof(object), new List<Registration>
-                {
-                    new BuilderRegistration
-                    {
-                        Builder = customFieldsBuilder
-                    }
-                });
+                return this;
             }
+
+            var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>
+            {
+                SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
+            };
+            configure(customFieldsBuilder);
+            Builder.Registrations.Add(typeof(object), new List<Registration>
+            {
+                new BuilderRegistration
+                {
+                    Builder = customFieldsBuilder
+                }
+            });
 
             return this;
         }
@@ -87,25 +89,28 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
         {
             AddCustomFields(Builder, true);
 
-            if (configure != null)
+            if (configure == null)
             {
-                var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>
-                {
-                    SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
-                };
-                configure(customFieldsBuilder);
-                Builder.Registrations.Add(typeof(object), new List<Registration>
-                {
-                    new BuilderRegistration
-                    {
-                        Builder = customFieldsBuilder
-                    }
-                });
+                return this;
             }
+
+            var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>
+            {
+                SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
+            };
+            configure(customFieldsBuilder);
+            Builder.Registrations.Add(typeof(object), new List<Registration>
+            {
+                new BuilderRegistration
+                {
+                    Builder = customFieldsBuilder
+                }
+            });
 
             return this;
         }
 
+        // ReSharper disable once UnusedMethodReturnValue.Local
         private static TBuilder AddCustomFields(
             TBuilder builder,
             bool isTenantEntity)

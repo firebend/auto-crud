@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -19,5 +20,6 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         }
 
         public DbContextOptions GetDbContextOptions(string connectionString) => _optionsProvider.GetDbContextOptions(connectionString);
+        public DbContextOptions GetDbContextOptions(DbConnection connection) => _optionsProvider.GetDbContextOptions(connection);
     }
 }

@@ -22,8 +22,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
             => _updateClient.UpdateAsync(entity, cancellationToken);
 
+        public Task<TEntity> UpdateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+            => _updateClient.UpdateAsync(entity, entityTransaction, cancellationToken);
+
         public virtual Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
             => _updateClient.UpdateAsync(key, jsonPatchDocument, cancellationToken);
+
+        public Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+            => _updateClient.UpdateAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
 
         protected override void DisposeManagedObjects() => _updateClient?.Dispose();
     }

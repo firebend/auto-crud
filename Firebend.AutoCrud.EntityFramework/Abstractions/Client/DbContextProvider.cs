@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Concurrent;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -18,14 +20,52 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TEntity : IEntity<TKey>
         where TContext : class, IDbContext
     {
+        private readonly ILogger _logger;
         private readonly IDbContextConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
         private readonly IDbContextOptionsProvider<TKey, TEntity> _optionsProvider;
 
         protected DbContextProvider(IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider,
-            IDbContextOptionsProvider<TKey, TEntity> optionsProvider)
+            IDbContextOptionsProvider<TKey, TEntity> optionsProvider,
+            ILoggerFactory loggerFactory)
         {
             _connectionStringProvider = connectionStringProvider;
             _optionsProvider = optionsProvider;
+            _logger = loggerFactory.CreateLogger<DbContextProvider<TKey, TEntity, TContext>>();
+        }
+
+        private async Task<IDbContext> CreateContextAsync(DbContextOptions options, CancellationToken cancellationToken)
+        {
+            var contextType = typeof(TContext);
+            var instance = Activator.CreateInstance(contextType, options);
+            var context = instance as TContext;
+
+            if (context is DbContext dbContext)
+            {
+                await DbContextProviderCaches.InitCache.GetOrAdd(contextType.FullName ?? string.Empty, async _ =>
+                {
+                    try
+                    {
+                        await dbContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to call ensure created");
+                    }
+
+                    try
+                    {
+                        await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Fail to call migrations");
+                    }
+
+                    return true;
+                }).ConfigureAwait(false);
+            }
+
+            return context;
         }
 
         public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
@@ -36,22 +76,18 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var options = _optionsProvider.GetDbContextOptions(connectionString);
 
-            var contextType = typeof(TContext);
-            var instance = Activator.CreateInstance(contextType, options);
-            var context = instance as TContext;
-
-            if (context is DbContext dbContext)
-            {
-                await DbContextProviderCaches.InitCache.GetOrAdd(contextType.FullName ?? string.Empty, async _ =>
-                {
-                    await dbContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
-                    await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
-                    return true;
-                }).ConfigureAwait(false);
-            }
+            var context = await CreateContextAsync(options, cancellationToken);
 
             return context;
         }
 
+        public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
+        {
+            var options = _optionsProvider.GetDbContextOptions(connection);
+
+            var context = await CreateContextAsync(options, cancellationToken);
+
+            return context;
+        }
     }
 }

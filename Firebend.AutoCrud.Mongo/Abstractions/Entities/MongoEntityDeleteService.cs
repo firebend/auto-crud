@@ -28,5 +28,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
 
             return _deleteClient.DeleteAsync(x => x.Id.Equals(key), cancellationToken);
         }
+
+        public Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+        {
+            if (key.Equals(default))
+            {
+                throw new ArgumentException("Key is invalid", nameof(key));
+            }
+
+            return _deleteClient.DeleteAsync(x => x.Id.Equals(key), entityTransaction, cancellationToken);
+        }
     }
 }

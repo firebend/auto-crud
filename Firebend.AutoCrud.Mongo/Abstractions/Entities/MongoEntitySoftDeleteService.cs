@@ -18,13 +18,23 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
             _updateService = updateService;
         }
 
-        public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+        private Task<TEntity> DeleteInternalAsync(TKey key,
+            IEntityTransaction entityTransaction = null,
+            CancellationToken cancellationToken = default)
         {
             var patch = new JsonPatchDocument<TEntity>();
 
             patch.Add(x => x.IsDeleted, true);
 
-            return _updateService.PatchAsync(key, patch, cancellationToken);
+            return entityTransaction != null ?
+                _updateService.PatchAsync(key, patch, entityTransaction, cancellationToken) :
+                _updateService.PatchAsync(key, patch, cancellationToken);
         }
+
+        public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+            => DeleteInternalAsync(key, null, cancellationToken);
+
+        public Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+            => DeleteInternalAsync(key, entityTransaction, cancellationToken);
     }
 }

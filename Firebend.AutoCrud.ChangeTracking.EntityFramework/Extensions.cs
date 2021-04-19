@@ -52,7 +52,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
             where TEntity : class, IEntity<TKey>, new()
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
         {
-            if (!(configurator.Builder is EntityFrameworkEntityBuilder<TKey, TEntity>))
+            if (configurator.Builder is not EntityFrameworkEntityBuilder<TKey, TEntity>)
             {
                 throw new Exception($"Configuration Error! This builder is not a {nameof(EntityFrameworkEntityBuilder<Guid, FooEntity>)}");
             }

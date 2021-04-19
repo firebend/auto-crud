@@ -21,6 +21,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
             => _deleteClient.DeleteAsync(key, cancellationToken);
 
+        public Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+            => _deleteClient.DeleteAsync(key, entityTransaction, cancellationToken);
+
         protected override void DisposeManagedObjects() => _deleteClient?.Dispose();
     }
 }

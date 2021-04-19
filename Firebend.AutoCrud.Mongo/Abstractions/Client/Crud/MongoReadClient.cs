@@ -29,10 +29,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         }
 
         private async Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            IEntityTransaction entityTransaction,
             Expression<Func<TEntity, bool>> additionalFilter,
             CancellationToken cancellationToken)
         {
-            var queryable = await GetFilteredCollectionAsync(firstStageFilters, cancellationToken).ConfigureAwait(false);
+            var queryable = await GetFilteredCollectionAsync(firstStageFilters, entityTransaction, cancellationToken).ConfigureAwait(false);
 
             if (additionalFilter != null)
             {
@@ -43,36 +44,68 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         }
 
 
-        public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
+        public Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
+            => GetFirstOrDefaultAsync(filter, null, cancellationToken);
+
+        public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken)
         {
-            var query = await GetQueryableInternalAsync(null, filter, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableInternalAsync(null, entityTransaction, filter, cancellationToken)
+                .ConfigureAwait(false);
+
             var entity = await RetryErrorAsync(() => query.FirstOrDefaultAsync(cancellationToken)).ConfigureAwait(false);
             return entity;
         }
 
         public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
-            CancellationToken cancellationToken = default) => GetQueryableInternalAsync(firstStageFilters, null, cancellationToken);
+            CancellationToken cancellationToken = default)
+            => GetQueryableAsync(firstStageFilters, null, cancellationToken);
 
-        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
+        public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => GetQueryableInternalAsync(firstStageFilters, entityTransaction, null, cancellationToken);
+
+        public Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
+            => GetAllAsync(filter, null, cancellationToken);
+
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken)
         {
-            var query = await GetQueryableInternalAsync(null, filter, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableInternalAsync(null, entityTransaction, filter, cancellationToken)
+                .ConfigureAwait(false);
+
             var list = await RetryErrorAsync(() => query.ToListAsync(cancellationToken)).ConfigureAwait(false);
 
             return list;
         }
 
-        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+            => ExistsAsync(filter, null, cancellationToken);
+
+        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableInternalAsync(null, filter, cancellationToken).ConfigureAwait(false);
+            var query = await GetQueryableInternalAsync(null, entityTransaction, filter, cancellationToken)
+                .ConfigureAwait(false);
+
             var exists = await RetryErrorAsync(() => query.AnyAsync(cancellationToken)).ConfigureAwait(false);
             return exists;
         }
 
-        public async Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+            => CountAsync(filter, null, cancellationToken);
+
+        public async Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableInternalAsync(null, filter, cancellationToken).ConfigureAwait(false);
-            var exists = await RetryErrorAsync(() => query.LongCountAsync(cancellationToken)).ConfigureAwait(false);
-            return exists;
+            var query = await GetQueryableInternalAsync(null, entityTransaction, filter, cancellationToken)
+                .ConfigureAwait(false);
+
+            var count = await RetryErrorAsync(() => query.LongCountAsync(cancellationToken)).ConfigureAwait(false);
+            return count;
         }
 
         public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,

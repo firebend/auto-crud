@@ -54,11 +54,60 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return props.ToArray();
         });
 
-        public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        protected virtual async Task<TEntity> UpdateInternalAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            var context = await GetDbContextAsync(entityTransaction, cancellationToken).ConfigureAwait(false);
+            var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
 
-            var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
+            if (entity == null)
+            {
+                return null;
+            }
+
+            var original = entity.Clone();
+
+            if (entity is IModifiedEntity)
+            {
+                jsonPatchDocument.Operations.Add(new Operation<TEntity>(
+                    "replace",
+                    $"/{nameof(IModifiedEntity.ModifiedDate)}",
+                    null,
+                    DateTimeOffset.Now));
+            }
+
+            jsonPatchDocument.ApplyTo(entity);
+
+            try
+            {
+                await context
+                    .SaveChangesAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (DbUpdateException ex)
+            {
+                if (!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
+                {
+                    throw;
+                }
+            }
+
+            await PublishDomainEventAsync(original, jsonPatchDocument, entityTransaction, cancellationToken);
+
+            return entity;
+        }
+
+        protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
+        {
+            var context = await GetDbContextAsync(transaction, cancellationToken)
+                .ConfigureAwait(false);
+
+            var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken)
+                .ConfigureAwait(false);
 
             if (model == null)
             {
@@ -95,65 +144,46 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 jsonPatchDocument = _jsonPatchDocumentGenerator.Generate(original, model);
             }
 
-            await PublishDomainEventAsync(original, jsonPatchDocument, cancellationToken);
+            await PublishDomainEventAsync(original, jsonPatchDocument, transaction, cancellationToken);
 
             return model;
         }
 
-        public virtual async Task<TEntity> UpdateAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default)
-        {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
+        public virtual Task<TEntity> UpdateAsync(TEntity entity,
+            CancellationToken cancellationToken = default)
+            => UpdateInternalAsync(entity, null, cancellationToken);
 
-            if (entity == null)
-            {
-                return null;
-            }
+        public virtual Task<TEntity> UpdateAsync(TEntity entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => UpdateInternalAsync(entity, entityTransaction, cancellationToken);
 
-            var original = entity.Clone();
+        public virtual Task<TEntity> UpdateAsync(TKey key,
+            JsonPatchDocument<TEntity> patch,
+            CancellationToken cancellationToken = default)
+            => UpdateAsync(key, patch, null, cancellationToken);
 
-            if (entity is IModifiedEntity)
-            {
-                jsonPatchDocument.Operations.Add(new Operation<TEntity>(
-                    "replace",
-                    $"/{nameof(IModifiedEntity.ModifiedDate)}",
-                    null,
-                    DateTimeOffset.Now));
-            }
+        public virtual Task<TEntity> UpdateAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => UpdateInternalAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
 
-            jsonPatchDocument.ApplyTo(entity);
-
-            try
-            {
-                await context
-                    .SaveChangesAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (DbUpdateException ex)
-            {
-                if (!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
-                {
-                    throw;
-                }
-            }
-
-            await PublishDomainEventAsync(original, jsonPatchDocument, cancellationToken);
-
-            return entity;
-        }
-
-        private Task PublishDomainEventAsync(TEntity previous, JsonPatchDocument<TEntity> patch, CancellationToken cancellationToken = default)
+        private Task PublishDomainEventAsync(TEntity previous,
+            JsonPatchDocument<TEntity> patch,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher != null && !_isDefaultPublisher)
             {
                 var domainEvent = new EntityUpdatedDomainEvent<TEntity>
                 {
                     Previous = previous,
-                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
+                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }),
                     EventContext = _domainEventContextProvider?.GetContext()
                 };
 
-                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, cancellationToken);
+                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, transaction, cancellationToken);
             }
 
             return Task.CompletedTask;

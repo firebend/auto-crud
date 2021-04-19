@@ -29,9 +29,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _domainEventContextProvider = domainEventContextProvider;
         }
 
-        public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
+        protected virtual async Task<TEntity> DeleteInternalAsync(TKey key, IEntityTransaction transaction, CancellationToken cancellationToken)
         {
-            var context = await GetDbContextAsync(cancellationToken)
+            var context = await GetDbContextAsync(transaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var entity = new TEntity { Id = key };
@@ -64,14 +64,16 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            await PublishDomainEventAsync(entity, cancellationToken).ConfigureAwait(false);
+            await PublishDomainEventAsync(entity, transaction, cancellationToken).ConfigureAwait(false);
 
             return entity;
         }
 
-        public virtual async Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken)
+        protected virtual async Task<IEnumerable<TEntity>> DeleteInternalAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction transaction,
+            CancellationToken cancellationToken)
         {
-            var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
+            var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
             var query = await GetFilteredQueryableAsync(context, false, cancellationToken);
             var set = context.Set<TEntity>();
             var list = await query
@@ -88,14 +90,31 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             await context.SaveChangesAsync(cancellationToken);
 
-            var tasks = list.Select(entity => PublishDomainEventAsync(entity, cancellationToken)).ToList();
+            var tasks = list.Select(entity => PublishDomainEventAsync(entity, transaction, cancellationToken)).ToList();
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return list;
         }
 
-        private Task PublishDomainEventAsync(TEntity savedEntity, CancellationToken cancellationToken = default)
+        public virtual Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken)
+            => DeleteInternalAsync(filter, null, cancellationToken);
+
+        public Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken)
+            => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
+
+        public Task<TEntity> DeleteAsync(TKey filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken)
+            => DeleteInternalAsync(filter, null, cancellationToken);
+
+        public virtual Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
+            => DeleteInternalAsync(key, null, cancellationToken);
+
+        private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher == null || _domainEventPublisher is DefaultEntityDomainEventPublisher)
             {
@@ -104,7 +123,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
-            return _domainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, cancellationToken);
+            return _domainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, transaction, cancellationToken);
         }
     }
 }

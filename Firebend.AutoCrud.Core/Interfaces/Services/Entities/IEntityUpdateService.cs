@@ -10,8 +10,20 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<TEntity> UpdateAsync(TEntity entity,
+            CancellationToken cancellationToken = default);
 
-        Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument, CancellationToken cancellationToken = default);
+        Task<TEntity> UpdateAsync(TEntity entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
+
+        Task<TEntity> PatchAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            CancellationToken cancellationToken = default);
+
+        Task<TEntity> PatchAsync(TKey key,
+            JsonPatchDocument<TEntity> jsonPatchDocument,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default);
     }
 }

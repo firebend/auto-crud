@@ -25,12 +25,18 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             _customFieldsStorageCreator = customFieldsStorageCreator;
         }
 
-        public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken = default)
+        public Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken = default)
+            => DeleteAsync(rootEntityKey, key, null, cancellationToken);
+
+        public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
+            Guid key,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
             var deleted = await _deleteClient
-                .DeleteAsync(key, cancellationToken)
+                .DeleteAsync(key, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var retDeleted = deleted?.ToCustomFields();
