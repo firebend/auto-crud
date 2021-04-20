@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
@@ -19,7 +20,8 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         private readonly ICustomFieldsDeleteService<TKey, TEntity> _deleteService;
 
         protected AbstractCustomFieldsDeleteController(IEntityKeyParser<TKey, TEntity> keyParser,
-            ICustomFieldsDeleteService<TKey, TEntity> deleteService) : base(keyParser)
+            ICustomFieldsDeleteService<TKey, TEntity> deleteService,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
         {
             _deleteService = deleteService;
         }
@@ -27,7 +29,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [HttpDelete("{entityId}/custom-fields/{id:guid}")]
         [SwaggerOperation("Deletes a custom field for a given {entityName}")]
         [SwaggerResponse(201, "A custom field  was deleted successfully..")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> DeleteAsync(
             [Required][FromRoute] string entityId,
@@ -38,14 +40,14 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var rootKey = GetKey(entityId);
 
             if (rootKey == null)
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var result = await _deleteService

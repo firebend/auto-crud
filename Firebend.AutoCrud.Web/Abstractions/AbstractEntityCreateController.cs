@@ -5,12 +5,13 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityCreateController<TKey, TEntity, TCreateViewModel, TReadViewModel> : ControllerBase
+    public abstract class AbstractEntityCreateController<TKey, TEntity, TCreateViewModel, TReadViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TCreateViewModel : class
@@ -24,7 +25,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
             IEntityValidationService<TKey, TEntity> entityValidationService,
             ICreateViewModelMapper<TKey, TEntity, TCreateViewModel> mapper,
-            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper)
+            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _createService = createService;
             _entityValidationService = entityValidationService;
@@ -35,7 +37,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [HttpPost]
         [SwaggerOperation("Creates {entityNamePlural}")]
         [SwaggerResponse(201, "A {entityName} was created successfully.")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public virtual async Task<ActionResult<TReadViewModel>> Post(
              TCreateViewModel body,
@@ -47,7 +49,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 if (body == null)
                 {
                     ModelState.AddModelError("body", "A body is required");
-                    return BadRequest(ModelState);
+                    return GetInvalidModelStateResult();
                 }
 
                 var entity = await _mapper.FromAsync(body, cancellationToken)
@@ -55,7 +57,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
                 if (!TryValidateModel(entity))
                 {
-                    return BadRequest(ModelState);
+                    return GetInvalidModelStateResult();
                 }
 
                 var isValid = await _entityValidationService
@@ -69,7 +71,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                         ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
                     }
 
-                    return BadRequest(ModelState);
+                    return GetInvalidModelStateResult();
                 }
 
                 if (isValid.Model != null)
@@ -96,12 +98,12 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
                     }
 
-                    return BadRequest(ModelState);
+                    return GetInvalidModelStateResult();
                 }
 
                 if (created == null)
                 {
-                    return BadRequest();
+                    return GetInvalidModelStateResult();
                 }
 
                 var createdViewModel = await _readMapper

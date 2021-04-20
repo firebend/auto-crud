@@ -10,6 +10,7 @@ using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
@@ -31,7 +32,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
             IEntityValidationService<TKey, TEntity> entityValidationService,
             IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
-            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper) : base(entityKeyParser)
+            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
         {
             _updateService = updateService;
             _readService = readService;
@@ -44,7 +46,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Updates {entityNamePlural}")]
         [SwaggerResponse(200, "The {entityName} with a given key was updated.")]
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public virtual async Task<ActionResult<TReadViewModel>> Put(
             [Required][FromRoute] string id,
@@ -58,14 +60,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (!key.HasValue)
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (body == null)
             {
                 ModelState.AddModelError(nameof(body), "A body is required");
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var entityUpdate = await _updateViewModelMapper
@@ -79,7 +81,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (!ModelState.IsValid || !TryValidateModel(entityUpdate))
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             entityUpdate.Id = key.Value;
@@ -95,7 +97,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
                 }
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             TEntity entity;
@@ -117,7 +119,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
                 }
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (entity == null)
@@ -136,7 +138,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Updates {entityNamePlural} using a JSON Patch Document")]
         [SwaggerResponse(200, "The {entityName} with the given key was updated.")]
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
-        [SwaggerResponse(400, "The request is invalid.")]
+        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public virtual async Task<ActionResult<TReadViewModel>> Patch(
             [Required][FromRoute] string id,
@@ -147,14 +149,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
             {
                 ModelState.AddModelError(nameof(patch), "A valid patch document is required.");
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var key = GetKey(id);
 
             if (!key.HasValue)
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var entity = await _readService
@@ -172,7 +174,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             var isValid = await _entityValidationService
@@ -186,7 +188,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
                 }
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (isValid.Model != null)
@@ -213,7 +215,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
                 }
 
-                return BadRequest(ModelState);
+                return GetInvalidModelStateResult();
             }
 
             if (update == null)

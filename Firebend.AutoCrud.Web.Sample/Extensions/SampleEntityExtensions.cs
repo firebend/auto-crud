@@ -19,6 +19,7 @@ using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
+using Firebend.AutoCrud.Web.Sample.ValidationServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -111,6 +112,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithIoControllers()
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)
+                        .WithValidationService<PersonValidationService>()
                     ));
 
         public static EntityFrameworkEntityCrudGenerator AddEfPets(this EntityFrameworkEntityCrudGenerator generator,
