@@ -74,7 +74,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 if (!isValid.WasSuccessful)
                 {
                     var vm = await _readMapper.ToAsync(entityToCreate, cancellationToken);
-                    var error = new ModelStateResult<TReadViewModel> {Message = isValid.Message};
+                    var error = new ModelStateResult<TReadViewModel> { Message = isValid.Message };
 
                     foreach (var modelError in isValid.Errors)
                     {

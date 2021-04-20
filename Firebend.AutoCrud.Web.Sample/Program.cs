@@ -51,6 +51,7 @@ namespace Firebend.AutoCrud.Web.Sample
                     .AddSampleMassTransit(hostContext.Configuration)
                     .AddRouting()
                     .AddSwaggerGen()
+                    .AddFirebendAutoCrudApiBehaviors()
                     .AddControllers()
                     .AddNewtonsoftJson()
                     .AddFirebendAutoCrudWeb(services);

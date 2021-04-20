@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Web
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddFirebendApiBehaviors(
+        public static IServiceCollection AddFirebendAutoCrudApiBehaviors(
             this IServiceCollection serviceCollection,
             bool suppressBindingSource = true,
             bool useValidationProblemDetails = true) => serviceCollection.Configure<ApiBehaviorOptions>(o =>

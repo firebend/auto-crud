@@ -13,6 +13,6 @@ namespace Firebend.AutoCrud.Web.Abstractions
             _apiOptions = apiOptions;
         }
 
-        protected virtual  WrappedActionResult GetInvalidModelStateResult() => _apiOptions.Value.WrapInvalidModelStateResult(ControllerContext);
+        protected virtual WrappedActionResult GetInvalidModelStateResult() => _apiOptions.Value.WrapInvalidModelStateResult(ControllerContext);
     }
 }
