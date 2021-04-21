@@ -52,6 +52,17 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return jsonPatchDocument;
         }
 
+        private async Task<TEntity> SetTenantAsync(TEntity entity, CancellationToken cancellationToken)
+        {
+            var tenant = await _tenantEntityProvider
+                .GetTenantAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            entity.TenantId = tenant.TenantId;
+
+            return entity;
+        }
+
         public override Task<TEntity> UpdateAsync(TKey key,
             JsonPatchDocument<TEntity> jsonPatchDocument,
             CancellationToken cancellationToken = default)
@@ -73,13 +84,16 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public override async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            var tenant = await _tenantEntityProvider
-                .GetTenantAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            entity.TenantId = tenant.TenantId;
+            entity = await SetTenantAsync(entity, cancellationToken);
 
             return await base.UpdateAsync(entity, cancellationToken).ConfigureAwait(false);
+        }
+
+        public override async Task<TEntity> UpdateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+        {
+            entity = await SetTenantAsync(entity, cancellationToken);
+
+            return await base.UpdateAsync(entity, entityTransaction, cancellationToken).ConfigureAwait(false);
         }
     }
 }
