@@ -68,10 +68,26 @@ Content-Type: application/json
 }
 
 ###
-PUT http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/91df5294-696f-4f2f-a3cf-eb9f0c7f1fc3
+PUT http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/6544756d-b782-4b57-a88f-7f03b61c0423
 Content-Type: application/json
 
 {
     "key" : "shirt size",
     "value": "xx large"
 }
+
+###
+PATCH http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/6544756d-b782-4b57-a88f-7f03b61c0423
+Content-Type: application/json
+
+[
+ {
+  "op": "replace",
+  "path": "/value",
+  "value": "xxl patch"
+ }
+]
+
+###
+DELETE http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/6544756d-b782-4b57-a88f-7f03b61c0423
+Content-Type: application/json

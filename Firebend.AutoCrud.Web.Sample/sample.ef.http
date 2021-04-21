@@ -74,10 +74,26 @@ Content-Type: application/json
 }
 
 ###
-PUT http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/custom-fields/86e47644-6e61-4763-4031-08d8ed650141
+PUT http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/custom-fields/9a25b036-9b18-4c40-7a8f-08d904f665aa
 Content-Type: application/json
 
 {
     "key" : "shirt size",
     "value": "medium"
 }
+
+###
+PATCH http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/custom-fields/9a25b036-9b18-4c40-7a8f-08d904f665aa
+Content-Type: application/json
+
+[
+    {
+        "op": "replace",
+        "path": "/value",
+        "value": "xxl patch"
+    }
+]
+
+###
+DELETE http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/custom-fields/9a25b036-9b18-4c40-7a8f-08d904f665aa
+Content-Type: application/json
