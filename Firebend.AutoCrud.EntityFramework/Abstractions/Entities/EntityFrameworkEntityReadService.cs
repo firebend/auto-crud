@@ -30,8 +30,16 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         public Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
             => _readClient.GetAllAsync(null, true, cancellationToken);
 
+        public Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            CancellationToken cancellationToken = default) => _readClient.GetAllAsync(filter, true, cancellationToken);
+
         public Task<List<TEntity>> GetAllAsync(IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
             => _readClient.GetAllAsync(null, true, entityTransaction, cancellationToken);
+
+        public Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default) =>
+            _readClient.GetAllAsync(filter, true, entityTransaction, cancellationToken);
 
         public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             => _readClient.ExistsAsync(filter, cancellationToken);
