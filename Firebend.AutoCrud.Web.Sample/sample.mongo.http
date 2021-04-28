@@ -38,8 +38,10 @@ https://localhost:5001/api/v1/mongo-person/all
 https://localhost:5001/api/v1/mongo-person?search=todd&pageSize=10&pageNumber=1
 
 ###
-https://localhost:5001/api/v1/mongo-person?search=todd&pageSize=10&pageNumber=1
+https://localhost:5001/api/v1/mongo-person?nickName=todd&pageSize=10&pageNumber=1
 
+###
+https://localhost:5001/api/v1/mongo-person?pageSize=10&pageNumber=1
 ###
 http://localhost:5000/api/v1/mongo-person/443adfbc-71c4-4bef-b7d7-e7425dd27eed/changes?PageNumber=1&pageSize=20
 
