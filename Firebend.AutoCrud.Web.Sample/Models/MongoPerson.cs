@@ -32,6 +32,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public Guid Id { get; set; }
         public DateTimeOffset CreatedDate { get; set; }
         public DateTimeOffset ModifiedDate { get; set; }
+        public string NickName { get; set; }
     }
 
     public class MongoTenantPerson : MongoPerson, ITenantEntity<int>, ICustomFieldsEntity<Guid>

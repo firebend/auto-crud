@@ -39,7 +39,18 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddDomainEvents(domainEvents => domainEvents
                         .WithMongoChangeTracking()
                         .WithMassTransit())
-                    .AddCrud()
+                    .AddCrud(crud => crud
+                        .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
+                        {
+                            if (!string.IsNullOrWhiteSpace(parameters?.NickName))
+                            {
+                                query = query.Where(x => x.NickName == parameters.NickName);
+                            }
+
+                            return query;
+                        })
+                        .WithCrud()
+                    )
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))

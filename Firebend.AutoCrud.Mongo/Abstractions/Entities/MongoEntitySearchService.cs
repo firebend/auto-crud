@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         {
             Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilter = null;
 
-            if (_searchHandler != null && !string.IsNullOrWhiteSpace(request?.Search))
+            if (_searchHandler != null)
             {
                 firstStageFilter = x => (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, request);
             }

@@ -14,7 +14,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         public MongoFullTextSearchHandler() : base((queryable, search) =>
         {
+            if (string.IsNullOrWhiteSpace(search?.Search))
+            {
+                return queryable;
+            }
+
             var b = Builders<TEntity>.Filter.Text(search.Search);
+
             return queryable.Where(_ => b.Inject());
         })
         {
