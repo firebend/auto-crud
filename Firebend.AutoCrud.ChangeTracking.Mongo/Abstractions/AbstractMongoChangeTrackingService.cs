@@ -62,7 +62,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
             Action = action,
             Changes = patchDocument?.Operations,
             Entity = entity,
-            EntityId = id
+            EntityId = id,
+            DomainEventCustomContext = domainEvent.EventContext?.CustomContext
         };
     }
 }

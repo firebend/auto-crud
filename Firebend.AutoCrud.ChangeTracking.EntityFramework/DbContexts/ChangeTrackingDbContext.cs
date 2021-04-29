@@ -56,6 +56,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
 
                 MapJson(changes, x => x.Changes);
                 MapJson(changes, x => x.Entity);
+                MapJson(changes, x => x.DomainEventCustomContext);
             });
         }
 

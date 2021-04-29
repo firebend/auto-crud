@@ -18,6 +18,17 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
+        public object DomainEventCustomContext { get; set;}
+
+        public T GetDomainEventContext<T>()
+        {
+            if (DomainEventCustomContext == null)
+            {
+                return default;
+            }
+
+            return (T)DomainEventCustomContext;
+        }
     }
 
     public class ChangeTrackingModel<TKey, TEntity> : IEntity<Guid>, IModifiedEntity
