@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 using System.Reflection;
+using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Comparers;
@@ -25,12 +26,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        public ChangeTrackingDbContext()
-        {
-        }
+        private readonly IChangeTrackingOptionsProvider<TKey, TEntity> _changeTrackingOptionsProvider;
 
-        public ChangeTrackingDbContext(DbContextOptions options) : base(options)
+        public ChangeTrackingDbContext(DbContextOptions options,
+            IChangeTrackingOptionsProvider<TKey, TEntity> changeTrackingOptionsProvider) : base(options)
         {
+            _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
         }
 
         /// <summary>
@@ -56,7 +57,15 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
 
                 MapJson(changes, x => x.Changes);
                 MapJson(changes, x => x.Entity);
-                MapJson(changes, x => x.DomainEventCustomContext);
+
+                if (_changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false)
+                {
+                    MapJson(changes, x => x.DomainEventCustomContext);
+                }
+                else
+                {
+                    changes.Ignore(x => x.DomainEventCustomContext);
+                }
             });
         }
 

@@ -17,10 +17,14 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         where TEntityKey : struct
         where TEntity : class, IEntity<TEntityKey>
     {
+        private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
+
         protected AbstractEntityFrameworkChangeTrackingService(
-            IChangeTrackingDbContextProvider<TEntityKey, TEntity> provider) :
+            IChangeTrackingDbContextProvider<TEntityKey, TEntity> provider,
+            IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider) :
             base(provider, null, null, null)
         {
+            _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
         }
 
         public Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
@@ -48,21 +52,23 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                     domainEvent.Patch),
                 cancellationToken);
 
-        private static ChangeTrackingEntity<TEntityKey, TEntity> GetChangeTrackingEntityBase(DomainEventBase domainEvent,
+        private ChangeTrackingEntity<TEntityKey, TEntity> GetChangeTrackingEntityBase(DomainEventBase domainEvent,
             string action,
             TEntity entity,
             TEntityKey id,
             JsonPatchDocument<TEntity> patchDocument = null)
             => new()
-        {
-            ModifiedDate = domainEvent.Time,
-            Source = domainEvent.EventContext?.Source,
-            UserEmail = domainEvent.EventContext?.UserEmail,
-            Action = action,
-            Changes = patchDocument?.Operations,
-            Entity = entity,
-            EntityId = id,
-            DomainEventCustomContext = domainEvent.EventContext?.CustomContext
-        };
+            {
+                ModifiedDate = domainEvent.Time,
+                Source = domainEvent.EventContext?.Source,
+                UserEmail = domainEvent.EventContext?.UserEmail,
+                Action = action,
+                Changes = patchDocument?.Operations,
+                Entity = entity,
+                EntityId = id,
+                DomainEventCustomContext = _changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false
+                    ? domainEvent.EventContext?.CustomContext
+                    : null
+            };
     }
 }

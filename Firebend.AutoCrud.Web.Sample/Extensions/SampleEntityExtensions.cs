@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework;
+using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
@@ -37,7 +38,10 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithShardMode(MongoTenantShardMode.Database)
                     .AddCustomFields()
                     .AddDomainEvents(domainEvents => domainEvents
-                        .WithMongoChangeTracking()
+                        .WithMongoChangeTracking(new ChangeTrackingOptions
+                        {
+                            PersistCustomContext = true
+                        })
                         .WithMassTransit())
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
@@ -80,7 +84,10 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddCustomFields(cf =>
                         cf.AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                         {
-                            de.WithEfChangeTracking()
+                            de.WithEfChangeTracking(new ChangeTrackingOptions
+                                {
+                                    PersistCustomContext = true
+                                })
                                 .WithMassTransit();
                         }).AddControllers(controllers => controllers
                             .WithChangeTrackingControllers()
@@ -105,7 +112,10 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithCrud()
                         )
                     .AddDomainEvents(events => events
-                        .WithEfChangeTracking()
+                        .WithEfChangeTracking(new ChangeTrackingOptions
+                        {
+                            PersistCustomContext = true
+                        })
                         .WithMassTransit()
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()

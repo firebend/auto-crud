@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
+using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -27,27 +28,51 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
+        private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
+        private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
         private readonly ILogger _logger;
         private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
-        private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
 
         protected AbstractChangeTrackingDbContextProvider(ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
             IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
-            IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider)
+            IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
+            IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
         {
             _logger = logger;
             _optionsProvider = optionsProvider;
             _connectionStringProvider = connectionStringProvider;
+            _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
+        }
+
+        public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+        {
+            var connectionString = await _connectionStringProvider
+                .GetConnectionStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var options = _optionsProvider.GetDbContextOptions(connectionString);
+
+            var context = await GetDbContextAsync(options, cancellationToken);
+
+            return context;
+        }
+
+        public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
+        {
+            var options = _optionsProvider.GetDbContextOptions(connection);
+
+            var context = await GetDbContextAsync(options, cancellationToken);
+
+            return context;
         }
 
         private async Task<IDbContext> GetDbContextAsync(DbContextOptions options, CancellationToken cancellationToken)
         {
-            var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options);
+            var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options, _changeTrackingOptionsProvider);
 
             await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName ?? string.Empty, async _ =>
                 {
-
-                    var type =context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>));
+                    var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>));
                     var schema = type.GetSchema().Coalesce("dbo");
                     var table = type.GetTableName();
                     var fullTableName = $"[{schema}].[{table}]";
@@ -74,7 +99,10 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                         }
                     }
 
-                    await AddMigrationFieldsAsync(context, fullTableName, cancellationToken);
+                    if (_changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false)
+                    {
+                        await AddMigrationFieldsAsync(context, fullTableName, cancellationToken);
+                    }
 
                     return true;
                 })
@@ -124,28 +152,6 @@ END", cancellationToken);
             var exists = await command.ExecuteScalarAsync(cancellationToken) != null;
 
             return exists;
-        }
-
-        public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
-        {
-            var connectionString = await _connectionStringProvider
-                .GetConnectionStringAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            var options = _optionsProvider.GetDbContextOptions(connectionString);
-
-            var context = await GetDbContextAsync(options, cancellationToken);
-
-            return context;
-        }
-
-        public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
-        {
-            var options = _optionsProvider.GetDbContextOptions(connection);
-
-            var context = await GetDbContextAsync(options, cancellationToken);
-
-            return context;
         }
     }
 }

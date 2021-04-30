@@ -19,8 +19,40 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
 {
     public static class Extensions
     {
+
+        /// <summary>
+        /// Adds change tracking for a given entity and persists it to a data store using Entity Framework.
+        /// This function registers a <see cref="AbstractMongoChangeTrackingService{TEntityKey,TEntity}"/> to track changes and
+        /// a <see cref="AbstractMongoChangeTrackingReadRepository{TEntityKey,TEntity}"/> to read changes.
+        /// It also registers <see cref="AbstractChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="AbstractChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
+        /// and <see cref="AbstractChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
+        /// A <see cref="AbstractChangeTrackingDbContextProvider{TEntityKey,TEntity}"/> is registered so that a special change tracking Entity Framework context
+        /// can be used to persist the changes.
+        /// </summary>
+        /// <param name="configurator">
+        /// The <see cref="DomainEventsConfigurator{TBuilder,TKey,TEntity}"/> to configure Entity Framework persistence for.
+        /// </param>
+        /// <param name="changeTrackingOptions">
+        /// The <see cref="ChangeTrackingOptions"/> to configure change tracking.
+        /// </param>
+        /// <typeparam name="TBuilder">
+        /// The type of <see cref="MongoDbEntityBuilder{TKey,TEntity}"/> builder. Must inherit <see cref="MongoDbEntityBuilder{TKey,TEntity}"/>
+        /// </typeparam>
+        /// <typeparam name="TKey">
+        /// The type of key the entity uses.
+        /// </typeparam>
+        /// <typeparam name="TEntity">
+        /// The type of entity.
+        /// </typeparam>
+        /// <returns>
+        /// A <see cref="DomainEventsConfigurator{TBuilder,TKey,TEntity}"/>
+        /// </returns>
+        /// <exception cref="Exception">
+        /// Throws an exception if <paramref name="configurator"/> does not implement <see cref="MongoDbEntityBuilder{TKey,TEntity}"/>
+        /// </exception>
         public static DomainEventsConfigurator<TBuilder, TKey, TEntity> WithMongoChangeTracking<TBuilder, TKey, TEntity>(
-            this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator)
+            this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator,
+            ChangeTrackingOptions changeTrackingOptions = null)
             where TKey : struct
             where TEntity : class, IEntity<TKey>, new()
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
@@ -97,6 +129,9 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
             configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
             configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
             configurator.WithDomainEventEntityDeletedSubscriber<AbstractChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
+
+            configurator.Builder.WithRegistrationInstance<IChangeTrackingOptionsProvider<TKey, TEntity>>(
+                new DefaultChangeTrackingOptionsProvider<TKey, TEntity>(changeTrackingOptions ?? new ChangeTrackingOptions()));
 
             return configurator;
         }

@@ -31,6 +31,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
         /// <param name="configurator">
         /// The <see cref="DomainEventsConfigurator{TBuilder,TKey,TEntity}"/> to configure Entity Framework persistence for.
         /// </param>
+        /// <param name="changeTrackingOptions">
+        /// The <see cref="ChangeTrackingOptions"/> to configure change tracking.
+        /// </param>
         /// <typeparam name="TBuilder">
         /// The type of <see cref="EntityCrudBuilder{TKey,TEntity}"/> builder. Must inherit <see cref="EntityFrameworkEntityBuilder{TKey,TEntity}"/>
         /// </typeparam>
@@ -47,7 +50,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
         /// Throws an exception if <paramref name="configurator"/> does not implement <see cref="EntityFrameworkEntityBuilder{TKey,TEntity}"/>
         /// </exception>
         public static DomainEventsConfigurator<TBuilder, TKey, TEntity> WithEfChangeTracking<TBuilder, TKey, TEntity>(
-            this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator)
+            this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator,
+            ChangeTrackingOptions changeTrackingOptions = null
+            )
             where TKey : struct
             where TEntity : class, IEntity<TKey>, new()
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
@@ -84,6 +89,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
             configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
             configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
             configurator.WithDomainEventEntityDeletedSubscriber<AbstractChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
+
+            configurator.Builder.WithRegistrationInstance<IChangeTrackingOptionsProvider<TKey, TEntity>>(
+                    new DefaultChangeTrackingOptionsProvider<TKey, TEntity>(changeTrackingOptions ?? new ChangeTrackingOptions()));
 
             return configurator;
         }

@@ -96,3 +96,6 @@ Content-Type: application/json
 ###
 DELETE http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/6544756d-b782-4b57-a88f-7f03b61c0423
 Content-Type: application/json
+
+###
+http://localhost:5000/api/v1/mongo/domain-event-custom-context
