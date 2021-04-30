@@ -4,7 +4,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.ChangeTracking
 {
-    public class DefaultChangeTrackingOptionsProvider<TKey, TEntity>: IChangeTrackingOptionsProvider<TKey, TEntity>
+    public class DefaultChangeTrackingOptionsProvider<TKey, TEntity> : IChangeTrackingOptionsProvider<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {

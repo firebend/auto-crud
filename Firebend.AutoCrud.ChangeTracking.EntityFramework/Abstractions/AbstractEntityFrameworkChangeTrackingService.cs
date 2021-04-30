@@ -58,17 +58,17 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             TEntityKey id,
             JsonPatchDocument<TEntity> patchDocument = null)
             => new()
-            {
-                ModifiedDate = domainEvent.Time,
-                Source = domainEvent.EventContext?.Source,
-                UserEmail = domainEvent.EventContext?.UserEmail,
-                Action = action,
-                Changes = patchDocument?.Operations,
-                Entity = entity,
-                EntityId = id,
-                DomainEventCustomContext = _changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false
+        {
+            ModifiedDate = domainEvent.Time,
+            Source = domainEvent.EventContext?.Source,
+            UserEmail = domainEvent.EventContext?.UserEmail,
+            Action = action,
+            Changes = patchDocument?.Operations,
+            Entity = entity,
+            EntityId = id,
+            DomainEventCustomContext = _changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false
                     ? domainEvent.EventContext?.CustomContext
                     : null
-            };
+        };
     }
 }

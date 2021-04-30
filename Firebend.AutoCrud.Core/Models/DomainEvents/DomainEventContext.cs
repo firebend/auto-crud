@@ -62,6 +62,6 @@ namespace Firebend.AutoCrud.Core.Models.DomainEvents
             return deserialized;
         }
 
-        private static JsonSerializerSettings GetJsonSettings() => new() {TypeNameHandling = TypeNameHandling.All};
+        private static JsonSerializerSettings GetJsonSettings() => new() { TypeNameHandling = TypeNameHandling.All };
     }
 }

@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync(CancellationToken cancellationToken)
         {
-            var all= await _readClient
+            var all = await _readClient
                 .GetAllAsync(x => x.DomainEventCustomContext != null, cancellationToken);
 
             return Ok(new

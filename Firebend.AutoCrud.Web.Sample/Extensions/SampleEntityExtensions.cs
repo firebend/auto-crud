@@ -85,9 +85,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         cf.AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                         {
                             de.WithEfChangeTracking(new ChangeTrackingOptions
-                                {
-                                    PersistCustomContext = true
-                                })
+                            {
+                                PersistCustomContext = true
+                            })
                                 .WithMassTransit();
                         }).AddControllers(controllers => controllers
                             .WithChangeTrackingControllers()
