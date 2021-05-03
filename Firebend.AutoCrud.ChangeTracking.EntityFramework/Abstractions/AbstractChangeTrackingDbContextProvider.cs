@@ -77,25 +77,15 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                     var table = type.GetTableName();
                     var fullTableName = $"[{schema}].[{table}]";
 
-                    try
+                    if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
                     {
-                        if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
-                        {
-                            var exists = await DoesTableExist(context, schema, table, cancellationToken);
+                        var exists = await DoesTableExist(context, schema, table, cancellationToken);
 
-                            if (!exists)
-                            {
-                                await dbCreator
-                                    .CreateTablesAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        if (!ex.Message.StartsWith("There is already an object named"))
+                        if (!exists)
                         {
-                            _logger.LogError(ex, "Error creating change tracking tables for context");
+                            await dbCreator
+                                .CreateTablesAsync(cancellationToken)
+                                .ConfigureAwait(false);
                         }
                     }
 
