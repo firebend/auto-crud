@@ -5,6 +5,9 @@ namespace Firebend.AutoCrud.Core.Extensions
 {
     public static class StringExtensions
     {
+        public static string Coalesce(this string source, string substitution)
+            => string.IsNullOrWhiteSpace(source) ? substitution : source;
+
         public static T? ParseEnum<T>(this string source)
             where T : struct
         {

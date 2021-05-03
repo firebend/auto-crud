@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.AspNetCore.JsonPatch.Operations;
+using Newtonsoft.Json.Linq;
 
 namespace Firebend.AutoCrud.ChangeTracking.Models
 {
@@ -18,6 +19,15 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
+        public object DomainEventCustomContext { get; set; }
+
+        public T GetDomainEventContext<T>() => DomainEventCustomContext switch
+        {
+            null => default,
+            T context => context,
+            JObject jObject => jObject.ToObject<T>(),
+            _ => (T)DomainEventCustomContext
+        };
     }
 
     public class ChangeTrackingModel<TKey, TEntity> : IEntity<Guid>, IModifiedEntity

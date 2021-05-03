@@ -100,3 +100,6 @@ Content-Type: application/json
 ###
 DELETE http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/custom-fields/9a25b036-9b18-4c40-7a8f-08d904f665aa
 Content-Type: application/json
+
+###
+http://localhost:5000/api/v1/ef/domain-event-custom-context

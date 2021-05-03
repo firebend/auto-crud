@@ -17,11 +17,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
     {
+        private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
         private readonly IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _createClient;
 
-        protected AbstractMongoChangeTrackingService(IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> createClient)
+        protected AbstractMongoChangeTrackingService(IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> createClient,
+            IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
         {
             _createClient = createClient;
+            _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
         }
 
         public Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
@@ -49,7 +52,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
                     domainEvent.Patch),
                 cancellationToken);
 
-        private static ChangeTrackingEntity<TEntityKey, TEntity> GetChangeTrackingEntityBase(DomainEventBase domainEvent,
+        private ChangeTrackingEntity<TEntityKey, TEntity> GetChangeTrackingEntityBase(DomainEventBase domainEvent,
             string action,
             TEntity entity,
             TEntityKey id,
@@ -62,7 +65,10 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
             Action = action,
             Changes = patchDocument?.Operations,
             Entity = entity,
-            EntityId = id
+            EntityId = id,
+            DomainEventCustomContext = _changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false
+                    ? domainEvent.EventContext?.CustomContext
+                    : null
         };
     }
 }
