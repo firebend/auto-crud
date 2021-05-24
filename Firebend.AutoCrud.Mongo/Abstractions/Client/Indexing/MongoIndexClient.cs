@@ -91,7 +91,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 if (!collectionExists)
                 {
                     await database
-                        .CreateCollectionAsync(EntityConfiguration.CollectionName, null, cancellationToken)
+                        .CreateCollectionAsync($"{configuration.DatabaseName}.{configuration.CollectionName}", null, cancellationToken)
                         .ConfigureAwait(false);
                 }
             }), cancellationToken);
@@ -108,7 +108,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 }
             }
 
-            using (await _distributedLockService.LockAsync(EntityConfiguration.CollectionName, cancellationToken)
+            using (await _distributedLockService.LockAsync(configurationKey, cancellationToken)
                 .ConfigureAwait(false))
             {
                 if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out configured))
