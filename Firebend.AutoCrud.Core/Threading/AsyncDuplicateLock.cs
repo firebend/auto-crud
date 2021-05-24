@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Firebend.AutoCrud.Core.Threading
 {
-    public sealed class AsyncDuplicateLock
+    public sealed class AsyncDuplicateLock : IDisposable
     {
         private static readonly Dictionary<object, RefCounted<SemaphoreSlim>> SemaphoreSlims = new();
 
@@ -84,6 +84,11 @@ namespace Firebend.AutoCrud.Core.Threading
                     item.Value.Release();
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }

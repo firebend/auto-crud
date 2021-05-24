@@ -1,8 +1,10 @@
 using System;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations.Concurrency;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Implementations.Entities;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
@@ -46,6 +48,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             WithRegistration<IJsonPatchGenerator, JsonPatchGenerator>(false);
             WithRegistration<IEntityQueryOrderByHandler<TKey, TEntity>, DefaultEntityQueryOrderByHandler<TKey, TEntity>>(false);
             WithRegistration<IEntityTransactionOutbox, InMemoryEntityTransactionOutbox>(false);
+            WithRegistration<IDistributedLockService, DistributedLockService>(false);
 
             if (IsModifiedEntity)
             {

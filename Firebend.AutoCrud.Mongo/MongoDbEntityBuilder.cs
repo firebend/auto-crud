@@ -119,9 +119,9 @@ namespace Firebend.AutoCrud.Mongo
                 WithRegistration(searchHandlerInterfaceType, fullTextType);
             }
 
-            WithRegistration<IEntityTransactionFactory<TKey, TEntity>, MongoEntityTransactionFactory<TKey, TEntity>>();
+            WithRegistration<IEntityTransactionFactory<TKey, TEntity>, MongoEntityTransactionFactory<TKey, TEntity>>(false);
 
-            WithRegistration<IMongoRetryService, MongoRetryService>();
+            WithRegistration<IMongoRetryService, MongoRetryService>(false);
         }
 
         private void RegisterEntityConfiguration()

@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Threading;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
@@ -18,14 +18,17 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         where TEntity : IEntity<TKey>
     {
         private readonly IMongoIndexProvider<TEntity> _indexProvider;
+        private readonly IDistributedLockService _distributedLockService;
 
         public MongoIndexClient(IMongoClient client,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ILogger<MongoIndexClient<TKey, TEntity>> logger,
             IMongoIndexProvider<TEntity> indexProvider,
-            IMongoRetryService retryService) : base(client, logger, entityConfiguration, retryService)
+            IMongoRetryService retryService,
+            IDistributedLockService distributedLockService) : base(client, logger, entityConfiguration, retryService)
         {
             _indexProvider = indexProvider;
+            _distributedLockService = distributedLockService;
         }
 
         public Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
@@ -105,8 +108,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 }
             }
 
-            using (await new AsyncDuplicateLock()
-                .LockAsync(EntityConfiguration.CollectionName, cancellationToken)
+            using (await _distributedLockService.LockAsync(EntityConfiguration.CollectionName, cancellationToken)
                 .ConfigureAwait(false))
             {
                 if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out configured))
