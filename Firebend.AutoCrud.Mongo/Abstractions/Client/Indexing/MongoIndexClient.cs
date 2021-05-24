@@ -22,7 +22,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         public MongoIndexClient(IMongoClient client,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ILogger<MongoIndexClient<TKey, TEntity>> logger,
-            IMongoIndexProvider<TEntity> indexProvider) : base(client, logger, entityConfiguration)
+            IMongoIndexProvider<TEntity> indexProvider,
+            IMongoRetryService retryService) : base(client, logger, entityConfiguration, retryService)
         {
             _indexProvider = indexProvider;
         }

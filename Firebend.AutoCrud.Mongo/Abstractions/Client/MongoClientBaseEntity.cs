@@ -20,7 +20,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
     {
         protected MongoClientBaseEntity(IMongoClient client,
             ILogger logger,
-            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration) : base(client, logger)
+            IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
+            IMongoRetryService mongoRetryService) : base(client, logger, mongoRetryService)
         {
             EntityConfiguration = entityConfiguration;
         }

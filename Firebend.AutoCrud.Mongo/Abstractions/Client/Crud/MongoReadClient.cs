@@ -23,7 +23,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         protected MongoReadClient(IMongoClient client,
             ILogger<MongoReadClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler) : base(client, logger, entityConfiguration)
+            IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler,
+            IMongoRetryService mongoRetryService) : base(client, logger, entityConfiguration, mongoRetryService)
         {
             _orderByHandler = orderByHandler;
         }

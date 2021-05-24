@@ -9,12 +9,18 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoFixture.AutoMoq" Version="4.17.0" />
         <PackageReference Include="FluentAssertions" Version="5.10.3" />
         <PackageReference Include="GitHubActionsTestLogger" Version="1.2.0" />
         <PackageReference Include="nunit" Version="3.13.1" />
         <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+        <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
         <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.7.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Firebend.AutoCrud.Mongo\Firebend.AutoCrud.Mongo.csproj" />
     </ItemGroup>
 
 </Project>

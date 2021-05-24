@@ -22,7 +22,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             ILogger<MongoTenantReadClient<TKey, TEntity, TTenantKey>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IEntityQueryOrderByHandler<TKey, TEntity> entityQueryOrderByHandler) : base(client, logger, entityConfiguration, entityQueryOrderByHandler)
+            IEntityQueryOrderByHandler<TKey, TEntity> entityQueryOrderByHandler,
+            IMongoRetryService retryService) : base(client, logger, entityConfiguration, entityQueryOrderByHandler, retryService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

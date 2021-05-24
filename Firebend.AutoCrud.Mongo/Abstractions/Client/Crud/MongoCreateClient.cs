@@ -22,7 +22,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             ILogger<MongoCreateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IEntityDomainEventPublisher eventPublisher,
-            IDomainEventContextProvider domainEventContextProvider) : base(client, logger, entityConfiguration)
+            IDomainEventContextProvider domainEventContextProvider,
+            IMongoRetryService mongoRetryService) : base(client, logger, entityConfiguration, mongoRetryService)
         {
             _eventPublisher = eventPublisher;
             _domainEventContextProvider = domainEventContextProvider;

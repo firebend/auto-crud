@@ -38,7 +38,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
             IDomainEventContextProvider domainEventContextProvider,
             IJsonPatchGenerator jsonPatchDocumentGenerator,
-            IEntityDomainEventPublisher domainEventPublisher) : base(client, logger, entityConfiguration)
+            IEntityDomainEventPublisher domainEventPublisher,
+            IMongoRetryService retryService) : base(client, logger, entityConfiguration, retryService)
         {
             _keyGenerator = keyGenerator;
             _domainEventContextProvider = domainEventContextProvider;
