@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
+using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
@@ -118,7 +119,9 @@ namespace Firebend.AutoCrud.Mongo
                 WithRegistration(searchHandlerInterfaceType, fullTextType);
             }
 
-            WithRegistration<IEntityTransactionFactory<TKey, TEntity>, MongoEntityTransactionFactory<TKey, TEntity>>();
+            WithRegistration<IEntityTransactionFactory<TKey, TEntity>, MongoEntityTransactionFactory<TKey, TEntity>>(false);
+
+            WithRegistration<IMongoRetryService, MongoRetryService>(false);
         }
 
         private void RegisterEntityConfiguration()

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
@@ -9,38 +10,35 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
     public abstract class MongoClientBase : BaseDisposable
     {
         protected MongoClientBase(IMongoClient client,
-            ILogger logger)
+            ILogger logger,
+            IMongoRetryService mongoRetryService)
         {
             Client = client;
             Logger = logger;
+            MongoRetryService = mongoRetryService;
         }
 
         protected IMongoClient Client { get; }
 
         protected ILogger Logger { get; }
 
-        //todo: we may want to refactor this with polly or some other retry interface abstraction
+        protected IMongoRetryService MongoRetryService { get; }
+
         protected Task RetryErrorAsync(Func<Task> method) => RetryErrorAsync(async () =>
         {
             await method();
             return true;
         });
 
-        protected async Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, bool retry = true)
+        protected async Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int maxTries = 7)
         {
             try
             {
-                return await method();
+                return await MongoRetryService.RetryErrorAsync(method, maxTries);
             }
             catch (Exception ex)
             {
-                if (retry)
-                {
-                    return await RetryErrorAsync(method, false);
-                }
-
                 Logger?.LogError(ex, "Error querying Document Store: \"{Message}\"", ex.Message);
-
                 throw;
             }
         }

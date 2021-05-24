@@ -1,4 +1,5 @@
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
@@ -52,6 +53,7 @@ namespace Firebend.AutoCrud.Web.Sample
                     .AddRouting()
                     .AddSwaggerGen()
                     .AddFirebendAutoCrudApiBehaviors()
+                    .AddScoped<IDistributedLockService, CustomLockService>()
                     .AddControllers()
                     .AddNewtonsoftJson()
                     .AddFirebendAutoCrudWeb(services);

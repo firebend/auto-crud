@@ -29,9 +29,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IDomainEventContextProvider domainEventContextProvider,
             IJsonPatchGenerator jsonPatchDocumentGenerator,
             IEntityDomainEventPublisher domainEventPublisher,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider)
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+            IMongoRetryService retryService)
             : base(client, logger, entityConfiguration, keyGenerator, domainEventContextProvider,
-                jsonPatchDocumentGenerator, domainEventPublisher)
+                jsonPatchDocumentGenerator, domainEventPublisher, retryService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }
