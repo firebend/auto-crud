@@ -141,7 +141,33 @@ namespace AutoCrudSampleApi.DbContexts
 }
 ```
 
-Open `Program.cs`; you should see some code resembling the following
+In `WeatherForecast.cs`, modify the model to extend `IEntity`
+```csharp
+using System;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AutoCrudSampleApi
+{
+    [Table("WeatherForecasts")] // define a table
+    public class WeatherForecast : IEntity<Guid> // implement the `IEntity` interface
+    {
+        [Key] // define a Guid with the `Key` annotation to complete the IEntity implementation
+        public Guid Id { get; set; }
+
+        public DateTime Date { get; set; }
+
+        [Required]
+        public int TemperatureC { get; set; }
+
+        [StringLength(250)]
+        public string Summary { get; set; }
+    }
+}
+```
+
+Finally, open `Program.cs`; you should see some code resembling the following
 ```csharp
 public static IHostBuilder CreateHostBuilder(string[] args) =>
    Host.CreateDefaultBuilder(args)
@@ -195,32 +221,6 @@ public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaul
         services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
     });
 
-```
-
-Finally, in `WeatherForecast.cs`, modify the model to extend `IEntity`
-```csharp
-using System;
-using Firebend.AutoCrud.Core.Interfaces.Models;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace AutoCrudSampleApi
-{
-    [Table("WeatherForecasts")] // define a table
-    public class WeatherForecast : IEntity<Guid> // implement the `IEntity` interface
-    {
-        [Key] // define a Guid with the `Key` annotation to complete the IEntity implementation
-        public Guid Id { get; set; }
-
-        public DateTime Date { get; set; }
-
-        [Required]
-        public int TemperatureC { get; set; }
-
-        [StringLength(250)]
-        public string Summary { get; set; }
-    }
-}
 ```
 
 Now, we need to create and apply some migrations. From the command line, run
@@ -302,41 +302,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 ```
 
-And modify `CreateHostBuilder` to match this
-```csharp
-public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
-   .ConfigureWebHostDefaults(webBuilder =>
-   {
-       webBuilder.UseStartup<Startup>();
-   })
-   .ConfigureServices((hostContext, services) =>
-   {
-       services
-           .UsingMongoCrud("connString", mongo => {
-               mongo.AddEntity<Guid, WeatherForecast>(forecast =>
-                   forecast.WithDefaultDatabase("Samples")
-                       .WithCollection("WeatherForecasts")
-                       .AddCrud()
-                       .AddControllers(controllers => {
-                           controllers
-                               .WithAllControllers(true) // `true` turns on the `/all` endpoint
-                               .WithOpenApiGroupName("WeatherForecasts");
-                       })
-               );
-           })
-           .AddRouting()
-           .AddSwaggerGen()
-           .AddControllers()
-           .AddNewtonsoftJson()
-           .AddFirebendAutoCrudWeb(services);
-
-        // this prevents having to wrap POST bodies with `entity`
-        // like `{ "entity": { "key": "value" } }`
-        services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
-   });
-```
-
-Finally, in `WeatherForecast.cs`, modify the model to extend `IEntity`
+In `WeatherForecast.cs`, modify the model to extend `IEntity`
 ```csharp
 using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -346,6 +312,7 @@ namespace AutoCrudSampleApi
     public class WeatherForecast : IEntity<Guid> // use the `IEntity` interface
     {
         public Guid Id { get; set; } // complete the interface implementation
+        
         public DateTime Date { get; set; }
 
         public int TemperatureC { get; set; }
@@ -353,6 +320,41 @@ namespace AutoCrudSampleApi
         public string Summary { get; set; }
     }
 }
+```
+
+Finally, modify `CreateHostBuilder` in Program to match this
+```csharp
+public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder => {
+                webBuilder.UseStartup<Startup>();
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+                services
+                    .AddDbContext<AppDbContext>(
+                        options => { options.UseSqlServer("connString"); },
+                        ServiceLifetime.Singleton
+                    )
+                    .UsingEfCrud(ef =>
+                    {
+                        ef.AddEntity<Guid, WeatherForecast>(forecast =>
+                            forecast.WithDbContext<AppDbContext>()
+                                .AddCrud()
+                                .AddControllers(controllers => controllers
+                                    .WithAllControllers(true) // `true` turns on the `/all` endpoint
+                                .WithOpenApiGroupName("WeatherForecasts"))
+                        );
+                    })
+                    .AddRouting()
+                    .AddSwaggerGen()
+                    .AddControllers()
+                    .AddNewtonsoftJson()
+                    .AddFirebendAutoCrudWeb(services);
+
+                // this prevents having to wrap POST bodies with `entity`
+                // like `{ "entity": { "key": "value" } }`
+                services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
+            });
 ```
 
 You can delete `Controllers/WeatherForecastController.cs`.
