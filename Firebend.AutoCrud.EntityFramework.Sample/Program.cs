@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Threading;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Sample.DbContexts;
 using Firebend.AutoCrud.EntityFramework.Sample.Models;
 using Microsoft.EntityFrameworkCore;
@@ -45,12 +47,18 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
                     .UsingEfCrud()
                     .AddEntity<Guid, Person>(person =>
                         person.WithDbContext<AppDbContext>()
-                            .AddCrud(crud => crud.WithCrud())
+                            .WithConnectionString(hostContext.Configuration.GetConnectionString("SqlServer"))
+                            .WithDbOptionsProvider(s => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(s).Options,
+                                connection => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connection).Options)
+                            .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((persons, request) => persons.Where(x => x.FirstName == request.Search)))
                             .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
                     )
                     .AddEntity<Guid, Pet>(pet =>
                         pet.WithDbContext<AppDbContext>()
-                            .AddCrud(crud => crud.WithCrud())
+                            .WithConnectionString(hostContext.Configuration.GetConnectionString("SqlServer"))
+                            .WithDbOptionsProvider(s => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(s).Options,
+                                connection => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connection).Options)
+                            .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((pets, request) => pets.Where(x => x.Name == request.Search)))
                     )
                     .Generate();
 
