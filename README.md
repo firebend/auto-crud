@@ -794,7 +794,31 @@ dotnet add package Firebend.AutoCrud.CustomFields.EntityFramework # or dotnet ad
 dotnet add package Firebend.AutoCrud.CustomFields.Web
 ```
 
+Implement `ICustomFieldsEntity<Guid>` to the model you are wanting to add Custom Fields to and add the `CustomFields` list of entities to store the custom fields. In this example, we'll be editing the `WeatherForecast.cs` file to be like below:
+```csharp
+namespace AutoCrudSampleApi
+{
+    [Table("WeatherForecasts")] // define a table
+    public class WeatherForecast : IEntity<Guid>, ICustomFieldsEntity<Guid> // implement the `IEntity` interface
+    {
+        [Key] // define a Guid with the `Key` annotation to complete the IEntity implementation
+        public Guid Id { get; set; }
+
+        public DateTime Date { get; set; }
+
+        [Required]
+        public int TemperatureC { get; set; }
+
+        [StringLength(250)]
+        public string Summary { get; set; }
+
+        public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
+    }
+}
+```
+
 ### Mongo
+Add the `.AddCustomFields()` call right before `.AddCrud()` call.
 ```csharp
 // ...
   services
@@ -810,6 +834,7 @@ dotnet add package Firebend.AutoCrud.CustomFields.Web
 ```
 
 ### EF
+Add the `.AddCustomFields()` call right before `.AddCrud()` call.
 ```csharp
 // ...
   .UsingEfCrud(ef =>
