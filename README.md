@@ -778,7 +778,6 @@ using Firebend.AutoCrud.Mongo.Models;
 ```
 
 # Custom Fields
-# --Borked? Need to ask about this one.
 Auto Crud allows you to store key value pair custom fields for entities. In no sql data stores like MongoDB this will be an additional array added to the entity to house the key value pairs. For relational data stores like Sql Server using Entity Framework, the custom fields will be stored in an additional table. 
 
 Install the required package(s)
