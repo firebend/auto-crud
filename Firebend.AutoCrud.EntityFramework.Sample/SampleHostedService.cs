@@ -66,6 +66,13 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
                 throw new Exception(msg);
             }
 
+            if (_searchService == null)
+            {
+                const string msg = "Could not resolve search service";
+                _logger.LogError(msg);
+                throw new Exception(msg);
+            }
+
             _serializer = JsonSerializer.Create(new JsonSerializerSettings { Formatting = Formatting.Indented });
         }
 
