@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Exceptions;
@@ -145,9 +146,19 @@ namespace Firebend.AutoCrud.Web.Abstractions
             [Required][FromBody] JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken)
         {
+            Response.RegisterForDispose(_readService);
+            Response.RegisterForDispose(_updateService);
+
             if (patch == null)
             {
                 ModelState.AddModelError(nameof(patch), "A valid patch document is required.");
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (patch.Operations.Any(x => x.path.EndsWith(nameof(IEntity<Guid>.Id), StringComparison.InvariantCultureIgnoreCase)))
+            {
+                ModelState.AddModelError(nameof(patch), "Modifying the entity's id during patch is not allowed.");
 
                 return GetInvalidModelStateResult();
             }
