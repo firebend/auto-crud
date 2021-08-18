@@ -156,7 +156,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            if (patch.Operations.Any(x => x.path.EndsWith(nameof(IEntity<Guid>.Id), StringComparison.InvariantCultureIgnoreCase)))
+            if (patch.Operations.Any(x => x.path.Equals($"/{nameof(IEntity<Guid>.Id)}", StringComparison.InvariantCultureIgnoreCase)))
             {
                 ModelState.AddModelError(nameof(patch), "Modifying the entity's id during patch is not allowed.");
 
