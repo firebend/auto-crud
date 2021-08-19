@@ -21,8 +21,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                 if (activeEntitySearchRequest.IsDeleted.HasValue)
                 {
                     var expression = activeEntitySearchRequest.IsDeleted.Value
-                        ? (Expression<Func<IActiveEntity, bool>>)(x =>  x.IsDeleted)
-                        : (Expression<Func<IActiveEntity, bool>>)(x =>  !x.IsDeleted);
+                        ? (Expression<Func<IActiveEntity, bool>>)(x => x.IsDeleted)
+                        : (Expression<Func<IActiveEntity, bool>>)(x => !x.IsDeleted);
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }
             }
