@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 {
     public abstract class AbstractEntityControllerBase : ControllerBase
     {
-        private IOptions<ApiBehaviorOptions> _apiOptions;
+        private readonly IOptions<ApiBehaviorOptions> _apiOptions;
 
         protected AbstractEntityControllerBase(IOptions<ApiBehaviorOptions> apiOptions)
         {

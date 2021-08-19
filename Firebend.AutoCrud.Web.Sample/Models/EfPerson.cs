@@ -5,10 +5,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
+using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
     [Table("EfPeople")]
+    [Index(nameof(Email), IsUnique = true)]
+    [Index(nameof(OtherEmail), IsUnique = true)]
     public class EfPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity, ITenantEntity<int>, ICustomFieldsEntity<Guid>
     {
         public EfPerson()
@@ -33,6 +36,13 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         [StringLength(100)]
         public string NickName { get; set; }
+
+        [StringLength(300)]
+        public string Email { get; set; }
+
+        [StringLength(300)]
+        [Column("NotEmail")]
+        public string OtherEmail { get; set; }
 
         public bool IsDeleted { get; set; }
 

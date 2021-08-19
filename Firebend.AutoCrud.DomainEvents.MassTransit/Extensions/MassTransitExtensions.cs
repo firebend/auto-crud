@@ -56,7 +56,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             }
         }
 
-        public static void RegisterFirebendAutoCrudeDomainEventHandlerEndPoints(
+        public static void RegisterFirebendAutoCrudDomainEventHandlerEndPoints(
             this IBusRegistrationContext busRegistrationContext,
             IBusFactoryConfigurator bus,
             IServiceCollection serviceCollection,

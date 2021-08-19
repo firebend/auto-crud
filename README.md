@@ -635,7 +635,7 @@ namespace AutoCrudSampleApi
                         configurator.AutoDelete = true;
                         configurator.PurgeOnStartup = true;
 
-                        context.RegisterFirebendAutoCrudeDomainEventHandlerEndPoints(configurator, serviceCollection);
+                        context.RegisterFirebendAutoCrudDomainEventHandlerEndPoints(configurator, serviceCollection);
                     });
                 })
                 .AddMassTransitHostedService();

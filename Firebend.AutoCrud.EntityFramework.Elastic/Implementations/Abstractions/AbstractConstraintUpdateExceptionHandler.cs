@@ -18,7 +18,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        private const int SqlServerConstraintErrorCode = 547;
+        private const int SqlServerForeignKeyConstraintErrorCode = 547;
+        private const int SqlServerUniqueConstraintErrorCode = 2601;
 
         public bool HandleException(IDbContext context, TEntity entity, DbUpdateException exception)
         {
@@ -27,17 +28,62 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
                 return false;
             }
 
-            return sqlException.Number == SqlServerConstraintErrorCode && HandleConstraint(context, entity, sqlException);
+            if (string.IsNullOrWhiteSpace(sqlException?.Message))
+            {
+                return false;
+            }
+
+            var hasHandledForeignKeyConstraint = sqlException.Number == SqlServerForeignKeyConstraintErrorCode
+                                                 && HandleForeignKeyConstraint(context, entity, sqlException);
+            var hasHandledUniqueConstraint = sqlException.Number == SqlServerUniqueConstraintErrorCode
+                                             && HandleUniqueConstraint(context, entity, sqlException);
+
+            return hasHandledForeignKeyConstraint || hasHandledUniqueConstraint;
         }
 
-        private static bool HandleConstraint(IDbContext context, TEntity entity, Exception sqlException)
+        private static bool HandleUniqueConstraint(IDbContext context, TEntity entity, Exception sqlException)
         {
             if (!(context is DbContext dbContext))
             {
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(sqlException?.Message))
+            var constraintSplit = sqlException.Message.Split("index '");
+            var constraint = constraintSplit[1].Substring(0, constraintSplit[1].IndexOf("'", StringComparison.Ordinal));
+
+            var tableIndex = dbContext
+                .Model
+                .FindEntityType(typeof(TEntity))
+                .GetIndexes()
+                .SelectMany(x => x.GetAnnotations())
+                .Where(x => x?.Value != null)
+                .Where(x => x.Value is IEnumerable<TableIndex>)
+                .SelectMany(x => x.Value as IEnumerable<TableIndex>)
+                .FirstOrDefault(x => x?.Name?.EqualsIgnoreCaseAndWhitespace(constraint) ?? false);
+
+            if (tableIndex == null)
+            {
+                return false;
+            }
+
+            var errors = tableIndex
+                .MappedIndexes
+                .SelectMany(x => x.Properties)
+                .Select(x => (x.Name,
+                    $"{entity.GetType().GetProperty(x.Name)?.GetValue(entity, null)} already exists."))
+                .ToArray();
+
+            throw new AutoCrudEntityException("An entity has failed a db constraint",
+                sqlException,
+                entity,
+                errors
+            );
+
+        }
+
+        private static bool HandleForeignKeyConstraint(IDbContext context, TEntity entity, Exception sqlException)
+        {
+            if (!(context is DbContext dbContext))
             {
                 return false;
             }
@@ -60,20 +106,18 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
                 return false;
             }
 
-            {
-                var errors = foreignKey
-                    .MappedForeignKeys
-                    .SelectMany(x => x.Properties)
-                    .Select(x => (x.Name,
-                        $"Is part of a foreign key to {foreignKey.PrincipalTable.Name} that does not currently exist. Please check your reference."))
-                    .ToArray();
+            var errors = foreignKey
+                .MappedForeignKeys
+                .SelectMany(x => x.Properties)
+                .Select(x => (x.Name,
+                    $"Is part of a foreign key to {foreignKey.PrincipalTable.Name} that does not currently exist. Please check your reference."))
+                .ToArray();
 
-                throw new AutoCrudEntityException("An entity has failed a db constraint",
-                    sqlException,
-                    entity,
-                    errors
-                );
-            }
+            throw new AutoCrudEntityException("An entity has failed a db constraint",
+                sqlException,
+                entity,
+                errors
+            );
 
         }
     }

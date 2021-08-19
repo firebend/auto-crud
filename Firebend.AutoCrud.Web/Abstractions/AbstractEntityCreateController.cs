@@ -40,83 +40,80 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public virtual async Task<ActionResult<TReadViewModel>> Post(
-             TCreateViewModel body,
+            TCreateViewModel body,
             CancellationToken cancellationToken)
         {
-            using (_createService)
+            Response.RegisterForDispose(_createService);
+
+            if (body == null)
             {
-
-                if (body == null)
-                {
-                    ModelState.AddModelError("body", "A body is required");
-                    return GetInvalidModelStateResult();
-                }
-
-                var entity = await _mapper.FromAsync(body, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (!TryValidateModel(entity))
-                {
-                    return GetInvalidModelStateResult();
-                }
-
-                var isValid = await _entityValidationService
-                    .ValidateAsync(entity, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (!isValid.WasSuccessful)
-                {
-                    foreach (var modelError in isValid.Errors)
-                    {
-                        ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
-                    }
-
-                    return GetInvalidModelStateResult();
-                }
-
-                if (isValid.Model != null)
-                {
-                    entity = isValid.Model;
-                }
-
-                TEntity created;
-
-                try
-                {
-                    created = await _createService
-                        .CreateAsync(entity, cancellationToken)
-                        .ConfigureAwait(false);
-                }
-                catch (AutoCrudEntityException ex)
-                {
-                    if (ex.PropertyErrors != null)
-                    {
-                        foreach (var (property, error) in ex.PropertyErrors)
-                        {
-                            ModelState.AddModelError(property, error);
-                        }
-
-                    }
-
-                    return GetInvalidModelStateResult();
-                }
-
-                if (created == null)
-                {
-                    return GetInvalidModelStateResult();
-                }
-
-                var createdViewModel = await _readMapper
-                    .ToAsync(created, cancellationToken)
-                    .ConfigureAwait(false);
-
-                _createService = null;
-                _mapper = null;
-                _readMapper = null;
-                _entityValidationService = null;
-
-                return Created($"{Request.Path.Value}/{created.Id}", createdViewModel);
+                ModelState.AddModelError("body", "A body is required");
+                return GetInvalidModelStateResult();
             }
+
+            var entity = await _mapper.FromAsync(body, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!TryValidateModel(entity))
+            {
+                return GetInvalidModelStateResult();
+            }
+
+            var isValid = await _entityValidationService
+                .ValidateAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!isValid.WasSuccessful)
+            {
+                foreach (var modelError in isValid.Errors)
+                {
+                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+                }
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (isValid.Model != null)
+            {
+                entity = isValid.Model;
+            }
+
+            TEntity created;
+
+            try
+            {
+                created = await _createService
+                    .CreateAsync(entity, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (AutoCrudEntityException ex)
+            {
+                if (ex.PropertyErrors != null)
+                {
+                    foreach (var (property, error) in ex.PropertyErrors)
+                    {
+                        ModelState.AddModelError(property, error);
+                    }
+                }
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (created == null)
+            {
+                return GetInvalidModelStateResult();
+            }
+
+            var createdViewModel = await _readMapper
+                .ToAsync(created, cancellationToken)
+                .ConfigureAwait(false);
+
+            _createService = null;
+            _mapper = null;
+            _readMapper = null;
+            _entityValidationService = null;
+
+            return Created($"{Request.Path.Value}/{created.Id}", createdViewModel);
         }
     }
 }

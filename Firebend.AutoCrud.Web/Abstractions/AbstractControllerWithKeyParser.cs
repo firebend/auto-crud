@@ -10,13 +10,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TEntity : IEntity<TKey>
     {
         private readonly IEntityKeyParser<TKey, TEntity> _keyParser;
-        private readonly IOptions<ApiBehaviorOptions> _apiOptions;
 
         protected AbstractControllerWithKeyParser(IEntityKeyParser<TKey, TEntity> keyParser,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _keyParser = keyParser;
-            _apiOptions = apiOptions;
         }
 
         protected TKey? GetKey(string key)
