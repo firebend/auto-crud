@@ -91,7 +91,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 if (!collectionExists)
                 {
                     await database
-                        .CreateCollectionAsync($"{configuration.DatabaseName}.{configuration.CollectionName}", null, cancellationToken)
+                        .CreateCollectionAsync(configuration.CollectionName, null, cancellationToken)
                         .ConfigureAwait(false);
                 }
             }), cancellationToken);

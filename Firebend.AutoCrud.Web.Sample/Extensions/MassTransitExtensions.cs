@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         configurator.AutoDelete = true;
                         configurator.PurgeOnStartup = true;
 
-                        context.RegisterFirebendAutoCrudeDomainEventHandlerEndPoints(configurator, serviceCollection, AutoCrudMassTransitQueueMode.OneQueue);
+                        context.RegisterFirebendAutoCrudDomainEventHandlerEndPoints(configurator, serviceCollection, AutoCrudMassTransitQueueMode.OneQueue);
                     });
                 })
                 .AddMassTransitHostedService();
