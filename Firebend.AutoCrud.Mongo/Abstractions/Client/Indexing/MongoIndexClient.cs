@@ -17,60 +17,39 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        private readonly IMongoIndexProvider<TEntity> _indexProvider;
         private readonly IDistributedLockService _distributedLockService;
+        private readonly IMongoIndexProvider<TEntity> _indexProvider;
+        private readonly IMongoIndexMergeService _mongoIndexMergeService;
 
         public MongoIndexClient(IMongoClient client,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ILogger<MongoIndexClient<TKey, TEntity>> logger,
             IMongoIndexProvider<TEntity> indexProvider,
             IMongoRetryService retryService,
-            IDistributedLockService distributedLockService) : base(client, logger, entityConfiguration, retryService)
+            IDistributedLockService distributedLockService,
+            IMongoIndexMergeService mongoIndexMergeService) : base(client, logger, entityConfiguration, retryService)
         {
             _indexProvider = indexProvider;
             _distributedLockService = distributedLockService;
+            _mongoIndexMergeService = mongoIndexMergeService;
         }
 
         public Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
             => CheckConfiguredAsync($"{configuration.DatabaseName}.{configuration.CollectionName}.Indexes",
                 async () =>
                 {
-                    var dbCollection = GetCollection(configuration);
                     var builder = Builders<TEntity>.IndexKeys;
                     var indexesToAdd = _indexProvider.GetIndexes(builder)?.ToArray();
+                    var hasIndexesToAdd = indexesToAdd?.Any() ?? false;
 
-                    if (!(indexesToAdd?.Any() ?? false))
+                    if (!hasIndexesToAdd)
                     {
                         return;
                     }
 
-                    var indexesCursor = await dbCollection
-                        .Indexes
-                        .ListAsync(cancellationToken)
-                        .ConfigureAwait(false);
+                    var dbCollection = GetCollection(configuration);
 
-                    var indexes = await indexesCursor
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
-
-                    var existingTextIndex = indexes.FirstOrDefault(y => y.Contains("textIndexVersion"));
-
-                    if (existingTextIndex != null && indexesToAdd.Any(y => y?.Options?.Name != null && y.Options.Name.Equals("text")))
-                    {
-                        Logger.LogDebug("Dropping text index {IndexName} for collection {CollectionName}",
-                            existingTextIndex["name"].AsString,
-                            configuration.CollectionName);
-
-                        await RetryErrorAsync(() => dbCollection
-                                .Indexes
-                                .DropOneAsync(existingTextIndex["name"].AsString, cancellationToken))
-                            .ConfigureAwait(false);
-                    }
-
-                    await RetryErrorAsync(() => dbCollection
-                            .Indexes
-                            .CreateManyAsync(indexesToAdd, cancellationToken))
-                        .ConfigureAwait(false);
+                    await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
                 }, cancellationToken);
 
         public Task CreateCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
@@ -108,8 +87,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 }
             }
 
-            using (await _distributedLockService.LockAsync(configurationKey, cancellationToken)
-                .ConfigureAwait(false))
+            var locker = await _distributedLockService
+                .LockAsync(configurationKey, cancellationToken)
+                .ConfigureAwait(false);
+
+            using (locker)
             {
                 if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out configured))
                 {
@@ -119,7 +101,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                     }
                 }
 
-                await configure();
+                await configure().ConfigureAwait(false);
 
                 MongoIndexClientConfigurations.Configurations[configurationKey] = true;
             }
