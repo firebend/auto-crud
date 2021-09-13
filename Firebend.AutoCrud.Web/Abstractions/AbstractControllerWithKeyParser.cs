@@ -39,9 +39,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
             return id;
         }
 
-        public bool IsCustomFieldsEntity() => typeof(TEntity).IsAssignableToGenericType(typeof(ICustomFieldsEntity<>));
+        protected bool IsCustomFieldsEntity() => typeof(TEntity).IsAssignableToGenericType(typeof(ICustomFieldsEntity<>));
 
-        public bool HasCustomFieldsPopulated(object o)
+        protected bool HasCustomFieldsPopulated(object o)
         {
             var property = typeof(TEntity).GetProperty(nameof(ICustomFieldsEntity<Guid>.CustomFields));
 
