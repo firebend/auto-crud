@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Mongo.HostedServices
 {
-    public class ConfigureCollectionsHostedService : IHostedService
+    public class ConfigureCollectionsHostedService : BackgroundService
     {
         private readonly ILogger<ConfigureCollectionsHostedService> _logger;
         private readonly IServiceProvider _serviceProvider;
@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
             _logger = logger;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             using var scope = _serviceProvider.CreateScope();
 
@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
             {
                 _logger.LogDebug("Configuring Mongo Collections...");
 
-                var configureTasks = collections.Select(x => x.ConfigureAsync(cancellationToken));
+                var configureTasks = collections.Select(x => x.ConfigureAsync(stoppingToken));
 
                 await Task.WhenAll(configureTasks).ConfigureAwait(false);
 
@@ -42,7 +42,5 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
                 _logger.LogError("No Collections to Configure, but Mongo still registered");
             }
         }
-
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

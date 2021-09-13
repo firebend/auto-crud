@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Mongo.Sample
 {
-    public class SampleHostedService : IHostedService
+    public class SampleHostedService : BackgroundService
     {
         private readonly IEntityCreateService<Guid, Person> _createService;
         private readonly ILogger<SampleHostedService> _logger;
@@ -20,7 +20,6 @@ namespace Firebend.AutoCrud.Mongo.Sample
         private readonly IEntitySearchService<Guid, Person, EntitySearchRequest> _searchService;
         private readonly JsonSerializer _serializer;
         private readonly IEntityUpdateService<Guid, Person> _updateService;
-        private CancellationTokenSource _cancellationTokenSource;
 
         public SampleHostedService(IServiceProvider serviceProvider, ILogger<SampleHostedService> logger)
         {
@@ -56,17 +55,15 @@ namespace Firebend.AutoCrud.Mongo.Sample
             _serializer = JsonSerializer.Create(new JsonSerializerSettings { Formatting = Formatting.Indented });
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
             _logger.LogInformation("Starting Sample...");
 
             try
             {
                 var entity = await _createService.CreateAsync(
                     new Person { FirstName = $"First Name -{DateTimeOffset.UtcNow}", LastName = $"Last Name -{DateTimeOffset.UtcNow}" },
-                    _cancellationTokenSource.Token);
+                    cancellationToken);
                 LogObject("Entity added....");
 
                 entity.FirstName = $"{entity.FirstName} - updated";
@@ -92,13 +89,6 @@ namespace Firebend.AutoCrud.Mongo.Sample
             {
                 _logger.LogError(ex, "Error in sample");
             }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _cancellationTokenSource.Cancel();
-
-            return Task.CompletedTask;
         }
 
         private void LogObject(string message, object entity = null)
