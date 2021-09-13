@@ -80,6 +80,13 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 throw new Exception("Update view model mapper did not map to entity.");
             }
 
+            if (IsCustomFieldsEntity() && HasCustomFieldsPopulated(entityUpdate))
+            {
+                ModelState.AddModelError(nameof(body), "Modifying an entity's custom fields is not allowed in this endpoint. Please use the entity's custom fields endpoints.");
+
+                return GetInvalidModelStateResult();
+            }
+
             if (!ModelState.IsValid || !TryValidateModel(entityUpdate))
             {
                 return GetInvalidModelStateResult();
@@ -159,6 +166,13 @@ namespace Firebend.AutoCrud.Web.Abstractions
             if (patch.Operations.Any(x => x.path.Equals($"/{nameof(IEntity<Guid>.Id)}", StringComparison.InvariantCultureIgnoreCase)))
             {
                 ModelState.AddModelError(nameof(patch), "Modifying the entity's id during patch is not allowed.");
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (IsCustomFieldsEntity() && patch.Operations.Any(x => x.path.StartsWith($"/{nameof(ICustomFieldsEntity<Guid>.CustomFields)}", StringComparison.InvariantCultureIgnoreCase)))
+            {
+                ModelState.AddModelError(nameof(patch), "Modifying an entity's custom fields is not allowed in this endpoint. Please use the entity's custom fields endpoints.");
 
                 return GetInvalidModelStateResult();
             }

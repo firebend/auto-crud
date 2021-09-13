@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Concurrent;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +37,22 @@ namespace Firebend.AutoCrud.Web.Abstractions
             }
 
             return id;
+        }
+
+        protected bool IsCustomFieldsEntity() => typeof(TEntity).IsAssignableToGenericType(typeof(ICustomFieldsEntity<>));
+
+        protected bool HasCustomFieldsPopulated(object o)
+        {
+            var property = typeof(TEntity).GetProperty(nameof(ICustomFieldsEntity<Guid>.CustomFields));
+
+            if (property == null)
+            {
+                return false;
+            }
+
+            var value = property.GetValue(o, null);
+
+            return value != null;
         }
     }
 }

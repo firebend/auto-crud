@@ -1,5 +1,8 @@
 using System;
+using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
+using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Firebend.AutoCrud.Mongo
 {
@@ -48,6 +51,9 @@ namespace Firebend.AutoCrud.Mongo
             bool enableLogging,
             Action<MongoEntityCrudGenerator> configure)
         {
+            serviceCollection.TryAddScoped<IMongoIndexMergeService, MongoIndexMergeService>();
+            serviceCollection.TryAddScoped<IMongoIndexComparisonService, MongoIndexComparisonService>();
+
             var mongo = serviceCollection.UsingMongoCrud(connectionString, enableLogging);
             configure(mongo);
             return mongo.Generate();

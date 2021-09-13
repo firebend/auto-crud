@@ -13,9 +13,8 @@ using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.HostedServices
 {
-    public class MongoMigrationHostedService : IHostedService
+    public class MongoMigrationHostedService : BackgroundService
     {
-        private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly IMongoDefaultDatabaseSelector _databaseSelector;
         private readonly ILogger _logger;
         private readonly IEnumerable<IMongoMigration> _migrations;
@@ -31,14 +30,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
             _mongoClient = scope.ServiceProvider.GetService<IMongoClient>();
         }
 
-        public Task StartAsync(CancellationToken cancellationToken) => DoMigration(_cancellationTokenSource.Token);
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _cancellationTokenSource.Cancel();
-
-            return Task.CompletedTask;
-        }
+        protected override Task ExecuteAsync(CancellationToken stoppingToken) => DoMigration(stoppingToken);
 
         private async Task DoMigration(CancellationToken cancellationToken)
         {
