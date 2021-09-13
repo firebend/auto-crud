@@ -49,7 +49,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                     var weightBson = existingIndexBson["weights"].AsBsonDocument;
                     return weightBson.Contains("$**");
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger?.LogError(ex, "Error checking for full text index weights");
                 }
