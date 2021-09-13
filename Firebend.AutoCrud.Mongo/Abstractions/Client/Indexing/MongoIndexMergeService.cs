@@ -29,7 +29,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             CreateIndexModel<TEntity>[] indexModels,
             CancellationToken cancellationToken)
         {
-            if (!_comparisonService.EnsureUnique(indexModels))
+            if (!_comparisonService.EnsureUnique(dbCollection, indexModels))
             {
                 throw new Exception($"Ensure index definitions are unique. Entity Type {typeof(TEntity)}");
             }
@@ -51,10 +51,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             }
             else
             {
-                await RetryErrorAsync(() => dbCollection
-                        .Indexes
-                        .CreateManyAsync(indexModels, cancellationToken))
-                    .ConfigureAwait(false);
+                await CreateIndexesAsync(dbCollection, indexModels, cancellationToken);
             }
         }
 
@@ -78,15 +75,25 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 
             if (drops.HasValues())
             {
-                foreach (var d in drops)
-                {
-                    await dbCollection.Indexes.DropOneAsync(d, cancellationToken).ConfigureAwait(false);
-                }
+                await DropIndexAsync(dbCollection, drops, cancellationToken);
             }
 
             if (adds.HasValues())
             {
-                await dbCollection.Indexes.CreateManyAsync(adds, cancellationToken).ConfigureAwait(false);
+                await CreateIndexesAsync(dbCollection, adds, cancellationToken);
+            }
+        }
+
+        private Task CreateIndexesAsync<TEntity>(IMongoCollection<TEntity> dbCollection,
+            IReadOnlyCollection<CreateIndexModel<TEntity>> adds,
+            CancellationToken cancellationToken)
+            => RetryErrorAsync(() => dbCollection.Indexes.CreateManyAsync(adds, cancellationToken));
+
+        private async Task DropIndexAsync<TEntity>(IMongoCollection<TEntity> dbCollection, List<string> indexNames, CancellationToken cancellationToken)
+        {
+            foreach (var indexName in indexNames)
+            {
+                await RetryErrorAsync(() => dbCollection.Indexes.DropOneAsync(indexName, cancellationToken));
             }
         }
 
