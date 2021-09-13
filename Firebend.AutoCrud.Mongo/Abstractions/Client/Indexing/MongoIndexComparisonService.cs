@@ -1,7 +1,8 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.JsonPatch.Extensions;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -10,6 +11,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 {
     public class MongoIndexComparisonService : IMongoIndexComparisonService
     {
+        private readonly ILogger<MongoIndexComparisonService> _logger;
+
+        public MongoIndexComparisonService(ILogger<MongoIndexComparisonService> logger = null)
+        {
+            _logger = logger;
+        }
+
         public bool DoesIndexMatch<TEntity>(IMongoCollection<TEntity> collection, BsonDocument existingIndexBson, CreateIndexModel<TEntity> definition)
         {
             if (existingIndexBson == null)
@@ -41,10 +49,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                     var weightBson = existingIndexBson["weights"].AsBsonDocument;
                     return weightBson.Contains("$**");
                 }
-                catch
+                catch(Exception ex)
                 {
-                    //todo: log an error with ILogger
-                    //ignore
+                    _logger?.LogError(ex, "Error checking for full text index weights");
                 }
             }
 
@@ -71,7 +78,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             if (hasDuplicateKeys)
             {
                 return false;
-            };
+            }
 
             return true;
         }

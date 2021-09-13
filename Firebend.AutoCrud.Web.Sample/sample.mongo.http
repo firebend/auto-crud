@@ -14,6 +14,22 @@ Content-Type: application/json
     "firstName": "Simon",
     "lastName": "Sample Updated"
 }
+
+### should fail, you aren't allowed to put a custom field
+###
+PUT https://localhost:5001/api/v1/mongo-person/ff09e683-7aa9-4ae8-a4e3-1fa408b9ddd4
+Content-Type: application/json
+
+{
+    "firstName": "Simon",
+    "lastName": "Sample Updated",
+    "customFields": [
+        {
+            "key": "fake",
+            "value": "faker"
+        }
+    ]
+}
 ###
 PATCH https://localhost:5001/api/v1/mongo-person/443adfbc-71c4-4bef-b7d7-e7425dd27eed
 Content-Type: application/json
@@ -23,6 +39,24 @@ Content-Type: application/json
         "op": "replace",
         "path": "/lastName",
         "value": "Sample Patch"
+    }
+]
+
+### should fail, not allowed to patch custom fields
+###
+PATCH https://localhost:5001/api/v1/mongo-person/443adfbc-71c4-4bef-b7d7-e7425dd27eed
+Content-Type: application/json
+
+[
+    {
+        "op": "replace",
+        "path": "/lastName",
+        "value": "Sample Patch"
+    },
+    {
+        "op": "add",
+        "path": "/customFields/0",
+        "value": { "key": "patch key", "value": "patchValue"  }
     }
 ]
 ###
