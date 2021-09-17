@@ -7,7 +7,7 @@
 
     <PropertyGroup>
       <GenerateDocumentationFile>true</GenerateDocumentationFile>
-      <NoWarn>$(NoWarn);1591</NoWarn>
+      <NoWarn>$(NoWarn);1591,1570,1572,1573</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
