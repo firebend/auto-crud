@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Firebend.AutoCrud.Web.Attributes;
 using Microsoft.OpenApi.Models;
@@ -14,14 +15,37 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
                 return;
             }
 
-            var entityNameAttribute = context
+            var endpointMetaData = context
                 .ApiDescription
                 ?.ActionDescriptor
-                ?.EndpointMetadata
-                ?.OfType<OpenApiEntityNameAttribute>()
-                .FirstOrDefault();
+                ?.EndpointMetadata;
 
-            if (entityNameAttribute == null)
+            if (endpointMetaData is null)
+            {
+                return;
+            }
+
+            SanitizeSummaryAndDescription(operation, endpointMetaData);
+            AssignOperationId(operation, endpointMetaData);
+        }
+
+        private static void AssignOperationId(OpenApiOperation operation, IEnumerable<object> endpointMetaData)
+        {
+            var operationIdAttribute = endpointMetaData.OfType<OpenApiOperationIdAttribute>().FirstOrDefault();
+
+            if (operationIdAttribute is null)
+            {
+                return;
+            }
+
+            operation.OperationId = operationIdAttribute.OperationId;
+        }
+
+        private static void SanitizeSummaryAndDescription(OpenApiOperation operation, IEnumerable<object> endpointMetaData)
+        {
+            var entityNameAttribute = endpointMetaData.OfType<OpenApiEntityNameAttribute>().FirstOrDefault();
+
+            if (entityNameAttribute is null)
             {
                 return;
             }
