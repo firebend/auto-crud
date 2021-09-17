@@ -18,16 +18,35 @@ namespace Firebend.AutoCrud.Core.Models.CustomFields
             customFieldsEntity?.CopyPropertiesTo(this);
         }
 
+        /// <summary>
+        /// The id of the entity the custom field is for.
+        /// </summary>
         public TKey EntityId { get; set; }
 
+        /// <summary>
+        /// The key of the custom field.
+        /// </summary>
         public string Key { get; set; }
 
+        /// <summary>
+        /// The value of the custom field.
+        /// </summary>
         public string Value { get; set; }
 
+        /// <summary>
+        /// The custom field's Id
+        /// </summary>
         [Key]
         public Guid Id { get; set; }
 
+        /// <summary>
+        /// The date the custom field was created.
+        /// </summary>
         public DateTimeOffset CreatedDate { get; set; }
+
+        /// <summary>
+        /// The date the custom field was modified.
+        /// </summary>
         public DateTimeOffset ModifiedDate { get; set; }
     }
 }
