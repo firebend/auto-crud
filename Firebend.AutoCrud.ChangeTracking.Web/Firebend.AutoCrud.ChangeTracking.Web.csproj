@@ -1,9 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.5.0</Version>
-        <TargetFrameworks>netcoreapp3.1;netstandard2.1</TargetFrameworks>
+        <Version>2.5.1</Version>
+        <TargetFrameworks>netstandard2.1</TargetFrameworks>
         <LangVersion>latestmajor</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+      <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
