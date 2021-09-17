@@ -1,5 +1,6 @@
 using System.Linq;
 using Firebend.AutoCrud.Web.Implementations.Swagger;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -18,7 +19,7 @@ namespace Firebend.AutoCrud.Web.Implementations.Options
 
             options.EnableAnnotations();
 
-            if (!options.OperationFilterDescriptors.Any(filter => filter.Type == typeof(SwaggerOperationFilter)))
+            if (options.OperationFilterDescriptors.All(filter => filter.Type != typeof(SwaggerOperationFilter)))
             {
                 options.OperationFilter<SwaggerOperationFilter>();
             }
