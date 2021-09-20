@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(201, "A custom field  was created successfully..")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
-        public async Task<ActionResult<CustomFieldsEntity<TKey>>> PostAsync(
+        public async Task<ActionResult<CustomFieldsEntity<TKey>>> CreateCustomFieldAsync(
             [FromRoute] string entityId,
             [FromBody] CustomAttributeViewModelCreate viewModel,
             CancellationToken cancellationToken)

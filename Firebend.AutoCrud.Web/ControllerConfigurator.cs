@@ -165,7 +165,7 @@ namespace Firebend.AutoCrud.Web
             return (attributeType, attributeBuilder);
         }
 
-        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiOperationIdAttributeInfo(string operationId)
+        private static (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiOperationIdAttributeInfo(string operationId)
         {
             var attributeType = typeof(OpenApiOperationIdAttribute);
             var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
@@ -544,8 +544,7 @@ namespace Firebend.AutoCrud.Web
 
         /// <summary>
         /// Registers a CREATE controller for the entity using auto-generated types
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+        /// </summary>=
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")

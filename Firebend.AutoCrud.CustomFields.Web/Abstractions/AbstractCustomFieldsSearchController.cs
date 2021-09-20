@@ -16,20 +16,18 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         private readonly ICustomFieldsSearchService<TKey, TEntity> _searchService;
-        private readonly IOptions<ApiBehaviorOptions> _apiOptions;
 
         protected AbstractCustomFieldsSearchController(ICustomFieldsSearchService<TKey, TEntity> searchService,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _searchService = searchService;
-            _apiOptions = apiOptions;
         }
 
         [HttpGet("custom-fields")]
         [SwaggerOperation("Searches for custom fields assigned to a given {entityName}")]
         [SwaggerResponse(200, "All the custom fields for {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
-        public async Task<ActionResult<EntityPagedResponse<CustomFieldsEntity<TKey>>>> GetAsync(
+        public async Task<ActionResult<EntityPagedResponse<CustomFieldsEntity<TKey>>>> SearchCustomFieldsAsync(
                 [FromQuery] string key,
                 [FromQuery] string value,
                 [FromQuery] int pageNumber,

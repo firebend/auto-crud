@@ -11,7 +11,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityReadAllController<TKey, TEntity, TViewModel> : ControllerBase
+    public abstract class AbstractEntityReadAllController<TKey, TEntity, TViewModel> : ControllerBase, IAutoCrudController
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TViewModel : class
@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Gets all {entityNamePlural}")]
         [SwaggerResponse(200, "All the {entityNamePlural}.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
-        public virtual async Task<ActionResult<IEnumerable<TViewModel>>> GetAll(CancellationToken cancellationToken)
+        public virtual async Task<ActionResult<IEnumerable<TViewModel>>> GetAllAsync(CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_readService);
 
