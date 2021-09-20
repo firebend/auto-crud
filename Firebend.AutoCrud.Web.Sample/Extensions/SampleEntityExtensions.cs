@@ -172,7 +172,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithReadViewModel(pet => new GetPetViewModel(pet))
                         .WithCreateViewModel<CreatePetViewModel>(pet => new EfPet(pet))
                         .WithUpdateViewModel<PutPetViewModel>(pet => new EfPet(pet))
-                        .WithRoute("/api/v1/ef-person/{personId}/pets")
+                        .WithRoute("/api/v1/ef-person/{personId:guid}/pets")
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
                         .WithChangeTrackingControllers()
