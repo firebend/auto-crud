@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
         [HttpDelete("{entityId}/custom-fields/{id:guid}")]
         [SwaggerOperation("Deletes a custom field for a given {entityName}")]
-        [SwaggerResponse(201, "A custom field  was deleted successfully..")]
+        [SwaggerResponse(200, "A custom field  was deleted successfully..")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> DeleteCustomFieldAsync(

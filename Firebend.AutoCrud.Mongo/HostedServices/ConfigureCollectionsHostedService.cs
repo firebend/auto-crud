@@ -29,7 +29,7 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
 
             if (collections != null)
             {
-                _logger.LogDebug("Configuring Mongo Collections...");
+                _logger.LogDebug("Configuring Mongo Collections");
 
                 var configureTasks = collections.Select(x => x.ConfigureAsync(stoppingToken));
 
