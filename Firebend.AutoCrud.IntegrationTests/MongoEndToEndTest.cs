@@ -9,17 +9,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Firebend.AutoCrud.IntegrationTests
 {
     [TestClass]
-    public class EfEndToEndTest : BaseTest<
+    public class MongoEndToEndTest : BaseTest<
         Guid,
         PersonViewModelBase,
         PersonViewModelBase,
         GetPersonViewModel,
         PersonExport>
     {
-        public override string Url => "http://localhost:5000/api/v1/ef-person";
+        public override string Url => "http://localhost:5000/api/v1/mongo-person";
 
         [TestMethod]
-        public async Task Ef_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
+        public async Task Mongo_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
 
         public override Task<PersonViewModelBase> GenerateCreateRequestAsync()
             => Task.FromResult(PersonFaker.Faker.Generate());
@@ -28,6 +28,6 @@ namespace Firebend.AutoCrud.IntegrationTests
             => Task.FromResult(PersonFaker.Faker.Generate());
 
         protected override Task<JsonPatchDocument> GeneratePatchAsync()
-            => Task.FromResult(PatchFaker.MakeReplacePatch<PersonViewModelBase, string>(x => x.Email, new Faker().Person.Email));
+            => Task.FromResult(PatchFaker.MakeReplacePatch<PersonViewModelBase, string>(x => x.FirstName, new Faker().Person.FirstName));
     }
 }
