@@ -24,9 +24,9 @@
 
     <ItemGroup>
       <PackageReference Include="Firebend.JsonPatchGenerator" Version="1.0.2" />
-      <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.6" />
+      <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.10" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-      <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="5.0.6" />
+      <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="5.0.10" />
       <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
       <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.7.0" />
     </ItemGroup>

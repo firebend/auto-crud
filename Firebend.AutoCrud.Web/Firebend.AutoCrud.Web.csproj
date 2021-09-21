@@ -23,10 +23,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Humanizer.Core" Version="2.10.1" />
-      <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.6" />
+      <PackageReference Include="Humanizer.Core" Version="2.11.10" />
+      <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.10" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-      <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.1.4" />
+      <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.2.1" />
       <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     </ItemGroup>
 
