@@ -30,10 +30,10 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
         [HttpPut("{entityId}/custom-fields/{id:guid}")]
         [SwaggerOperation("Updates a custom field for a given {entityName}")]
-        [SwaggerResponse(201, "A custom field  was updated successfully.")]
+        [SwaggerResponse(200, "A custom field  was updated successfully.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
-        public async Task<ActionResult<CustomFieldsEntity<TKey>>> PostAsync(
+        public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePutAsync(
             [Required][FromRoute] string entityId,
             [Required][FromRoute] Guid id,
             [FromBody] CustomAttributeViewModelCreate viewModel,
@@ -77,7 +77,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(201, "A custom field was patched successfully.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
-        public async Task<ActionResult<CustomFieldsEntity<TKey>>> PatchAsync(
+        public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePatchAsync(
             [Required][FromRoute] string entityId,
             [Required][FromRoute] Guid id,
             [FromBody] JsonPatchDocument<CustomFieldsEntity<TKey>> patchDocument,

@@ -1,8 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>2.5.0</Version>
+        <Version>2.5.1</Version>
+        <TargetFrameworks>netstandard2.1</TargetFrameworks>
+        <LangVersion>latestmajor</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+      <NoWarn>$(NoWarn);1591,1570,1572,1573</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -21,8 +27,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MassTransit" Version="7.1.8" />
-      <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.1.8" />
+      <PackageReference Include="MassTransit" Version="7.2.2" />
+      <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.2.2" />
     </ItemGroup>
 
 </Project>

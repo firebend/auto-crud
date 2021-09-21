@@ -38,4 +38,4 @@ jobs:
       run: dotnet build Firebend.AutoCrud.sln --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test Firebend.AutoCrud.sln --logger GitHubActions --no-restore --verbosity normal
+      run: dotnet test Firebend.AutoCrud.sln --logger GitHubActions --no-restore --verbosity normal --filter FullyQualifiedName\!~IntegrationTests

@@ -53,6 +53,8 @@ ProjectSection(SolutionItems) = preProject
 	.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
 EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.IntegrationTests", "Firebend.AutoCrud.IntegrationTests\Firebend.AutoCrud.IntegrationTests.csproj", "{3DF591D8-FFD9-4BC1-A23F-E9EA70D2CAAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,5 +141,9 @@ Global
 		{4355AF57-6665-4623-B326-62B4C6BC0C07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4355AF57-6665-4623-B326-62B4C6BC0C07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4355AF57-6665-4623-B326-62B4C6BC0C07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DF591D8-FFD9-4BC1-A23F-E9EA70D2CAAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DF591D8-FFD9-4BC1-A23F-E9EA70D2CAAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DF591D8-FFD9-4BC1-A23F-E9EA70D2CAAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DF591D8-FFD9-4BC1-A23F-E9EA70D2CAAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

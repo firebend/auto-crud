@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(200, "The {entityName} with the given key.")]
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [Produces("application/json")]
-        public virtual async Task<ActionResult<TViewModel>> GetById(
+        public virtual async Task<ActionResult<TViewModel>> ReadByIdAsync(
             [Required][FromRoute] string id,
             CancellationToken cancellationToken)
         {

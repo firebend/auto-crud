@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         [SwaggerOperation("Exports {entityNamePlural} to a file.")]
         [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
-        public virtual async Task<IActionResult> Search(
+        public virtual async Task<IActionResult> ExportAsync(
             [Required][FromRoute] string exportType,
             [Required][FromQuery] string filename,
             [FromQuery] TSearch searchRequest,

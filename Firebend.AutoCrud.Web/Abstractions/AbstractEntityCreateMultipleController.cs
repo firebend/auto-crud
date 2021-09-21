@@ -46,7 +46,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(200, "Multiple {entityNamePlural} were created successfully.")]
         [SwaggerResponse(400, "The request is invalid.")]
         [Produces("application/json")]
-        public virtual async Task<ActionResult<CreateMultipleActionResult<TReadViewModel>>> PostMultiple(
+        public virtual async Task<ActionResult<CreateMultipleActionResult<TReadViewModel>>> CreateMultipleAsync(
             TMultipleViewModelWrapper body,
             CancellationToken cancellationToken)
         {

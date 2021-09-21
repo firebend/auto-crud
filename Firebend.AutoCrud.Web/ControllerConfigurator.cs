@@ -165,6 +165,21 @@ namespace Firebend.AutoCrud.Web
             return (attributeType, attributeBuilder);
         }
 
+        private static (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiOperationIdAttributeInfo(string operationId)
+        {
+            var attributeType = typeof(OpenApiOperationIdAttribute);
+            var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
+
+            if (attributeCtor == null)
+            {
+                return default;
+            }
+
+            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { operationId });
+
+            return (attributeType, attributeBuilder);
+        }
+
         private void AddOpenApiGroupNameAttribute(Type controllerType, string openApiName)
         {
             var (attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo(openApiName);
@@ -174,6 +189,12 @@ namespace Firebend.AutoCrud.Web
         private void AddOpenApiEntityNameAttribute(Type controllerType, string name, string plural)
         {
             var (attributeType, attributeBuilder) = GetOpenApiEntityNameAttribute(name, plural);
+            Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
+        }
+
+        private void AddOpenApiOperationAttribute(Type controllerType, string operationId)
+        {
+            var (attributeType, attributeBuilder) = GetOpenApiOperationIdAttributeInfo(operationId);
             Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
         }
 
@@ -523,8 +544,7 @@ namespace Firebend.AutoCrud.Web
 
         /// <summary>
         /// Registers a CREATE controller for the entity using auto-generated types
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+        /// </summary>=
         /// <example>
         /// <code>
         /// forecast.WithDefaultDatabase("Samples")
