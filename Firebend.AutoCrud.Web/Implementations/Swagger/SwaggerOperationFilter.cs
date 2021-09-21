@@ -103,10 +103,18 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
                 return;
             }
 
-            operation.Summary = SanitizeEntityName(operation.Summary, entityNameAttribute);
+            if (!string.IsNullOrWhiteSpace(operation.Summary))
+            {
+                operation.Summary = SanitizeEntityName(operation.Summary, entityNameAttribute);
+            }
 
             foreach (var (_, response) in operation.Responses)
             {
+                if (string.IsNullOrWhiteSpace(response.Description))
+                {
+                    continue;
+                }
+
                 response.Description = SanitizeEntityName(response.Description, entityNameAttribute);
             }
         }
