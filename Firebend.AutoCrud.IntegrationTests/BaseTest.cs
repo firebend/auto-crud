@@ -361,7 +361,8 @@ namespace Firebend.AutoCrud.IntegrationTests
 
         protected virtual void PostMultipleAssertions(IFlurlResponse response, MultiResult<TReadResponse> responseModel)
         {
-        }public async Task<CustomFieldViewModelRead> PostCustomFieldsAsync(TKey entityId)
+        }
+        public async Task<CustomFieldViewModelRead> PostCustomFieldsAsync(TKey entityId)
         {
             var response = await $"{Url}/{entityId}/custom-fields".PostJsonAsync(CustomFieldFaker.Faker.Generate());
 
@@ -483,7 +484,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             return searchResponseModel;
         }
 
-        protected virtual void SearchCustomFieldsAssertions(IFlurlResponse response,EntityPagedResponse<CustomFieldViewModelRead> responseModel)
+        protected virtual void SearchCustomFieldsAssertions(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModelRead> responseModel)
         {
         }
 
