@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public PersonViewModelBase Body { get; set; }
     }
 
-    public class PersonViewModelBase : ICustomFieldsEntity<Guid>
+    public class PersonViewModelBase
     {
         public PersonViewModelBase()
         {
@@ -61,12 +61,12 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         [StringLength(300)]
         public string OtherEmail { get; set; }
-
-        public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
     }
 
-    public class GetPersonViewModel : PersonViewModelBase
+    public class GetPersonViewModel : PersonViewModelBase, IEntity<Guid>
     {
+        public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
+
         public GetPersonViewModel(EfPerson entity)
         {
             if (entity == null)
