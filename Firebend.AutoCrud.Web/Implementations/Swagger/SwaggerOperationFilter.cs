@@ -12,11 +12,6 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            if (string.IsNullOrWhiteSpace(operation.Summary))
-            {
-                return;
-            }
-
             var endpointMetaData = context
                 .ApiDescription
                 ?.ActionDescriptor
