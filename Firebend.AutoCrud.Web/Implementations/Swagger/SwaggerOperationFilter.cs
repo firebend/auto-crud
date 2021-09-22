@@ -12,11 +12,6 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            if (string.IsNullOrWhiteSpace(operation.Summary))
-            {
-                return;
-            }
-
             var endpointMetaData = context
                 .ApiDescription
                 ?.ActionDescriptor
@@ -58,15 +53,34 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
 
         private static string GetAutoCrudControllerOperationId(OperationFilterContext operationFilterContext, OpenApiEntityNameAttribute openApiEntityNameAttribute)
         {
-            if (operationFilterContext.ApiDescription.ActionDescriptor is not ControllerActionDescriptor controllerDescriptor)
+            if (string.IsNullOrWhiteSpace(openApiEntityNameAttribute?.Name))
+            {
+                return null;
+            }
+
+            if (operationFilterContext?.ApiDescription?.ActionDescriptor is not ControllerActionDescriptor controllerDescriptor)
+            {
+                return null;
+            }
+
+            if (controllerDescriptor.ControllerTypeInfo is null)
             {
                 return null;
             }
 
             var autoCrudType = typeof(IAutoCrudController);
-            var isAssignable = autoCrudType.IsAssignableFrom(controllerDescriptor.ControllerTypeInfo);
+            var isAssignable = false;
 
-            if (!isAssignable)
+            try
+            {
+                isAssignable = autoCrudType.IsAssignableFrom(controllerDescriptor.ControllerTypeInfo);
+            }
+            catch
+            {
+                // ignored
+            }
+
+            if (isAssignable is false)
             {
                 return null;
             }
@@ -84,16 +98,35 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
                 return;
             }
 
-            operation.Summary = SanitizeEntityName(operation.Summary, entityNameAttribute);
+            if (!string.IsNullOrWhiteSpace(operation.Summary))
+            {
+                operation.Summary = SanitizeEntityName(operation.Summary, entityNameAttribute);
+            }
 
             foreach (var (_, response) in operation.Responses)
             {
+                if (string.IsNullOrWhiteSpace(response.Description))
+                {
+                    continue;
+                }
+
                 response.Description = SanitizeEntityName(response.Description, entityNameAttribute);
             }
         }
 
-        private static string SanitizeEntityName(string str, OpenApiEntityNameAttribute entityNameAttribute) => str
-            .Replace("{entityName}", entityNameAttribute.Name)
-            .Replace("{entityNamePlural}", entityNameAttribute.Plural);
+        private static string SanitizeEntityName(string str, OpenApiEntityNameAttribute entityNameAttribute)
+        {
+            if (!string.IsNullOrWhiteSpace(entityNameAttribute.Name))
+            {
+                str = str.Replace("{entityName}", entityNameAttribute.Name);
+            }
+
+            if (!string.IsNullOrWhiteSpace(entityNameAttribute.Plural))
+            {
+                str = str.Replace("{entityNamePlural}", entityNameAttribute.Plural);
+            }
+
+            return str;
+        }
     }
 }
