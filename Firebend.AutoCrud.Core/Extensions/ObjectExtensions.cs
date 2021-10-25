@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
+using Firebend.AutoCrud.Core.ObjectMapping;
 using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Core.Extensions
@@ -37,34 +37,7 @@ namespace Firebend.AutoCrud.Core.Extensions
 
         public static TU CopyPropertiesTo<T, TU>(this T source, TU dest, params string[] propertiesToIgnore)
         {
-            var sourceProps = typeof(T)
-                .GetProperties()
-                .Where(x => x.CanRead)
-                .ToList();
-
-            var destProps = typeof(TU)
-                .GetProperties()
-                .Where(x => x.CanWrite)
-                .ToList();
-
-            foreach (var sourceProp in sourceProps)
-            {
-                if (propertiesToIgnore != null && sourceProp.Name.In(propertiesToIgnore))
-                {
-                    continue;
-                }
-
-                if (destProps.Any(x => x.Name == sourceProp.Name && x.PropertyType == sourceProp.PropertyType))
-                {
-                    var p = destProps.First(x => x.Name == sourceProp.Name);
-
-                    if (p.CanWrite)
-                    {
-                        p.SetValue(dest, sourceProp.GetValue(source, null), null);
-                    }
-                }
-            }
-
+            ObjectMapper.Instance.Copy(source, dest);
             return dest;
         }
     }
