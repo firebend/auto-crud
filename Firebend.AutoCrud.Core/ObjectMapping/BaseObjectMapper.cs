@@ -7,8 +7,8 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
     public abstract class BaseObjectMapper
     {
 
-        protected abstract void MapTypes(Type source, Type target);
-        public abstract void Copy(object source, object target);
+        protected abstract string MapTypes(Type source, Type target, params string[] propertiesToIgnore);
+        public abstract void Copy(object source, object target, params string[] propertiesToIgnore);
 
         /// <summary>
         /// This virtual function finds matching properties between given objects. It depends on their names, readability, and writability.

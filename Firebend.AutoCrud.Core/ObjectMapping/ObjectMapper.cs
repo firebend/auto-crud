@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
@@ -24,15 +25,22 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <summary>
         /// This function creates the mappings between objects and store the mappings in the private dictionary
         /// </summary>
-        /// <param name="source">Type of the source object</param>
-        /// <param name="target">Type of the target object</param>
+        /// <param name="source">The type of the source object</param>
+        /// <param name="target">The type of the target object</param>
+        /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process</param>
         /// <exception cref="InvalidOperationException">The Invalid Operation Exception will be thrown if it can't find the given property in source/target objects.</exception>
-        protected override void MapTypes(Type source, Type target)
+        protected override string MapTypes(Type source, Type target, params string[] propertiesToIgnore)
         {
             var key = GetMapKey(source, target);
+
+            if (propertiesToIgnore.Length > 0)
+            {
+                key = $"temp_{key}";
+            }
+
             if (_del.ContainsKey(key))
             {
-                return;
+                return key;
             }
 
             var args = new[] { source, target };
@@ -43,6 +51,11 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 
             foreach (var map in maps)
             {
+                if (propertiesToIgnore.Contains(map.SourceProperty.Name))
+                {
+                    continue;
+                }
+
                 il.Emit(OpCodes.Ldarg_1);
                 il.Emit(OpCodes.Ldarg_0);
                 il.EmitCall(OpCodes.Callvirt, map.SourceProperty.GetGetMethod() ?? throw new InvalidOperationException(), null);
@@ -50,6 +63,8 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             }
             il.Emit(OpCodes.Ret);
             _del.Add(key, dm);
+
+            return key;
         }
 
         /// <summary>
@@ -57,18 +72,22 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// </summary>
         /// <param name="source">The original object that keeps the actual values/properties</param>
         /// <param name="target">The object that will get the related values from the given object</param>
-        public override void Copy(object source, object target)
+        /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process</param>
+        public override void Copy(object source, object target, params string[] propertiesToIgnore)
         {
             var sourceType = source.GetType();
             var targetType = target.GetType();
 
-            this.MapTypes(sourceType, targetType);
-
-            var key = GetMapKey(sourceType, targetType);
+            var key = this.MapTypes(sourceType, targetType, propertiesToIgnore);
 
             var del = _del[key];
             var args = new[] { source, target };
             del.Invoke(null, args);
+
+            if (propertiesToIgnore.Length > 0)
+            {
+                _del.Remove(key);
+            }
         }
     }
 }

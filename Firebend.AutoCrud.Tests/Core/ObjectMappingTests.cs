@@ -10,6 +10,32 @@ namespace Firebend.AutoCrud.Tests.Core
     public class MapperTests
     {
         [TestCase]
+        public void Mapper_Should_Map_Primitive_Type_Props_Without_Ignored_Props()
+        {
+            // given
+            var givenSourceObj = new MapperTestObjClass
+            {
+                Name = "Prime Jedi",
+                Age = 4500,
+                Birthdate = DateTime.Now.AddYears(1000),
+                IsJedi = true
+            };
+            var givenTargetObj = new MapperTestObjClass();
+
+            // when
+            ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObj, "Age", "Name");
+
+            // then
+            var expectedAge = 0;
+
+            givenTargetObj.Should().NotBeNull();
+            givenTargetObj.Name.Should().BeNull();
+            givenTargetObj.Age.Should().Be(expectedAge);
+            givenTargetObj.Birthdate.Should().Be(givenSourceObj.Birthdate);
+            givenTargetObj.IsJedi.Should().Be(givenSourceObj.IsJedi);
+        }
+
+        [TestCase]
         public void Mapper_Should_Map_Primitive_Type_Props()
         {
             // given

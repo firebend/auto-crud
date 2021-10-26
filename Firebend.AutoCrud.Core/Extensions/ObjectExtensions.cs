@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.Core.Extensions
 
         public static TU CopyPropertiesTo<T, TU>(this T source, TU dest, params string[] propertiesToIgnore)
         {
-            ObjectMapper.Instance.Copy(source, dest);
+            ObjectMapper.Instance.Copy(source, dest, propertiesToIgnore);
             return dest;
         }
     }
