@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Tests.Core
     {
         [TestCase]
         public void
-            Mapper_Should_Create_Temp_Mapping_For_Objects_With_Ignored_Properties()
+            Mapper_Should_Not_Copy_Of_Ignored_Properties_After_Full_Copy_Operation()
         {
             // given
             var givenSourceObj = new MapperTestObjClass
