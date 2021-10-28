@@ -23,15 +23,15 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             var targetProperties = targetType.GetProperties();
 
             var properties = (from s in sourceProperties
-                from t in targetProperties
-                where s.Name == t.Name &&
-                      s.CanRead &&
-                      t.CanWrite
-                select new PropertyMap
-                {
-                    SourceProperty = s,
-                    TargetProperty = t
-                }).ToList();
+                              from t in targetProperties
+                              where s.Name == t.Name &&
+                                    s.CanRead &&
+                                    t.CanWrite
+                              select new PropertyMap
+                              {
+                                  SourceProperty = s,
+                                  TargetProperty = t
+                              }).ToList();
             return properties;
         }
 
