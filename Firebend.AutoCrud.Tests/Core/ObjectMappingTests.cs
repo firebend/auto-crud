@@ -23,10 +23,12 @@ namespace Firebend.AutoCrud.Tests.Core
             };
             var givenTargetObj = new MapperTestObjClass();
             var givenTargetObjWithIgnoredProperties = new MapperTestObjClass();
+            var givenTargetObjWithDifferentIgnoredProperties = new MapperTestObjClass();
 
             // when
             ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObj);
             ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObjWithIgnoredProperties, "Age", "Name");
+            ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObjWithDifferentIgnoredProperties, "Age");
 
             // then
             var expectedAge = 0;
@@ -36,6 +38,9 @@ namespace Firebend.AutoCrud.Tests.Core
             givenTargetObjWithIgnoredProperties.Age.Should().Be(expectedAge);
             givenTargetObjWithIgnoredProperties.Birthdate.Should().Be(givenSourceObj.Birthdate);
             givenTargetObjWithIgnoredProperties.IsJedi.Should().Be(givenSourceObj.IsJedi);
+
+            givenTargetObjWithDifferentIgnoredProperties.Name.Should().Be(givenSourceObj.Name);
+            givenTargetObjWithDifferentIgnoredProperties.Age.Should().Be(expectedAge);
         }
 
         [TestCase]

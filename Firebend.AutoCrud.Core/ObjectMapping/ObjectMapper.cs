@@ -31,12 +31,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <exception cref="InvalidOperationException">The Invalid Operation Exception will be thrown if it can't find the given property in source/target objects.</exception>
         protected override string MapTypes(Type source, Type target, params string[] propertiesToIgnore)
         {
-            var key = GetMapKey(source, target);
-
-            if (propertiesToIgnore.Length > 0)
-            {
-                key = $"{Guid.NewGuid()}_{key}";
-            }
+            var key = GetMapKey(source, target, propertiesToIgnore);
 
             if (_del.ContainsKey(key))
             {
@@ -83,11 +78,6 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             var del = _del[key];
             var args = new[] { source, target };
             del.Invoke(null, args);
-
-            if (propertiesToIgnore.Length > 0)
-            {
-                _del.Remove(key);
-            }
         }
     }
 }

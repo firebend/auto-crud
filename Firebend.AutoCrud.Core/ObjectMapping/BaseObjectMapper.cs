@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <param name="targetType">The target object type</param>
         /// <returns>Returns a key as string</returns>
         /// <exception cref="Exception">If there is no FullName property on sent objects, an exception will throw</exception>
-        protected virtual string GetMapKey(Type sourceType, Type targetType)
+        protected virtual string GetMapKey(Type sourceType, Type targetType, params string[] propertiesToIgnore)
         {
             var keyName = "Copy_";
 
@@ -63,6 +63,11 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             else
             {
                 throw new Exception();
+            }
+
+            if (propertiesToIgnore != null)
+            {
+                keyName = propertiesToIgnore.Aggregate(keyName, (current, t) => current + $"_{t}");
             }
 
             return keyName;
