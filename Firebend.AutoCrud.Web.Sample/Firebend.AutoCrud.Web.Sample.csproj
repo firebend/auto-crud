@@ -24,18 +24,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="7.2.2" />
-    <PackageReference Include="MassTransit.AspNetCore" Version="7.2.2" />
-    <PackageReference Include="MassTransit.RabbitMQ" Version="7.2.2" />
-    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.10">
+    <PackageReference Include="MassTransit" Version="7.2.4" />
+    <PackageReference Include="MassTransit.AspNetCore" Version="7.2.4" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="7.2.4" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.10" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.2.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.2.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.2.3" />
   </ItemGroup>
 
 </Project>
