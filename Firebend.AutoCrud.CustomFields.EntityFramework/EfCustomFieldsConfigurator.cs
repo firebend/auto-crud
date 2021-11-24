@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -30,9 +29,9 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
     /// The entity type.
     /// </typeparam>
     public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudConfigurator<TBuilder, TKey, TEntity>
-        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TBuilder : EntityFrameworkEntityBuilder<TKey, TEntity>
         where TKey : struct
-        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
     {
         public EfCustomFieldsConfigurator(TBuilder builder) : base(builder)
         {
@@ -127,8 +126,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
                 false);
 
             builder.WithRegistration(
-                typeof(IDbContextOptionsProvider<,>).MakeGenericType(guidType, efModelType),
-                typeof(AbstractCustomFieldsDbContextOptionsProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+                typeof(IDbContextOptionsProvider<,,>).MakeGenericType(guidType, efModelType, builder.DbContextType),
+                typeof(AbstractCustomFieldsDbContextOptionsProvider<,,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType, builder.DbContextType),
                 false);
 
             builder.WithRegistration(

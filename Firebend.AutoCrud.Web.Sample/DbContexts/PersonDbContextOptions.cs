@@ -1,4 +1,5 @@
 using System.Data.Common;
+using DocumentFormat.OpenXml.Bibliography;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -15,14 +16,14 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
 
         public static DbContextOptions GetOptions() => GetOptions(DataAccessConfiguration.GetConfiguration().GetConnectionString("InventoryElasticPool"), DbLoggerFactory);
 
-        public static DbContextOptions GetOptions(string connectionString, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder()
+        public static DbContextOptions<PersonDbContext> GetOptions(string connectionString, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder<PersonDbContext>()
             .UseSqlServer(connectionString)
             .AddFirebendFunctions()
             .UseLoggerFactory(loggerFactory)
             .EnableSensitiveDataLogging()
             .Options;
 
-        public static DbContextOptions GetOptions(DbConnection connection, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder()
+        public static DbContextOptions<PersonDbContext> GetOptions(DbConnection connection, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder<PersonDbContext>()
             .UseSqlServer(connection)
             .AddFirebendFunctions()
             .UseLoggerFactory(loggerFactory)
@@ -30,7 +31,7 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
             .Options;
     }
 
-    public class PersonDbContextOptionsProvider<TKey, TEntity> : IDbContextOptionsProvider<TKey, TEntity>
+    public class PersonDbContextOptionsProvider<TKey, TEntity> : IDbContextOptionsProvider<TKey, TEntity, PersonDbContext>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
@@ -41,7 +42,7 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
             _loggerFactory = loggerFactory;
         }
 
-        public DbContextOptions GetDbContextOptions(string connectionString) => PersonDbContextOptions.GetOptions(connectionString, _loggerFactory);
-        public DbContextOptions GetDbContextOptions(DbConnection connection) => PersonDbContextOptions.GetOptions(connection, _loggerFactory);
+        public DbContextOptions<PersonDbContext> GetDbContextOptions(string connectionString) => PersonDbContextOptions.GetOptions(connectionString, _loggerFactory);
+        public DbContextOptions<PersonDbContext> GetDbContextOptions(DbConnection connection) => PersonDbContextOptions.GetOptions(connection, _loggerFactory);
     }
 }

@@ -29,15 +29,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
     {
         private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
         private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
-        private readonly ILogger _logger;
-        private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
+        private readonly IDbContextOptionsProvider<TEntityKey, TEntity, ChangeTrackingDbContext<TEntityKey, TEntity>> _optionsProvider;
 
-        protected AbstractChangeTrackingDbContextProvider(ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
-            IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
+        protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity, ChangeTrackingDbContext<TEntityKey, TEntity>> optionsProvider,
             IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
             IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
         {
-            _logger = logger;
             _optionsProvider = optionsProvider;
             _connectionStringProvider = connectionStringProvider;
             _changeTrackingOptionsProvider = changeTrackingOptionsProvider;

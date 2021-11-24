@@ -7,19 +7,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public abstract class AbstractCustomFieldsDbContextOptionsProvider<TKey, TEntity, TCustomFieldsEntity> : IDbContextOptionsProvider<Guid, TCustomFieldsEntity>
+    public abstract class AbstractCustomFieldsDbContextOptionsProvider<TKey, TEntity, TCustomFieldsEntity, TContext> :
+        IDbContextOptionsProvider<Guid, TCustomFieldsEntity, TContext>
         where TCustomFieldsEntity : EfCustomFieldsModel<TKey, TEntity>, IEntity<Guid>
         where TKey : struct
         where TEntity : IEntity<TKey>
+        where TContext : DbContext, IDbContext
     {
-        private readonly IDbContextOptionsProvider<TKey, TEntity> _optionsProvider;
+        private readonly IDbContextOptionsProvider<TKey, TEntity, TContext> _optionsProvider;
 
-        protected AbstractCustomFieldsDbContextOptionsProvider(IDbContextOptionsProvider<TKey, TEntity> optionsProvider)
+        protected AbstractCustomFieldsDbContextOptionsProvider(IDbContextOptionsProvider<TKey, TEntity, TContext> optionsProvider)
         {
             _optionsProvider = optionsProvider;
         }
 
-        public DbContextOptions GetDbContextOptions(string connectionString) => _optionsProvider.GetDbContextOptions(connectionString);
-        public DbContextOptions GetDbContextOptions(DbConnection connection) => _optionsProvider.GetDbContextOptions(connection);
+        public DbContextOptions<TContext> GetDbContextOptions(string connectionString) => _optionsProvider.GetDbContextOptions(connectionString);
+        public DbContextOptions<TContext> GetDbContextOptions(DbConnection connection) => _optionsProvider.GetDbContextOptions(connection);
     }
 }

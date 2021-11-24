@@ -97,7 +97,7 @@ namespace Firebend.AutoCrud.EntityFramework
 
             var t = typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, dbContextType);
 
-            WithRegistration<IDbContextProvider<TKey, TEntity>>(t, serviceLifetime: ServiceLifetime.Transient);
+            WithRegistration<IDbContextProvider<TKey, TEntity>>(t);
 
             return this;
         }
@@ -117,6 +117,17 @@ namespace Firebend.AutoCrud.EntityFramework
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext<TContext>()
             where TContext : IDbContext => WithDbContext(typeof(TContext));
 
+        private Type GetDbContextProviderType()
+        {
+            if (DbContextType is null)
+            {
+                throw new Exception("Please configure a context type first");
+            }
+
+            var providerType = typeof(IDbContextOptionsProvider<,,>).MakeGenericType(EntityKeyType, EntityType, DbContextType);
+            return providerType;
+        }
+
         /// <summary>
         /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
         /// </summary>
@@ -134,7 +145,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// </example>
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Type type)
         {
-            WithRegistration<IDbContextOptionsProvider<TKey, TEntity>>(type);
+            WithRegistration(GetDbContextProviderType(), type);
             return this;
         }
 
@@ -152,9 +163,8 @@ namespace Firebend.AutoCrud.EntityFramework
         /// </code>
         /// </example>
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TProvider>()
-        where TProvider : IDbContextOptionsProvider<TKey, TEntity>
         {
-            WithRegistration<IDbContextOptionsProvider<TKey, TEntity>, TProvider>();
+            WithRegistration(GetDbContextProviderType(), typeof(TProvider));
             return this;
         }
 
@@ -173,12 +183,13 @@ namespace Firebend.AutoCrud.EntityFramework
         ///        .AddControllers()
         /// </code>
         /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(
-            Func<string, DbContextOptions> dbContextOptionsFunc,
-            Func<DbConnection, DbContextOptions> dbContextOptionsConnectionFunc)
+        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TContext>(
+            Func<string, DbContextOptions<TContext>> dbContextOptionsFunc,
+            Func<DbConnection, DbContextOptions<TContext>> dbContextOptionsConnectionFunc)
+            where TContext : DbContext, IDbContext
         {
-            WithRegistrationInstance<IDbContextOptionsProvider<TKey, TEntity>>(
-                new DbContextOptionsProvider<TKey, TEntity>(dbContextOptionsFunc, dbContextOptionsConnectionFunc));
+            WithRegistrationInstance<IDbContextOptionsProvider<TKey, TEntity, TContext>>(
+                new DbContextOptionsProvider<TKey, TEntity, TContext>(dbContextOptionsFunc, dbContextOptionsConnectionFunc));
 
             return this;
         }

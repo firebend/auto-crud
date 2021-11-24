@@ -6,21 +6,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
-    public class DbContextOptionsProvider<TKey, TEntity> : IDbContextOptionsProvider<TKey, TEntity>
+    public class DbContextOptionsProvider<TKey, TEntity, TContext> : IDbContextOptionsProvider<TKey, TEntity, TContext>
         where TKey : struct
         where TEntity : IEntity<TKey>
+        where TContext : DbContext, IDbContext
     {
-        private readonly Func<string, DbContextOptions> _optionsFunc;
-        private readonly Func<DbConnection, DbContextOptions> _optionsConnectionFunc;
+        private readonly Func<string, DbContextOptions<TContext>> _optionsFunc;
+        private readonly Func<DbConnection, DbContextOptions<TContext>> _optionsConnectionFunc;
 
-        public DbContextOptionsProvider(Func<string, DbContextOptions> optionsFunc,
-            Func<DbConnection, DbContextOptions> optionsConnectionFunc)
+        public DbContextOptionsProvider(Func<string, DbContextOptions<TContext>> optionsFunc,
+            Func<DbConnection, DbContextOptions<TContext>> optionsConnectionFunc)
         {
             _optionsFunc = optionsFunc;
             _optionsConnectionFunc = optionsConnectionFunc;
         }
 
-        public DbContextOptions GetDbContextOptions(string connectionString) => _optionsFunc(connectionString);
-        public DbContextOptions GetDbContextOptions(DbConnection connection) => _optionsConnectionFunc(connection);
+        public DbContextOptions<TContext> GetDbContextOptions(string connectionString) => _optionsFunc(connectionString);
+        public DbContextOptions<TContext> GetDbContextOptions(DbConnection connection) => _optionsConnectionFunc(connection);
     }
 }

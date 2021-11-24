@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
-    public interface IDbContextOptionsProvider<TKey, TEntity>
+    public interface IDbContextOptionsProvider<TKey, TEntity, TContext>
         where TKey : struct
         where TEntity : IEntity<TKey>
-    {
-        DbContextOptions GetDbContextOptions(string connectionString);
+        where TContext : DbContext, IDbContext
 
-        DbContextOptions GetDbContextOptions(DbConnection connection);
+    {
+        DbContextOptions<TContext> GetDbContextOptions(string connectionString);
+
+        DbContextOptions<TContext> GetDbContextOptions(DbConnection connection);
     }
 }
