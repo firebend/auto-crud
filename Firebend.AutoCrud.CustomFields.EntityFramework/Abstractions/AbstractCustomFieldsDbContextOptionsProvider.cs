@@ -23,5 +23,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 
         public DbContextOptions<TContext> GetDbContextOptions(string connectionString) => _optionsProvider.GetDbContextOptions(connectionString);
         public DbContextOptions<TContext> GetDbContextOptions(DbConnection connection) => _optionsProvider.GetDbContextOptions(connection);
+        public DbContextOptions GetDbConnectionOptions(string connectionString) => _optionsProvider.GetDbConnectionOptions(connectionString);
+        public DbContextOptions GetDbConnectionOptions(DbConnection connection) => _optionsProvider.GetDbConnectionOptions(connection);
     }
 }

@@ -47,7 +47,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 .GetConnectionStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var options = _optionsProvider.GetDbContextOptions(connectionString); //todo this is broke
+            var options = _optionsProvider.GetDbConnectionOptions(connectionString); //todo this is broke
 
             var context = await GetDbContextAsync(options, cancellationToken);
 
@@ -56,7 +56,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
         public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
         {
-            var options = _optionsProvider.GetDbContextOptions(connection);
+            var options = _optionsProvider.GetDbConnectionOptions(connection);
 
             var context = await GetDbContextAsync(options, cancellationToken);
 

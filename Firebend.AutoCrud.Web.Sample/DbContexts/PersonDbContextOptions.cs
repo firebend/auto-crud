@@ -29,6 +29,20 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
             .UseLoggerFactory(loggerFactory)
             .EnableSensitiveDataLogging()
             .Options;
+
+        public static DbContextOptions GetOptionsA(DbConnection connection, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder()
+            .UseSqlServer(connection)
+            //.AddFirebendFunctions()
+            .UseLoggerFactory(loggerFactory)
+            .EnableSensitiveDataLogging()
+            .Options;
+
+        public static DbContextOptions GetOptionsA(string connectionString, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder()
+            .UseSqlServer(connectionString)
+            //.AddFirebendFunctions() //todo this causes errors
+            .UseLoggerFactory(loggerFactory)
+            .EnableSensitiveDataLogging()
+            .Options;
     }
 
     public class PersonDbContextOptionsProvider<TKey, TEntity> : IDbContextOptionsProvider<TKey, TEntity, PersonDbContext>
@@ -44,5 +58,8 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
 
         public DbContextOptions<PersonDbContext> GetDbContextOptions(string connectionString) => PersonDbContextOptions.GetOptions(connectionString, _loggerFactory);
         public DbContextOptions<PersonDbContext> GetDbContextOptions(DbConnection connection) => PersonDbContextOptions.GetOptions(connection, _loggerFactory);
+        public DbContextOptions GetDbConnectionOptions(string connectionString) => PersonDbContextOptions.GetOptionsA(connectionString, _loggerFactory);
+
+        public DbContextOptions GetDbConnectionOptions(DbConnection connection) => PersonDbContextOptions.GetOptionsA(connection, _loggerFactory);
     }
 }

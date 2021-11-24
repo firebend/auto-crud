@@ -23,5 +23,8 @@ namespace Firebend.AutoCrud.EntityFramework
 
         public DbContextOptions<TContext> GetDbContextOptions(string connectionString) => _optionsFunc(connectionString);
         public DbContextOptions<TContext> GetDbContextOptions(DbConnection connection) => _optionsConnectionFunc(connection);
+        public DbContextOptions GetDbConnectionOptions(string connectionString) => null;
+
+        public DbContextOptions GetDbConnectionOptions(DbConnection connection) => null;
     }
 }

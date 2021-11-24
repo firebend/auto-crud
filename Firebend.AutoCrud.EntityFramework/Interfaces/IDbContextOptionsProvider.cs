@@ -13,5 +13,9 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
         DbContextOptions<TContext> GetDbContextOptions(string connectionString);
 
         DbContextOptions<TContext> GetDbContextOptions(DbConnection connection);
+
+        DbContextOptions GetDbConnectionOptions(string connectionString); //todo find out how to get away from doing this when we have custom fields and change tracking
+
+        DbContextOptions GetDbConnectionOptions(DbConnection connection);
     }
 }

@@ -59,7 +59,7 @@ https://localhost:5001/api/v1/ef-person?search=Fox&pageSize=10&pageNumber=1&modi
 https://localhost:5001/api/v1/ef-person?nickName=Spooky&pageSize=10&pageNumber=1&modifiedStartDate=2021-01-12T15:24:22.285552-06:00
 
 ###
-http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/changes?search=spooky&pageNumber=1&pageSize=20&modifiedStartDate=2021-01-12T15:24:22.285552-06:00
+http://localhost:5000/api/v1/ef-person/dcfd240b-8a6c-4278-f821-08d8bf1a31b6/changes?pageNumber=1&pageSize=20&modifiedStartDate=2021-01-12T15:24:22.285552-06:00
 
 ###
 http://localhost:5000/api/v1/ef-person/export/spreadSheet?filename=export&pageSize=50&pageNumber=1
@@ -68,7 +68,7 @@ http://localhost:5000/api/v1/ef-person/export/spreadSheet?filename=export&pageSi
 http://localhost:5000/api/v1/ef-person/export/csv?filename=export&pageNumber=1&pageSize=10
 
 ###
-POST http://localhost:5000/api/v1/ef-person/9d6192ab-eb90-4108-ad5d-08d96193295f/custom-fields
+POST http://localhost:5000/api/v1/ef-person/1a9126c0-5d14-4804-6067-08d9af8c4fd0/custom-fields
 Content-Type: application/json
 
 {
