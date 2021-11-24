@@ -15,12 +15,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
     public class MongoIndexMergeService : MongoClientBase, IMongoIndexMergeService
     {
         private readonly IMongoIndexComparisonService _comparisonService;
+        private readonly ILogger<MongoIndexMergeService> _logger;
 
         public MongoIndexMergeService(IMongoClient client,
             ILogger<MongoIndexMergeService> logger,
             IMongoRetryService mongoRetryService,
             IMongoIndexComparisonService comparisonService) : base(client, logger, mongoRetryService)
         {
+            _logger = logger;
             _comparisonService = comparisonService;
         }
 
@@ -104,8 +106,28 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             ICollection<CreateIndexModel<TEntity>> adds,
             ICollection<string> drops)
         {
-            var indexName = indexToAdd.Options.Name;
-            var existingIndex = indexes.FirstOrDefault(x => x["name"].AsString.EqualsIgnoreCaseAndWhitespace(indexName));
+            if (indexToAdd is null)
+            {
+                return;
+            }
+
+            var indexName = indexToAdd.Options?.Name;
+
+            BsonDocument existingIndex = null;
+
+            if (!string.IsNullOrWhiteSpace(indexName))
+            {
+                existingIndex = indexes.FirstOrDefault(x => x["name"].AsString.EqualsIgnoreCaseAndWhitespace(indexName));
+            }
+
+            if (existingIndex is null)
+            {
+                var keys = indexToAdd.Keys
+                    .Render(mongoCollection.DocumentSerializer, new BsonSerializerRegistry())
+                    .ToJson();
+
+                existingIndex = indexes.FirstOrDefault(x => x["key"].ToJson().EqualsIgnoreCaseAndWhitespace(keys));
+            }
 
             if (existingIndex == null)
             {

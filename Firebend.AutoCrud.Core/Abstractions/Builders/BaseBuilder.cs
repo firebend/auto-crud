@@ -59,7 +59,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             {
                 if (allowMany)
                 {
-                    Registrations[type] = Registrations[type] ?? new List<Registration>();
+                    Registrations[type] ??= new List<Registration>();
                     Registrations[type].Add(registration);
                 }
                 else if (replace)
@@ -78,18 +78,19 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         public BaseBuilder WithRegistration(Type registrationType,
             Type serviceType,
             bool replace = true,
-            bool allowMany = false)
+            bool allowMany = false,
+            ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            var registration = new ServiceRegistration { ServiceType = serviceType };
+            var registration = new ServiceRegistration { ServiceType = serviceType, Lifetime = lifetime};
 
             return WithRegistration(registrationType, registration, replace, allowMany);
         }
 
-        public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true, bool allowMany = false)
-            => WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany);
+        public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true, bool allowMany = false, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+            => WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany, serviceLifetime);
 
-        public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true, bool allowMany = false)
-            => WithRegistration(typeof(TRegistration), type, replace, allowMany);
+        public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true, bool allowMany = false, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+            => WithRegistration(typeof(TRegistration), type, replace, allowMany, serviceLifetime);
 
         public BaseBuilder WithRegistration(Type registrationType,
             Type serviceType,

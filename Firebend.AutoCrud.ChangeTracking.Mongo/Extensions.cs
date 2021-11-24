@@ -21,16 +21,13 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
     {
 
         /// <summary>
-        /// Adds change tracking for a given entity and persists it to a data store using Entity Framework.
+        /// Adds change tracking for a given entity and persists it to a data store using Mongo.
         /// This function registers a <see cref="AbstractMongoChangeTrackingService{TEntityKey,TEntity}"/> to track changes and
         /// a <see cref="AbstractMongoChangeTrackingReadRepository{TEntityKey,TEntity}"/> to read changes.
         /// It also registers <see cref="AbstractChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="AbstractChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
         /// and <see cref="AbstractChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
-        /// A <see cref="AbstractChangeTrackingDbContextProvider{TEntityKey,TEntity}"/> is registered so that a special change tracking Entity Framework context
-        /// can be used to persist the changes.
-        /// </summary>
         /// <param name="configurator">
-        /// The <see cref="DomainEventsConfigurator{TBuilder,TKey,TEntity}"/> to configure Entity Framework persistence for.
+        /// The <see cref="DomainEventsConfigurator{TBuilder,TKey,TEntity}"/> to configure Mongo persistence for.
         /// </param>
         /// <param name="changeTrackingOptions">
         /// The <see cref="ChangeTrackingOptions"/> to configure change tracking.

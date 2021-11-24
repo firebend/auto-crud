@@ -12,6 +12,7 @@ using Firebend.AutoCrud.EntityFramework.Implementations;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
@@ -96,7 +97,7 @@ namespace Firebend.AutoCrud.EntityFramework
 
             var t = typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, dbContextType);
 
-            WithRegistration<IDbContextProvider<TKey, TEntity>>(t);
+            WithRegistration<IDbContextProvider<TKey, TEntity>>(t, serviceLifetime: ServiceLifetime.Transient);
 
             return this;
         }

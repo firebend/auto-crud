@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Version>3.0.0</Version>
-        <TargetFrameworks>netstandard2.1</TargetFrameworks>
+        <TargetFrameworks>net6.0</TargetFrameworks>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
@@ -24,7 +24,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-      <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+      <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
     </ItemGroup>
 
     <ItemGroup>

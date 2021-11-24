@@ -25,13 +25,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 return false;
             }
 
-            var doesNameMatch = existingIndexBson["name"].AsString.EqualsIgnoreCaseAndWhitespace(definition.Options.Name);
-
-            if (!doesNameMatch)
-            {
-                return false;
-            }
-
             var existingKeys = existingIndexBson["key"].AsBsonDocument;
             var definitionKeys = definition.Keys.Render(collection.DocumentSerializer, new BsonSerializerRegistry());
             var doKeysMatch = existingKeys == definitionKeys;
@@ -61,6 +54,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         public bool EnsureUnique<TEntity>(IMongoCollection<TEntity> collection, CreateIndexModel<TEntity>[] definitions)
         {
             var hasDuplicateNames = definitions
+                .Where(x => !string.IsNullOrWhiteSpace(x?.Options?.Name))
                 .GroupBy(x => x.Options.Name)
                 .Any(x => x.Count() > 1);
 
