@@ -22,16 +22,17 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         public static readonly ConcurrentDictionary<string, Task<bool>> InitCaches = new();
     }
 
-    public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity> :
+    public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> :
         IChangeTrackingDbContextProvider<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
+        where TContext : DbContext, IDbContext
     {
         private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
         private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
-        private readonly IDbContextOptionsProvider<TEntityKey, TEntity, ChangeTrackingDbContext<TEntityKey, TEntity>> _optionsProvider;
+        private readonly IDbContextOptionsProvider<TEntityKey, TEntity, TContext> _optionsProvider;
 
-        protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity, ChangeTrackingDbContext<TEntityKey, TEntity>> optionsProvider,
+        protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity, TContext> optionsProvider,
             IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
             IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
         {
@@ -46,7 +47,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 .GetConnectionStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var options = _optionsProvider.GetDbContextOptions(connectionString);
+            var options = _optionsProvider.GetDbContextOptions(connectionString); //todo this is broke
 
             var context = await GetDbContextAsync(options, cancellationToken);
 

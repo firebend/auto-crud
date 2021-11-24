@@ -18,14 +18,14 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
 
         public static DbContextOptions<PersonDbContext> GetOptions(string connectionString, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder<PersonDbContext>()
             .UseSqlServer(connectionString)
-            .AddFirebendFunctions()
+            //.AddFirebendFunctions() //todo this causes errors
             .UseLoggerFactory(loggerFactory)
             .EnableSensitiveDataLogging()
             .Options;
 
         public static DbContextOptions<PersonDbContext> GetOptions(DbConnection connection, ILoggerFactory loggerFactory) => new DbContextOptionsBuilder<PersonDbContext>()
             .UseSqlServer(connection)
-            .AddFirebendFunctions()
+            //.AddFirebendFunctions()
             .UseLoggerFactory(loggerFactory)
             .EnableSensitiveDataLogging()
             .Options;

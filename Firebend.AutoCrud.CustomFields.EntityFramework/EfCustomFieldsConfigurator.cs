@@ -35,6 +35,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
     {
         public EfCustomFieldsConfigurator(TBuilder builder) : base(builder)
         {
+            if (builder.DbContextType is null)
+            {
+                throw new Exception("Please configure the builders db context");
+            }
         }
 
         /// <summary>
@@ -57,7 +61,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
             var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>
             {
-                SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
+                SignatureBase = $"{typeof(TEntity).Name}_CustomFields",
+                DbContextType = Builder.DbContextType,
             };
             configure(customFieldsBuilder);
             Builder.Registrations.Add(typeof(object), new List<Registration>
@@ -95,7 +100,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
             var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>
             {
-                SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
+                SignatureBase = $"{typeof(TEntity).Name}_CustomFields",
+                DbContextType = Builder.DbContextType,
             };
             configure(customFieldsBuilder);
             Builder.Registrations.Add(typeof(object), new List<Registration>

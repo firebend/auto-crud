@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 
             public override string LogFragment => "";
 
-            public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => false;
+            public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => true;
 
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {
