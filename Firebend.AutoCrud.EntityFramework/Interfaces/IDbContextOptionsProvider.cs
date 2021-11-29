@@ -4,18 +4,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
-    public interface IDbContextOptionsProvider<TKey, TEntity, TContext>
+    public interface IDbContextOptionsProvider<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
-        where TContext : DbContext, IDbContext
 
     {
-        DbContextOptions<TContext> GetDbContextOptions(string connectionString);
+        DbContextOptions<TContext> GetDbContextOptions<TContext>(string connectionString)
+            where TContext : DbContext;
 
-        DbContextOptions<TContext> GetDbContextOptions(DbConnection connection);
-
-        DbContextOptions GetDbConnectionOptions(string connectionString); //todo find out how to get away from doing this when we have custom fields and change tracking
-
-        DbContextOptions GetDbConnectionOptions(DbConnection connection);
+        DbContextOptions<TContext> GetDbContextOptions<TContext>(DbConnection connection)
+            where TContext : DbContext;
     }
 }

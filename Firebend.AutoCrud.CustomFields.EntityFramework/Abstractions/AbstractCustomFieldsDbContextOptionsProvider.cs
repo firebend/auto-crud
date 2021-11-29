@@ -7,23 +7,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 {
-    public abstract class AbstractCustomFieldsDbContextOptionsProvider<TKey, TEntity, TCustomFieldsEntity, TContext> :
-        IDbContextOptionsProvider<Guid, TCustomFieldsEntity, TContext>
+    public abstract class AbstractCustomFieldsDbContextOptionsProvider<TKey, TEntity, TCustomFieldsEntity> :
+        IDbContextOptionsProvider<Guid, TCustomFieldsEntity>
         where TCustomFieldsEntity : EfCustomFieldsModel<TKey, TEntity>, IEntity<Guid>
         where TKey : struct
         where TEntity : IEntity<TKey>
-        where TContext : DbContext, IDbContext
     {
-        private readonly IDbContextOptionsProvider<TKey, TEntity, TContext> _optionsProvider;
+        private readonly IDbContextOptionsProvider<TKey, TEntity> _optionsProvider;
 
-        protected AbstractCustomFieldsDbContextOptionsProvider(IDbContextOptionsProvider<TKey, TEntity, TContext> optionsProvider)
+        protected AbstractCustomFieldsDbContextOptionsProvider(IDbContextOptionsProvider<TKey, TEntity> optionsProvider)
         {
             _optionsProvider = optionsProvider;
         }
 
-        public DbContextOptions<TContext> GetDbContextOptions(string connectionString) => _optionsProvider.GetDbContextOptions(connectionString);
-        public DbContextOptions<TContext> GetDbContextOptions(DbConnection connection) => _optionsProvider.GetDbContextOptions(connection);
-        public DbContextOptions GetDbConnectionOptions(string connectionString) => _optionsProvider.GetDbConnectionOptions(connectionString);
-        public DbContextOptions GetDbConnectionOptions(DbConnection connection) => _optionsProvider.GetDbConnectionOptions(connection);
+        public DbContextOptions<TContext> GetDbContextOptions<TContext>(string connectionString)
+            where TContext : DbContext => _optionsProvider.GetDbContextOptions<TContext>(connectionString);
+        public DbContextOptions<TContext> GetDbContextOptions<TContext>(DbConnection connection)
+            where TContext : DbContext => _optionsProvider.GetDbContextOptions<TContext>(connection);
     }
 }

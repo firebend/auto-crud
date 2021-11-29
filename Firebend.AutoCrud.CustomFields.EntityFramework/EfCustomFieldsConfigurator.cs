@@ -132,8 +132,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
                 false);
 
             builder.WithRegistration(
-                typeof(IDbContextOptionsProvider<,,>).MakeGenericType(guidType, efModelType, builder.DbContextType),
-                typeof(AbstractCustomFieldsDbContextOptionsProvider<,,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType, builder.DbContextType),
+                typeof(IDbContextOptionsProvider<,>).MakeGenericType(guidType, efModelType),
+                typeof(AbstractCustomFieldsDbContextOptionsProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
                 false);
 
             builder.WithRegistration(

@@ -23,10 +23,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
     {
         private readonly ILogger _logger;
         private readonly IDbContextConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
-        private readonly IDbContextOptionsProvider<TKey, TEntity, TContext> _optionsProvider;
+        private readonly IDbContextOptionsProvider<TKey, TEntity> _optionsProvider;
 
         protected DbContextProvider(IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider,
-            IDbContextOptionsProvider<TKey, TEntity, TContext> optionsProvider,
+            IDbContextOptionsProvider<TKey, TEntity> optionsProvider,
             ILoggerFactory loggerFactory)
         {
             _connectionStringProvider = connectionStringProvider;
@@ -75,7 +75,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 .GetConnectionStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var options = _optionsProvider.GetDbContextOptions(connectionString);
+            var options = _optionsProvider.GetDbContextOptions<TContext>(connectionString);
 
             var context = await CreateContextAsync(options, cancellationToken);
 
@@ -84,7 +84,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
         {
-            var options = _optionsProvider.GetDbContextOptions(connection);
+            var options = _optionsProvider.GetDbContextOptions<TContext>(connection);
 
             var context = await CreateContextAsync(options, cancellationToken);
 

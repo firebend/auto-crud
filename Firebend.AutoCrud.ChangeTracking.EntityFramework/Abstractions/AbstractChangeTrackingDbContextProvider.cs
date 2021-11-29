@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
@@ -13,7 +14,6 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
@@ -30,9 +30,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
     {
         private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
         private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
-        private readonly IDbContextOptionsProvider<TEntityKey, TEntity, TContext> _optionsProvider;
+        private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
 
-        protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity, TContext> optionsProvider,
+        protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
             IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
             IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
         {
@@ -47,7 +47,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 .GetConnectionStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var options = _optionsProvider.GetDbConnectionOptions(connectionString); //todo this is broke
+            var options = _optionsProvider.GetDbContextOptions<ChangeTrackingDbContext<TEntityKey, TEntity>>(connectionString);
 
             var context = await GetDbContextAsync(options, cancellationToken);
 
@@ -56,7 +56,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
         public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
         {
-            var options = _optionsProvider.GetDbConnectionOptions(connection);
+            var options = _optionsProvider.GetDbContextOptions<ChangeTrackingDbContext<TEntityKey, TEntity>>(connection);
 
             var context = await GetDbContextAsync(options, cancellationToken);
 
@@ -70,6 +70,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName ?? string.Empty, async _ =>
                 {
                     var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>));
+
+                    if (type is null)
+                    {
+                        throw new Exception("Could not find entity type.");
+                    }
+
                     var schema = type.GetSchema().Coalesce("dbo");
                     var table = type.GetTableName();
                     var fullTableName = $"[{schema}].[{table}]";

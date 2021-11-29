@@ -117,17 +117,6 @@ namespace Firebend.AutoCrud.EntityFramework
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext<TContext>()
             where TContext : IDbContext => WithDbContext(typeof(TContext));
 
-        private Type GetDbContextProviderType()
-        {
-            if (DbContextType is null)
-            {
-                throw new Exception("Please configure a context type first");
-            }
-
-            var providerType = typeof(IDbContextOptionsProvider<,,>).MakeGenericType(EntityKeyType, EntityType, DbContextType);
-            return providerType;
-        }
-
         /// <summary>
         /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
         /// </summary>
@@ -145,7 +134,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// </example>
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Type type)
         {
-            WithRegistration(GetDbContextProviderType(), type);
+            WithRegistration(typeof(IDbContextOptionsProvider<TKey, TEntity>), type);
             return this;
         }
 
@@ -164,33 +153,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// </example>
         public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TProvider>()
         {
-            WithRegistration(GetDbContextProviderType(), typeof(TProvider));
-            return this;
-        }
-
-        /// <summary>
-        /// Specifies EntityFramework Db Context options.
-        /// </summary>
-        /// <param name="dbContextOptionsFunc">
-        /// A <see cref="Func{TResult}"/> that accepts the connection string and returns a <see cref="DbContextOptions"/>
-        /// </param>
-        /// <example>
-        /// <code>
-        /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///    forecast.WithDbContext<AppDbContext>()
-        ///        .WithDbOptionsProvider(new DbContextOptionsBuilder().AddSqlServer().Options)
-        ///        .AddCrud()
-        ///        .AddControllers()
-        /// </code>
-        /// </example>
-        public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TContext>(
-            Func<string, DbContextOptions<TContext>> dbContextOptionsFunc,
-            Func<DbConnection, DbContextOptions<TContext>> dbContextOptionsConnectionFunc)
-            where TContext : DbContext, IDbContext
-        {
-            WithRegistrationInstance<IDbContextOptionsProvider<TKey, TEntity, TContext>>(
-                new DbContextOptionsProvider<TKey, TEntity, TContext>(dbContextOptionsFunc, dbContextOptionsConnectionFunc));
-
+            WithRegistration(typeof(IDbContextOptionsProvider<TKey, TEntity>), typeof(TProvider));
             return this;
         }
 
