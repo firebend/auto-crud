@@ -57,7 +57,8 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             TEntity entity,
             TEntityKey id,
             JsonPatchDocument<TEntity> patchDocument = null)
-            => new()
+        {
+            var changeEntity = new ChangeTrackingEntity<TEntityKey, TEntity>
             {
                 ModifiedDate = domainEvent.Time,
                 Source = domainEvent.EventContext?.Source,
@@ -70,5 +71,8 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                     ? domainEvent.EventContext?.CustomContext
                     : null
             };
+
+            return changeEntity;
+        }
     }
 }
