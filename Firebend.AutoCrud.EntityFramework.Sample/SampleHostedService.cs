@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -25,54 +26,64 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
 
         public SampleHostedService(IServiceProvider serviceProvider, ILogger<SampleHostedService> logger)
         {
-            _logger = logger;
-
-            using var scope = serviceProvider.CreateScope();
-            _createService = scope.ServiceProvider.GetService<IEntityCreateService<Guid, Person>>();
-            _updateService = scope.ServiceProvider.GetService<IEntityUpdateService<Guid, Person>>();
-            _readService = scope.ServiceProvider.GetService<IPersonReadRepository>();
-            _searchService = scope.ServiceProvider.GetService<IEntitySearchService<Guid, Person, EntitySearchRequest>>();
-
-            var context = scope.ServiceProvider.GetService<AppDbContext>();
-
-            if (context == null)
+            try
             {
-                const string msg = "Could nto resolve ef context";
-                _logger.LogError(msg);
-                throw new Exception(msg);
+                _logger = logger;
+
+                using var scope = serviceProvider.CreateScope();
+                _createService = scope.ServiceProvider.GetService<IEntityCreateService<Guid, Person>>();
+                _updateService = scope.ServiceProvider.GetService<IEntityUpdateService<Guid, Person>>();
+                _readService = scope.ServiceProvider.GetService<IPersonReadRepository>();
+                _searchService = scope.ServiceProvider.GetService<IEntitySearchService<Guid, Person, EntitySearchRequest>>();
+
+                var context = scope.ServiceProvider.GetService<AppDbContext>();
+
+                if (context == null)
+                {
+                    const string msg = "Could nto resolve ef context";
+                    _logger.LogError(msg);
+                    throw new Exception(msg);
+                }
+
+                context.Database.EnsureCreated();
+
+                if (_createService == null)
+                {
+                    const string msg = "Could not resolve create service";
+                    _logger.LogError(msg);
+                    throw new Exception(msg);
+                }
+
+                if (_updateService == null)
+                {
+                    const string msg = "Could not resolve update service";
+                    _logger.LogError(msg);
+                    throw new Exception(msg);
+                }
+
+                if (_readService == null)
+                {
+                    const string msg = "Could not resolve read service";
+                    _logger.LogError(msg);
+                    throw new Exception(msg);
+                }
+
+                if (_searchService == null)
+                {
+                    const string msg = "Could not resolve search service";
+                    _logger.LogError(msg);
+                    throw new Exception(msg);
+                }
+
+                _serializer = JsonSerializer.Create(new JsonSerializerSettings { Formatting = Formatting.Indented });
+
+                var count= context.People.LongCount();
+                LogObject("there are ", count);
             }
-
-            context.Database.EnsureCreated();
-
-            if (_createService == null)
+            catch (Exception ex)
             {
-                const string msg = "Could not resolve create service";
-                _logger.LogError(msg);
-                throw new Exception(msg);
+                _logger?.LogCritical(ex, "Failure running sample");
             }
-
-            if (_updateService == null)
-            {
-                const string msg = "Could not resolve update service";
-                _logger.LogError(msg);
-                throw new Exception(msg);
-            }
-
-            if (_readService == null)
-            {
-                const string msg = "Could not resolve read service";
-                _logger.LogError(msg);
-                throw new Exception(msg);
-            }
-
-            if (_searchService == null)
-            {
-                const string msg = "Could not resolve search service";
-                _logger.LogError(msg);
-                throw new Exception(msg);
-            }
-
-            _serializer = JsonSerializer.Create(new JsonSerializerSettings { Formatting = Formatting.Indented });
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -86,7 +97,7 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
                     {
                         FirstName = $"First Name -{DateTimeOffset.UtcNow}",
                         LastName = $"Last Name -{DateTimeOffset.UtcNow}",
-                        Pets = new List<Pet> { new Pet { Id = Guid.NewGuid(), Name = "Mr. Bojangles" } }
+                        Pets = new List<Pet> { new() { Id = Guid.NewGuid(), Name = "Mr. Bojangles" } }
                     }, cancellationToken);
                 LogObject("Entity added....");
 
@@ -117,7 +128,6 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
 
         private void LogObject(string message, object entity = null)
         {
-            // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
             _logger.LogInformation(message);
 
             if (entity != null)

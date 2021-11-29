@@ -17,32 +17,32 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
         private const string FreeTextFunctionName = "FREETEXT";
         private const string ContainsFunctionName = "CONTAINS";
 
-        private static readonly MethodInfo _freeTextMethodInfo
+        private static readonly MethodInfo FreeTextMethodInfo
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
                 new[] { typeof(DbFunctions), typeof(string), typeof(string) });
 
-        private static readonly MethodInfo _freeTextMethodInfoWithLanguage
+        private static readonly MethodInfo FreeTextMethodInfoWithLanguage
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
                 new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
 
-        private static readonly MethodInfo _containsMethodInfo
+        private static readonly MethodInfo ContainsMethodInfo
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
                 new[] { typeof(DbFunctions), typeof(string), typeof(string) });
 
-        private static readonly MethodInfo _containsMethodInfoWithLanguage
+        private static readonly MethodInfo ContainsMethodInfoWithLanguage
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
                 new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
 
-        private static readonly IDictionary<MethodInfo, string> _typeMappings = new Dictionary<MethodInfo, string>
+        private static readonly IDictionary<MethodInfo, string> TypeMappings = new Dictionary<MethodInfo, string>
         {
-            {_freeTextMethodInfo, FreeTextFunctionName},
-            {_freeTextMethodInfoWithLanguage, FreeTextFunctionName},
-            {_containsMethodInfo, ContainsFunctionName},
-            {_containsMethodInfoWithLanguage, ContainsFunctionName}
+            {FreeTextMethodInfo, FreeTextFunctionName},
+            {FreeTextMethodInfoWithLanguage, FreeTextFunctionName},
+            {ContainsMethodInfo, ContainsFunctionName},
+            {ContainsMethodInfoWithLanguage, ContainsFunctionName}
         };
 
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
@@ -68,19 +68,19 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
                 throw new ArgumentNullException(nameof(arguments));
             }
 
-            if (_typeMappings == null)
+            if (TypeMappings == null)
             {
                 return null;
             }
 
-            if (!_typeMappings.TryGetValue(method, out var functionName))
+            if (!TypeMappings.TryGetValue(method, out var functionName))
             {
                 return null;
             }
 
             var propertyReference = arguments[1];
 
-            if (!(propertyReference is ColumnExpression columnExpression))
+            if (propertyReference is not ColumnExpression columnExpression)
             {
                 throw new InvalidOperationException("Invalid property");
             }

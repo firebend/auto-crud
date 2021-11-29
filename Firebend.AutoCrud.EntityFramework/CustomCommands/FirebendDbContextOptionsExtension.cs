@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,34 +6,19 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 {
     public class FirebendDbContextOptionsExtension : IDbContextOptionsExtension
     {
-
         private DbContextOptionsExtensionInfo _info;
 
-        public void ApplyServices(IServiceCollection services) => services
-            .AddSingleton<IMethodCallTranslatorPlugin, FirebendMethodCallTranslatorPlugin>();
+        public void ApplyServices(IServiceCollection services)
+        {
+            _ = new EntityFrameworkRelationalServicesBuilder(services)
+                .TryAdd<IMethodCallTranslatorPlugin, FirebendMethodCallTranslatorPlugin>();
+        }
 
         public void Validate(IDbContextOptions options)
         {
         }
 
-        public DbContextOptionsExtensionInfo Info => _info ??= new MyDbContextOptionsExtensionInfo(this);
-
-        private sealed class MyDbContextOptionsExtensionInfo : DbContextOptionsExtensionInfo
-        {
-            public MyDbContextOptionsExtensionInfo(IDbContextOptionsExtension instance) : base(instance) { }
-
-            public override bool IsDatabaseProvider => false;
-
-            public override string LogFragment => "";
-
-            public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => true;
-
-            public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
-            {
-
-            }
-
-            public override int GetServiceProviderHashCode() => 0;
-        }
+        public DbContextOptionsExtensionInfo Info
+            => _info ??= new FirebendAutoCrudFunctionsExtensionsInfo(this);
     }
 }
