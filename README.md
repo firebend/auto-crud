@@ -18,7 +18,7 @@
 - [Example Project](#example-project)
 
 # Firebend.AutoCrud
-A framework that provides Create Read Update Delete (CRUD) dotnet core services.
+A framework that provides Create Read Update Delete (CRUD) dotnet core services!
 
 "Extension Packs" are provided to support:
 - Entity Framework
