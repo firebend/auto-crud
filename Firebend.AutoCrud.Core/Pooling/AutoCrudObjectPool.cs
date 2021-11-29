@@ -5,13 +5,9 @@ namespace Firebend.AutoCrud.Core.Pooling
 {
     public static class AutoCrudObjectPool
     {
-        private static readonly ObjectPoolProvider _provider = new LeakTrackingObjectPoolProvider(new DefaultObjectPoolProvider());
+        public static ObjectPoolProvider Instance { get; } = new LeakTrackingObjectPoolProvider(new DefaultObjectPoolProvider());
 
-        public static ObjectPoolProvider Instance => _provider;
-
-        private static readonly ObjectPool<StringBuilder> _stringBuilder = Instance.CreateStringBuilderPool();
-
-        public static ObjectPool<StringBuilder> StringBuilder => _stringBuilder;
+        public static ObjectPool<StringBuilder> StringBuilder { get; } = Instance.CreateStringBuilderPool();
 
         public static string InterpolateString(params object[] objects)
         {

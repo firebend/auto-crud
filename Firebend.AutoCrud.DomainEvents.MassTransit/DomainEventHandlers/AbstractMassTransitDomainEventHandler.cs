@@ -10,14 +10,12 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
         where TDomainEvent : DomainEventBase
         where TDomainEventHandler : class, IDomainEventSubscriber
     {
-        private TDomainEventHandler _handler;
-
         protected AbstractMassTransitDomainEventHandler(TDomainEventHandler handler)
         {
-            _handler = handler;
+            Handler = handler;
         }
 
-        public TDomainEventHandler Handler => _handler;
+        public TDomainEventHandler Handler { get; private set; }
 
         public async Task Consume(ConsumeContext<TDomainEvent> context)
         {
@@ -29,6 +27,6 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers
 
         protected override void DisposeManagedObjects() => Handler.Dispose();
 
-        protected override void DisposeUnmanagedObjectsAndAssignNull() => _handler = null;
+        protected override void DisposeUnmanagedObjectsAndAssignNull() => Handler = null;
     }
 }

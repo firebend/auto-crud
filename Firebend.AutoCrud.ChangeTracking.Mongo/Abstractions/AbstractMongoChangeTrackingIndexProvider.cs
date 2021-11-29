@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
         {
             yield return new CreateIndexModel<ChangeTrackingEntity<TEntityKey, TEntity>>(
                 builder.Ascending(f => f.EntityId),
-                new CreateIndexOptions { Name = "changeTrackingEntityId"});
+                new CreateIndexOptions { Name = "changeTrackingEntityId" });
 
             yield return MongoIndexProviderHelpers.FullText(builder);
 

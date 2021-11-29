@@ -81,7 +81,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             bool allowMany = false,
             ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            var registration = new ServiceRegistration { ServiceType = serviceType, Lifetime = lifetime};
+            var registration = new ServiceRegistration { ServiceType = serviceType, Lifetime = lifetime };
 
             return WithRegistration(registrationType, registration, replace, allowMany);
         }

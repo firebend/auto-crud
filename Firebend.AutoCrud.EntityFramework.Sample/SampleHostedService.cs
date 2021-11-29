@@ -77,7 +77,7 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
 
                 _serializer = JsonSerializer.Create(new JsonSerializerSettings { Formatting = Formatting.Indented });
 
-                var count= context.People.LongCount();
+                var count = context.People.LongCount();
                 LogObject("there are ", count);
             }
             catch (Exception ex)

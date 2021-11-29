@@ -13,10 +13,7 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
                 FirstName = table.Column<string>(maxLength: 250, nullable: true),
                 LastName = table.Column<string>(maxLength: 250, nullable: true)
             },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_EfPeople", x => x.Id);
-            });
+            constraints: table => table.PrimaryKey("PK_EfPeople", x => x.Id));
 
         protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
             "EfPeople");

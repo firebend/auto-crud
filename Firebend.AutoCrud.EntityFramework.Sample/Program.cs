@@ -42,14 +42,14 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
             })
             .ConfigureServices((hostContext, services) =>
             {
-                services.AddDbContext<AppDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); },
+                services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")),
                         ServiceLifetime.Singleton)
                     .UsingEfCrud()
                     .AddEntity<Guid, Person>(person =>
                         person.WithDbContext<AppDbContext>()
                             .WithConnectionString(hostContext.Configuration.GetConnectionString("SqlServer"))
                             .WithDbOptionsProvider<OptionsProvider<Guid, Person>>()
-                            .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((persons, request) => persons.Where(x => x.FirstName.StartsWith( request.Search))))
+                            .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((persons, request) => persons.Where(x => x.FirstName.StartsWith(request.Search))))
                             .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
                     )
                     .AddEntity<Guid, Pet>(pet =>

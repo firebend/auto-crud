@@ -26,8 +26,8 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
             try
             {
-                pooledBuilder.Append(timestampString.Substring(0, 11));
-                pooledBuilder.Append(guidString.Substring(11));
+                pooledBuilder.Append(timestampString[..11]);
+                pooledBuilder.Append(guidString[11..]);
                 newGuidString = pooledBuilder.ToString();
             }
             finally
