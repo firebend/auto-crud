@@ -259,7 +259,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         // Author: JMA
         // Date: 2021-01-15 06:08:57
         // Comment: yoink from here https://github.com/dotnet/aspnetcore/blob/master/src/Mvc/Mvc.NewtonsoftJson/src/JsonPatchExtensions.cs
-        // we are doing this because we want to keep this package net6.0
+        // we are doing this because we want to keep this package dependencies cleaner.
         // if we incorporate the package that includes this extension we have to force a specific version of asp net mvc i.e 3.1 or 5.0
         //*******************************************
         private static void ApplyTo<T>(
