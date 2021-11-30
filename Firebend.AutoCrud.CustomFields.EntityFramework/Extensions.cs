@@ -31,7 +31,6 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
         {
             var configurator = new EfCustomFieldsConfigurator<EntityFrameworkEntityBuilder<TKey, TEntity>, TKey, TEntity>(builder);
-
             if (configure == null)
             {
                 configurator.AddCustomFields();

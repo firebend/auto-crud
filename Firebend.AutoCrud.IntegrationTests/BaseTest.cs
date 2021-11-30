@@ -289,7 +289,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             SaveResponse(response);
         }
 
-        protected void CsvResponseAssertions(IFlurlResponse response)
+        protected virtual void CsvResponseAssertions(IFlurlResponse response)
         {
         }
 

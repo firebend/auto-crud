@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Firebend.AutoCrud.Web.Sample.Migrations
 {
+#pragma warning disable IDE1006
     public partial class addedModified : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,4 +33,6 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
                 "EfPeople");
         }
     }
+
+#pragma warning restore IDE1006
 }

@@ -7,9 +7,12 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
     public interface IDbContextOptionsProvider<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
-    {
-        DbContextOptions GetDbContextOptions(string connectionString);
 
-        DbContextOptions GetDbContextOptions(DbConnection connection);
+    {
+        DbContextOptions<TContext> GetDbContextOptions<TContext>(string connectionString)
+            where TContext : DbContext;
+
+        DbContextOptions<TContext> GetDbContextOptions<TContext>(DbConnection connection)
+            where TContext : DbContext;
     }
 }

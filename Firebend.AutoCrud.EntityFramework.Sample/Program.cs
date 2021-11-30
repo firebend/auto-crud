@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
@@ -15,15 +16,14 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var cancellationToken = new CancellationTokenSource();
 
             using var host = CreateHostBuilder(args).Build();
-            host.StartAsync(cancellationToken.Token)
-                .ContinueWith(_ => { Console.WriteLine("Sample complete. type 'quit' to exit."); }, cancellationToken.Token);
+            await host.StartAsync(cancellationToken.Token);
 
-            while (!Console.ReadLine().Equals("quit", StringComparison.InvariantCultureIgnoreCase))
+            while (!Console.ReadLine()?.Equals("quit", StringComparison.InvariantCultureIgnoreCase) ?? false)
             {
             }
 
@@ -42,23 +42,21 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
             })
             .ConfigureServices((hostContext, services) =>
             {
-                services.AddDbContext<AppDbContext>(opt => { opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")); },
+                services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")),
                         ServiceLifetime.Singleton)
                     .UsingEfCrud()
                     .AddEntity<Guid, Person>(person =>
                         person.WithDbContext<AppDbContext>()
                             .WithConnectionString(hostContext.Configuration.GetConnectionString("SqlServer"))
-                            .WithDbOptionsProvider(s => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(s).Options,
-                                connection => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connection).Options)
-                            .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((persons, request) => persons.Where(x => x.FirstName == request.Search)))
+                            .WithDbOptionsProvider<OptionsProvider<Guid, Person>>()
+                            .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((persons, request) => persons.Where(x => x.FirstName.StartsWith(request.Search))))
                             .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
                     )
                     .AddEntity<Guid, Pet>(pet =>
                         pet.WithDbContext<AppDbContext>()
                             .WithConnectionString(hostContext.Configuration.GetConnectionString("SqlServer"))
-                            .WithDbOptionsProvider(s => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(s).Options,
-                                connection => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connection).Options)
-                            .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((pets, request) => pets.Where(x => x.Name == request.Search)))
+                            .WithDbOptionsProvider<OptionsProvider<Guid, Pet>>()
+                            .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((pets, request) => pets.Where(x => x.Name.StartsWith(request.Search))))
                     )
                     .Generate();
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
@@ -13,7 +14,6 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
@@ -22,22 +22,20 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         public static readonly ConcurrentDictionary<string, Task<bool>> InitCaches = new();
     }
 
-    public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity> :
+    public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> :
         IChangeTrackingDbContextProvider<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
         where TEntityKey : struct
+        where TContext : DbContext, IDbContext
     {
         private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
         private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
-        private readonly ILogger _logger;
         private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
 
-        protected AbstractChangeTrackingDbContextProvider(ILogger<AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
-            IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
+        protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
             IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
             IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
         {
-            _logger = logger;
             _optionsProvider = optionsProvider;
             _connectionStringProvider = connectionStringProvider;
             _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
@@ -49,7 +47,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 .GetConnectionStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var options = _optionsProvider.GetDbContextOptions(connectionString);
+            var options = _optionsProvider.GetDbContextOptions<ChangeTrackingDbContext<TEntityKey, TEntity>>(connectionString);
 
             var context = await GetDbContextAsync(options, cancellationToken);
 
@@ -58,7 +56,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
         public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
         {
-            var options = _optionsProvider.GetDbContextOptions(connection);
+            var options = _optionsProvider.GetDbContextOptions<ChangeTrackingDbContext<TEntityKey, TEntity>>(connection);
 
             var context = await GetDbContextAsync(options, cancellationToken);
 
@@ -72,6 +70,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName ?? string.Empty, async _ =>
                 {
                     var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>));
+
+                    if (type is null)
+                    {
+                        throw new Exception("Could not find entity type.");
+                    }
+
                     var schema = type.GetSchema().Coalesce("dbo");
                     var table = type.GetTableName();
                     var fullTableName = $"[{schema}].[{table}]";

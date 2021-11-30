@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Firebend.AutoCrud.Web.Sample.Migrations
 {
+#pragma warning disable IDE1006
     // ReSharper disable once UnusedType.Global
     // ReSharper disable once InconsistentNaming
     public partial class tenantStuff : Migration
@@ -16,4 +17,5 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
             "TenantId",
             "EfPeople");
     }
+#pragma warning restore IDE1006
 }

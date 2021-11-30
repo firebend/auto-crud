@@ -18,18 +18,13 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.102
-
-    - name: Add dotnet-format problem matcher
-      uses: xt0rted/dotnet-format-problem-matcher@v1
+        dotnet-version: 6.0.100
 
     - name: Restore dotnet tools
-      uses: xt0rted/dotnet-tool-restore@v1
+      run: dotnet tool restore
 
     - name: Run dotnet format
-      uses: xt0rted/dotnet-format@v1
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+      run: dotnet format Firebend.AutoCrud.sln --verify-no-changes
 
     - name: Install dependencies
       run: dotnet restore Firebend.AutoCrud.sln

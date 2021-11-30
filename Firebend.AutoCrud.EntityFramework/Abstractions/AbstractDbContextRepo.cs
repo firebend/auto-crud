@@ -55,7 +55,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             return _context;
         }
 
-        protected DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
+        protected DbSet<TEntity> GetDbSet(IDbContext context)
+        {
+            return context.Set<TEntity>();
+        }
 
         protected async Task<TEntity> GetByEntityKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
         {

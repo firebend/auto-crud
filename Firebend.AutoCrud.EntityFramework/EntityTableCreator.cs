@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.EntityFramework
 
             foreach (var sql in split)
             {
-                var scriptTableName = sql.Substring(0, sql.IndexOf("(", StringComparison.OrdinalIgnoreCase));
+                var scriptTableName = sql[..sql.IndexOf("(", StringComparison.OrdinalIgnoreCase)];
                 scriptTableName = scriptTableName.Split('.').Last();
                 scriptTableName = scriptTableName.Trim().TrimStart('[').TrimEnd(']').ToLowerInvariant();
 
@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.EntityFramework
                     continue;
                 }
 
-                commandText = "CREATE TABLE " + sql.Substring(0, sql.LastIndexOf(";", StringComparison.InvariantCulture));
+                commandText = "CREATE TABLE " + sql[..sql.LastIndexOf(";", StringComparison.InvariantCulture)];
                 break;
             }
 

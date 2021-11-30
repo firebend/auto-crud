@@ -34,7 +34,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
             cb.Subscribe<CommandSucceededEvent>(e => _logger.LogDebug("SUCCESS: {CommandName}({Duration}) - {Reply}", e.CommandName, e.Duration, e.Reply.ToJson()));
 
-            cb.Subscribe<CommandFailedEvent>(e => _logger.LogError(e.Failure, "ERROR: {CommandName}({Duration})}", e.CommandName, e.Duration));
+            cb.Subscribe<CommandFailedEvent>(e => _logger.LogError(e.Failure, "ERROR: {CommandName}({Duration})", e.CommandName, e.Duration));
         }
     }
 }

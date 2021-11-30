@@ -8,13 +8,8 @@ namespace Firebend.AutoCrud.EntityFramework
 {
     public static class EfModelExtensions
     {
-        public static string GetTableName<TEntity>(this IModel model)
-            => GetTableName(model, typeof(TEntity));
-
-        public static string GetTableName(this IModel model, Type entityType)
+        private static string GetTableNameInternal(this IReadOnlyEntityType efType, MemberInfo entityType)
         {
-            var efType = model.FindEntityType(entityType);
-
             if (efType != null)
             {
                 return efType.GetTableName();
@@ -31,14 +26,14 @@ namespace Firebend.AutoCrud.EntityFramework
             return tableName;
         }
 
+        public static string GetTableName<TEntity>(this IModel model)
+            => GetTableNameInternal(model.FindEntityType(typeof(TEntity)), typeof(TEntity));
 
-        public static string GetSchemaName<TEntity>(this IModel model)
-            => GetSchemaName(model, typeof(TEntity));
+        public static string GetTableName(this IMutableModel model, Type entityType)
+            => GetTableNameInternal(model.FindEntityType(entityType), entityType);
 
-        public static string GetSchemaName(this IModel model, Type entityType)
+        private static string GetSchemaNameInternal(this IReadOnlyEntityType efType, MemberInfo entityType)
         {
-            var efType = model.FindEntityType(entityType);
-
             if (efType != null)
             {
                 return efType.GetSchema();
@@ -49,5 +44,11 @@ namespace Firebend.AutoCrud.EntityFramework
 
             return string.IsNullOrWhiteSpace(schemaName) ? null : schemaName;
         }
+
+        public static string GetSchemaName<TEntity>(this IModel model)
+            => GetSchemaNameInternal(model.FindEntityType(typeof(TEntity)), typeof(TEntity));
+
+        public static string GetSchemaName(this IMutableModel model, Type entityType)
+            => GetSchemaNameInternal(model.FindEntityType(entityType), entityType);
     }
 }

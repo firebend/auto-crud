@@ -49,7 +49,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
             }
 
             var constraintSplit = sqlException.Message.Split("index '");
-            var constraint = constraintSplit[1].Substring(0, constraintSplit[1].IndexOf("'", StringComparison.Ordinal));
+            var constraint = constraintSplit[1][..constraintSplit[1].IndexOf("'", StringComparison.Ordinal)];
 
             var tableIndex = dbContext
                 .Model
@@ -89,7 +89,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
             }
 
             var constraintSplit = sqlException.Message.Split("constraint \"");
-            var constraint = constraintSplit[1].Substring(0, constraintSplit[1].IndexOf("\"", StringComparison.Ordinal));
+            var constraint = constraintSplit[1][..constraintSplit[1].IndexOf("\"", StringComparison.Ordinal)];
 
             var foreignKey = dbContext
                 .Model

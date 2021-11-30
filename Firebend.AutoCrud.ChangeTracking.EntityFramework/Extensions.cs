@@ -57,13 +57,20 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
             where TEntity : class, IEntity<TKey>, new()
             where TBuilder : EntityCrudBuilder<TKey, TEntity>
         {
-            if (configurator.Builder is not EntityFrameworkEntityBuilder<TKey, TEntity>)
+            if (configurator.Builder is not EntityFrameworkEntityBuilder<TKey, TEntity> efBuilder)
             {
                 throw new Exception($"Configuration Error! This builder is not a {nameof(EntityFrameworkEntityBuilder<Guid, FooEntity>)}");
             }
 
-            configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>,
-                AbstractChangeTrackingDbContextProvider<TKey, TEntity>>();
+            if (efBuilder.DbContextType is null)
+            {
+                throw new Exception("Please configure the builder's db context first.");
+            }
+
+            var providerType = typeof(AbstractChangeTrackingDbContextProvider<,,>)
+                .MakeGenericType(efBuilder.EntityKeyType, efBuilder.EntityType, efBuilder.DbContextType);
+
+            configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>>(providerType);
 
             configurator.Builder.WithRegistration<IChangeTrackingReadService<TKey, TEntity>,
                 AbstractEntityFrameworkChangeTrackingReadService<TKey, TEntity>>();

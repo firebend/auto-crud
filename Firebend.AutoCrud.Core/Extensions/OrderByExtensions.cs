@@ -82,7 +82,7 @@ namespace Firebend.AutoCrud.Core.Extensions
 
             if (char.IsLower(name[0]))
             {
-                name = $"{char.ToUpper(name[0])}{name.Substring(1)}";
+                name = $"{char.ToUpper(name[0])}{name[1..]}";
             }
 
             var type = typeof(T);

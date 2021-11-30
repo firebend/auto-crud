@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -30,12 +29,16 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
     /// The entity type.
     /// </typeparam>
     public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudConfigurator<TBuilder, TKey, TEntity>
-        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TBuilder : EntityFrameworkEntityBuilder<TKey, TEntity>
         where TKey : struct
-        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
     {
         public EfCustomFieldsConfigurator(TBuilder builder) : base(builder)
         {
+            if (builder.DbContextType is null)
+            {
+                throw new Exception("Please configure the builders db context");
+            }
         }
 
         /// <summary>
@@ -58,7 +61,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
             var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>
             {
-                SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
+                SignatureBase = $"{typeof(TEntity).Name}_CustomFields",
+                DbContextType = Builder.DbContextType,
             };
             configure(customFieldsBuilder);
             Builder.Registrations.Add(typeof(object), new List<Registration>
@@ -96,7 +100,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
             var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>
             {
-                SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
+                SignatureBase = $"{typeof(TEntity).Name}_CustomFields",
+                DbContextType = Builder.DbContextType,
             };
             configure(customFieldsBuilder);
             Builder.Registrations.Add(typeof(object), new List<Registration>

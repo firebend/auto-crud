@@ -7,11 +7,6 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
 {
     public class PersonDbContext : DbContext, IDbContext
     {
-
-        public PersonDbContext() : base(PersonDbContextOptions.GetOptions())
-        {
-        }
-
         public PersonDbContext(DbContextOptions options) : base(options)
         {
         }

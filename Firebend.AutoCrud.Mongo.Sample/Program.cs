@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.Mongo.Sample
 
             using var host = CreateHostBuilder(args).Build();
             host.StartAsync(cancellationToken.Token)
-                .ContinueWith(_ => { Console.WriteLine("Sample complete. type 'quit' to exit."); }, cancellationToken.Token);
+                .ContinueWith(_ => Console.WriteLine("Sample complete. type 'quit' to exit."), cancellationToken.Token);
 
             while (!Console.ReadLine().Equals("quit", StringComparison.InvariantCultureIgnoreCase))
             {

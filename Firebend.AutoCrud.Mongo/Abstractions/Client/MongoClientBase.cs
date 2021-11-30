@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             }
             catch (Exception ex)
             {
-                Logger?.LogError(ex, "Error querying Document Store: \"{Message}\"", ex.Message);
+                Logger?.LogError(ex, "Error querying Document Store: {Message}", ex.Message);
                 throw;
             }
         }

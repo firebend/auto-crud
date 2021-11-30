@@ -32,8 +32,7 @@ namespace Firebend.AutoCrud.Web
 {
     public static class ControllerConfiguratorCache
     {
-        // ReSharper disable once InconsistentNaming
-        public static bool IsSwaggerApplied;
+        public static bool IsSwaggerApplied { get; set; }
         public static readonly object Lock = new();
     }
 
@@ -304,7 +303,7 @@ namespace Firebend.AutoCrud.Web
 
         private void AddAttributeToAllControllers(Type attributeType, CustomAttributeBuilder attributeBuilder) => GetRegisteredControllers()
             .ToList()
-            .ForEach(x => { Builder.WithAttribute(x.Key, attributeType, attributeBuilder); });
+            .ForEach(x => Builder.WithAttribute(x.Key, attributeType, attributeBuilder));
 
         private IEnumerable<KeyValuePair<Type, Registration>> GetRegisteredControllers() => Builder
             .Registrations
@@ -350,10 +349,7 @@ namespace Firebend.AutoCrud.Web
                     return;
                 }
 
-                Builder.WithServiceCollectionHook(sc =>
-                {
-                    sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
-                });
+                Builder.WithServiceCollectionHook(sc => sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>()));
 
                 ControllerConfiguratorCache.IsSwaggerApplied = true;
             }

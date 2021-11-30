@@ -1,12 +1,15 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 
+#pragma warning disable IDE0060
+
 namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 {
     public static class FirebendAutoCrudDbFunctionExtensions
     {
         public static bool ContainsAny(this DbFunctions source, string property, string search) =>
             throw new InvalidOperationException("This method is for use with Entity Framework Core only and has no in-memory implementation.");
+
         public static bool ContainsAny(this DbFunctions source, string property, string search, int language) =>
             throw new InvalidOperationException("This method is for use with Entity Framework Core only and has no in-memory implementation.");
 
@@ -20,3 +23,4 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
             throw new InvalidOperationException("This method is for use with Entity Framework Core only and has no in-memory implementation.");
     }
 }
+#pragma warning restore IDE0060

@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             var entityTypes = context
                 .GetType()
                 .GetProperties()
-                .Where(x => TypeExtensions.IsAssignableToGenericType(x.PropertyType, typeof(DbSet<>)))
+                .Where(x => x.PropertyType.IsAssignableToGenericType(typeof(DbSet<>)))
                 .Where(x =>
                 {
                     var args = x.PropertyType.GetGenericArguments().First();

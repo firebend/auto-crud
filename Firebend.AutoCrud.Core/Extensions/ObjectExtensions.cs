@@ -24,7 +24,7 @@ namespace Firebend.AutoCrud.Core.Extensions
         public static TOut Clone<TOut>(this object source)
         {
             // Don't serialize a null object, simply return the default for that object
-            if (ReferenceEquals(source, null))
+            if (source is null)
             {
                 return default;
             }
