@@ -20,16 +20,11 @@ jobs:
       with:
         dotnet-version: 6.0.100
 
-    - name: Add dotnet-format problem matcher
-      uses: xt0rted/dotnet-format-problem-matcher@v1
-
     - name: Restore dotnet tools
-      uses: xt0rted/dotnet-tool-restore@v1
+      run: dotnet tool restore
 
     - name: Run dotnet format
-      uses: xt0rted/dotnet-format@v1
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+      run: dotnet format --veryify-no-changes
 
     - name: Install dependencies
       run: dotnet restore Firebend.AutoCrud.sln
