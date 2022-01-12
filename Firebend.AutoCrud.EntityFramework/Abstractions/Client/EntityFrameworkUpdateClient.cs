@@ -109,18 +109,32 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (model == null)
+            var original = model?.Clone();
+            if (original != null)
             {
-                return null;
+                model = entity.CopyPropertiesTo(model, _ignoredProperties.Value);
+
+                if (model is IModifiedEntity modified)
+                {
+                    modified.ModifiedDate = DateTimeOffset.Now;
+                }
             }
-
-            var original = model.Clone();
-
-            model = entity.CopyPropertiesTo(model, _ignoredProperties.Value);
-
-            if (model is IModifiedEntity modified)
+            else
             {
-                modified.ModifiedDate = DateTimeOffset.Now;
+                if (entity is IModifiedEntity modified)
+                {
+                    var now = DateTimeOffset.Now;
+                    modified.CreatedDate = now;
+                    modified.ModifiedDate = now;
+                }
+
+                var set = GetDbSet(context);
+
+                var entry = await set
+                    .AddAsync(entity, cancellationToken)
+                    .ConfigureAwait(false);
+
+                model = entry.Entity;
             }
 
             try
@@ -135,6 +149,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 {
                     throw;
                 }
+            }
+
+            if (original == null)
+            {
+                await PublishAddedDomainEventAsync(model, transaction, cancellationToken);
+                return model;
             }
 
             JsonPatchDocument<TEntity> jsonPatchDocument = null;
@@ -187,6 +207,20 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             }
 
             return Task.CompletedTask;
+        }
+
+        private Task PublishAddedDomainEventAsync(TEntity entity,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+        {
+            if (_domainEventPublisher == null || _isDefaultPublisher)
+            {
+                return Task.CompletedTask;
+            }
+
+            var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = entity, EventContext = _domainEventContextProvider?.GetContext() };
+            return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, entityTransaction, cancellationToken);
+
         }
     }
 }
