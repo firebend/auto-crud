@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection.Emit;
 
@@ -13,14 +13,14 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <summary>
         /// Easy access to mapper functions
         /// </summary>
-        public static ObjectMapper Instance { get; protected set; } = new ObjectMapper();
+        public static ObjectMapper Instance { get; } = new();
 
         private ObjectMapper() { }
 
         /// <summary>
         /// This dictionary keeps the convert functions for objects by auto generated names
         /// </summary>
-        private readonly Dictionary<string, DynamicMethod> _del = new Dictionary<string, DynamicMethod>();
+        private readonly ConcurrentDictionary<string, DynamicMethod> _del = new();
 
         /// <summary>
         /// This function creates the mappings between objects and store the mappings in the private dictionary
@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         {
             var key = GetMapKey(source, target, propertiesToIgnore);
 
-            if (_del.ContainsKey(key))
+            if (_del.TryGetValue(key, out var dictionaryValue) && dictionaryValue is not null)
             {
                 return key;
             }
@@ -57,7 +57,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 il.EmitCall(OpCodes.Callvirt, map.TargetProperty.GetSetMethod() ?? throw new InvalidOperationException(), null);
             }
             il.Emit(OpCodes.Ret);
-            _del.Add(key, dm);
+            _del.TryAdd(key, dm);
 
             return key;
         }
