@@ -1,7 +1,9 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations.Concurrency;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
 {
@@ -13,14 +15,13 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <summary>
         /// Easy access to mapper functions
         /// </summary>
-        public static ObjectMapper Instance { get; } = new();
+        public static ObjectMapper Instance { get; } = new(new Memoizer<DynamicMethod>());
 
-        private ObjectMapper() { }
+        private readonly IMemoizer<DynamicMethod> _memoizer;
 
-        /// <summary>
-        /// This dictionary keeps the convert functions for objects by auto generated names
-        /// </summary>
-        private readonly ConcurrentDictionary<string, DynamicMethod> _del = new();
+        private ObjectMapper(IMemoizer<DynamicMethod> memoizer) {
+            _memoizer = memoizer;
+        }
 
         /// <summary>
         /// This function creates the mappings between objects and store the mappings in the private dictionary
@@ -32,12 +33,11 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         protected override string MapTypes(Type source, Type target, params string[] propertiesToIgnore)
         {
             var key = GetMapKey(source, target, propertiesToIgnore);
+            return key;
+        }
 
-            if (_del.TryGetValue(key, out var dictionaryValue) && dictionaryValue is not null)
-            {
-                return key;
-            }
-
+        private Task<DynamicMethod> DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore)
+        {
             var args = new[] { source, target };
 
             var dm = new DynamicMethod(key, null, args);
@@ -57,9 +57,8 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 il.EmitCall(OpCodes.Callvirt, map.TargetProperty.GetSetMethod() ?? throw new InvalidOperationException(), null);
             }
             il.Emit(OpCodes.Ret);
-            _del.TryAdd(key, dm);
 
-            return key;
+            return Task.FromResult(dm);
         }
 
         /// <summary>
@@ -75,7 +74,12 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 
             var key = this.MapTypes(sourceType, targetType, propertiesToIgnore);
 
-            var del = _del[key];
+
+            var del = _memoizer
+                .MemoizeAsync(key, () => DynamicMethodFactory(key, sourceType, targetType, propertiesToIgnore), default)
+                .GetAwaiter()
+                .GetResult();
+
             var args = new[] { source, target };
             del.Invoke(null, args);
         }
