@@ -19,9 +19,9 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
 {
     public abstract class AbstractCustomFieldsAlterService<TKey, TEntity> :
         BaseDisposable,
-        ICustomFieldsCreateService<TKey, TEntity>,
-        ICustomFieldsDeleteService<TKey, TEntity>,
-        ICustomFieldsUpdateService<TKey, TEntity>
+        //ICustomFieldsCreateService<TKey, TEntity>,
+        ICustomFieldsDeleteService<TKey, TEntity>
+        //ICustomFieldsUpdateService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
@@ -196,26 +196,26 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
         }
 
         public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             CancellationToken cancellationToken = default)
-            => CreateAsync(rootKey, entity, null, cancellationToken);
+            => CreateAsync(rootKey, customField, null, cancellationToken);
 
         public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
-        => SaveAsync(rootEntityKey, root => AddCustomAttribute(entity, root), entityTransaction, cancellationToken);
+        => SaveAsync(rootEntityKey, root => AddCustomAttribute(customField, root), entityTransaction, cancellationToken);
 
         public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             CancellationToken cancellationToken = default)
-            => UpdateAsync(rootKey, entity, null, cancellationToken);
+            => UpdateAsync(rootKey, customField, null, cancellationToken);
 
         public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
-        => SaveAsync(rootEntityKey, root => UpdateCustomAttribute(entity.Id, entity, root), entityTransaction, cancellationToken);
+        => SaveAsync(rootEntityKey, root => UpdateCustomAttribute(customField.Id, customField, root), entityTransaction, cancellationToken);
 
         public Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootKey, Guid key, CancellationToken cancellationToken = default)
             => DeleteAsync(rootKey, key, null, cancellationToken);

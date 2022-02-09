@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
         public bool IsEmpty(object id) => id == default || (Guid)id == Guid.Empty;
 
-        private static Guid NewCombGuid(Guid guid, DateTime timestamp)
+        public static Guid NewCombGuid(Guid guid, DateTime timestamp)
         {
             var dateTime = DateTime.UnixEpoch;
             var timeSpan = timestamp - dateTime;

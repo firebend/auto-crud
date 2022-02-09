@@ -12,11 +12,11 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.CustomFields
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             CancellationToken cancellationToken = default);
 
         Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default);
 

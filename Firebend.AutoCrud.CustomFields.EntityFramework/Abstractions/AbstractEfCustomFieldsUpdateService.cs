@@ -31,18 +31,18 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         }
 
         public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             CancellationToken cancellationToken = default)
-            => UpdateAsync(rootEntityKey, entity, null, cancellationToken);
+            => UpdateAsync(rootEntityKey, customField, null, cancellationToken);
 
         public async Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
             var efEntity = new TCustomFieldsEntity { EntityId = rootEntityKey };
-            entity.CopyPropertiesTo(efEntity);
+            customField.CopyPropertiesTo(efEntity);
 
             var updated = await _updateClient
                 .UpdateAsync(efEntity, entityTransaction, cancellationToken)

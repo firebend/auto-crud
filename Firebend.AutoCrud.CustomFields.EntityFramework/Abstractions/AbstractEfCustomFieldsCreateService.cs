@@ -26,11 +26,11 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             _customFieldsStorageCreator = customFieldsStorageCreator;
         }
 
-        public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> entity, CancellationToken cancellationToken = default)
-            => CreateAsync(rootEntityKey, entity, null, cancellationToken);
+        public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField, CancellationToken cancellationToken = default)
+            => CreateAsync(rootEntityKey, customField, null, cancellationToken);
 
         public async Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
-            CustomFieldsEntity<TKey> entity,
+            CustomFieldsEntity<TKey> customField,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
@@ -41,7 +41,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
                 EntityId = rootEntityKey
             };
 
-            entity.CopyPropertiesTo(customFieldsEntity);
+            customField.CopyPropertiesTo(customFieldsEntity);
 
             var added = await _createClient.AddAsync(customFieldsEntity, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
