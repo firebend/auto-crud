@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Firebend.AutoCrud.Core.Pooling;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
 {
@@ -22,16 +23,11 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             var sourceProperties = sourceType.GetProperties();
             var targetProperties = targetType.GetProperties();
 
-            var properties = (from s in sourceProperties
-                              from t in targetProperties
-                              where s.Name == t.Name &&
-                                    s.CanRead &&
-                                    t.CanWrite
-                              select new PropertyMap
-                              {
-                                  SourceProperty = s,
-                                  TargetProperty = t
-                              }).ToList();
+            var properties = (sourceProperties
+                    .SelectMany(s => targetProperties, (s, t) => new { s, t })
+                .Where(@t1 => @t1.s.Name == @t1.t.Name && @t1.s.CanRead && @t1.t.CanWrite)
+                .Select(@t1 => new PropertyMap { SourceProperty = @t1.s, TargetProperty = @t1.t }))
+                .ToList();
             return properties;
         }
 
@@ -44,33 +40,14 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <exception cref="Exception">If there is no FullName property on sent objects, an exception will throw</exception>
         protected virtual string GetMapKey(Type sourceType, Type targetType, params string[] propertiesToIgnore)
         {
-            var keyName = "Copy_";
-
-            if (sourceType.FullName != null)
-            {
-                keyName += sourceType.FullName.Replace(".", "_").Replace("+", "_");
-                keyName += "_";
-            }
-            else
-            {
-                throw new Exception();
-            }
-
-            if (targetType.FullName != null)
-            {
-                keyName += targetType.FullName.Replace(".", "_").Replace("+", "_");
-            }
-            else
-            {
-                throw new Exception();
-            }
+            var chunks = new List<string> { "ObjectMapper", sourceType.FullName, targetType.FullName };
 
             if (propertiesToIgnore != null)
             {
-                keyName = propertiesToIgnore.Aggregate(keyName, (current, t) => current + $"_{t}");
+                chunks.AddRange(propertiesToIgnore);
             }
 
-            return keyName;
+            return string.Join('_', chunks);
         }
     }
 }

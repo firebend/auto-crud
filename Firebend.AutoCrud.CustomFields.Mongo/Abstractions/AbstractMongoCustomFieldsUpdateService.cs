@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Humanizer;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
@@ -25,6 +23,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
 
     private static readonly string CustomFieldsName = nameof(ICustomFieldsEntity<Guid>.CustomFields);
     private const string ArrayDefFieldName = "customField";
+    private const string ArrayFilterDefId = $"{ArrayDefFieldName}._id";
 
     public AbstractMongoCustomFieldsUpdateService(IMongoClient client,
         ILogger<AbstractMongoCustomFieldsUpdateService<TKey, TEntity>> logger,
@@ -118,7 +117,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
         }
 
         var arrayFilters = new BsonDocumentArrayFilterDefinition<BsonDocument>(
-            new BsonDocument($"{ArrayDefFieldName}._id", key.ToString()));
+            new BsonDocument(ArrayFilterDefId, key.ToString()));
 
         var session = UnwrapSession(entityTransaction);
 

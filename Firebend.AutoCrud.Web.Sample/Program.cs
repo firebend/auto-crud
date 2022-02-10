@@ -1,6 +1,10 @@
+using System;
 using Firebend.AutoCrud.Web.Sample;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+
+var processId = Environment.ProcessId;
+Console.WriteLine($"Auto Crud Web Sample is running on process id {processId}");
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureHostConfiguration(c => c.AddUserSecrets("Firebend.AutoCrud"));
