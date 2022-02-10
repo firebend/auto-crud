@@ -26,9 +26,8 @@ namespace Firebend.AutoCrud.CustomFields.Mongo
             where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
         {
             builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>, AbstractMongoCustomFieldsCreateService<TKey, TEntity>>();
-            builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>, AbstractCustomFieldsAlterService<TKey, TEntity>>();
+            builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>, AbstractMongoCustomFieldsDeleteService<TKey, TEntity>>();
             builder.WithRegistration<ICustomFieldsUpdateService<TKey, TEntity>, AbstractMongoCustomFieldsUpdateService<TKey, TEntity>>();
-
             builder.WithRegistration<ICustomFieldsSearchService<TKey, TEntity>, AbstractMongoCustomFieldsSearchService<TKey, TEntity>>();
 
             return builder;
