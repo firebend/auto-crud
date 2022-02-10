@@ -20,20 +20,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             var timestampString = timeSpanMs.ToString("x8");
             var guidString = guid.ToString("N");
 
-            var pooledBuilder = AutoCrudObjectPool.StringBuilder.Get();
-
-            string newGuidString;
-
-            try
-            {
-                pooledBuilder.Append(timestampString[..11]);
-                pooledBuilder.Append(guidString[11..]);
-                newGuidString = pooledBuilder.ToString();
-            }
-            finally
-            {
-                AutoCrudObjectPool.StringBuilder.Return(pooledBuilder);
-            }
+            var newGuidString = $"{timestampString[..11]}{guidString[11..]}";
 
             if (string.IsNullOrWhiteSpace(newGuidString))
             {

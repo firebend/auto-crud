@@ -185,18 +185,18 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
                 {
                     sb.Append(receiveEndpointPrefix);
-                    sb.Append("-");
+                    sb.Append('-');
                 }
 
                 sb.Append(genericMessageType.Name);
 
                 if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
                 {
-                    sb.Append("_");
+                    sb.Append('_');
                     sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
                 }
 
-                sb.Append("_");
+                sb.Append('_');
                 sb.Append(handlerTypeDesc);
                 sbBuilt = sb.ToString();
             }

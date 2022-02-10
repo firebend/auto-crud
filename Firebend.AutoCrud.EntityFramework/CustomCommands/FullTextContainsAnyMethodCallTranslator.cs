@@ -85,27 +85,9 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
                 throw new InvalidOperationException("Invalid property");
             }
 
-            var splatBuilder = AutoCrudObjectPool.StringBuilder.Get();
-            string splatString;
-
-            try
-            {
-
-                if (!string.IsNullOrWhiteSpace(columnExpression.Table?.Alias))
-                {
-                    splatBuilder.Append('[');
-                    splatBuilder.Append(columnExpression.Table.Alias);
-                    splatBuilder.Append(']');
-                    splatBuilder.Append('.');
-                }
-
-                splatBuilder.Append("*");
-                splatString = splatBuilder.ToString();
-            }
-            finally
-            {
-                AutoCrudObjectPool.StringBuilder.Return(splatBuilder);
-            }
+            var splatString = !string.IsNullOrWhiteSpace(columnExpression.Table.Alias)
+                ? $"[{columnExpression.Table.Alias}].*"
+                : "*";
 
             var splat = _sqlExpressionFactory.Fragment(splatString);
             var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true);

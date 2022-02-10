@@ -170,7 +170,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 {
                     var args = type
                         .GenericTypeArguments
-                        .Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+                        .Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(','));
 
                     argsString = args.ToString(0, args.Length - 1);
 

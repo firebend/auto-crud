@@ -55,27 +55,9 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
                 return null;
             }
 
-            var columnBuilder = AutoCrudObjectPool.StringBuilder.Get();
-            string columnString;
-
-            try
-            {
-
-                if (!string.IsNullOrWhiteSpace(columnExpression.Table?.Alias))
-                {
-                    columnBuilder.Append('[');
-                    columnBuilder.Append(columnExpression.Table.Alias);
-                    columnBuilder.Append(']');
-                    columnBuilder.Append('.');
-                }
-
-                columnBuilder.Append(columnExpression.Name);
-                columnString = columnBuilder.ToString();
-            }
-            finally
-            {
-                AutoCrudObjectPool.StringBuilder.Return(columnBuilder);
-            }
+            var columnString = !string.IsNullOrWhiteSpace(columnExpression.Table?.Alias)
+                ? $"[{columnExpression.Table.Alias}].{columnExpression.Name}"
+                : columnExpression.Name;
 
             var columnFragment = _sqlExpressionFactory.Fragment(columnString);
 
