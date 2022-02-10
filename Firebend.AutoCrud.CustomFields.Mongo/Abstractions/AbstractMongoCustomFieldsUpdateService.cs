@@ -3,16 +3,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
+using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.CustomFields;
+using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions;
 
@@ -23,6 +28,10 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
 
+    private readonly IDomainEventContextProvider _domainEventContextProvider;
+    private readonly IEntityDomainEventPublisher _domainEventPublisher;
+    private readonly bool _isDefaultPublisher;
+
     private static readonly string CustomFieldsName = nameof(ICustomFieldsEntity<Guid>.CustomFields);
     private const string ArrayDefFieldName = "customField";
     private const string ArrayFilterDefId = $"{ArrayDefFieldName}._id";
@@ -30,8 +39,13 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
     public AbstractMongoCustomFieldsUpdateService(IMongoClient client,
         ILogger<AbstractMongoCustomFieldsUpdateService<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-        IMongoRetryService mongoRetryService) : base(client, logger, entityConfiguration, mongoRetryService)
+        IMongoRetryService mongoRetryService,
+        IDomainEventContextProvider domainEventContextProvider,
+        IEntityDomainEventPublisher domainEventPublisher) : base(client, logger, entityConfiguration, mongoRetryService)
     {
+        _domainEventContextProvider = domainEventContextProvider;
+        _domainEventPublisher = domainEventPublisher;
+        _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
     }
 
     public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField, CancellationToken cancellationToken = default)
@@ -68,7 +82,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
                 updateDefinition,
                 new FindOneAndUpdateOptions<TEntity>
                 {
-                    ReturnDocument = ReturnDocument.After
+                    ReturnDocument = ReturnDocument.Before
                 },
                 cancellationToken);
         }
@@ -78,13 +92,21 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
                 updateDefinition,
                 new FindOneAndUpdateOptions<TEntity>
                 {
-                    ReturnDocument = ReturnDocument.After,
+                    ReturnDocument = ReturnDocument.Before,
                 },
                 cancellationToken);
         }
 
-        //todo: pub domain event
-        return result?.CustomFields?.FirstOrDefault(x => x.Id == customField.Id);
+        if (result is null)
+        {
+            return null;
+        }
+
+        var patch = new JsonPatchDocument<TEntity>();
+        patch.Add(x => x.CustomFields, customField);
+
+        await PublishUpdatedDomainEventAsync(result, patch, entityTransaction, cancellationToken);
+        return customField;
     }
 
     public Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
@@ -133,7 +155,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
                 updateDefinition,
                 new FindOneAndUpdateOptions<TEntity>
                 {
-                    ReturnDocument = ReturnDocument.After,
+                    ReturnDocument = ReturnDocument.Before,
                     ArrayFilters = new [] { arrayFilters},
                 },
                 cancellationToken);
@@ -144,16 +166,51 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
                 updateDefinition,
                 new FindOneAndUpdateOptions<TEntity>
                 {
-                    ReturnDocument = ReturnDocument.After,
+                    ReturnDocument = ReturnDocument.Before,
                     ArrayFilters = new [] { arrayFilters},
                 },
                 cancellationToken);
         }
 
-        //todo: pub domain event
-        return result?.CustomFields?.FirstOrDefault(x => x.Id == key);
+        if (result is null)
+        {
+            return null;
+        }
+
+        var entity = result.Clone();
+        var index = entity.CustomFields.FindIndex(x => x.Id == key);
+        var entityPatch = new JsonPatchDocument<TEntity>();
+        foreach (var operation in jsonPatchDocument.Operations)
+        {
+            var path = $"/{CustomFieldsName}/{index}{operation.path}";
+            entityPatch.Operations.Add(new Operation<TEntity>(operation.op, path, operation.from, operation.value));
+        }
+        entityPatch.ApplyTo(entity);
+        await PublishUpdatedDomainEventAsync(result, entityPatch, entityTransaction, cancellationToken);
+        return entity?.CustomFields?.FirstOrDefault(x => x.Id == key);
     }
 
     private static string FixMongoPatchPath(Operation<CustomFieldsEntity<TKey>> operation)
         => operation.path.Substring(1, operation.path.Length - 1).FirstCharToLower();
+
+    private Task PublishUpdatedDomainEventAsync(TEntity previous,
+        JsonPatchDocument<TEntity> patch,
+        IEntityTransaction entityTransaction,
+        CancellationToken cancellationToken = default)
+    {
+        if (_domainEventPublisher == null || _isDefaultPublisher)
+        {
+            return Task.CompletedTask;
+        }
+
+        var domainEvent = new EntityUpdatedDomainEvent<TEntity>
+        {
+            Previous = previous,
+            OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
+            EventContext = _domainEventContextProvider?.GetContext()
+        };
+
+        return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
+
+    }
 }

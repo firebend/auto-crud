@@ -14,6 +14,7 @@ using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.JsonPatch;
+using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;

@@ -63,7 +63,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string OtherEmail { get; set; }
     }
 
-    public class GetPersonViewModel : PersonViewModelBase, IEntity<Guid>
+    public class GetPersonViewModel : PersonViewModelBase, IEntity<Guid>, ICustomFieldsEntity<Guid>
     {
         public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
 

@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         TReadResponse,
         TExport>
         where TKey : struct
-        where TReadResponse : class, IEntity<TKey>
+        where TReadResponse : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
         where TUpdateRequest : class
         where TExport : class
     {
@@ -364,7 +364,8 @@ namespace Firebend.AutoCrud.IntegrationTests
         }
         public async Task<CustomFieldViewModelRead> PostCustomFieldsAsync(TKey entityId)
         {
-            var response = await $"{Url}/{entityId}/custom-fields".PostJsonAsync(CustomFieldFaker.Faker.Generate());
+            var faked = CustomFieldFaker.Faker.Generate();
+            var response = await $"{Url}/{entityId}/custom-fields".PostJsonAsync(faked);
 
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
@@ -380,6 +381,11 @@ namespace Firebend.AutoCrud.IntegrationTests
 
             PostCustomFieldsAssertions(response, responseModel);
 
+            var entity = await GetAsync(entityId);
+            var customField = entity.CustomFields.First(x => x.Id == responseModel.Id);
+            customField.Value.Should().BeEquivalentTo(faked.Value);
+            customField.Key.Should().BeEquivalentTo(faked.Key);
+
             SaveResponse(response);
 
             return responseModel;
@@ -391,7 +397,8 @@ namespace Firebend.AutoCrud.IntegrationTests
 
         public async Task<CustomFieldViewModelRead> PutCustomFieldsAsync(TKey entityId, Guid id)
         {
-            var response = await $"{Url}/{entityId}/custom-fields/{id}".PutJsonAsync(CustomFieldFaker.Faker.Generate());
+            var faked = CustomFieldFaker.Faker.Generate();
+            var response = await $"{Url}/{entityId}/custom-fields/{id}".PutJsonAsync(faked);
 
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
@@ -406,6 +413,11 @@ namespace Firebend.AutoCrud.IntegrationTests
             responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
 
             PutCustomFieldsAssertions(response, responseModel);
+
+            var entity = await GetAsync(entityId);
+            var customField = entity.CustomFields.First(x => x.Id == id);
+            customField.Value.Should().BeEquivalentTo(faked.Value);
+            customField.Key.Should().BeEquivalentTo(faked.Key);
 
             SaveResponse(response);
 
@@ -434,6 +446,11 @@ namespace Firebend.AutoCrud.IntegrationTests
             responseModel.Value.Should().NotBeNullOrWhiteSpace();
             responseModel.Value.Should().BeEquivalentTo(color);
             responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
+
+            var entity = await GetAsync(entityId);
+            var customField = entity.CustomFields.First(x => x.Id == id);
+            customField.Value.Should().BeEquivalentTo(color);
+
 
             PatchCustomFieldsAssertions(response, responseModel);
 
@@ -502,6 +519,9 @@ namespace Firebend.AutoCrud.IntegrationTests
             responseModel.Key.Should().NotBeNullOrWhiteSpace();
             responseModel.Value.Should().NotBeNullOrWhiteSpace();
             responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
+
+            var entity = await GetAsync(entityId);
+            entity.CustomFields.Should().NotContain(x => x.Id == id);
 
             DeleteCustomFieldsAssertions(response, responseModel);
 
