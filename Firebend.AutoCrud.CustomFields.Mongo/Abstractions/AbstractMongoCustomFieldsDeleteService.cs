@@ -66,6 +66,7 @@ public class AbstractMongoCustomFieldsDeleteService<TKey, TEntity> :
                 cancellationToken);
         }
 
+        //todo: pub domain event
         return result?.CustomFields?.FirstOrDefault(x => x.Id == key);
     }
 }
