@@ -123,12 +123,12 @@ Content-Type: application/json
  {
   "op": "replace",
   "path": "/value",
-  "value": "one"
+  "value": "666666"
  },
     {
         "op": "replace",
         "path": "/key",
-        "value": "two"
+        "value": "7777777"
     }
 ]
 

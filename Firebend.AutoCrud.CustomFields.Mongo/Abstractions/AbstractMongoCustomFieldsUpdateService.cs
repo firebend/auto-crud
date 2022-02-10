@@ -2,12 +2,14 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -104,7 +106,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
 
         var list = jsonPatchDocument
             .Operations
-            .Select(operation => new { operation, field = operation.path.Substring(1, operation.path.Length - 1) })
+            .Select(operation => new { operation, field = FixMongoPatchPath(operation) })
             .Select(x => new { patchDocument = x, fieldPath = $"{CustomFieldsName}.$[{ArrayDefFieldName}].{x.field}" })
             .Select(x => Builders<TEntity>.Update.Set(x.fieldPath, x.patchDocument.operation.value));
 
@@ -149,4 +151,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
 
         return result?.CustomFields?.FirstOrDefault(x => x.Id == key);
     }
+
+    private static string FixMongoPatchPath(Operation<CustomFieldsEntity<TKey>> operation)
+        => operation.path.Substring(1, operation.path.Length - 1).FirstCharToLower();
 }
