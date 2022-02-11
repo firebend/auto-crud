@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
 
             var records = MapRecords(entities);
 
-            var fileContents = await _exportService
+            var fileStream = await _exportService
                 .ExportAsync(fileType, records, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -62,7 +62,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
 
             //todo look into making this a stream
-            var fileResult = new FileContentResult(fileContents, mimeType) { FileDownloadName = $"{fileName}{extension}" };
+            var fileResult = new FileStreamResult(fileStream, mimeType) { FileDownloadName = $"{fileName}{extension}" };
 
             return fileResult;
         }

@@ -1,17 +1,19 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Interfaces
 {
-    public interface IEntityFileWriter
+    public interface IEntityFileWriter : IDisposable
     {
         EntityFileType FileType { get; }
 
-        Task<byte[]> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
+        Task<Stream> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
             IEnumerable<T> records,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
             where T : class;
     }
 

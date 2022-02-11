@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {
-    public class EntityExportService<T> : IEntityExportService<T>
+    public class EntityExportService<T> : BaseDisposable, IEntityExportService<T>
         where T : class
     {
         private readonly IFileFieldAutoMapper<T> _autoMapper;
@@ -20,7 +22,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             _autoMapper = autoMapper;
         }
 
-        public Task<byte[]> ExportAsync(EntityFileType exportType,
+        public Task<Stream> ExportAsync(EntityFileType exportType,
             IEnumerable<T> records,
             CancellationToken cancellationToken = default)
         {
@@ -35,5 +37,7 @@ namespace Firebend.AutoCrud.Io.Implementations
 
             return writer.WriteRecordsAsync(fields, records, cancellationToken);
         }
+
+        protected override void DisposeManagedObjects() => _fileWriterFactory?.Dispose();
     }
 }
