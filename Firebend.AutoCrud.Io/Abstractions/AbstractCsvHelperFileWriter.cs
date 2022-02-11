@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
@@ -21,43 +20,26 @@ namespace Firebend.AutoCrud.Io.Abstractions
         private TextWriter _textWriter;
         private Stream _stream;
 
-        public async Task<Stream> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
+        public async Task<Stream> WriteRecordsAsync<T>(IFileFieldWrite<T>[] fields,
             IEnumerable<T> records,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
             where T : class
         {
-            _stream = AutoCrudPooledStream.GetStream("AutoCrudPooledStreamExport");
-
-            var fieldArray = fields
-                .OrderBy(x => x.FieldIndex)
-                .ToArray();
+           // _stream = AutoCrudPooledStream.GetStream("AutoCrudPooledStreamExport");
+           _stream = new MemoryStream();
 
             if (FileType == EntityFileType.Csv)
             {
                 _textWriter = new StreamWriter(_stream);
             }
 
-            _writer = FileType == EntityFileType.Csv ?
-                new CsvWriter(_textWriter, GetCsvConfiguration())
+            _writer = FileType == EntityFileType.Csv
+                ? new CsvWriter(_textWriter, GetCsvConfiguration())
                 : new SpreadsheetWriter(_stream, "Export", GetCsvConfiguration());
 
-            foreach (var fileField in fieldArray)
-            {
-                _writer.WriteField(fileField.FieldName);
-            }
+            WriteHeader(fields);
 
-            await _writer.NextRecordAsync().ConfigureAwait(false);
-
-            foreach (var record in records)
-            {
-                foreach (var field in fieldArray)
-                {
-                    var value = field.Writer(record);
-                    _writer.WriteField(value);
-                }
-
-                await _writer.NextRecordAsync().ConfigureAwait(false);
-            }
+            await WriteRows(fields, records);
 
             if (_textWriter != null)
             {
@@ -73,6 +55,33 @@ namespace Firebend.AutoCrud.Io.Abstractions
             _stream.Seek(0, SeekOrigin.Begin);
 
             return _stream;
+        }
+
+        private async Task WriteRows<T>(IFileFieldWrite<T>[] fields, IEnumerable<T> records)
+            where T : class
+        {
+            await _writer.NextRecordAsync().ConfigureAwait(false);
+
+            using var recordEnumerator = records.GetEnumerator();
+
+            while (recordEnumerator.MoveNext())
+            {
+                foreach (var fileFieldWrite in fields)
+                {
+                    _writer.WriteField(fileFieldWrite.Writer(recordEnumerator.Current));
+                }
+
+                await _writer.NextRecordAsync().ConfigureAwait(false);
+            }
+        }
+
+        private void WriteHeader<T>(IFileFieldWrite<T>[] fields)
+            where T : class
+        {
+            foreach (var t in fields)
+            {
+                _writer.WriteField(t.FieldName);
+            }
         }
 
         private static CsvConfiguration GetCsvConfiguration() => new(CultureInfo.InvariantCulture)

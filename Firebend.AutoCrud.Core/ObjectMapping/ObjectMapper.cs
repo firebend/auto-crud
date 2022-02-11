@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection.Emit;
-using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 
@@ -36,7 +35,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             return key;
         }
 
-        private Task<DynamicMethod> DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore)
+        private DynamicMethod DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore)
         {
             var args = new[] { source, target };
 
@@ -58,7 +57,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             }
             il.Emit(OpCodes.Ret);
 
-            return Task.FromResult(dm);
+            return dm;
         }
 
         /// <summary>
@@ -71,17 +70,10 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         {
             var sourceType = source.GetType();
             var targetType = target.GetType();
-
             var key = this.MapTypes(sourceType, targetType, propertiesToIgnore);
-
-
-            var del = _memoizer
-                .MemoizeAsync(key, () => DynamicMethodFactory(key, sourceType, targetType, propertiesToIgnore), default)
-                .GetAwaiter()
-                .GetResult();
-
+            var dynamicMethod = _memoizer.Memoize(key, () => DynamicMethodFactory(key, sourceType, targetType, propertiesToIgnore));
             var args = new[] { source, target };
-            del.Invoke(null, args);
+            dynamicMethod.Invoke(null, args);
         }
     }
 }

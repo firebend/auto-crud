@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,4 +26,6 @@ public interface IMemoizer<T>
     /// A result of a function that should have only ran once.
     /// </returns>
     Task<T> MemoizeAsync(string key, Func<Task<T>> factory, CancellationToken cancellationToken);
+
+    T Memoize(string key, Func<T> factory);
 }

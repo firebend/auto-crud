@@ -52,4 +52,46 @@ public class Memoizer<T> :IMemoizer<T>
 
         return value;
     }
+
+    public T Memoize(string key, Func<T> factory)
+    {
+        if(Caches.TryGetValue(key, out var cached))
+        {
+            return cached;
+        }
+
+        using var dupLock = new AsyncDuplicateLock().Lock(key);
+
+        if(Caches.TryGetValue(key, out cached))
+        {
+            return cached;
+        }
+
+        var value = factory();
+
+        var count = 0;
+
+        while (count < 10)
+        {
+            try
+            {
+                if (Caches.TryAdd(key, value))
+                {
+                    return value;
+                }
+
+                Task.Delay(100).GetAwaiter().GetResult();
+            }
+            catch (OverflowException)
+            {
+                Caches.Clear();
+            }
+            finally
+            {
+                count++;
+            }
+        }
+
+        return value;
+    }
 }

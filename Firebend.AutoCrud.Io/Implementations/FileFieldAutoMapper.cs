@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Io.Attributes;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
@@ -13,14 +14,17 @@ namespace Firebend.AutoCrud.Io.Implementations
     public class FileFieldAutoMapper<T> : IFileFieldAutoMapper<T>
         where T : class
     {
+        private readonly IMemoizer<IFileFieldWrite<T>[]> _memoizer;
         private readonly IFileFieldWriteFilter<T> _filter;
 
-        public FileFieldAutoMapper(IFileFieldWriteFilter<T> filter)
+        public FileFieldAutoMapper(IFileFieldWriteFilter<T> filter,
+            IMemoizer<IFileFieldWrite<T>[]> memoizer)
         {
             _filter = filter;
+            _memoizer = memoizer;
         }
 
-        public IEnumerable<IFileFieldWrite<T>> MapOutput()
+        private IEnumerable<IFileFieldWrite<T>> MapOutputImpl()
         {
             var properties = typeof(T).GetProperties();
 
@@ -60,5 +64,8 @@ namespace Firebend.AutoCrud.Io.Implementations
                 yield return field;
             }
         }
+
+        public IFileFieldWrite<T>[] MapOutput() =>
+            _memoizer.Memoize($"AutoCrud.Io.Mapping.{typeof(T).FullName}", () => MapOutputImpl().OrderBy(x => x.FieldIndex).ToArray());
     }
 }

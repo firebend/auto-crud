@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Io.Interfaces
     {
         EntityFileType FileType { get; }
 
-        Task<Stream> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
+        Task<Stream> WriteRecordsAsync<T>(IFileFieldWrite<T>[] fields,
             IEnumerable<T> records,
             CancellationToken cancellationToken)
             where T : class;
