@@ -15,8 +15,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
 
         public async Task AddEnrollmentAsync(Guid transactionId, IEntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
         {
-            using var loc = await new AsyncDuplicateLock()
-                .LockAsync(transactionId, cancellationToken)
+            using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!_enrollments.ContainsKey(transactionId))
@@ -36,8 +35,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
                 return;
             }
 
-            using var loc = await new AsyncDuplicateLock()
-                .LockAsync(transactionId, cancellationToken)
+            using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);
 
             var callbacks = _enrollments[transactionId];
@@ -73,8 +71,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
 
         public async Task ClearEnrollmentsAsync(Guid transactionId, CancellationToken cancellationToken)
         {
-            using var loc = await new AsyncDuplicateLock()
-                .LockAsync(transactionId, cancellationToken)
+            using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);
 
             _enrollments.Remove(transactionId);

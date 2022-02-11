@@ -342,7 +342,7 @@ namespace Firebend.AutoCrud.Web
                 return;
             }
 
-            using var _ = new AsyncDuplicateLock().Lock(ControllerConfiguratorCache.Lock);
+            using var _ = AsyncDuplicateLock.Lock(ControllerConfiguratorCache.Lock);
             {
                 if (ControllerConfiguratorCache.IsSwaggerApplied)
                 {

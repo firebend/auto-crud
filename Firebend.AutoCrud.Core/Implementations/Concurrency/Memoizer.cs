@@ -18,7 +18,7 @@ public class Memoizer<T> : IMemoizer<T>
             return cached;
         }
 
-        using var dupLock = new AsyncDuplicateLock().LockAsync(key, cancellationToken);
+        using var dupLock = AsyncDuplicateLock.LockAsync(key, cancellationToken);
 
         if (Caches.TryGetValue(key, out cached))
         {
@@ -60,7 +60,7 @@ public class Memoizer<T> : IMemoizer<T>
             return cached;
         }
 
-        using var dupLock = new AsyncDuplicateLock().Lock(key);
+        using var dupLock = AsyncDuplicateLock.Lock(key);
 
         if (Caches.TryGetValue(key, out cached))
         {

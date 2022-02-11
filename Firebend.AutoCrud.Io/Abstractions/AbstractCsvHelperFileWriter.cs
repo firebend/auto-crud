@@ -91,9 +91,32 @@ namespace Firebend.AutoCrud.Io.Abstractions
 
         protected override void DisposeManagedObjects()
         {
-            _writer?.Dispose();
-            _textWriter?.Dispose();
-            _stream?.Dispose();
+            try
+            {
+                _writer?.Dispose();
+            }
+            catch
+            {
+                // ignored
+            }
+
+            try
+            {
+                _textWriter?.Dispose();
+            }
+            catch
+            {
+                // ignored
+            }
+
+            try
+            {
+                _stream?.Dispose();
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 }
