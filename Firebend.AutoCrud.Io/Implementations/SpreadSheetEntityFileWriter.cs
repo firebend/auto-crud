@@ -6,6 +6,6 @@ namespace Firebend.AutoCrud.Io.Implementations
 {
     public class SpreadSheetEntityFileWriter : AbstractCsvHelperFileWriter, IEntityFileWriterSpreadSheet
     {
-        public override EntityFileType FileType { get; } = EntityFileType.Spreadsheet;
+        public override EntityFileType FileType => EntityFileType.Spreadsheet;
     }
 }

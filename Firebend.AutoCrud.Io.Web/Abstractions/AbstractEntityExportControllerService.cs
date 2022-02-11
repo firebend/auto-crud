@@ -61,6 +61,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
             var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
 
+            //todo look into making this a stream
             var fileResult = new FileContentResult(fileContents, mimeType) { FileDownloadName = $"{fileName}{extension}" };
 
             return fileResult;
@@ -70,7 +71,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         {
             if (data == null)
             {
-                return new TMapped[0];
+                return Array.Empty<TMapped>();
             }
 
             var mappedRecords = data

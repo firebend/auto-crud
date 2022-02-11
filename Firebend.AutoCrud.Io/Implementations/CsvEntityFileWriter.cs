@@ -6,6 +6,6 @@ namespace Firebend.AutoCrud.Io.Implementations
 {
     public class CsvEntityFileWriter : AbstractCsvHelperFileWriter, IEntityFileWriterCsv
     {
-        public override EntityFileType FileType { get; } = EntityFileType.Csv;
+        public override EntityFileType FileType => EntityFileType.Csv;
     }
 }

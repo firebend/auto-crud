@@ -16,6 +16,7 @@ namespace Firebend.AutoCrud.Io.Implementations
 
         public IEntityFileWriter Get(EntityFileType type)
         {
+            //todo: do we really need to make a scope here
             using var scope = _serviceProvider.CreateScope();
 
             return type switch
