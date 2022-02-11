@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
@@ -15,10 +14,6 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         public Func<TViewWrapper, TView, TEntity> Func { get; set; }
 
         public Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken = default)
-        {
-            using var _ = AutoCrudDelegatePool.GetPooledFunction(Func, viewModel, out var func);
-            var entity = func(wrapper);
-            return Task.FromResult(entity);
-        }
+            => Task.FromResult(Func(wrapper, viewModel));
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using Firebend.AutoCrud.Core.Pooling;
 using MongoDB.Bson.Serialization;
 
 namespace Firebend.AutoCrud.Mongo.Configuration

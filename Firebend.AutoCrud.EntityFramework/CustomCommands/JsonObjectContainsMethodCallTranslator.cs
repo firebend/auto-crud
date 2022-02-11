@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Firebend.AutoCrud.Core.Pooling;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
@@ -18,7 +18,12 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
         private static readonly MethodInfo MethodInfo
             = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
                 nameof(FirebendAutoCrudDbFunctionExtensions.JsonContainsAny),
-                new[] { typeof(DbFunctions), typeof(object), typeof(string) });
+                new[]
+                {
+                    typeof(DbFunctions),
+                    typeof(object),
+                    typeof(string)
+                });
 
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
@@ -55,7 +60,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
                 return null;
             }
 
-            var columnString = !string.IsNullOrWhiteSpace(columnExpression.Table?.Alias)
+            var columnString = !string.IsNullOrWhiteSpace(columnExpression.Table.Alias)
                 ? $"[{columnExpression.Table.Alias}].{columnExpression.Name}"
                 : columnExpression.Name;
 
@@ -97,7 +102,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
 
         private static string EscapeLikePattern(string pattern)
         {
-            var builder = AutoCrudObjectPool.StringBuilder.Get();
+            var builder = new StringBuilder();
 
             foreach (var c in pattern)
             {
@@ -110,7 +115,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
             }
 
             var ret = builder.ToString();
-            AutoCrudObjectPool.StringBuilder.Return(builder);
+
             return ret;
         }
     }
