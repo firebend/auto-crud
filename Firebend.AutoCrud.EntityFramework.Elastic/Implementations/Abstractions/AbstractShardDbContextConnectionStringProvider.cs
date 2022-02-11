@@ -71,7 +71,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
 
             var memoizeKey = $"{shardKey}.Sharding.Enrollment";
 
-            var connectionString = await _memoizer.MemoizeAsync(memoizeKey,() => GetShardConnectionStringAsync(shardKey, cancellationToken), cancellationToken);
+            var connectionString = await _memoizer.MemoizeAsync(memoizeKey, () => GetShardConnectionStringAsync(shardKey, cancellationToken), cancellationToken);
 
             return connectionString;
         }

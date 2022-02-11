@@ -18,7 +18,8 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 
         private readonly IMemoizer<DynamicMethod> _memoizer;
 
-        private ObjectMapper(IMemoizer<DynamicMethod> memoizer) {
+        private ObjectMapper(IMemoizer<DynamicMethod> memoizer)
+        {
             _memoizer = memoizer;
         }
 

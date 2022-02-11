@@ -12,7 +12,7 @@ using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Abstractions
 {
-    public abstract class AbstractCsvHelperFileWriter : BaseDisposable,  IEntityFileWriter
+    public abstract class AbstractCsvHelperFileWriter : BaseDisposable, IEntityFileWriter
     {
         public abstract EntityFileType FileType { get; }
 
@@ -25,8 +25,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
             CancellationToken cancellationToken)
             where T : class
         {
-           // _stream = AutoCrudPooledStream.GetStream("AutoCrudPooledStreamExport");
-           _stream = new MemoryStream();
+            _stream = new MemoryStream();
 
             if (FileType == EntityFileType.Csv)
             {

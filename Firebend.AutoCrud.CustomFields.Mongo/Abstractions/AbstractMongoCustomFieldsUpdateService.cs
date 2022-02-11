@@ -113,7 +113,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
         CancellationToken cancellationToken = default)
-        => PatchAsync(rootEntityKey, key, jsonPatchDocument,null, cancellationToken);
+        => PatchAsync(rootEntityKey, key, jsonPatchDocument, null, cancellationToken);
 
     public async Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
         Guid key,
@@ -156,7 +156,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
                 new FindOneAndUpdateOptions<TEntity>
                 {
                     ReturnDocument = ReturnDocument.Before,
-                    ArrayFilters = new [] { arrayFilters},
+                    ArrayFilters = new[] { arrayFilters },
                 },
                 cancellationToken);
         }
@@ -167,7 +167,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
                 new FindOneAndUpdateOptions<TEntity>
                 {
                     ReturnDocument = ReturnDocument.Before,
-                    ArrayFilters = new [] { arrayFilters},
+                    ArrayFilters = new[] { arrayFilters },
                 },
                 cancellationToken);
         }
@@ -191,7 +191,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
     }
 
     private static string FixMongoPatchPath(Operation<CustomFieldsEntity<TKey>> operation)
-        => operation.path.Substring(1, operation.path.Length - 1).FirstCharToLower();
+        => operation.path[1..].FirstCharToLower();
 
     private Task PublishUpdatedDomainEventAsync(TEntity previous,
         JsonPatchDocument<TEntity> patch,

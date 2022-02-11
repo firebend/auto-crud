@@ -7,20 +7,20 @@ using Firebend.AutoCrud.Core.Threading;
 
 namespace Firebend.AutoCrud.Core.Implementations.Concurrency;
 
-public class Memoizer<T> :IMemoizer<T>
+public class Memoizer<T> : IMemoizer<T>
 {
     private static readonly ConcurrentDictionary<string, T> Caches = new();
 
     public async Task<T> MemoizeAsync(string key, Func<Task<T>> factory, CancellationToken cancellationToken)
     {
-        if(Caches.TryGetValue(key, out var cached))
+        if (Caches.TryGetValue(key, out var cached))
         {
             return cached;
         }
 
         using var dupLock = new AsyncDuplicateLock().LockAsync(key, cancellationToken);
 
-        if(Caches.TryGetValue(key, out cached))
+        if (Caches.TryGetValue(key, out cached))
         {
             return cached;
         }
@@ -55,14 +55,14 @@ public class Memoizer<T> :IMemoizer<T>
 
     public T Memoize(string key, Func<T> factory)
     {
-        if(Caches.TryGetValue(key, out var cached))
+        if (Caches.TryGetValue(key, out var cached))
         {
             return cached;
         }
 
         using var dupLock = new AsyncDuplicateLock().Lock(key);
 
-        if(Caches.TryGetValue(key, out cached))
+        if (Caches.TryGetValue(key, out cached))
         {
             return cached;
         }
