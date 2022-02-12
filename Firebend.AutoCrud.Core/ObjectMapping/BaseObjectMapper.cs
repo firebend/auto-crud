@@ -31,12 +31,6 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 .Where(x => x.TargetProperty.CanWrite)
                 .ToArray();
 
-            // var properties = sourceProperties
-            //     .SelectMany(s => targetProperties, (source, target) => new { s = source, t = target })
-            //     .Where(x => x.s.Name == x.t.Name && x.s.CanRead && x.t.CanWrite)
-            //     .Select(x => new PropertyMap { SourceProperty = x.s, TargetProperty = x.t })
-            //     .ToList();
-
             return properties;
         }
 

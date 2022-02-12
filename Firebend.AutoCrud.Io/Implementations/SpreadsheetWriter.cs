@@ -106,14 +106,18 @@ namespace Firebend.AutoCrud.Io.Implementations
                 return;
             }
 
-            Flush();
-            SaveWorkbook();
+            if (!LeaveOpen)
+            {
+                SaveWorkbook();
+            }
+
             Stream.Flush();
 
             if (disposing)
             {
                 // Dispose managed state (managed objects)
                 Worksheet.Workbook.Dispose();
+
                 if (!LeaveOpen)
                 {
                     Stream.Dispose();

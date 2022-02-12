@@ -14,6 +14,8 @@ namespace Firebend.AutoCrud.Io.Abstractions
 {
     public abstract class AbstractCsvHelperFileWriter : BaseDisposable, IEntityFileWriter
     {
+        private bool _disposed;
+
         public abstract EntityFileType FileType { get; }
 
         private IWriter _writer;
@@ -86,11 +88,16 @@ namespace Firebend.AutoCrud.Io.Abstractions
         private static CsvConfiguration GetCsvConfiguration() => new(CultureInfo.InvariantCulture)
         {
             IgnoreBlankLines = true,
-            LeaveOpen = true
+            LeaveOpen = true,
         };
 
         protected override void DisposeManagedObjects()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             try
             {
                 _writer?.Dispose();
@@ -117,6 +124,8 @@ namespace Firebend.AutoCrud.Io.Abstractions
             {
                 // ignored
             }
+
+            _disposed = true;
         }
     }
 }
