@@ -6,32 +6,42 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 {
     public abstract class BaseObjectMapper
     {
+        private const string ObjectMapperConst = "ObjectMapper";
 
         protected abstract string MapTypes(Type source, Type target, params string[] propertiesToIgnore);
         public abstract void Copy(object source, object target, params string[] propertiesToIgnore);
 
         /// <summary>
-        /// This virtual function finds matching properties between given objects. It depends on their names, readability, and writability.
+        ///     This virtual function finds matching properties between given objects. It depends on their names, readability, and writability.
         /// </summary>
         /// <param name="sourceType">The source object's type</param>
         /// <param name="targetType">The target object's type</param>
         /// <returns>Returns a list of PropertyMap.</returns>
-        protected virtual IEnumerable<PropertyMap> GetMatchingProperties
-            (Type sourceType, Type targetType)
+        protected virtual IEnumerable<PropertyMap> GetMatchingProperties(Type sourceType, Type targetType)
         {
             var sourceProperties = sourceType.GetProperties();
             var targetProperties = targetType.GetProperties();
 
-            var properties = (sourceProperties
-                    .SelectMany(s => targetProperties, (s, t) => new { s, t })
-                .Where(@t1 => @t1.s.Name == @t1.t.Name && @t1.s.CanRead && @t1.t.CanWrite)
-                .Select(@t1 => new PropertyMap { SourceProperty = @t1.s, TargetProperty = @t1.t }))
-                .ToList();
+            var properties = sourceProperties.Join(
+                targetProperties,
+                x => x.Name,
+                x => x.Name,
+                (source, target) => new PropertyMap { SourceProperty = source, TargetProperty = target })
+                .Where(x => x.SourceProperty.CanRead)
+                .Where(x => x.TargetProperty.CanWrite)
+                .ToArray();
+
+            // var properties = sourceProperties
+            //     .SelectMany(s => targetProperties, (source, target) => new { s = source, t = target })
+            //     .Where(x => x.s.Name == x.t.Name && x.s.CanRead && x.t.CanWrite)
+            //     .Select(x => new PropertyMap { SourceProperty = x.s, TargetProperty = x.t })
+            //     .ToList();
+
             return properties;
         }
 
         /// <summary>
-        /// This virtual function builds a key to identify the converter method. It uses object names and combines them with defined pattern.
+        ///     This virtual function builds a key to identify the converter method. It uses object names and combines them with defined pattern.
         /// </summary>
         /// <param name="sourceType">The source object type</param>
         /// <param name="targetType">The target object type</param>
@@ -39,14 +49,12 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <exception cref="Exception">If there is no FullName property on sent objects, an exception will throw</exception>
         protected virtual string GetMapKey(Type sourceType, Type targetType, params string[] propertiesToIgnore)
         {
-            var chunks = new List<string> { "ObjectMapper", sourceType.FullName, targetType.FullName };
-
-            if (propertiesToIgnore != null)
+            if (propertiesToIgnore is null || propertiesToIgnore.Length <= 0)
             {
-                chunks.AddRange(propertiesToIgnore);
+                return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}";
             }
 
-            return string.Join('_', chunks);
+            return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}_{string.Join('_', propertiesToIgnore)}";
         }
     }
 }
