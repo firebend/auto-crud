@@ -30,4 +30,13 @@
       <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.7.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Implementations\Logging" />
+      <Folder Include="Interfaces\Services\Logging" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Interfaces\Services\Logging\ILoggerAdaptor.cs" />
+    </ItemGroup>
+
 </Project>

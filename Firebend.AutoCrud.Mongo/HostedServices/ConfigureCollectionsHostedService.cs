@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,13 +30,13 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
 
             if (collections != null)
             {
-                _logger.LogDebug("Configuring Mongo Collections");
+                ConfigureCollectionsHostedServiceLogger.Start(_logger);
 
                 var configureTasks = collections.Select(x => x.ConfigureAsync(stoppingToken));
 
                 await Task.WhenAll(configureTasks).ConfigureAwait(false);
 
-                _logger.LogDebug("Finished Configuring Mongo Collections");
+                ConfigureCollectionsHostedServiceLogger.Finish(_logger);
             }
             else
             {
