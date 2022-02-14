@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -68,7 +67,15 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
             var key = $"{typeof(TEntity).FullName}.Changes";
 
-            await _memoizer.MemoizeAsync(key, () => ScaffoldAsync(context, cancellationToken), cancellationToken);
+            await _memoizer.MemoizeAsync<(
+                AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> self,
+                ChangeTrackingDbContext<TEntityKey, TEntity> context,
+                CancellationToken cancellationToken
+                )>(
+                key,
+                static arg => arg.self.ScaffoldAsync(arg.context, arg.cancellationToken),
+                (this, context, cancellationToken),
+                cancellationToken);
 
             return context;
         }

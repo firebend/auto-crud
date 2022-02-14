@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection.Emit;
-using Firebend.AutoCrud.Core.Implementations.Concurrency;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
 {
+    internal static class ObjectMapperCache
+    {
+        public static ConcurrentDictionary<(Type source, Type target), DynamicMethod> MapperCache = new();
+    }
     /// <summary>
     /// This mapper class finds the matching properties and copies them from source object to target object. The copy function has IL codes to do this task.
     /// </summary>
@@ -14,13 +17,10 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <summary>
         /// Easy access to mapper functions
         /// </summary>
-        public static ObjectMapper Instance { get; } = new(new Memoizer<DynamicMethod>());
+        public static ObjectMapper Instance { get; } = new();
 
-        private readonly IMemoizer<DynamicMethod> _memoizer;
-
-        private ObjectMapper(IMemoizer<DynamicMethod> memoizer)
+        private ObjectMapper()
         {
-            _memoizer = memoizer;
         }
 
         /// <summary>
@@ -71,9 +71,18 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         {
             var sourceType = source.GetType();
             var targetType = target.GetType();
-            var key = this.MapTypes(sourceType, targetType, propertiesToIgnore);
-            var dynamicMethod = _memoizer.Memoize(key, () => DynamicMethodFactory(key, sourceType, targetType, propertiesToIgnore));
+
+            var dynamicMethod = ObjectMapperCache.MapperCache.GetOrAdd<(string[] ignores, ObjectMapper self)>(
+                (sourceType, targetType), static (dictKey,args ) =>
+            {
+                var (source, target) = dictKey;
+                var (ignores, self) = args;
+                var key = self.MapTypes(source, target, ignores);
+                return self.DynamicMethodFactory(key, source, target, ignores);
+            }, (propertiesToIgnore, this));
+
             var args = new[] { source, target };
+
             dynamicMethod.Invoke(null, args);
         }
     }

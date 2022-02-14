@@ -41,7 +41,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             {
                 var contextType = typeof(TContext);
 
-                await _memoizer.MemoizeAsync($"{contextType.FullName}.Init", () => InitContextAsync(dbContext, cancellationToken), cancellationToken);
+                await _memoizer.MemoizeAsync<
+                    (DbContextProvider<TKey, TEntity, TContext> self, DbContext dbContext, CancellationToken cancellationToken)>(
+                    $"{contextType.FullName}.Init",
+                    static arg => arg.self.InitContextAsync(arg.dbContext, arg.cancellationToken),
+                    (this, dbContext, cancellationToken),
+                    cancellationToken);
             }
 
             return context;

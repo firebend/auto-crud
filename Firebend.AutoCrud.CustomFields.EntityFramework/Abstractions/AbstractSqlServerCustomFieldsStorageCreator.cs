@@ -34,18 +34,21 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 
             var memoizeKey = $"{key}.Sql.CustomFields.Creation";
 
-            await _memoizer.MemoizeAsync(memoizeKey, async () =>
+            await _memoizer.MemoizeAsync<(IDbContextProvider<TKey, TEntity> dbContextProvider, IEntityTableCreator _tableCreator, CancellationToken cancellationToken)>(
+                memoizeKey, static async arg =>
             {
-                var context = await _contextProvider
+                var (dbContextProvider, tableCreator, cancellationToken) = arg;
+
+                var context = await dbContextProvider
                     .GetDbContextAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                var created = await _tableCreator
+                var created = await tableCreator
                     .EnsureExistsAsync<TEfModelType>(context, cancellationToken)
                     .ConfigureAwait(false);
 
                 return created;
-            }, cancellationToken);
+            }, (_contextProvider, _tableCreator, cancellationToken), cancellationToken);
         }
 
         protected virtual Task<string> GetCacheKey(CancellationToken cancellationToken) => Task.FromResult($"{typeof(TEntity).Name}");

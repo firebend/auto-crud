@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -11,17 +12,18 @@ using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {
+    public static class FileFieldAutoMapperCaches<T>
+    {
+        public static ConcurrentDictionary<string, IFileFieldWrite<T>[]> Caches = new();
+    }
     public class FileFieldAutoMapper<T> : IFileFieldAutoMapper<T>
         where T : class
     {
-        private readonly IMemoizer<IFileFieldWrite<T>[]> _memoizer;
         private readonly IFileFieldWriteFilter<T> _filter;
 
-        public FileFieldAutoMapper(IFileFieldWriteFilter<T> filter,
-            IMemoizer<IFileFieldWrite<T>[]> memoizer)
+        public FileFieldAutoMapper(IFileFieldWriteFilter<T> filter)
         {
             _filter = filter;
-            _memoizer = memoizer;
         }
 
         private IEnumerable<IFileFieldWrite<T>> MapOutputImpl()
@@ -65,7 +67,9 @@ namespace Firebend.AutoCrud.Io.Implementations
             }
         }
 
-        public IFileFieldWrite<T>[] MapOutput() =>
-            _memoizer.Memoize($"AutoCrud.Io.Mapping.{typeof(T).FullName}", () => MapOutputImpl().OrderBy(x => x.FieldIndex).ToArray());
+        public IFileFieldWrite<T>[] MapOutput() => FileFieldAutoMapperCaches<T>
+            .Caches
+            .GetOrAdd(typeof(T).FullName, static (_, arg) =>
+                arg.MapOutputImpl().OrderBy(x => x.FieldIndex).ToArray(), this);
     }
 }

@@ -19,8 +19,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
     {
         private readonly IDistributedLockService _distributedLockService;
         private readonly IMongoIndexProvider<TEntity> _indexProvider;
-        private readonly IMongoIndexMergeService _mongoIndexMergeService;
         private readonly IMemoizer<bool> _memoizer;
+        private readonly IMongoIndexMergeService _mongoIndexMergeService;
 
         public MongoIndexClient(IMongoClient client,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
@@ -80,19 +80,23 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 
         private Task CheckConfiguredAsync(string configurationKey,
             Func<Task> configure,
-            CancellationToken cancellationToken) => _memoizer.MemoizeAsync(configurationKey, async () =>
+            CancellationToken cancellationToken) => _memoizer.MemoizeAsync<(
+            MongoIndexClient<TKey, TEntity> self,
+            string key,
+            Func<Task> configure,
+            CancellationToken cancellationToken)>(configurationKey, static async arg =>
         {
-            var locker = await _distributedLockService
-                .LockAsync(configurationKey, cancellationToken)
+            var locker = await arg.self._distributedLockService
+                .LockAsync(arg.key, arg.cancellationToken)
                 .ConfigureAwait(false);
 
             using (locker)
             {
-                await configure().ConfigureAwait(false);
+                await arg.configure().ConfigureAwait(false);
             }
 
             return true;
-        }, cancellationToken);
+        }, (this, configurationKey, configure, cancellationToken), cancellationToken);
 
         protected override Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken) =>
             Task.FromResult(Enumerable.Empty<Expression<Func<TEntity, bool>>>());

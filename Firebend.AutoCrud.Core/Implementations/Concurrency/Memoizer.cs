@@ -7,33 +7,66 @@ using Firebend.AutoCrud.Core.Threading;
 
 namespace Firebend.AutoCrud.Core.Implementations.Concurrency;
 
+internal static class MemoizeCaches<T>
+{
+    public static readonly ConcurrentDictionary<string, T> Caches = new();
+}
+
 public class Memoizer<T> : IMemoizer<T>
 {
-    private static readonly ConcurrentDictionary<string, T> Caches = new();
-
     public async Task<T> MemoizeAsync(string key, Func<Task<T>> factory, CancellationToken cancellationToken)
     {
-        if (Caches.TryGetValue(key, out var cached))
+        if (TryGetFromCache(key, cancellationToken, out var returnValue))
         {
-            return cached;
-        }
-
-        using var dupLock = AsyncDuplicateLock.LockAsync(key, cancellationToken);
-
-        if (Caches.TryGetValue(key, out cached))
-        {
-            return cached;
+            return returnValue;
         }
 
         var value = await factory();
 
+        return await AddToCache(key, cancellationToken, value);
+    }
+
+    public async Task<T> MemoizeAsync<TArg>(string key, Func<TArg, Task<T>> factory, TArg arg, CancellationToken cancellationToken)
+    {
+        if (TryGetFromCache(key, cancellationToken, out var returnValue))
+        {
+            return returnValue;
+        }
+
+        var value = await factory(arg);
+
+        return await AddToCache(key, cancellationToken, value);
+    }
+
+    private static bool TryGetFromCache(string key, CancellationToken cancellationToken, out T memoizeAsync)
+    {
+        if (MemoizeCaches<T>.Caches.TryGetValue(key, out var cached))
+        {
+            memoizeAsync = cached;
+            return true;
+        }
+
+        using var dupLock = AsyncDuplicateLock.LockAsync(key, cancellationToken);
+
+        if (MemoizeCaches<T>.Caches.TryGetValue(key, out cached))
+        {
+            memoizeAsync = cached;
+            return true;
+        }
+
+        memoizeAsync = default;
+        return false;
+    }
+
+    private static async Task<T> AddToCache(string key, CancellationToken cancellationToken, T value)
+    {
         var count = 0;
 
         while (count < 10)
         {
             try
             {
-                if (Caches.TryAdd(key, value))
+                if (MemoizeCaches<T>.Caches.TryAdd(key, value))
                 {
                     return value;
                 }
@@ -42,49 +75,7 @@ public class Memoizer<T> : IMemoizer<T>
             }
             catch (OverflowException)
             {
-                Caches.Clear();
-            }
-            finally
-            {
-                count++;
-            }
-        }
-
-        return value;
-    }
-
-    public T Memoize(string key, Func<T> factory)
-    {
-        if (Caches.TryGetValue(key, out var cached))
-        {
-            return cached;
-        }
-
-        using var dupLock = AsyncDuplicateLock.Lock(key);
-
-        if (Caches.TryGetValue(key, out cached))
-        {
-            return cached;
-        }
-
-        var value = factory();
-
-        var count = 0;
-
-        while (count < 10)
-        {
-            try
-            {
-                if (Caches.TryAdd(key, value))
-                {
-                    return value;
-                }
-
-                Task.Delay(100).GetAwaiter().GetResult();
-            }
-            catch (OverflowException)
-            {
-                Caches.Clear();
+                MemoizeCaches<T>.Caches.Clear();
             }
             finally
             {
