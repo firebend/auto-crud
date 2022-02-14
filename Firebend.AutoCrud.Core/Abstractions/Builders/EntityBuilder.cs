@@ -7,12 +7,15 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        private Type _entityType;
+        private Type _entityKeyType;
+
         private string _signatureBase;
         public string EntityName { get; set; }
 
-        public Type EntityType => typeof(TEntity);
+        public Type EntityType => _entityType ??= typeof(TEntity);
 
-        public Type EntityKeyType => typeof(TKey);
+        public Type EntityKeyType => _entityKeyType ??= typeof(TKey);
 
         public Type ExportType { get; set; }
 

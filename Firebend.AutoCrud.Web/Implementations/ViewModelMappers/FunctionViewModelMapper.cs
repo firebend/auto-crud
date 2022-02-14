@@ -15,8 +15,8 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
-        private readonly Func<TEntity, TViewModel> _to;
-        private readonly Func<TViewModel, TEntity> _from;
+        private static Func<TEntity, TViewModel> _to;
+        private static Func<TViewModel, TEntity> _from;
 
         public FunctionViewModelMapper()
         {

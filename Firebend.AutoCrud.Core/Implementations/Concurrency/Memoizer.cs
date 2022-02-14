@@ -16,9 +16,16 @@ public class Memoizer<T> : IMemoizer<T>
 {
     public async Task<T> MemoizeAsync(string key, Func<Task<T>> factory, CancellationToken cancellationToken)
     {
-        if (TryGetFromCache(key, cancellationToken, out var returnValue))
+        if (TryGetFromCache(key, out var returnValue))
         {
             return returnValue;
+        }
+
+        using var dupLock = AsyncDuplicateLock.LockAsync(key, cancellationToken);
+
+        if (TryGetFromCache(key, out var returnValueAgain))
+        {
+            return returnValueAgain;
         }
 
         var value = await factory();
@@ -28,9 +35,16 @@ public class Memoizer<T> : IMemoizer<T>
 
     public async Task<T> MemoizeAsync<TArg>(string key, Func<TArg, Task<T>> factory, TArg arg, CancellationToken cancellationToken)
     {
-        if (TryGetFromCache(key, cancellationToken, out var returnValue))
+        if (TryGetFromCache(key, out var returnValue))
         {
             return returnValue;
+        }
+
+        using var dupLock = AsyncDuplicateLock.LockAsync(key, cancellationToken);
+
+        if (TryGetFromCache(key, out var returnValueAgain))
+        {
+            return returnValueAgain;
         }
 
         var value = await factory(arg);
@@ -38,17 +52,9 @@ public class Memoizer<T> : IMemoizer<T>
         return await AddToCache(key, cancellationToken, value);
     }
 
-    private static bool TryGetFromCache(string key, CancellationToken cancellationToken, out T memoizeAsync)
+    private static bool TryGetFromCache(string key, out T memoizeAsync)
     {
         if (MemoizeCaches<T>.Caches.TryGetValue(key, out var cached))
-        {
-            memoizeAsync = cached;
-            return true;
-        }
-
-        using var dupLock = AsyncDuplicateLock.LockAsync(key, cancellationToken);
-
-        if (MemoizeCaches<T>.Caches.TryGetValue(key, out cached))
         {
             memoizeAsync = cached;
             return true;

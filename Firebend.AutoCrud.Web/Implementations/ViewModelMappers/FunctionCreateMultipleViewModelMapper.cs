@@ -11,9 +11,14 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         where TEntity : IEntity<TKey>
         where TViewWrapper : IMultipleEntityViewModel<TView>
     {
-        public Func<TViewWrapper, TView, TEntity> Func { get; set; }
+        private readonly Func<TViewWrapper, TView, TEntity> _func;
+
+        public FunctionCreateMultipleViewModelMapper(Func<TViewWrapper, TView, TEntity> func)
+        {
+            _func = func;
+        }
 
         public Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken = default)
-            => Task.FromResult(Func(wrapper, viewModel));
+            => Task.FromResult(_func(wrapper, viewModel));
     }
 }

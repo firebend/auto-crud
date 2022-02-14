@@ -9,11 +9,6 @@ namespace Firebend.AutoCrud.Io.Implementations
     {
         private readonly Func<TEntity, TOut> _func;
 
-        public EntityExportMapper()
-        {
-
-        }
-
         public EntityExportMapper(Func<TEntity, TOut> func)
         {
             _func = func;

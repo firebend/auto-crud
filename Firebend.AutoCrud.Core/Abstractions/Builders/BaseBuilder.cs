@@ -4,22 +4,38 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
-    public abstract class BaseBuilder
+    public abstract class BaseBuilder : BaseDisposable
     {
-        private readonly object _lock = new();
+        private static readonly object Lock = new();
+        private IDictionary<Type, List<Registration>> _registrations;
+        private Dictionary<Type, List<CrudBuilderAttributeModel>> _attributes;
+        private List<Action<IServiceCollection>> _serviceCollectionHooks;
 
         public bool IsBuilt { get; private set; }
 
-        public IDictionary<Type, List<Registration>> Registrations { get; set; }
+        public IDictionary<Type, List<Registration>> Registrations
+        {
+            get => _registrations;
+            set => _registrations = value;
+        }
 
-        public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
+        public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes
+        {
+            get => _attributes;
+            set => _attributes = value;
+        }
 
-        public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
+        public List<Action<IServiceCollection>> ServiceCollectionHooks
+        {
+            get => _serviceCollectionHooks;
+            set => _serviceCollectionHooks = value;
+        }
 
         public virtual string SignatureBase { get; set; }
 
@@ -30,7 +46,12 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 return;
             }
 
-            lock (_lock)
+            if (Disposed)
+            {
+                throw new ObjectDisposedException("Auto crud builder is disposed");
+            }
+
+            lock (Lock)
             {
                 if (IsBuilt)
                 {
@@ -179,5 +200,17 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             }
         }
         public void EnsureRegistered<TRegistration>() => EnsureRegistered(typeof(TRegistration));
+
+        protected override void DisposeManagedObjects()
+        {
+            _registrations?.Clear();
+            _registrations = null;
+
+            _attributes?.Clear();
+            _attributes = null;
+
+            _serviceCollectionHooks?.Clear();
+            _serviceCollectionHooks = null;
+        }
     }
 }

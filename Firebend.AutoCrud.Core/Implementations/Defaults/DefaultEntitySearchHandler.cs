@@ -13,11 +13,6 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
     {
         private readonly Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> _func;
 
-        public DefaultEntitySearchHandler()
-        {
-
-        }
-
         public DefaultEntitySearchHandler(Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> func)
         {
             _func = func;
