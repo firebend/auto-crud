@@ -18,15 +18,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public override string SignatureBase
         {
-            get
-            {
-                if (_signatureBase == null)
-                {
-                    _signatureBase = $"{EntityType.Name}_{EntityName}";
-                }
-
-                return _signatureBase;
-            }
+            get => _signatureBase ??= $"{EntityType.Name}_{EntityName}";
             set => _signatureBase = value;
         }
     }
