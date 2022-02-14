@@ -30,7 +30,16 @@ public class Memoizer<T> : IMemoizer<T>
 
         var value = await factory();
 
-        return await AddToCache(key, cancellationToken, value);
+        try
+        {
+            await AddToCache(key, value, cancellationToken);
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return value;
     }
 
     public async Task<T> MemoizeAsync<TArg>(string key, Func<TArg, Task<T>> factory, TArg arg, CancellationToken cancellationToken)
@@ -49,7 +58,17 @@ public class Memoizer<T> : IMemoizer<T>
 
         var value = await factory(arg);
 
-        return await AddToCache(key, cancellationToken, value);
+        try
+        {
+            await AddToCache(key, value, cancellationToken);
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return value;
+
     }
 
     private static bool TryGetFromCache(string key, out T memoizeAsync)
@@ -64,7 +83,7 @@ public class Memoizer<T> : IMemoizer<T>
         return false;
     }
 
-    private static async Task<T> AddToCache(string key, CancellationToken cancellationToken, T value)
+    private static async Task AddToCache(string key, T value, CancellationToken cancellationToken)
     {
         var count = 0;
 
@@ -74,7 +93,7 @@ public class Memoizer<T> : IMemoizer<T>
             {
                 if (MemoizeCaches<T>.Caches.TryAdd(key, value))
                 {
-                    return value;
+                    return;
                 }
 
                 await Task.Delay(100, cancellationToken);
@@ -88,7 +107,5 @@ public class Memoizer<T> : IMemoizer<T>
                 count++;
             }
         }
-
-        return value;
     }
 }
