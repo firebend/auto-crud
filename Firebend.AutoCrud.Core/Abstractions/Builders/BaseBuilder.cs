@@ -13,7 +13,6 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
     public abstract class BaseBuilder : BaseDisposable
     {
         private static readonly object Lock = new();
-        private List<Action<IServiceCollection>> _serviceCollectionHooks;
 
         public bool IsBuilt { get; private set; }
 
@@ -21,11 +20,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
 
-        public List<Action<IServiceCollection>> ServiceCollectionHooks
-        {
-            get => _serviceCollectionHooks;
-            set => _serviceCollectionHooks = value;
-        }
+        public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
 
         public virtual string SignatureBase { get; set; }
 
@@ -199,8 +194,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             Attributes?.Clear();
             Attributes = null;
 
-            _serviceCollectionHooks?.Clear();
-            _serviceCollectionHooks = null;
+            ServiceCollectionHooks?.Clear();
+            ServiceCollectionHooks = null;
         }
     }
 }
