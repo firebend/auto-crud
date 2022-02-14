@@ -13,23 +13,13 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
     public abstract class BaseBuilder : BaseDisposable
     {
         private static readonly object Lock = new();
-        private IDictionary<Type, List<Registration>> _registrations;
-        private Dictionary<Type, List<CrudBuilderAttributeModel>> _attributes;
         private List<Action<IServiceCollection>> _serviceCollectionHooks;
 
         public bool IsBuilt { get; private set; }
 
-        public IDictionary<Type, List<Registration>> Registrations
-        {
-            get => _registrations;
-            set => _registrations = value;
-        }
+        public IDictionary<Type, List<Registration>> Registrations { get; set; }
 
-        public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes
-        {
-            get => _attributes;
-            set => _attributes = value;
-        }
+        public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
 
         public List<Action<IServiceCollection>> ServiceCollectionHooks
         {
@@ -203,11 +193,11 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         protected override void DisposeManagedObjects()
         {
-            _registrations?.Clear();
-            _registrations = null;
+            Registrations?.Clear();
+            Registrations = null;
 
-            _attributes?.Clear();
-            _attributes = null;
+            Attributes?.Clear();
+            Attributes = null;
 
             _serviceCollectionHooks?.Clear();
             _serviceCollectionHooks = null;
