@@ -550,7 +550,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             await GetAsync(result.Id);
             await PageAsync();
             await SearchAsync(search);
-            //await ExportToCsvAsync();
+            await ExportToCsvAsync();
 
             var changes = await GetChangeTracking(result.Id, 3);
 

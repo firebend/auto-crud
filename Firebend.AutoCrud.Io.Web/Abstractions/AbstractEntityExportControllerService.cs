@@ -61,7 +61,6 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
             var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
 
-            //todo look into making this a stream
             var fileResult = new FileStreamResult(fileStream, mimeType) { FileDownloadName = $"{fileName}{extension}" };
 
             return fileResult;
@@ -81,6 +80,10 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             return mappedRecords;
         }
 
-        protected override void DisposeManagedObjects() => _searchService?.Dispose();
+        protected override void DisposeManagedObjects()
+        {
+            _searchService?.Dispose();
+            _exportService?.Dispose();
+        }
     }
 }

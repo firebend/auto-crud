@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -6,7 +7,7 @@ using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Interfaces
 {
-    public interface IEntityExportService<in T>
+    public interface IEntityExportService<in T> : IDisposable
         where T : class
     {
         Task<Stream> ExportAsync(EntityFileType exportType,

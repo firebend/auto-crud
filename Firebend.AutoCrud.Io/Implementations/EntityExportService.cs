@@ -33,11 +33,12 @@ namespace Firebend.AutoCrud.Io.Implementations
                 throw new Exception($"Could not find writer for type {exportType}");
             }
 
-            var fields = _autoMapper.MapOutput();
+            using (writer)
+            {
+                var fields = _autoMapper.MapOutput();
 
-            return writer.WriteRecordsAsync(fields, records, cancellationToken);
+                return writer.WriteRecordsAsync(fields, records, cancellationToken);
+            }
         }
-
-        protected override void DisposeManagedObjects() => _fileWriterFactory?.Dispose();
     }
 }

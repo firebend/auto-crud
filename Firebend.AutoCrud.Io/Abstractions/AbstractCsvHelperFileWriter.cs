@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -31,7 +32,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
 
             if (FileType == EntityFileType.Csv)
             {
-                _textWriter = new StreamWriter(_stream);
+                _textWriter = new StreamWriter(_stream, null, -1, true);
             }
 
             _writer = FileType == EntityFileType.Csv
@@ -104,6 +105,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
             }
             catch
             {
+                Console.WriteLine("Writer ex");
                 // ignored
             }
 
@@ -113,15 +115,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
             }
             catch
             {
-                // ignored
-            }
-
-            try
-            {
-                _stream?.Dispose();
-            }
-            catch
-            {
+                Console.WriteLine("Text Writer ex");
                 // ignored
             }
 

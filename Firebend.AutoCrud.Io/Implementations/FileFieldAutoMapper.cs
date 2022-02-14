@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.Io.Implementations
 {
     public static class FileFieldAutoMapperCaches<T>
     {
-        public static ConcurrentDictionary<string, IFileFieldWrite<T>[]> Caches = new();
+        public static readonly ConcurrentDictionary<string, IFileFieldWrite<T>[]> Caches = new();
     }
     public class FileFieldAutoMapper<T> : IFileFieldAutoMapper<T>
         where T : class
