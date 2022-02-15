@@ -10,6 +10,8 @@ export const options = {
   'summaryTrendStats': ['min', 'med', 'avg', 'p(90)', 'p(95)', 'max', 'count'],
 };
 export default function () {
+  // http.get('http://localhost:5000/api/v1/ef/people-regular');
+  // sleep(1);
   http.get('http://localhost:5000/api/v1/ef-person?pageSize=10&pageNumber=1');
   sleep(1);
   //http.get('http://localhost:5000/api/v1/ef-person?search=Fox&pageSize=10&pageNumber=1&modifiedStartDate=2021-01-12T15:24:22.285552-06:00');

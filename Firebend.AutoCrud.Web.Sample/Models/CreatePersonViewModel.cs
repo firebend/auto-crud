@@ -74,7 +74,16 @@ namespace Firebend.AutoCrud.Web.Sample.Models
                 return;
             }
 
-            entity.CopyPropertiesTo(this, nameof(CustomFields));
+            this.CustomFields = entity.CustomFields;
+            this.FirstName = entity.FirstName;
+            this.NickName = entity.NickName;
+            this.Id = entity.Id;
+            this.CreatedDate = entity.CreatedDate;
+            this.ModifiedDate = entity.ModifiedDate;
+            this.IsDeleted = entity.IsDeleted;
+            this.OtherEmail = entity.OtherEmail;
+
+            //entity.CopyPropertiesTo(this, nameof(CustomFields));
 
            // CustomFields = entity.CustomFields?.Select(x => new CustomFieldsEntity<Guid>(x)).ToList();
         }

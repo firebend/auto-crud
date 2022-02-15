@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         protected virtual async Task<TEntity> AddInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
         {
-            using var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
+            await using var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
 
             var set = GetDbSet(context);
 

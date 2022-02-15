@@ -64,7 +64,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            using var context = await GetDbContextAsync(entityTransaction, cancellationToken).ConfigureAwait(false);
+            await using var context = await GetDbContextAsync(entityTransaction, cancellationToken).ConfigureAwait(false);
             var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
 
             if (entity == null)
@@ -108,7 +108,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            using var context = await GetDbContextAsync(transaction, cancellationToken)
+            await using var context = await GetDbContextAsync(transaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken)

@@ -55,7 +55,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var (query, context) = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken);
 
-            using (context)
+            await using (context)
             {
                 var entity = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
                 return entity;
@@ -86,7 +86,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
 
-            using (context)
+            await using (context)
             {
                 var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
                 return count;
@@ -105,7 +105,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var (query, context) = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken).ConfigureAwait(false);
 
-            using (context)
+            await using (context)
             {
                 var list = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
                 return list;
@@ -122,7 +122,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
 
-            using (context)
+            await using (context)
             {
                 var exists = await query.AnyAsync(cancellationToken).ConfigureAwait(false);
                 return exists;

@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         protected virtual async Task<TEntity> DeleteInternalAsync(TKey key, IEntityTransaction transaction, CancellationToken cancellationToken)
         {
-            using var context = await GetDbContextAsync(transaction, cancellationToken)
+            await using var context = await GetDbContextAsync(transaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var entity = new TEntity { Id = key };
@@ -73,7 +73,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction transaction,
             CancellationToken cancellationToken)
         {
-            using var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
+            await using var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
             var query = await GetFilteredQueryableAsync(context, false, cancellationToken);
             var set = context.Set<TEntity>();
             var list = await query

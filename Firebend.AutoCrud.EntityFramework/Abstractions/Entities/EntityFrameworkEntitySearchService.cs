@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
                 .GetQueryableAsync(true, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
 
-            using (context)
+            await using (context)
             {
                 var expression = GetSearchExpression(request);
 
