@@ -23,6 +23,23 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
+    internal static class MongoUpdateClientCaches<TEntity>
+    {
+        static MongoUpdateClientCaches()
+        {
+            var props = typeof(TEntity)
+                .GetProperties()
+                .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
+                .Select(x => x.Name)
+                .ToList();
+
+            props.Add(nameof(IModifiedEntity.CreatedDate));
+
+            MapperIgnores = props.ToArray();
+        }
+
+        public static readonly string[] MapperIgnores;
+    }
     public abstract class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
@@ -48,19 +65,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventPublisher = domainEventPublisher;
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
-
-        private readonly Lazy<string[]> _ignoredProperties = new(() =>
-        {
-            var props = typeof(TEntity)
-                .GetProperties()
-                .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
-                .Select(x => x.Name)
-                .ToList();
-
-            props.Add(nameof(IModifiedEntity.CreatedDate));
-
-            return props.ToArray();
-        });
 
         public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
             UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, null, null, null, cancellationToken);
@@ -213,7 +217,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var modified = original == null ? new TEntity() : original.Clone();
 
-            entity.CopyPropertiesTo(modified, _ignoredProperties.Value);
+            entity.CopyPropertiesTo(modified, MongoUpdateClientCaches<TEntity>.MapperIgnores);
 
             if (original == null && modified is IModifiedEntity mod)
             {

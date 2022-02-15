@@ -61,7 +61,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     )
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
-                        //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
+                        .WithReadViewModel(x => new GetPersonViewModel(x))
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithIoControllers()

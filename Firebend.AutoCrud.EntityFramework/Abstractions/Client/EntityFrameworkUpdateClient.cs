@@ -36,6 +36,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         public static readonly string[] IgnoredProperties;
     }
+
     public abstract class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
