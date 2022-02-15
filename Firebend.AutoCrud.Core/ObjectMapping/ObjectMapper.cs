@@ -46,7 +46,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 
             foreach (var map in maps)
             {
-                if (propertiesToIgnore.Contains(map.SourceProperty.Name))
+                if (propertiesToIgnore?.Contains(map.SourceProperty.Name) ?? false)
                 {
                     continue;
                 }

@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
             nameof(ChangeTrackingModel<Guid, FooEntity>.Changes),
             nameof(ChangeTrackingModel<Guid, FooEntity>.Entity)
         };
-}
+    }
     public class ChangeTrackingViewModel<TKey, TEntity, TViewModel> : ChangeTrackingModel<TKey, TViewModel>
         where TKey : struct
         where TEntity : class, IEntity<TKey>

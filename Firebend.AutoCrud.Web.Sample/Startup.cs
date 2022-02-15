@@ -27,13 +27,8 @@ namespace Firebend.AutoCrud.Web.Sample
         {
             services
                 .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
-                .AddDbContext<PersonDbContext>(opt =>
-                {
-                    opt.UseSqlServer(configuration.GetConnectionString("SqlServer"))
-                        //.AddFirebendFunctions()
-                        //.EnableSensitiveDataLogging()
-                        ;
-                })
+                .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer"))
+)
                 .UsingMongoCrud(configuration.GetConnectionString("Mongo"), true, mongo => mongo.AddMongoPerson())
                 .UsingEfCrud(ef =>
                 {

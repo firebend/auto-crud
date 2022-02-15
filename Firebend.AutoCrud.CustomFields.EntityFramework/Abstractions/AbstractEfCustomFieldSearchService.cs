@@ -71,7 +71,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 
                 return new EntityPagedResponse<CustomFieldsEntity<TKey>>
                 {
-                    Data = records.Select(x => x.ToCustomFields()).ToList(), CurrentPage = pageNumber, TotalRecords = count, CurrentPageSize = pageSize
+                    Data = records.Select(x => x.ToCustomFields()).ToList(),
+                    CurrentPage = pageNumber,
+                    TotalRecords = count,
+                    CurrentPageSize = pageSize
                 };
             }
         }

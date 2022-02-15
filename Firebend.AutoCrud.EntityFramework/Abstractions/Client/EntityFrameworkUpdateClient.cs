@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             props.Add(nameof(IModifiedEntity.CreatedDate));
 
-            IgnoredProperties =  props.ToArray();
+            IgnoredProperties = props.ToArray();
         }
 
         public static readonly string[] IgnoredProperties;
