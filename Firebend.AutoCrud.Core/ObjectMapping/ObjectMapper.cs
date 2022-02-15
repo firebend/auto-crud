@@ -66,8 +66,11 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// </summary>
         /// <param name="source">The original object that keeps the actual values/properties</param>
         /// <param name="target">The object that will get the related values from the given object</param>
-        /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process</param>
-        public override void Copy<TSource, TTarget>(TSource source, TTarget target, params string[] propertiesToIgnore)
+        /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process.
+        /// It is best practice to have this as a static variable at all possible. Doing so will reduce
+        /// memory allocations.
+        /// </param>
+        public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore)
         {
             var sourceType = typeof(TSource);
             var targetType = typeof(TTarget);
