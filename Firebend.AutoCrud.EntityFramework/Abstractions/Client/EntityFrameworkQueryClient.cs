@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
+using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,7 +29,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _includesProvider = includesProvider;
         }
 
-        protected virtual async Task<IQueryable<TEntity>> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
+        protected virtual async Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
             bool asNoTracking,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
@@ -44,7 +45,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 query = query.Where(filter);
             }
 
-            return query;
+            return (query, context);
         }
 
         public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
@@ -52,9 +53,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken);
-            var entity = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
-            return entity;
+            var (query, context) = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken);
+
+            using (context)
+            {
+                var entity = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+                return entity;
+            }
         }
 
         public Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
@@ -62,11 +67,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
             => GetFirstOrDefaultAsync(filter, asNoTracking, null, cancellationToken);
 
-        public Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking,
+        public Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(bool asNoTracking,
             CancellationToken cancellationToken = default)
             => GetQueryableAsync(asNoTracking, null, cancellationToken);
 
-        public Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking,
+        public Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(bool asNoTracking,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
             => GetQueryableAsync(null, asNoTracking, entityTransaction, cancellationToken);
@@ -79,9 +84,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
-            var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
-            return count;
+            var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
+
+            using (context)
+            {
+                var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
+                return count;
+            }
         }
 
         public Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
@@ -94,9 +103,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken).ConfigureAwait(false);
-            var list = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
-            return list;
+            var (query, context) = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken).ConfigureAwait(false);
+
+            using (context)
+            {
+                var list = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+                return list;
+            }
         }
 
         public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
@@ -107,10 +120,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
-            var exists = await query.AnyAsync(cancellationToken).ConfigureAwait(false);
+            var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
 
-            return exists;
+            using (context)
+            {
+                var exists = await query.AnyAsync(cancellationToken).ConfigureAwait(false);
+                return exists;
+            }
         }
 
         public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
@@ -157,7 +173,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         protected virtual Task<IQueryable<TEntity>> ModifyQueryableAsync(IQueryable<TEntity> queryable)
             => Task.FromResult(queryable);
 
-        protected override IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable)
-            => _includesProvider != null ? _includesProvider.AddIncludes(queryable) : queryable;
+        protected override IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) =>
+            _includesProvider is null or DefaultEntityFrameworkIncludesProvider<TKey, TEntity> ? queryable : _includesProvider.AddIncludes(queryable);
     }
 }

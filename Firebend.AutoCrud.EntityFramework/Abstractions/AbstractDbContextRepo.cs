@@ -20,8 +20,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
     {
         private readonly IDbContextProvider<TKey, TEntity> _provider;
 
-        private IDbContext _context;
-
         protected AbstractDbContextRepo(IDbContextProvider<TKey, TEntity> provider)
         {
             _provider = provider;
@@ -29,9 +27,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
         protected async Task<IDbContext> GetDbContextAsync(IEntityTransaction entityTransaction, CancellationToken cancellationToken)
         {
+            IDbContext context;
+
             if (entityTransaction == null)
             {
-                _context ??= await _provider
+                context = await _provider
                     .GetDbContextAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -44,21 +44,18 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
                 var transaction = efTransaction.ContextTransaction.GetDbTransaction();
 
-                _context ??= await _provider.GetDbContextAsync(transaction.Connection, cancellationToken);
+                context = await _provider.GetDbContextAsync(transaction.Connection, cancellationToken);
 
-                if (_context.Database.CurrentTransaction == null)
+                if (context.Database.CurrentTransaction == null)
                 {
-                    await _context.Database.UseTransactionAsync(transaction, cancellationToken);
+                    await context.Database.UseTransactionAsync(transaction, cancellationToken);
                 }
             }
 
-            return _context;
+            return context;
         }
 
-        protected DbSet<TEntity> GetDbSet(IDbContext context)
-        {
-            return context.Set<TEntity>();
-        }
+        protected DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
 
         protected async Task<TEntity> GetByEntityKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
         {
@@ -120,29 +117,5 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             => Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
 
         protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => queryable;
-
-        protected override void DisposeManagedObjects()
-        {
-            if (_context is not DbContext dbContext)
-            {
-                return;
-            }
-
-            try
-            {
-                foreach (var changes in dbContext.ChangeTracker.Entries())
-                {
-                    changes.State = EntityState.Detached;
-                }
-            }
-            catch
-            {
-                // ignored
-            }
-
-            _context.Dispose();
-        }
-
-        protected override void DisposeUnmanagedObjectsAndAssignNull() => _context = null;
     }
 }

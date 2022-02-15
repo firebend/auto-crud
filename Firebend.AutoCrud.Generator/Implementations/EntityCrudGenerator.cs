@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             ServiceCollection = serviceCollection;
         }
 
-        protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(new DynamicClassGenerator(), serviceCollection)
+        protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(DynamicClassGenerator.Instance, serviceCollection)
         {
         }
 

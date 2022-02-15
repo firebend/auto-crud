@@ -1,5 +1,4 @@
 using System;
-using System.Data.Common;
 using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -12,7 +11,6 @@ using Firebend.AutoCrud.EntityFramework.Implementations;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.EntityFramework
 {
@@ -161,7 +159,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// Specifies the connection string to use for the db context associated to this crud builder.
         /// </summary>
         /// <param name="connectionString">
-        /// A <see cref="string"/> represending the connection string for the <see cref="DbContext"/>
+        /// A <see cref="string"/> representing the connection string for the <see cref="DbContext"/>
         /// </param>
         /// <example>
         /// <code>
@@ -244,7 +242,7 @@ namespace Firebend.AutoCrud.EntityFramework
         /// <summary>
         /// Specifies EntityFramework related model Includes to use for the model
         /// </summary>
-        /// <typeparam name="func">A callback function specifying the related model Includes to use for the model</typeparam>
+        /// <param name="func">A callback function specifying the related model Includes to use for the model</typeparam>
         /// <example>
         /// <code>
         /// ef.AddEntity<Guid, WeatherForecast>(forecast =>

@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         protected virtual async Task<TEntity> AddInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
         {
-            var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
+            using var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
 
             var set = GetDbSet(context);
 
@@ -75,7 +75,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher == null || _domainEventPublisher is DefaultEntityDomainEventPublisher)
+            if (_domainEventPublisher is null or DefaultEntityDomainEventPublisher)
             {
                 return Task.CompletedTask;
             }

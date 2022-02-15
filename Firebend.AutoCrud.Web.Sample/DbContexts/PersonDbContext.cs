@@ -1,3 +1,4 @@
+using System;
 using Firebend.AutoCrud.CustomFields.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Firebend.AutoCrud.Web.Sample.Models;
@@ -18,7 +19,8 @@ namespace Firebend.AutoCrud.Web.Sample.DbContexts
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            //modelBuilder.ApplyConfiguration(new CustomFieldEntityTenantTypeConfiguration<Guid, EfPerson, Guid>("EfPeople_CustomFields", "dbo"));
+            //modelBuilder.ApplyConfiguration(new CustomFieldEntityTenantTypeConfiguration<Guid, EfPet, Guid>("EfPets_CustomFields", "dbo"));
             this.AddCustomFieldsConfigurations(modelBuilder);
         }
     }

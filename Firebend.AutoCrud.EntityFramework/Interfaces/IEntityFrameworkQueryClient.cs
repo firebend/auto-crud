@@ -22,10 +22,10 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default);
 
-        Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking,
+        Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(bool asNoTracking,
             CancellationToken cancellationToken = default);
 
-        Task<IQueryable<TEntity>> GetQueryableAsync(bool asNoTracking,
+        Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(bool asNoTracking,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default);
 

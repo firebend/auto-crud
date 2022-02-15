@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
+    public static class DbContextProviderCaches<TContext>
+        where TContext : DbContext
+    {
+        public static readonly ConcurrentDictionary<DbContextOptions<TContext>, PooledDbContextFactory<TContext>> Factories = new();
+    }
+
     public abstract class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
@@ -34,7 +41,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         private async Task<IDbContext> CreateContextAsync(DbContextOptions<TContext> options, CancellationToken cancellationToken)
         {
-            var factory = new PooledDbContextFactory<TContext>(options);
+            var factory = DbContextProviderCaches<TContext>.Factories
+                .GetOrAdd(options, contextOptions => new PooledDbContextFactory<TContext>(contextOptions));
+
             var context = await factory.CreateDbContextAsync(cancellationToken);
 
             if (context is DbContext dbContext)

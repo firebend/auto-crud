@@ -76,7 +76,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
             entity.CopyPropertiesTo(this, nameof(CustomFields));
 
-            CustomFields = entity.CustomFields?.Select(x => new CustomFieldsEntity<Guid>(x)).ToList();
+           // CustomFields = entity.CustomFields?.Select(x => new CustomFieldsEntity<Guid>(x)).ToList();
         }
 
         public Guid Id { get; set; }

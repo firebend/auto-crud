@@ -115,6 +115,7 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands
             }
 
             var ret = builder.ToString();
+            builder.Clear();
 
             return ret;
         }
