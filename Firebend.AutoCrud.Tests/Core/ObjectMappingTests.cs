@@ -27,8 +27,8 @@ namespace Firebend.AutoCrud.Tests.Core
 
             // when
             ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObj);
-            ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObjWithIgnoredProperties, "Age", "Name");
-            ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObjWithDifferentIgnoredProperties, "Age");
+            ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObjWithIgnoredProperties, new[] {"Age", "Name"});
+            ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObjWithDifferentIgnoredProperties, new[] {"Age"});
 
             // then
             var expectedAge = 0;
@@ -57,7 +57,7 @@ namespace Firebend.AutoCrud.Tests.Core
             var givenTargetObj = new MapperTestObjClass();
 
             // when
-            ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObj, "Age", "Name");
+            ObjectMapper.Instance.Copy(givenSourceObj, givenTargetObj, new [] {"Age", "Name"});
 
             // then
             var expectedAge = 0;
