@@ -67,10 +67,10 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <param name="source">The original object that keeps the actual values/properties</param>
         /// <param name="target">The object that will get the related values from the given object</param>
         /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process</param>
-        public override void Copy(object source, object target, params string[] propertiesToIgnore)
+        public override void Copy<TSource, TTarget>(TSource source, TTarget target, params string[] propertiesToIgnore)
         {
-            var sourceType = source.GetType();
-            var targetType = target.GetType();
+            var sourceType = typeof(TSource);
+            var targetType = typeof(TTarget);
 
             var dynamicMethod = ObjectMapperCache.MapperCache.GetOrAdd(
                 (sourceType, targetType, propertiesToIgnore), static (dictKey, self) =>
@@ -80,7 +80,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 return self.DynamicMethodFactory(key, source, target, ignores);
             }, this);
 
-            var args = new[] { source, target };
+            var args = new object[] { source, target };
 
             dynamicMethod.Invoke(null, args);
         }
