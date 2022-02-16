@@ -11,6 +11,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Firebend.JsonPatch;
+using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,24 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
+    internal static class EntityFrameworkUpdateClientCaches<TEntity>
+    {
+        static EntityFrameworkUpdateClientCaches()
+        {
+            var props = typeof(TEntity)
+                .GetProperties()
+                .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
+                .Select(x => x.Name)
+                .ToList();
+
+            props.Add(nameof(IModifiedEntity.CreatedDate));
+
+            IgnoredProperties = props.ToArray();
+        }
+
+        public static readonly string[] IgnoredProperties;
+    }
+
     public abstract class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
@@ -41,25 +60,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
-        private readonly Lazy<string[]> _ignoredProperties = new(() =>
-        {
-            var props = typeof(TEntity)
-                .GetProperties()
-                .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
-                .Select(x => x.Name)
-                .ToList();
-
-            props.Add(nameof(IModifiedEntity.CreatedDate));
-
-            return props.ToArray();
-        });
-
         protected virtual async Task<TEntity> UpdateInternalAsync(TKey key,
             JsonPatchDocument<TEntity> jsonPatchDocument,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var context = await GetDbContextAsync(entityTransaction, cancellationToken).ConfigureAwait(false);
+            await using var context = await GetDbContextAsync(entityTransaction, cancellationToken).ConfigureAwait(false);
             var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
 
             if (entity == null)
@@ -103,16 +109,17 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            var context = await GetDbContextAsync(transaction, cancellationToken)
+            await using var context = await GetDbContextAsync(transaction, cancellationToken)
                 .ConfigureAwait(false);
 
             var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken)
                 .ConfigureAwait(false);
 
             var original = model?.Clone();
+
             if (original != null)
             {
-                model = entity.CopyPropertiesTo(model, _ignoredProperties.Value);
+                model = entity.CopyPropertiesTo(model, EntityFrameworkUpdateClientCaches<TEntity>.IgnoredProperties);
 
                 if (model is IModifiedEntity modified)
                 {
@@ -194,19 +201,20 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher != null && !_isDefaultPublisher)
+            if (_domainEventPublisher == null || _isDefaultPublisher)
             {
-                var domainEvent = new EntityUpdatedDomainEvent<TEntity>
-                {
-                    Previous = previous,
-                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }),
-                    EventContext = _domainEventContextProvider?.GetContext()
-                };
-
-                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, transaction, cancellationToken);
+                return Task.CompletedTask;
             }
 
-            return Task.CompletedTask;
+            var domainEvent = new EntityUpdatedDomainEvent<TEntity>
+            {
+                Previous = previous,
+                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }),
+                EventContext = _domainEventContextProvider?.GetContext()
+            };
+
+            return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, transaction, cancellationToken);
+
         }
 
         private Task PublishAddedDomainEventAsync(TEntity entity,
@@ -220,7 +228,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = entity, EventContext = _domainEventContextProvider?.GetContext() };
             return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, entityTransaction, cancellationToken);
-
         }
     }
 }

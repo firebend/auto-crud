@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
@@ -12,13 +11,14 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         where TEntity : IEntity<TKey>
         where TViewWrapper : IMultipleEntityViewModel<TView>
     {
-        public Func<TViewWrapper, TView, TEntity> Func { get; set; }
+        private readonly Func<TViewWrapper, TView, TEntity> _func;
+
+        public FunctionCreateMultipleViewModelMapper(Func<TViewWrapper, TView, TEntity> func)
+        {
+            _func = func;
+        }
 
         public Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken = default)
-        {
-            using var _ = AutoCrudDelegatePool.GetPooledFunction(Func, viewModel, out var func);
-            var entity = func(wrapper);
-            return Task.FromResult(entity);
-        }
+            => Task.FromResult(_func(wrapper, viewModel));
     }
 }

@@ -37,29 +37,32 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 throw new ArgumentNullException(nameof(searchRequest));
             }
 
-            var query = await _queryClient
+            var (query, context) = await _queryClient
                 .GetQueryableAsync(true, cancellationToken)
                 .ConfigureAwait(false);
 
-            query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
-
-            var filter = GetSearchExpression(searchRequest);
-
-            if (filter != null)
+            using (context)
             {
-                query = query.Where(filter);
+                query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
+
+                var filter = GetSearchExpression(searchRequest);
+
+                if (filter != null)
+                {
+                    query = query.Where(filter);
+                }
+
+                if (_searchHandler != null)
+                {
+                    query = _searchHandler.HandleSearch(query, searchRequest);
+                }
+
+                var paged = await _queryClient
+                    .GetPagedResponseAsync(query, searchRequest, true, cancellationToken)
+                    .ConfigureAwait(false);
+
+                return paged;
             }
-
-            if (_searchHandler != null)
-            {
-                query = _searchHandler.HandleSearch(query, searchRequest);
-            }
-
-            var paged = await _queryClient
-                .GetPagedResponseAsync(query, searchRequest, true, cancellationToken)
-                .ConfigureAwait(false);
-
-            return paged;
         }
     }
 }

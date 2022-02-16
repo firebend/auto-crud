@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
         {
             var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 
-            _logger.LogDebug("Creating database. DbName: {DbName}. DataSource: {DataSource}", dbName, connBuilder.DataSource);
+            AbstractDbCreatorLogger.CreatingDb(_logger, dbName, connBuilder.DataSource);
 
             var cString = connBuilder.ConnectionString;
             await using var conn = new SqlConnection(cString);
@@ -29,7 +29,8 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
             command.CommandText = GetSqlCommand(dbName);
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.LogDebug("Database is created. DbName: {DbName}. DataSource: {DataSource}", dbName, connBuilder.DataSource);
+            AbstractDbCreatorLogger.CreatingDb(_logger, dbName, connBuilder.DataSource);
+
             connBuilder = null;
         }
 

@@ -4,7 +4,7 @@ namespace Firebend.AutoCrud.Core.Implementations
 {
     public class BaseDisposable : IDisposable
     {
-        private bool _disposed;
+        protected bool Disposed { get; private set; }
 
         ~BaseDisposable()
         {
@@ -29,7 +29,7 @@ namespace Firebend.AutoCrud.Core.Implementations
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed)
+            if (Disposed)
             {
                 return;
             }
@@ -41,7 +41,7 @@ namespace Firebend.AutoCrud.Core.Implementations
 
             DisposeUnmanagedObjectsAndAssignNull();
 
-            _disposed = true;
+            Disposed = true;
         }
     }
 }

@@ -24,12 +24,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
         {
             var fullCollectionName = $"{configuration.DatabaseName}.{configuration.CollectionName}";
 
-            _logger.LogDebug("Configuring collection for {Collection}", fullCollectionName);
-
+            BaseMongoConfigureCollectionLogger.ConfiguringCollection(_logger, fullCollectionName);
             await _indexClient.CreateCollectionAsync(configuration, cancellationToken).ConfigureAwait(false);
 
-            _logger.LogDebug("Configuring indexes for {Collection}", fullCollectionName);
-
+            BaseMongoConfigureCollectionLogger.ConfiguringIndexes(_logger, fullCollectionName);
             await _indexClient.BuildIndexesAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
     }

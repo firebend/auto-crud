@@ -6,37 +6,37 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 {
     public abstract class BaseObjectMapper
     {
+        private const string ObjectMapperConst = "ObjectMapper";
 
         protected abstract string MapTypes(Type source, Type target, params string[] propertiesToIgnore);
-        public abstract void Copy(object source, object target, params string[] propertiesToIgnore);
+
+        public abstract void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null);
 
         /// <summary>
-        /// This virtual function finds matching properties between given objects. It depends on their names, readability, and writability.
+        ///     This virtual function finds matching properties between given objects. It depends on their names, readability, and writability.
         /// </summary>
         /// <param name="sourceType">The source object's type</param>
         /// <param name="targetType">The target object's type</param>
         /// <returns>Returns a list of PropertyMap.</returns>
-        protected virtual IEnumerable<PropertyMap> GetMatchingProperties
-            (Type sourceType, Type targetType)
+        protected virtual IEnumerable<PropertyMap> GetMatchingProperties(Type sourceType, Type targetType)
         {
             var sourceProperties = sourceType.GetProperties();
             var targetProperties = targetType.GetProperties();
 
-            var properties = (from s in sourceProperties
-                              from t in targetProperties
-                              where s.Name == t.Name &&
-                                    s.CanRead &&
-                                    t.CanWrite
-                              select new PropertyMap
-                              {
-                                  SourceProperty = s,
-                                  TargetProperty = t
-                              }).ToList();
+            var properties = sourceProperties.Join(
+                targetProperties,
+                x => x.Name,
+                x => x.Name,
+                (source, target) => new PropertyMap { SourceProperty = source, TargetProperty = target })
+                .Where(x => x.SourceProperty.CanRead)
+                .Where(x => x.TargetProperty.CanWrite)
+                .ToArray();
+
             return properties;
         }
 
         /// <summary>
-        /// This virtual function builds a key to identify the converter method. It uses object names and combines them with defined pattern.
+        ///     This virtual function builds a key to identify the converter method. It uses object names and combines them with defined pattern.
         /// </summary>
         /// <param name="sourceType">The source object type</param>
         /// <param name="targetType">The target object type</param>
@@ -44,33 +44,12 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <exception cref="Exception">If there is no FullName property on sent objects, an exception will throw</exception>
         protected virtual string GetMapKey(Type sourceType, Type targetType, params string[] propertiesToIgnore)
         {
-            var keyName = "Copy_";
-
-            if (sourceType.FullName != null)
+            if (propertiesToIgnore is null || propertiesToIgnore.Length <= 0)
             {
-                keyName += sourceType.FullName.Replace(".", "_").Replace("+", "_");
-                keyName += "_";
-            }
-            else
-            {
-                throw new Exception();
+                return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}";
             }
 
-            if (targetType.FullName != null)
-            {
-                keyName += targetType.FullName.Replace(".", "_").Replace("+", "_");
-            }
-            else
-            {
-                throw new Exception();
-            }
-
-            if (propertiesToIgnore != null)
-            {
-                keyName = propertiesToIgnore.Aggregate(keyName, (current, t) => current + $"_{t}");
-            }
-
-            return keyName;
+            return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}_{string.Join('_', propertiesToIgnore)}";
         }
     }
 }

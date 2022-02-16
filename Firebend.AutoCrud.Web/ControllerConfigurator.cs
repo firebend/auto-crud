@@ -342,7 +342,7 @@ namespace Firebend.AutoCrud.Web
                 return;
             }
 
-            using var _ = new AsyncDuplicateLock().Lock(ControllerConfiguratorCache.Lock);
+            using var _ = AsyncDuplicateLock.Lock(ControllerConfiguratorCache.Lock);
             {
                 if (ControllerConfiguratorCache.IsSwaggerApplied)
                 {
@@ -1709,10 +1709,7 @@ namespace Firebend.AutoCrud.Web
             CreateMultipleViewModelType = typeof(TView);
             CreateMultipleViewModelWrapperType = typeof(TViewWrapper);
 
-            var instance = new FunctionCreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>
-            {
-                Func = mapperFunc
-            };
+            var instance = new FunctionCreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>(mapperFunc);
 
             Builder.WithRegistrationInstance<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>>(instance);
 

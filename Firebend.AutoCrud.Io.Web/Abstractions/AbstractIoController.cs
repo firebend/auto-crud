@@ -55,13 +55,13 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            if (searchRequest.PageNumber.HasValue && searchRequest.PageNumber <= 0)
+            if (searchRequest.PageNumber is <= 0)
             {
                 ModelState.AddModelError(nameof(searchRequest.PageNumber), $"{nameof(searchRequest.PageNumber)} must be greater than zero.");
                 return GetInvalidModelStateResult();
             }
 
-            if (searchRequest.PageSize.HasValue && searchRequest.PageSize <= 0)
+            if (searchRequest.PageSize is <= 0)
             {
                 ModelState.AddModelError(nameof(searchRequest.PageSize), $"{nameof(searchRequest.PageSize)} must be greater than zero.");
                 return GetInvalidModelStateResult();
@@ -81,7 +81,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
 
             var entityExportType = exportType.ParseEnum<EntityFileType>();
 
-            if (!entityExportType.HasValue || entityExportType.Value == EntityFileType.Unknown)
+            if (entityExportType is null or EntityFileType.Unknown)
             {
                 ModelState.AddModelError(nameof(exportType), $"{nameof(exportType)} is invalid");
                 return GetInvalidModelStateResult();

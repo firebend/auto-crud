@@ -64,7 +64,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
             => CreateInternalAsync(entity, entityTransaction, cancellationToken);
 
-        private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+        protected virtual Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
         {
             if (_eventPublisher == null || _eventPublisher is DefaultEntityDomainEventPublisher)
             {

@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Searching
                 return query;
             }
 
-            if (!searchRequest.Search.Contains("%"))
+            if (!searchRequest.Search.Contains('%'))
             {
                 searchRequest.Search = $"%{searchRequest.Search}%";
             }

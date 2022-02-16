@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
 {
@@ -20,7 +21,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         private readonly IEntitySearchHandler<TKey, TEntity, TSearch> _searchHandler;
 
         protected EntityFrameworkEntitySearchService(IEntityFrameworkQueryClient<TKey, TEntity> searchClient,
-            IEntitySearchHandler<TKey, TEntity, TSearch> searchHandler)
+            IEntitySearchHandler<TKey, TEntity, TSearch> searchHandler = null)
         {
             _searchClient = searchClient;
             _searchHandler = searchHandler;
@@ -46,28 +47,30 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-
-            var query = await _searchClient
+            var (query, context) = await _searchClient
                 .GetQueryableAsync(true, entityTransaction, cancellationToken)
                 .ConfigureAwait(false);
 
-            var expression = GetSearchExpression(request);
-
-            if (expression != null)
+            await using (context)
             {
-                query = query.Where(expression);
+                var expression = GetSearchExpression(request);
+
+                if (expression != null)
+                {
+                    query = query.Where(expression);
+                }
+
+                if (_searchHandler != null)
+                {
+                    query = _searchHandler.HandleSearch(query, request);
+                }
+
+                var paged = await _searchClient
+                    .GetPagedResponseAsync(query, request, true, cancellationToken)
+                    .ConfigureAwait(false);
+
+                return paged;
             }
-
-            if (_searchHandler != null)
-            {
-                query = _searchHandler.HandleSearch(query, request);
-            }
-
-            var paged = await _searchClient
-                .GetPagedResponseAsync(query, request, true, cancellationToken)
-                .ConfigureAwait(false);
-
-            return paged;
         }
 
         protected override void DisposeManagedObjects() => _searchClient?.Dispose();

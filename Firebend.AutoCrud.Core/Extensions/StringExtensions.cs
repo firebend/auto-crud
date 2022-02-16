@@ -42,5 +42,19 @@ namespace Firebend.AutoCrud.Core.Extensions
         }
 
         public static string SafeTrim(this string source) => string.IsNullOrEmpty(source) ? source : source.Trim();
+
+        public static string FirstCharToLower(this string str)
+        {
+            if (char.IsLower(str[0]))
+            {
+                return str;
+            }
+
+            return string.Create(str.Length, str, (output, input) =>
+            {
+                input.CopyTo(output);
+                output[0] = char.ToLowerInvariant(input[0]);
+            });
+        }
     }
 }

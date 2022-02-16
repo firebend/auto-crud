@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -25,8 +25,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
             ("Transparent Network IP Resolution", "TransparentNetworkIPResolution"),
             ("Trust Server Certificate", "TrustServerCertificate")
         };
-
-        public static readonly ConcurrentDictionary<string, Task<string>> ConnectionStringCaches = new();
     }
 
     public abstract class AbstractShardDbContextConnectionStringProvider<TKey, TEntity> : IDbContextConnectionStringProvider<TKey, TEntity>
@@ -37,17 +35,20 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
         private readonly IShardManager _shardManager;
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
         private readonly IShardNameProvider _shardNameProvider;
+        private readonly IMemoizer<string> _memoizer;
 
         protected AbstractShardDbContextConnectionStringProvider(
             IShardManager shardManager,
             IShardKeyProvider shardKeyProvider,
             IShardNameProvider shardNameProvider,
-            ShardMapMangerConfiguration shardMapMangerConfiguration)
+            ShardMapMangerConfiguration shardMapMangerConfiguration,
+            IMemoizer<string> memoizer)
         {
             _shardManager = shardManager;
             _shardKeyProvider = shardKeyProvider;
             _shardNameProvider = shardNameProvider;
             _shardMapMangerConfiguration = shardMapMangerConfiguration;
+            _memoizer = memoizer;
         }
 
         private static string NormalizeToLegacyConnectionString(string connectionString)
@@ -67,31 +68,42 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
                 throw new Exception("Shard key is null");
             }
 
-            return await ShardDbContextProviderCaches.ConnectionStringCaches.GetOrAdd(shardKey, async key =>
-            {
-                var shard = await _shardManager
-                    .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
-                    .ConfigureAwait(false);
+            var memoizeKey = $"{shardKey}.Sharding.Enrollment";
 
-                var keyBytes = Encoding.ASCII.GetBytes(key);
+            var connectionString = await _memoizer.MemoizeAsync<
+                (AbstractShardDbContextConnectionStringProvider<TKey, TEntity> self, string shardKey, CancellationToken cancellationToken)>(
+                memoizeKey,
+                static arg => arg.self.GetShardConnectionStringAsync(arg.shardKey, arg.cancellationToken),
+                (this, shardKey, cancellationToken),
+                cancellationToken);
 
-                var rootConnectionStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString);
-                rootConnectionStringBuilder.Remove("Data Source");
-                rootConnectionStringBuilder.Remove("Initial Catalog");
+            return connectionString;
+        }
 
-                var shardConnectionString = NormalizeToLegacyConnectionString(rootConnectionStringBuilder.ConnectionString);
+        private async Task<string> GetShardConnectionStringAsync(string key, CancellationToken cancellationToken)
+        {
+            var shard = await _shardManager
+                .RegisterShardAsync(_shardNameProvider?.GetShardName(key), key, cancellationToken)
+                .ConfigureAwait(false);
 
-                await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
-                    .ConfigureAwait(false);
+            var keyBytes = Encoding.ASCII.GetBytes(key);
 
-                var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString) { Password = rootConnectionStringBuilder.Password };
+            var rootConnectionStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString);
+            rootConnectionStringBuilder.Remove("Data Source");
+            rootConnectionStringBuilder.Remove("Initial Catalog");
 
-                var connectionString = connectionStringBuilder.ConnectionString;
-                connectionStringBuilder = null;
-                rootConnectionStringBuilder = null;
+            var shardConnectionString = NormalizeToLegacyConnectionString(rootConnectionStringBuilder.ConnectionString);
 
-                return connectionString;
-            });
+            await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
+                .ConfigureAwait(false);
+
+            var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString) { Password = rootConnectionStringBuilder.Password };
+
+            var connectionString = connectionStringBuilder.ConnectionString;
+            connectionStringBuilder = null;
+            rootConnectionStringBuilder = null;
+
+            return connectionString;
         }
     }
 }

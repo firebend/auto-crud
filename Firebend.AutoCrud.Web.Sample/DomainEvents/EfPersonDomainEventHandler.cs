@@ -11,9 +11,25 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 {
-    public class EfPersonDomainEventHandler : BaseDisposable, IEntityAddedDomainEventSubscriber<EfPerson>,
+    public partial class EfPersonDomainEventHandler : BaseDisposable, IEntityAddedDomainEventSubscriber<EfPerson>,
         IEntityUpdatedDomainEventSubscriber<EfPerson>
     {
+        [LoggerMessage(EventId = 0, Message = "Person Added! Person: {modifiedJson}. Context: {contextJson}", Level = LogLevel.Debug)]
+        public static partial void LogPersonAdded(ILogger logger, string modifiedJson, string contextJson);
+
+        [LoggerMessage(EventId = 2, Message = "Catch Phrase: {catchPhrase}", Level = LogLevel.Debug)]
+        public static partial void LogCatchPhrase(ILogger logger, string catchPhrase);
+
+        [LoggerMessage(EventId = 3, Message = "Catch Phrase From Scope: {catchPhrase}", Level = LogLevel.Debug)]
+        public static partial void LogCatchPhraseFromScope(ILogger logger, string catchPhrase);
+
+        [LoggerMessage(EventId = 4, Message = "No Scope Context", Level = LogLevel.Debug)]
+        public static partial void LogNoScopeContext(ILogger logger);
+
+        [LoggerMessage(EventId = 5, Message = "Person Updated! Original: {originalJson}. Modified: {modifiedJson}. Context: {contextJson}",
+            Level = LogLevel.Debug)]
+        public static partial void LogPersonUpdated(ILogger logger, string originalJson, string modifiedJson, string contextJson);
+
         private readonly ILogger _logger;
         private readonly ScopedConsumeContextProvider _scoped;
 
@@ -30,16 +46,16 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
             var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
 
-            _logger.LogInformation("Person Added! Person: {ModifiedJson}. Context: {ContextJson}", modifiedJson, contextJson);
-            _logger.LogInformation("Catch Phrase: {CatchPhrase}", domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
+            LogPersonAdded(_logger, modifiedJson, contextJson);
+            LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
 
             if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityAddedDomainEvent<EfPerson>> consumeContext))
             {
-                _logger.LogInformation("From Scope. {CatchPhrase}", consumeContext?.Message?.EventContext?.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
+                LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
             }
             else
             {
-                _logger.LogInformation("No scope context");
+                LogNoScopeContext(_logger);
             }
 
             return Task.CompletedTask;
@@ -53,17 +69,17 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
             var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
 
-            _logger.LogInformation("Person Updated! Original: {OriginalJson}. Modified: {ModifiedJson}. Context: {ContextJson}", originalJson, modifiedJson, contextJson);
+            LogPersonUpdated(_logger, originalJson, modifiedJson, contextJson);
 
-            _logger.LogInformation("Catch Phrase: {CatchPhrase}", domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
+            LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
 
             if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityAddedDomainEvent<EfPerson>> consumeContext))
             {
-                _logger.LogInformation("From Scope. {CatchPhrase}", consumeContext?.Message?.EventContext?.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
+                LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
             }
             else
             {
-                _logger.LogInformation("No scope context");
+                LogNoScopeContext(_logger);
             }
 
             return Task.CompletedTask;

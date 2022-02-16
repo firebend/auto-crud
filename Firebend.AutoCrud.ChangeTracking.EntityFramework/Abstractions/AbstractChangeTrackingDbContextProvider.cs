@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -10,6 +9,7 @@ using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -17,11 +17,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
-    internal static class ChangeTrackingCaches
-    {
-        public static readonly ConcurrentDictionary<string, Task<bool>> InitCaches = new();
-    }
-
     public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> :
         IChangeTrackingDbContextProvider<TEntityKey, TEntity>
         where TEntity : class, IEntity<TEntityKey>
@@ -31,14 +26,17 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
         private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
         private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
+        private readonly IMemoizer<bool> _memoizer;
 
         protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
             IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
-            IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
+            IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider,
+            IMemoizer<bool> memoizer)
         {
             _optionsProvider = optionsProvider;
             _connectionStringProvider = connectionStringProvider;
             _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
+            _memoizer = memoizer;
         }
 
         public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
@@ -67,41 +65,52 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         {
             var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options, _changeTrackingOptionsProvider);
 
-            await ChangeTrackingCaches.InitCaches.GetOrAdd(typeof(TEntity).FullName ?? string.Empty, async _ =>
-                {
-                    var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>));
+            var key = $"{typeof(TEntity).FullName}.Changes";
 
-                    if (type is null)
-                    {
-                        throw new Exception("Could not find entity type.");
-                    }
-
-                    var schema = type.GetSchema().Coalesce("dbo");
-                    var table = type.GetTableName();
-                    var fullTableName = $"[{schema}].[{table}]";
-
-                    if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
-                    {
-                        var exists = await DoesTableExist(context, schema, table, cancellationToken);
-
-                        if (!exists)
-                        {
-                            await dbCreator
-                                .CreateTablesAsync(cancellationToken)
-                                .ConfigureAwait(false);
-                        }
-                    }
-
-                    if (_changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false)
-                    {
-                        await AddMigrationFieldsAsync(context, fullTableName, cancellationToken);
-                    }
-
-                    return true;
-                })
-                .ConfigureAwait(false);
+            await _memoizer.MemoizeAsync<(
+                AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> self,
+                ChangeTrackingDbContext<TEntityKey, TEntity> context,
+                CancellationToken cancellationToken
+                )>(
+                key,
+                static arg => arg.self.ScaffoldAsync(arg.context, arg.cancellationToken),
+                (this, context, cancellationToken),
+                cancellationToken);
 
             return context;
+        }
+
+        private async Task<bool> ScaffoldAsync(ChangeTrackingDbContext<TEntityKey, TEntity> context, CancellationToken cancellationToken)
+        {
+            var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>));
+
+            if (type is null)
+            {
+                throw new Exception("Could not find entity type.");
+            }
+
+            var schema = type.GetSchema().Coalesce("dbo");
+            var table = type.GetTableName();
+            var fullTableName = $"[{schema}].[{table}]";
+
+            if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
+            {
+                var exists = await DoesTableExist(context, schema, table, cancellationToken);
+
+                if (!exists)
+                {
+                    await dbCreator
+                        .CreateTablesAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
+
+            if (_changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false)
+            {
+                await AddMigrationFieldsAsync(context, fullTableName, cancellationToken);
+            }
+
+            return true;
         }
 
         private static async Task AddMigrationFieldsAsync(DbContext context,

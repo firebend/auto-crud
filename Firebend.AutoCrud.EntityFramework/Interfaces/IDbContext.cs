@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 namespace Firebend.AutoCrud.EntityFramework.Interfaces
 {
 
-    public interface IDbContext : IDisposable
+    public interface IDbContext : IDisposable, IAsyncDisposable
     {
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

@@ -2,105 +2,124 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Io.Implementations;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Abstractions
 {
-    public abstract class AbstractCsvHelperFileWriter : IEntityFileWriter
+    public abstract class AbstractCsvHelperFileWriter : BaseDisposable, IEntityFileWriter
     {
+        private bool _disposed;
+
         public abstract EntityFileType FileType { get; }
 
-        public async Task<byte[]> WriteRecordsAsync<T>(IEnumerable<IFileFieldWrite<T>> fields,
+        private IWriter _writer;
+        private TextWriter _textWriter;
+        private Stream _stream;
+
+        public async Task<Stream> WriteRecordsAsync<T>(IFileFieldWrite<T>[] fields,
             IEnumerable<T> records,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
             where T : class
         {
-            var stream = AutoCrudPooledStream.GetStream("AutoCrudPooledStreamExport");
-
-            var fieldArray = fields
-                .OrderBy(x => x.FieldIndex)
-                .ToArray();
-
-            TextWriter textWriter = null;
+            _stream = new MemoryStream();
 
             if (FileType == EntityFileType.Csv)
             {
-                textWriter = new StreamWriter(stream);
+                _textWriter = new StreamWriter(_stream, null, -1, true);
             }
 
-            IWriter writer = FileType == EntityFileType.Csv ?
-                new CsvWriter(textWriter, GetCsvConfiguration())
-                : new SpreadsheetWriter(stream, "Export", GetCsvConfiguration());
+            _writer = FileType == EntityFileType.Csv
+                ? new CsvWriter(_textWriter, GetCsvConfiguration())
+                : new SpreadsheetWriter(_stream, "Export", GetCsvConfiguration());
 
-            foreach (var fileField in fieldArray)
+            WriteHeader(fields);
+
+            await WriteRows(fields, records);
+
+            if (_textWriter != null)
             {
-                writer.WriteField(fileField.FieldName);
+                await _textWriter.FlushAsync().ConfigureAwait(false);
             }
 
-            await writer.NextRecordAsync().ConfigureAwait(false);
-
-            foreach (var record in records)
-            {
-                foreach (var field in fieldArray)
-                {
-                    var value = field.Writer(record);
-                    writer.WriteField(value);
-                }
-
-                await writer.NextRecordAsync().ConfigureAwait(false);
-            }
-
-            if (textWriter != null)
-            {
-                await textWriter.FlushAsync().ConfigureAwait(false);
-            }
-
-            if (writer is SpreadsheetWriter excelWriter)
+            if (_writer is SpreadsheetWriter excelWriter)
             {
                 excelWriter.SetWidths();
                 excelWriter.SaveWorkbook();
             }
 
-            stream.Seek(0, SeekOrigin.Begin);
+            _stream.Seek(0, SeekOrigin.Begin);
 
-            var bytes = stream.ToArray();
-
-            await DisposeAll(writer, textWriter, stream);
-
-            return bytes;
+            return _stream;
         }
 
-        private static async Task DisposeAll(params IAsyncDisposable[] disposables)
+        private async Task WriteRows<T>(IFileFieldWrite<T>[] fields, IEnumerable<T> records)
+            where T : class
         {
-            foreach (var disposable in disposables)
+            await _writer.NextRecordAsync().ConfigureAwait(false);
+
+            using var recordEnumerator = records.GetEnumerator();
+
+            while (recordEnumerator.MoveNext())
             {
-                if (disposable == null)
+                foreach (var fileFieldWrite in fields)
                 {
-                    continue;
+                    _writer.WriteField(fileFieldWrite.Writer(recordEnumerator.Current));
                 }
 
-                try
-                {
-                    await disposable.DisposeAsync();
-                }
-                catch
-                {
-                    // ignored
-                }
+                await _writer.NextRecordAsync().ConfigureAwait(false);
+            }
+        }
+
+        private void WriteHeader<T>(IFileFieldWrite<T>[] fields)
+            where T : class
+        {
+            foreach (var t in fields)
+            {
+                _writer.WriteField(t.FieldName);
             }
         }
 
         private static CsvConfiguration GetCsvConfiguration() => new(CultureInfo.InvariantCulture)
         {
             IgnoreBlankLines = true,
-            LeaveOpen = true
+            LeaveOpen = true,
         };
+
+        protected override void DisposeManagedObjects()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            try
+            {
+                _writer?.Dispose();
+            }
+            catch
+            {
+                Console.WriteLine("Writer ex");
+                // ignored
+            }
+
+            try
+            {
+                _textWriter?.Dispose();
+            }
+            catch
+            {
+                Console.WriteLine("Text Writer ex");
+                // ignored
+            }
+
+            _disposed = true;
+        }
     }
 }

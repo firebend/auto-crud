@@ -2,6 +2,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework
 {
@@ -21,10 +22,15 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
         public virtual void Configure(EntityTypeBuilder<TEfModel> builder)
         {
             builder.ToTable(_tableName, _schema);
+            builder.Property(x => x.Id).HasAnnotation(SqlServerAnnotationNames.Clustered, false);
+
             builder.Property(x => x.Key).IsRequired().HasMaxLength(250);
             builder.Property(x => x.Value).IsRequired().HasMaxLength(250);
-            builder.HasOne(x => x.Entity).WithMany(nameof(ICustomFieldsEntity<TKey>.CustomFields));
             builder.HasIndex(x => x.EntityId).IsClustered();
+
+            builder.HasOne(x => x.Entity)
+                .WithMany(nameof(ICustomFieldsEntity<TKey>.CustomFields))
+                .HasForeignKey(x => x.EntityId);
         }
     }
 }

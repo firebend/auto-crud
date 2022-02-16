@@ -63,9 +63,15 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string OtherEmail { get; set; }
     }
 
-    public class GetPersonViewModel : PersonViewModelBase, IEntity<Guid>
+    public class GetPersonViewModel : PersonViewModelBase, IEntity<Guid>, ICustomFieldsEntity<Guid>
     {
+        private static readonly string[] Ignores = { nameof(CustomFields) };
         public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
+
+        public GetPersonViewModel()
+        {
+
+        }
 
         public GetPersonViewModel(EfPerson entity)
         {
@@ -74,9 +80,23 @@ namespace Firebend.AutoCrud.Web.Sample.Models
                 return;
             }
 
-            entity.CopyPropertiesTo(this, nameof(CustomFields));
+            // this.CustomFields = entity.CustomFields;
+            // this.FirstName = entity.FirstName;
+            // this.NickName = entity.NickName;
+            // this.Id = entity.Id;
+            // this.CreatedDate = entity.CreatedDate;
+            // this.ModifiedDate = entity.ModifiedDate;
+            // this.IsDeleted = entity.IsDeleted;
+            // this.OtherEmail = entity.OtherEmail;
+
+            entity.CopyPropertiesTo(this, Ignores);
 
             CustomFields = entity.CustomFields?.Select(x => new CustomFieldsEntity<Guid>(x)).ToList();
+        }
+
+        public GetPersonViewModel(MongoTenantPerson entity)
+        {
+            entity?.CopyPropertiesTo(this);
         }
 
         public Guid Id { get; set; }

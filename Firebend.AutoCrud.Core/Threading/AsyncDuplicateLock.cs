@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Firebend.AutoCrud.Core.Threading
 {
-    public sealed class AsyncDuplicateLock
+    public static class AsyncDuplicateLock
     {
         private static readonly Dictionary<object, RefCounted<SemaphoreSlim>> SemaphoreSlims = new();
 
@@ -29,14 +29,14 @@ namespace Firebend.AutoCrud.Core.Threading
             return item.Value;
         }
 
-        public IDisposable Lock(object key)
+        public static IDisposable Lock(object key)
         {
             GetOrCreate(key).Wait();
 
             return new Releaser { Key = key };
         }
 
-        public async Task<IDisposable> LockAsync(object key, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
+        public static async Task<IDisposable> LockAsync(object key, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
         {
             var didGetLock = await GetOrCreate(key)
                 .WaitAsync((int)(timeout?.TotalMilliseconds ?? -1), cancellationToken)

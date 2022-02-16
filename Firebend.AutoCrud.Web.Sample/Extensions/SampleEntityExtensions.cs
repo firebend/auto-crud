@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
@@ -16,6 +19,7 @@ using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Mongo.Models;
+using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
@@ -57,7 +61,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     )
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
-                        //.WithViewModel(entity => new PersonViewModel(entity), viewModel => new MongoPerson(viewModel))
+                        .WithReadViewModel(x => new GetPersonViewModel(x))
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
@@ -124,7 +128,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddControllers(controllers => controllers
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
-                        .WithReadViewModel(entity => new GetPersonViewModel(entity))
+                        .WithReadViewModel<GetPersonViewModel, PersonViewModelMapper>()
+                        //.WithReadViewModel(entity => new GetPersonViewModel(entity))
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, viewModel) => new EfPerson(viewModel))
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Sql People")
@@ -179,5 +184,16 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithIoControllers()
                         .WithCustomFieldsControllers()
                     ));
+    }
+
+    public class PersonViewModelMapper : IReadViewModelMapper<Guid, EfPerson, GetPersonViewModel>
+    {
+        public Task<EfPerson> FromAsync(GetPersonViewModel model, CancellationToken cancellationToken = default) => null;
+
+        public Task<IEnumerable<EfPerson>> FromAsync(IEnumerable<GetPersonViewModel> model, CancellationToken cancellationToken = default) => null;
+
+        public Task<GetPersonViewModel> ToAsync(EfPerson entity, CancellationToken cancellationToken = default) => Task.FromResult(new GetPersonViewModel(entity));
+
+        public Task<IEnumerable<GetPersonViewModel>> ToAsync(IEnumerable<EfPerson> entity, CancellationToken cancellationToken = default) => Task.FromResult(entity.Select(x => new GetPersonViewModel(x)));
     }
 }

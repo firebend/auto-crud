@@ -354,6 +354,6 @@ MigrationBackup/
 
 # Rider
 .idea/
-.idea/*
+.idea/httprequests
 
 dist/

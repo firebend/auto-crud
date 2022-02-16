@@ -26,7 +26,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             ServiceCollection = serviceCollection;
         }
 
-        protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(new DynamicClassGenerator(), serviceCollection)
+        protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(DynamicClassGenerator.Instance, serviceCollection)
         {
         }
 
@@ -67,6 +67,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 Generate(ServiceCollection, builder);
                 builderStopwatch.Stop();
                 Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {builderStopwatch.ElapsedMilliseconds} (ms)");
+                builder.Dispose();
             }
 
             stopwatch.Stop();
@@ -155,16 +156,15 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             foreach (var (key, value) in ordered)
             {
-                var typeToImplement = value;
                 var interfaceImplementations = extraInterfaces.FindAll(x =>
-                    x.IsAssignableFrom(typeToImplement) && x.Name == $"I{typeToImplement.Name}");
+                    x.IsAssignableFrom(value) && x.Name == $"I{value.Name}");
 
-                if (!key.IsAssignableFrom(typeToImplement))
+                if (!key.IsAssignableFrom(value))
                 {
-                    throw new InvalidCastException($"Cannot use {typeToImplement.Name} to implement {key.Name}");
+                    throw new InvalidCastException($"Cannot use {value.Name} to implement {key.Name}");
                 }
 
-                var signature = $"{signatureBase}_{typeToImplement.Name}";
+                var signature = $"{signatureBase}_{value.Name}";
 
                 if (key.IsInterface)
                 {
@@ -177,11 +177,11 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 try
                 {
                     var implementedType = _classGenerator.GenerateDynamicClass(
-                        typeToImplement,
+                        value,
                         signature,
                         implementedTypes,
                         interfaceImplementations.ToArray(),
-                        GetAttributes(typeToImplement, builder.Attributes));
+                        GetAttributes(value, builder.Attributes));
 
 
                     interfaceImplementations.ForEach(iFace => serviceCollection.AddScoped(iFace, implementedType));
@@ -289,21 +289,20 @@ namespace Firebend.AutoCrud.Generator.Implementations
             {
                 foreach (var reg in regs.ToArray())
                 {
-                    var value = reg.ServiceType;
 
-                    if (!key.IsAssignableFrom(value))
+                    if (!key.IsAssignableFrom(reg.ServiceType))
                     {
-                        var args = value.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+                        var args = reg.ServiceType.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
                         var args2 = key.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
 
                         var argsStr = args.Length > 0 ? args.ToString(0, args.Length - 1) : string.Empty;
                         var args2Str = args2.Length > 0 ? args2.ToString(0, args2.Length - 1) : string.Empty;
 
-                        throw new InvalidCastException($"Cannot use custom configuration {value.Name} to implement {key.Name}. {argsStr} {args2Str}");
+                        throw new InvalidCastException($"Cannot use custom configuration {reg.ServiceType.Name} to implement {key.Name}. {argsStr} {args2Str}");
                     }
 
-                    var implementedInterfaces = value.GetInterfaces();
-                    var matchingInterface = implementedInterfaces.FirstOrDefault(x => x.Name == $"I{value.Name}");
+                    var implementedInterfaces = reg.ServiceType.GetInterfaces();
+                    var matchingInterface = implementedInterfaces.FirstOrDefault(x => x.Name == $"I{reg.ServiceType.Name}");
 
                     if (matchingInterface != null)
                     {

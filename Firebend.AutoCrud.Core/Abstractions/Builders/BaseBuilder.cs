@@ -4,14 +4,15 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
-    public abstract class BaseBuilder
+    public abstract class BaseBuilder : BaseDisposable
     {
-        private readonly object _lock = new();
+        private static readonly object Lock = new();
 
         public bool IsBuilt { get; private set; }
 
@@ -30,7 +31,12 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 return;
             }
 
-            lock (_lock)
+            if (Disposed)
+            {
+                throw new ObjectDisposedException("Auto crud builder is disposed");
+            }
+
+            lock (Lock)
             {
                 if (IsBuilt)
                 {
@@ -170,7 +176,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 {
                     var args = type
                         .GenericTypeArguments
-                        .Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+                        .Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(','));
 
                     argsString = args.ToString(0, args.Length - 1);
 
@@ -179,5 +185,17 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             }
         }
         public void EnsureRegistered<TRegistration>() => EnsureRegistered(typeof(TRegistration));
+
+        protected override void DisposeManagedObjects()
+        {
+            Registrations?.Clear();
+            Registrations = null;
+
+            Attributes?.Clear();
+            Attributes = null;
+
+            ServiceCollectionHooks?.Clear();
+            ServiceCollectionHooks = null;
+        }
     }
 }

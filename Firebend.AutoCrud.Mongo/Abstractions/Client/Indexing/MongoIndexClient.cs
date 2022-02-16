@@ -19,6 +19,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
     {
         private readonly IDistributedLockService _distributedLockService;
         private readonly IMongoIndexProvider<TEntity> _indexProvider;
+        private readonly IMemoizer<bool> _memoizer;
         private readonly IMongoIndexMergeService _mongoIndexMergeService;
 
         public MongoIndexClient(IMongoClient client,
@@ -27,11 +28,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             IMongoIndexProvider<TEntity> indexProvider,
             IMongoRetryService retryService,
             IDistributedLockService distributedLockService,
-            IMongoIndexMergeService mongoIndexMergeService) : base(client, logger, entityConfiguration, retryService)
+            IMongoIndexMergeService mongoIndexMergeService,
+            IMemoizer<bool> memoizer) : base(client, logger, entityConfiguration, retryService)
         {
             _indexProvider = indexProvider;
             _distributedLockService = distributedLockService;
             _mongoIndexMergeService = mongoIndexMergeService;
+            _memoizer = memoizer;
         }
 
         public Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
@@ -75,37 +78,25 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 }
             }), cancellationToken);
 
-        private async Task CheckConfiguredAsync(string configurationKey,
+        private Task CheckConfiguredAsync(string configurationKey,
             Func<Task> configure,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken) => _memoizer.MemoizeAsync<(
+            MongoIndexClient<TKey, TEntity> self,
+            string key,
+            Func<Task> configure,
+            CancellationToken cancellationToken)>(configurationKey, static async arg =>
         {
-            if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out var configured))
-            {
-                if (configured)
-                {
-                    return;
-                }
-            }
-
-            var locker = await _distributedLockService
-                .LockAsync(configurationKey, cancellationToken)
+            var locker = await arg.self._distributedLockService
+                .LockAsync(arg.key, arg.cancellationToken)
                 .ConfigureAwait(false);
 
             using (locker)
             {
-                if (MongoIndexClientConfigurations.Configurations.TryGetValue(configurationKey, out configured))
-                {
-                    if (configured)
-                    {
-                        return;
-                    }
-                }
-
-                await configure().ConfigureAwait(false);
-
-                MongoIndexClientConfigurations.Configurations[configurationKey] = true;
+                await arg.configure().ConfigureAwait(false);
             }
-        }
+
+            return true;
+        }, (this, configurationKey, configure, cancellationToken), cancellationToken);
 
         protected override Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken) =>
             Task.FromResult(Enumerable.Empty<Expression<Func<TEntity, bool>>>());

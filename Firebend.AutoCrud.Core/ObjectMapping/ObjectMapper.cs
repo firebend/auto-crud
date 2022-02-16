@@ -1,10 +1,14 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection.Emit;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
 {
+    internal static class ObjectMapperCache
+    {
+        public static readonly ConcurrentDictionary<(Type source, Type target, string[] ignores), DynamicMethod> MapperCache = new();
+    }
     /// <summary>
     /// This mapper class finds the matching properties and copies them from source object to target object. The copy function has IL codes to do this task.
     /// </summary>
@@ -13,14 +17,11 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <summary>
         /// Easy access to mapper functions
         /// </summary>
-        public static ObjectMapper Instance { get; protected set; } = new ObjectMapper();
+        public static ObjectMapper Instance { get; } = new();
 
-        private ObjectMapper() { }
-
-        /// <summary>
-        /// This dictionary keeps the convert functions for objects by auto generated names
-        /// </summary>
-        private readonly Dictionary<string, DynamicMethod> _del = new Dictionary<string, DynamicMethod>();
+        private ObjectMapper()
+        {
+        }
 
         /// <summary>
         /// This function creates the mappings between objects and store the mappings in the private dictionary
@@ -32,12 +33,11 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         protected override string MapTypes(Type source, Type target, params string[] propertiesToIgnore)
         {
             var key = GetMapKey(source, target, propertiesToIgnore);
+            return key;
+        }
 
-            if (_del.ContainsKey(key))
-            {
-                return key;
-            }
-
+        private DynamicMethod DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore)
+        {
             var args = new[] { source, target };
 
             var dm = new DynamicMethod(key, null, args);
@@ -46,7 +46,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 
             foreach (var map in maps)
             {
-                if (propertiesToIgnore.Contains(map.SourceProperty.Name))
+                if (propertiesToIgnore?.Contains(map.SourceProperty.Name) ?? false)
                 {
                     continue;
                 }
@@ -57,9 +57,8 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 il.EmitCall(OpCodes.Callvirt, map.TargetProperty.GetSetMethod() ?? throw new InvalidOperationException(), null);
             }
             il.Emit(OpCodes.Ret);
-            _del.Add(key, dm);
 
-            return key;
+            return dm;
         }
 
         /// <summary>
@@ -67,17 +66,26 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// </summary>
         /// <param name="source">The original object that keeps the actual values/properties</param>
         /// <param name="target">The object that will get the related values from the given object</param>
-        /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process</param>
-        public override void Copy(object source, object target, params string[] propertiesToIgnore)
+        /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process.
+        /// It is best practice to have this as a static variable at all possible. Doing so will reduce
+        /// memory allocations.
+        /// </param>
+        public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null)
         {
-            var sourceType = source.GetType();
-            var targetType = target.GetType();
+            var sourceType = typeof(TSource);
+            var targetType = typeof(TTarget);
 
-            var key = this.MapTypes(sourceType, targetType, propertiesToIgnore);
+            var dynamicMethod = ObjectMapperCache.MapperCache.GetOrAdd(
+                (sourceType, targetType, propertiesToIgnore), static (dictKey, self) =>
+            {
+                var (source, target, ignores) = dictKey;
+                var key = self.MapTypes(source, target, ignores);
+                return self.DynamicMethodFactory(key, source, target, ignores);
+            }, this);
 
-            var del = _del[key];
-            var args = new[] { source, target };
-            del.Invoke(null, args);
+            var args = new object[] { source, target };
+
+            dynamicMethod.Invoke(null, args);
         }
     }
 }

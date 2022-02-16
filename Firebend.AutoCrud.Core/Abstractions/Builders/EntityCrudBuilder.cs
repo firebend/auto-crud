@@ -26,22 +26,12 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
         protected EntityCrudBuilder()
         {
-            if (IsActiveEntity && IsModifiedEntity)
+            SearchRequestType = IsActiveEntity switch
             {
-                SearchRequestType = typeof(ActiveModifiedEntitySearchRequest);
-            }
-            else if (IsActiveEntity)
-            {
-                SearchRequestType = typeof(ActiveEntitySearchRequest);
-            }
-            else if (IsModifiedEntity)
-            {
-                SearchRequestType = typeof(ModifiedEntitySearchRequest);
-            }
-            else
-            {
-                SearchRequestType = typeof(EntitySearchRequest);
-            }
+                true when IsModifiedEntity => typeof(ActiveModifiedEntitySearchRequest),
+                true => typeof(ActiveEntitySearchRequest),
+                _ => IsModifiedEntity ? typeof(ModifiedEntitySearchRequest) : typeof(EntitySearchRequest)
+            };
 
             WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
             WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);

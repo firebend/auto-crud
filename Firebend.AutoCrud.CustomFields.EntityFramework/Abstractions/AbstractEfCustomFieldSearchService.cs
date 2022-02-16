@@ -39,40 +39,44 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
-            var query = await _queryClient
+            var (query, context) = await _queryClient
                 .GetQueryableAsync(true, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (!string.IsNullOrWhiteSpace(key))
+            using (context)
             {
-                query = query.Where(x => x.Key == key);
+
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    query = query.Where(x => x.Key == key);
+                }
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    query = query.Where(x => x.Value.Contains(value));
+                }
+
+                var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
+
+                query = query.OrderBy(x => x.Key);
+
+                if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
+                {
+                    query = query
+                        .Skip((pageNumber.Value - 1) * pageSize.Value)
+                        .Take(pageSize.Value);
+                }
+
+                var records = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+
+                return new EntityPagedResponse<CustomFieldsEntity<TKey>>
+                {
+                    Data = records.Select(x => x.ToCustomFields()).ToList(),
+                    CurrentPage = pageNumber,
+                    TotalRecords = count,
+                    CurrentPageSize = pageSize
+                };
             }
-
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                query = query.Where(x => x.Value.Contains(value));
-            }
-
-            var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
-
-            query = query.OrderBy(x => x.Key);
-
-            if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
-            {
-                query = query
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value);
-            }
-
-            var records = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
-
-            return new EntityPagedResponse<CustomFieldsEntity<TKey>>
-            {
-                Data = records.Select(x => x.ToCustomFields()).ToList(),
-                CurrentPage = pageNumber,
-                TotalRecords = count,
-                CurrentPageSize = pageSize
-            };
         }
 
         protected override void DisposeManagedObjects()

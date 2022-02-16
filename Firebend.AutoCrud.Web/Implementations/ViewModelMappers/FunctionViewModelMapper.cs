@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Pooling;
 using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
@@ -16,8 +15,8 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
-        private readonly Func<TEntity, TViewModel> _to;
-        private readonly Func<TViewModel, TEntity> _from;
+        private static Func<TEntity, TViewModel> _to;
+        private static Func<TViewModel, TEntity> _from;
 
         public FunctionViewModelMapper()
         {
@@ -41,28 +40,10 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         }
 
         private TEntity ToEntity(TViewModel model)
-        {
-            if (_from == null)
-            {
-                return null;
-            }
-
-            using var _ = AutoCrudDelegatePool.GetPooledFunction(_from, model, out var func);
-            var entity = func();
-            return entity;
-        }
+            => _from?.Invoke(model);
 
         private TViewModel ToViewModel(TEntity entity)
-        {
-            if (_to == null)
-            {
-                return null;
-            }
-
-            using var _ = AutoCrudDelegatePool.GetPooledFunction(_to, entity, out var func);
-            var vm = func();
-            return vm;
-        }
+            => _to?.Invoke(entity);
 
         public Task<TEntity> FromAsync(TViewModel model, CancellationToken cancellationToken = default)
             => Task.FromResult(ToEntity(model));

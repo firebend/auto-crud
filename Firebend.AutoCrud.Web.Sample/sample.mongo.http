@@ -31,7 +31,7 @@ Content-Type: application/json
     ]
 }
 ###
-PATCH https://localhost:5001/api/v1/mongo-person/443adfbc-71c4-4bef-b7d7-e7425dd27eed
+PATCH https://localhost:5001/api/v1/mongo-person/3f3378a2-5956-4388-9e7a-8909f4f70a4f
 Content-Type: application/json
 
 [
@@ -60,7 +60,7 @@ Content-Type: application/json
     }
 ]
 ###
-DELETE https://localhost:5001/api/v1/mongo-person/f8ed4843-dcd9-42df-8028-3a4e4af66416
+DELETE https://localhost:5001/api/v1/mongo-person/62022a5d-4a52-43ab-84eb-db31a290ad17
 
 ###
 https://localhost:5001/api/v1/mongo-person/f8ed4843-dcd9-42df-8028-3a4e4af66416
@@ -77,7 +77,7 @@ https://localhost:5001/api/v1/mongo-person?nickName=todd&pageSize=10&pageNumber=
 ###
 https://localhost:5001/api/v1/mongo-person?pageSize=10&pageNumber=1
 ###
-http://localhost:5000/api/v1/mongo-person/443adfbc-71c4-4bef-b7d7-e7425dd27eed/changes?PageNumber=1&pageSize=20
+http://localhost:5000/api/v1/mongo-person/62022a5d-4a52-43ab-84eb-db31a290ad17/changes?PageNumber=1&pageSize=20
 
 ###
 https://localhost:5001/api/v1/mongo-person/export/csv/?fileName=test&search=Simon&pageSize=10&pageNumber=1
@@ -98,37 +98,42 @@ Content-Type: application/json
     }
 ]
 ###
-POST http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/
+POST http://localhost:5000/api/v1/mongo-person/a6b178c0-8e5a-402a-aa0e-5128f5dd749c/custom-fields/
 Content-Type: application/json
 
 {
     "key" : "shirt size",
-    "value": "xlarge"
+    "value": "lil-baby"
 }
 
 ###
-PUT http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/6544756d-b782-4b57-a88f-7f03b61c0423
+PUT http://localhost:5000/api/v1/mongo-person/a6b178c0-8e5a-402a-aa0e-5128f5dd749c/custom-fields/17ee079d-8bbb-4ca9-b9b9-d5b42f73baa9
 Content-Type: application/json
 
 {
     "key" : "shirt size",
-    "value": "xx large"
+    "value": "put again"
 }
 
 ###
-PATCH http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/6544756d-b782-4b57-a88f-7f03b61c0423
+PATCH http://localhost:5000/api/v1/mongo-person/a6b178c0-8e5a-402a-aa0e-5128f5dd749c/custom-fields/17ee079d-8bbb-4ca9-b9b9-d5b42f73baa9
 Content-Type: application/json
 
 [
  {
   "op": "replace",
   "path": "/value",
-  "value": "xxl patch"
- }
+  "value": "666666"
+ },
+    {
+        "op": "replace",
+        "path": "/key",
+        "value": "7777777"
+    }
 ]
 
 ###
-DELETE http://localhost:5000/api/v1/mongo-person/38d3301a-ce8c-4dc3-8efd-a6f29e5bca31/custom-fields/6544756d-b782-4b57-a88f-7f03b61c0423
+DELETE http://localhost:5000/api/v1/mongo-person/a6b178c0-8e5a-402a-aa0e-5128f5dd749c/custom-fields/17ee079d-8bbb-4ca9-b9b9-d5b42f73baa9
 Content-Type: application/json
 
 ###

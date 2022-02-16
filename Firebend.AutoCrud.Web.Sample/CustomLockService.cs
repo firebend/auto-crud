@@ -7,8 +7,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Web.Sample
 {
-    public class CustomLockService : IDistributedLockService
+    public partial class CustomLockService : IDistributedLockService
     {
+        [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = "I'm locking 'er up {key}")]
+        public static partial void LogMessage(ILogger logger, string key);
+
         private readonly ILogger _logger;
         private readonly DistributedLockService _locker;
 
@@ -20,7 +23,7 @@ namespace Firebend.AutoCrud.Web.Sample
 
         public Task<IDisposable> LockAsync(string key, CancellationToken cancellationToken)
         {
-            _logger.LogDebug("I'm locking er up {Key}", key);
+            LogMessage(_logger, key);
             return _locker.LockAsync(key, cancellationToken);
         }
     }

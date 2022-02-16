@@ -10,6 +10,14 @@ namespace Firebend.AutoCrud.Generator.Implementations
 {
     public class DynamicClassGenerator : IDynamicClassGenerator
     {
+        private static DynamicClassGenerator _instance;
+        public static DynamicClassGenerator Instance => _instance ??= new DynamicClassGenerator();
+
+        protected DynamicClassGenerator()
+        {
+
+        }
+
         public Type GenerateDynamicClass(Type classType,
             string typeSignature,
             List<Type> implementedTypes,

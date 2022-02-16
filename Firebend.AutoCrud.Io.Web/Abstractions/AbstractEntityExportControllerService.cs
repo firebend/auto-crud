@@ -54,14 +54,14 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
 
             var records = MapRecords(entities);
 
-            var fileContents = await _exportService
+            var fileStream = await _exportService
                 .ExportAsync(fileType, records, cancellationToken)
                 .ConfigureAwait(false);
 
             var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
             var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
 
-            var fileResult = new FileContentResult(fileContents, mimeType) { FileDownloadName = $"{fileName}{extension}" };
+            var fileResult = new FileStreamResult(fileStream, mimeType) { FileDownloadName = $"{fileName}{extension}" };
 
             return fileResult;
         }
@@ -70,7 +70,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         {
             if (data == null)
             {
-                return new TMapped[0];
+                return Array.Empty<TMapped>();
             }
 
             var mappedRecords = data
@@ -80,6 +80,10 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
             return mappedRecords;
         }
 
-        protected override void DisposeManagedObjects() => _searchService?.Dispose();
+        protected override void DisposeManagedObjects()
+        {
+            _searchService?.Dispose();
+            _exportService?.Dispose();
+        }
     }
 }

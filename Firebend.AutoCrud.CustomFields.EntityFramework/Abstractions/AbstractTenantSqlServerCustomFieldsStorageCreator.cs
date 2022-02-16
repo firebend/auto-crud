@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -18,8 +19,9 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 
         protected AbstractTenantSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityTableCreator tableCreator,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider)
-            : base(contextProvider, tableCreator)
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+            IMemoizer<bool> memoizer)
+            : base(contextProvider, tableCreator, memoizer)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }
