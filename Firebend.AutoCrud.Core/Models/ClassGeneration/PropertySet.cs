@@ -12,9 +12,4 @@ namespace Firebend.AutoCrud.Core.Models.ClassGeneration
 
         public bool Override { get; set; }
     }
-
-    public class PropertySet<T> : PropertySet
-    {
-        public override Type Type => typeof(T);
-    }
 }

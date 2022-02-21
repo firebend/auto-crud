@@ -52,7 +52,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
                 await _memoizer.MemoizeAsync<
                     (DbContextProvider<TKey, TEntity, TContext> self, DbContext dbContext, CancellationToken cancellationToken)>(
-                    $"{contextType.FullName}.Init",
+                    $"{contextType.FullName}.Init.{options.GetHashCode()}",
                     static arg => arg.self.InitContextAsync(arg.dbContext, arg.cancellationToken),
                     (this, dbContext, cancellationToken),
                     cancellationToken);
