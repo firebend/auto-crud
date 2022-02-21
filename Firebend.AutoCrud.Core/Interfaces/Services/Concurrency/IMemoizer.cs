@@ -19,9 +19,6 @@ public interface IMemoizer<T>
     ///     The factory to create the result.
     /// </param>
     /// <param name="cancellationToken"></param>
-    /// <typeparam name="T">
-    ///     The result type.
-    /// </typeparam>
     /// <returns>
     ///     A result of a function that should have only ran once.
     /// </returns>
@@ -42,9 +39,6 @@ public interface IMemoizer<T>
     ///     The argument to pass to the factory.
     /// </param>
     /// <param name="cancellationToken"></param>
-    /// <typeparam name="T">
-    ///     The result type.
-    /// </typeparam>
     /// <typeparam name="TArg">
     ///     The type of argument to pass to the factory.
     /// </typeparam>
