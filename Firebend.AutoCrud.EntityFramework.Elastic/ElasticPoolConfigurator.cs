@@ -1,9 +1,12 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
+using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic
 {
@@ -23,11 +26,20 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic
                 throw new ArgumentNullException(nameof(shardConfiguration));
             }
 
+            if (Builder.DbContextType is null)
+            {
+                throw new Exception("Please specify a Db Context before configuring an elastic pool");
+            }
+
             Builder.WithRegistrationInstance(shardConfiguration);
             Builder.WithRegistration<IShardManager, AbstractShardManager>();
             Builder.WithConnectionStringProvider<AbstractShardDbContextConnectionStringProvider<TKey, TEntity>>();
 
             WithDbCreator<AbstractDefaultDbCreator>();
+
+            var t = typeof(AbstractElasticDbContextProvider<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.DbContextType);
+
+            Builder.WithRegistration<IDbContextProvider<TKey, TEntity>>(t);
 
             return this;
         }
