@@ -100,7 +100,7 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
 
         if ((result.CustomFields?.Count ?? 0) <= 0)
         {
-            patch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>>{ customField });
+            patch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>> { customField });
         }
         else
         {
