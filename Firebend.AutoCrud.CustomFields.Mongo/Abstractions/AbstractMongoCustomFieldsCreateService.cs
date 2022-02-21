@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,9 +65,6 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
         var mongoCollection = GetCollection();
         var updateDefinition = Builders<TEntity>.Update.Push(x => x.CustomFields, customField);
 
-        var patch = new JsonPatchDocument<TEntity>();
-        patch.Add(x => x.CustomFields, customField);
-
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))
         {
             updateDefinition = Builders<TEntity>.Update.Combine(updateDefinition,
@@ -96,6 +94,17 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
         if (result is null)
         {
             return null;
+        }
+
+        var patch = new JsonPatchDocument<TEntity>();
+
+        if (result.CustomFields?.Count <= 0)
+        {
+            patch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>>{ customField });
+        }
+        else
+        {
+            patch.Add(x => x.CustomFields, customField);
         }
 
         await PublishUpdatedDomainEventAsync(result, patch, entityTransaction, cancellationToken);
