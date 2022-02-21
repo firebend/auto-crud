@@ -105,7 +105,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
 
         var patch = new JsonPatchDocument<TEntity>();
 
-        if (result.CustomFields?.Count <= 0)
+        if ((result.CustomFields?.Count ?? 0) <= 0)
         {
             patch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>>{ customField });
         }
