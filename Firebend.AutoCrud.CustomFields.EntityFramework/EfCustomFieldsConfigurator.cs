@@ -77,7 +77,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
         }
 
         /// <summary>
-        /// Configures custom fields for this entity. Use this variation of <see cref="AddCustomFields"/> when
+        /// Configures custom fields for this entity. Use this variation of AddCustomFields when
         /// each custom field record should have the tenant key associated to it.
         /// </summary>
         /// <param name="configure">

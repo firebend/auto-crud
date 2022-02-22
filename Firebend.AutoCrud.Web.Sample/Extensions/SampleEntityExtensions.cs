@@ -46,7 +46,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         {
                             PersistCustomContext = true
                         })
-                        .WithMassTransit())
+                        .WithMassTransit()
+                        .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
+                        .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
                         {

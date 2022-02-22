@@ -15,10 +15,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
     public static class DbContextProviderCaches<TContext>
         where TContext : DbContext
     {
-        public static readonly ConcurrentDictionary<DbContextOptions<TContext>, PooledDbContextFactory<TContext>> Factories = new();
+        public static readonly ConcurrentDictionary<string, PooledDbContextFactory<TContext>> Factories = new();
     }
 
-    public abstract class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
+    public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
         where TContext : DbContext, IDbContext
@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly IDbContextOptionsProvider<TKey, TEntity> _optionsProvider;
         private readonly IMemoizer<bool> _memoizer;
 
-        protected DbContextProvider(IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider,
+        protected AbstractDbContextProvider(IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider,
             IDbContextOptionsProvider<TKey, TEntity> optionsProvider,
             ILoggerFactory loggerFactory,
             IMemoizer<bool> memoizer)
@@ -36,23 +36,24 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _connectionStringProvider = connectionStringProvider;
             _optionsProvider = optionsProvider;
             _memoizer = memoizer;
-            _logger = loggerFactory.CreateLogger<DbContextProvider<TKey, TEntity, TContext>>();
+            _logger = loggerFactory.CreateLogger<AbstractDbContextProvider<TKey, TEntity, TContext>>();
         }
 
         private async Task<IDbContext> CreateContextAsync(DbContextOptions<TContext> options, CancellationToken cancellationToken)
         {
+            var dbContextType = typeof(TContext);
             var factory = DbContextProviderCaches<TContext>.Factories
-                .GetOrAdd(options, contextOptions => new PooledDbContextFactory<TContext>(contextOptions));
+                .GetOrAdd(GetPooledKey(dbContextType),
+                    static (_, opts) => new PooledDbContextFactory<TContext>(opts),
+                    options);
 
             var context = await factory.CreateDbContextAsync(cancellationToken);
 
             if (context is DbContext dbContext)
             {
-                var contextType = typeof(TContext);
-
                 await _memoizer.MemoizeAsync<
-                    (DbContextProvider<TKey, TEntity, TContext> self, DbContext dbContext, CancellationToken cancellationToken)>(
-                    $"{contextType.FullName}.Init",
+                    (AbstractDbContextProvider<TKey, TEntity, TContext> self, DbContext dbContext, CancellationToken cancellationToken)>(
+                    GetMemoizeKey(dbContextType),
                     static arg => arg.self.InitContextAsync(arg.dbContext, arg.cancellationToken),
                     (this, dbContext, cancellationToken),
                     cancellationToken);
@@ -105,5 +106,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             return context;
         }
+
+        protected virtual string GetMemoizeKey(Type dbContextType) => $"{dbContextType.FullName}.Init";
+
+        protected virtual string GetPooledKey(Type dbContextType) => $"{dbContextType.FullName}.Pooled";
     }
 }
