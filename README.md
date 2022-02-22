@@ -170,71 +170,91 @@ namespace AutoCrudSampleApi
 
 Finally, open `Program.cs`; you should see some code resembling the following
 ```csharp
-public static IHostBuilder CreateHostBuilder(string[] args) =>
-   Host.CreateDefaultBuilder(args)
-       .ConfigureWebHostDefaults(webBuilder =>
-       {
-           webBuilder.UseStartup<Startup>();
-       });
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
 ```
 
 Add the following `using` directives
 ```csharp
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Searching;
+using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Web;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 ```
 
-And modify `CreateHostBuilder` to match this
+And add the DB context object to the IOC container
 ```csharp
 
-public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
-    .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
-    .ConfigureServices((hostContext, services) =>
+builder.Services.AddDbContext<AppDbContext>(
+    options => { options.UseSqlServer(builder.Configuration.GetConnectionString("AppSettingsSqlConnection")); },
+    ServiceLifetime.Singleton);
+
+```
+
+Register the AutoCrud configuration for the WeatherForecast entity
+```csharp
+builder.Services.UsingEfCrud(ef =>
     {
-        services
-            .AddDbContext<AppDbContext>(
-                options => { options.UseSqlServer(hostContext.Configuration.GetConnectionString("AppSettingsSqlConnnection")); },
-                ServiceLifetime.Singleton
-            )
-            .UsingEfCrud(ef =>
-            {
-                ef.AddEntity<Guid, WeatherForecast>(forecast =>
-                    forecast.WithDbContext<AppDbContext>()
-                        .WithConnectionString(hostContext.Configuration.GetConnectionString("AppSettingsSqlConnnection"))
-                        .WithDbOptionsProvider(
-                            (s => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(s).Options),
-                            connection =>
-                                new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connection).Options)
-                        .AddCrud(crud =>
-                            crud.WithCrud()
-                                .WithSearchHandler<EntitySearchRequest>((forecasts, request) =>
-                                    {
-                                        if (!string.IsNullOrWhiteSpace(request?.Search))
-                                            forecasts = forecasts.Where(wf =>
-                                                wf.Summary.ToUpper()
-                                                    .Contains(request.Search.ToUpper()));
+        ef.AddEntity<Guid, WeatherForecast>(forecast =>
+            forecast.WithDbContext<AppDbContext>()
+                .WithConnectionString(builder.Configuration.GetConnectionString("AppSettingsSqlConnection"))
+                .WithDbOptionsProvider<AppDbContextOptionsProvider<Guid, WeatherForecast>>()
+                .AddCrud(crud =>
+                    crud.WithCrud()
+                        .WithSearchHandler<EntitySearchRequest>((forecasts, request) =>
+                            {
+                                if (!string.IsNullOrWhiteSpace(request?.Search))
+                                    forecasts = forecasts.Where(wf =>
+                                        wf.Summary!.ToUpper()
+                                            .Contains(request.Search.ToUpper()));
 
-                                        return forecasts;
-                                    }
-                                )
-                        .AddControllers(c => c
-                            .WithAllControllers(true)
-                            .WithOpenApiGroupName("WeatherForecasts"))
-                        .WithRegistration<IEntityReadService<Guid, WeatherForecast>, ForecastReadRepository>()
-                );
-            })
-            .AddRouting()
-            .AddSwaggerGen()
-            .AddControllers()
-            .AddFirebendAutoCrudWeb(services);
+                                return forecasts;
+                            }
+                        ))
+                    .AddControllers(c => c
+                        .WithAllControllers(true)
+                        .WithOpenApiGroupName("WeatherForecasts"))
+                .WithRegistration<IEntityReadService<Guid, WeatherForecast>, ForecastReadRepository>()
+        );
+    }
+);
+```
 
-        // this prevents having to wrap POST bodies with `entity`
-        // like `{ "entity": { "key": "value" } }`
-        services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
-    });
+An example of `DB Context Options Provider`
+```csharp
+public class AppDbContextOptionsProvider<TKey, TEntity> : IDbContextOptionsProvider<TKey, TEntity>
+    where TKey : struct
+    where TEntity : IEntity<TKey>
+{
+    public DbContextOptions<TContext> GetDbContextOptions<TContext>(string connectionString)
+        where TContext : DbContext => new DbContextOptionsBuilder<TContext>().UseSqlServer(connectionString).AddFirebendFunctions().Options;
 
+    public DbContextOptions<TContext> GetDbContextOptions<TContext>(DbConnection connection)
+        where TContext : DbContext => new DbContextOptionsBuilder<TContext>().UseSqlServer(connection).AddFirebendFunctions().Options;
+}
+```
+
+In the `Program.cs` file, we need to register the AutoCrud controllers as below;
+```csharp
+builder.Services.AddControllers().AddFirebendAutoCrudWeb(builder.Services);
 ```
 
 Now, we need to create and apply some migrations. From the command line, run
