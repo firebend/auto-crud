@@ -19,7 +19,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
     {
         private readonly IDistributedLockService _distributedLockService;
         private readonly IMongoIndexProvider<TEntity> _indexProvider;
-        private readonly IMemoizer<bool> _memoizer;
         private readonly IMongoIndexMergeService _mongoIndexMergeService;
 
         public MongoIndexClient(IMongoClient client,
@@ -28,75 +27,62 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             IMongoIndexProvider<TEntity> indexProvider,
             IMongoRetryService retryService,
             IDistributedLockService distributedLockService,
-            IMongoIndexMergeService mongoIndexMergeService,
-            IMemoizer<bool> memoizer) : base(client, logger, entityConfiguration, retryService)
+            IMongoIndexMergeService mongoIndexMergeService) : base(client, logger, entityConfiguration, retryService)
         {
             _indexProvider = indexProvider;
             _distributedLockService = distributedLockService;
             _mongoIndexMergeService = mongoIndexMergeService;
-            _memoizer = memoizer;
         }
 
-        public Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
-            => CheckConfiguredAsync($"{configuration.DatabaseName}.{configuration.CollectionName}.Indexes",
-                async () =>
-                {
-                    var builder = Builders<TEntity>.IndexKeys;
-                    var indexesToAdd = _indexProvider.GetIndexes(builder)?.ToArray();
-                    var hasIndexesToAdd = indexesToAdd?.Any() ?? false;
-
-                    if (!hasIndexesToAdd)
-                    {
-                        return;
-                    }
-
-                    var dbCollection = GetCollection(configuration);
-
-                    await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
-                }, cancellationToken);
-
-        public Task CreateCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
-            => CheckConfiguredAsync($"{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection", () => RetryErrorAsync(async () =>
-            {
-                var database = Client.GetDatabase(configuration.DatabaseName);
-
-                var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };
-
-                var collectionNames = await database
-                    .ListCollectionNamesAsync(options, cancellationToken)
-                    .ConfigureAwait(false);
-
-                var collectionExists = await collectionNames
-                    .AnyAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (!collectionExists)
-                {
-                    await database
-                        .CreateCollectionAsync(configuration.CollectionName, null, cancellationToken)
-                        .ConfigureAwait(false);
-                }
-            }), cancellationToken);
-
-        private Task CheckConfiguredAsync(string configurationKey,
-            Func<Task> configure,
-            CancellationToken cancellationToken) => _memoizer.MemoizeAsync<(
-            MongoIndexClient<TKey, TEntity> self,
-            string key,
-            Func<Task> configure,
-            CancellationToken cancellationToken)>(configurationKey, static async arg =>
+        public async Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
         {
-            var locker = await arg.self._distributedLockService
-                .LockAsync(arg.key, arg.cancellationToken)
+            var key = $"{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
+
+            using var _ = await _distributedLockService
+                .LockAsync(key, cancellationToken)
                 .ConfigureAwait(false);
 
-            using (locker)
+            var builder = Builders<TEntity>.IndexKeys;
+            var indexesToAdd = _indexProvider.GetIndexes(builder)?.ToArray();
+            var hasIndexesToAdd = indexesToAdd?.Any() ?? false;
+
+            if (!hasIndexesToAdd)
             {
-                await arg.configure().ConfigureAwait(false);
+                return;
             }
 
-            return true;
-        }, (this, configurationKey, configure, cancellationToken), cancellationToken);
+            var dbCollection = GetCollection(configuration);
+
+            await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
+        }
+
+        public async Task CreateCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+        {
+            var key = $"{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection";
+
+            using var _ = await _distributedLockService
+                .LockAsync(key, cancellationToken)
+                .ConfigureAwait(false);
+
+            var database = Client.GetDatabase(configuration.DatabaseName);
+
+            var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };
+
+            var collectionNames = await database
+                .ListCollectionNamesAsync(options, cancellationToken)
+                .ConfigureAwait(false);
+
+            var collectionExists = await collectionNames
+                .AnyAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!collectionExists)
+            {
+                await database
+                    .CreateCollectionAsync(configuration.CollectionName, null, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
 
         protected override Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken) =>
             Task.FromResult(Enumerable.Empty<Expression<Func<TEntity, bool>>>());
