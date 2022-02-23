@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 
-namespace Firebend.AutoCrud.Web.Sample.Definitions;
+namespace Firebend.AutoCrud.Web.Implementations.Authorization;
 
 public static class Operations // todo: we might want to name it in a more specific way?!
 {

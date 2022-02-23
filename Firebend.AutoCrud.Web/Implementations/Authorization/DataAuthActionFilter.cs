@@ -1,14 +1,13 @@
 using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Web.Sample.Definitions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Firebend.AutoCrud.Web.Sample.ActionFilters;
+namespace Firebend.AutoCrud.Web.Implementations.Authorization;
 
 public class DataAuthActionFilter : IAsyncActionFilter
 {
