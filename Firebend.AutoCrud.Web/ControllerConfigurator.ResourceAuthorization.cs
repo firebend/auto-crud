@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
+using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web;
@@ -50,10 +51,10 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateResourceAuthorization(
-        IEnumerable<IAuthorizationRequirement> requirements)
+        IEnumerable<IAuthorizationRequirement> requirements = null)
         => AddResourceAuthorization(typeof(AbstractEntityCreateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType),
-            typeof(AbstractEntityCreateAuthorizationFilter<TKey, TEntity>), requirements);
+            typeof(AbstractEntityCreateAuthorizationFilter<TKey, TEntity>), requirements ?? new []{ new CreateAuthorizationRequirement() });
 
     /// <summary>
     /// Adds resource authorization to DELETE requests using the abstract delete controller
@@ -71,10 +72,10 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteResourceAuthorization(
-        IEnumerable<IAuthorizationRequirement> requirements)
+        IEnumerable<IAuthorizationRequirement> requirements = null)
         => AddResourceAuthorization(typeof(AbstractEntityDeleteController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityDeleteAuthorizationFilter<TKey, TEntity>), requirements);
+            typeof(AbstractEntityDeleteAuthorizationFilter<TKey, TEntity>), requirements ?? new []{ new DeleteAuthorizationRequirement() });
 
     /// <summary>
     /// Adds resource authorization to GET requests using the abstract read controller
@@ -92,10 +93,10 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadResourceAuthorization(
-        IEnumerable<IAuthorizationRequirement> requirements)
+        IEnumerable<IAuthorizationRequirement> requirements = null)
         => AddResourceAuthorization(typeof(AbstractEntityReadController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityReadAuthorizationFilter<TKey, TEntity>), requirements);
+            typeof(AbstractEntityReadAuthorizationFilter<TKey, TEntity>), requirements ?? new []{ new ReadAuthorizationRequirement() });
 
     /// <summary>
     /// Adds resource authorization to GET `/all` requests using the abstract read all controller
@@ -113,10 +114,10 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllResourceAuthorization(
-        IEnumerable<IAuthorizationRequirement> requirements)
+        IEnumerable<IAuthorizationRequirement> requirements = null)
         => AddResourceAuthorization(typeof(AbstractEntityReadAllController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityReadAllAuthorizationFilter<TKey, TEntity>), requirements);
+            typeof(AbstractEntityReadAllAuthorizationFilter<TKey, TEntity>), requirements ?? new []{ new ReadAllAuthorizationRequirement() });
 
     /// <summary>
     /// Adds resource authorization to PUT requests using the abstract update controller
@@ -134,10 +135,10 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateResourceAuthorization(
-        IEnumerable<IAuthorizationRequirement> requirements)
+        IEnumerable<IAuthorizationRequirement> requirements = null)
         => AddResourceAuthorization(typeof(AbstractEntityUpdateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType, UpdateViewModelType),
-            typeof(AbstractEntityUpdateAuthorizationFilter<TKey, TEntity>), requirements);
+            typeof(AbstractEntityUpdateAuthorizationFilter<TKey, TEntity>), requirements ?? new []{ new UpdateAuthorizationRequirement() });
 
     /// <summary>
     /// Adds resource authorization to all requests that modify an entity (Create, Update, and Delete) and use the abstract controllers
@@ -155,9 +156,9 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterResourceAuthorization(
-        IEnumerable<IAuthorizationRequirement> requirements)
+        IEnumerable<IAuthorizationRequirement> requirements = null)
     {
-        var authorizationRequirements = requirements as IAuthorizationRequirement[] ?? requirements.ToArray();
+        var authorizationRequirements = requirements as IAuthorizationRequirement[] ?? requirements?.ToArray();
         AddCreateResourceAuthorization(authorizationRequirements);
         AddDeleteResourceAuthorization(authorizationRequirements);
         AddUpdateResourceAuthorization(authorizationRequirements);
@@ -181,9 +182,9 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddQueryResourceAuthorization(
-        IEnumerable<IAuthorizationRequirement> requirements)
+        IEnumerable<IAuthorizationRequirement> requirements = null)
     {
-        var authorizationRequirements = requirements as IAuthorizationRequirement[] ?? requirements.ToArray();
+        var authorizationRequirements = requirements as IAuthorizationRequirement[] ?? requirements?.ToArray();
         AddReadResourceAuthorization(authorizationRequirements);
         AddReadAllResourceAuthorization(authorizationRequirements);
 
