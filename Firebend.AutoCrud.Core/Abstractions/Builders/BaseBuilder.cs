@@ -151,7 +151,6 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             {
                 Attributes.Add(registrationType, new List<CrudBuilderAttributeModel> { model });
             }
-
             return this;
         }
 
