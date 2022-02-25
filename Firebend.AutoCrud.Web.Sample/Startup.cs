@@ -70,7 +70,7 @@ namespace Firebend.AutoCrud.Web.Sample
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ReadAll", policy => policy.Requirements.Add(new CreateAuthorizationRequirement()));
+                options.AddPolicy("ReadAll", policy => policy.Requirements.Add(new ReadAllAuthorizationRequirement()));
             });
             services.AddSingleton<IAuthorizationHandler, CreateAuthorizationHandler>();
         }

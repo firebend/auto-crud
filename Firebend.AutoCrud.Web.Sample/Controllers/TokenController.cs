@@ -10,11 +10,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Firebend.AutoCrud.Web.Sample.Controllers;
 
-[Route("api/token")]
+    [Route("api/token")]
     [ApiController]
     public class TokenController : ControllerBase
     {
-        public IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
         public TokenController(IConfiguration config)
         {
