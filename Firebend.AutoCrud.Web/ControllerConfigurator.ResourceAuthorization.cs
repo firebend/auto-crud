@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
+using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 
 namespace Firebend.AutoCrud.Web;
 
@@ -53,7 +54,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateResourceAuthorization(
-        string policy = "")
+        string policy = CreateAuthorizationRequirement.DefaultPolicy)
         => AddResourceAuthorization(typeof(AbstractEntityCreateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType),
             typeof(AbstractEntityCreateAuthorizationFilter), policy,
@@ -75,7 +76,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteResourceAuthorization(
-        string policy = "")
+        string policy = DeleteAuthorizationRequirement.DefaultPolicy)
         => AddResourceAuthorization(typeof(AbstractEntityDeleteController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
             typeof(AbstractEntityDeleteAuthorizationFilter<TKey, TEntity>), policy);
@@ -96,7 +97,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadResourceAuthorization(
-        string policy = "")
+        string policy = ReadAuthorizationRequirement.DefaultPolicy)
         => AddResourceAuthorization(typeof(AbstractEntityReadController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
             typeof(AbstractEntityReadAuthorizationFilter), policy);
@@ -117,7 +118,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllResourceAuthorization(
-        string policy = "")
+        string policy = ReadAllAuthorizationRequirement.DefaultPolicy)
         => AddResourceAuthorization(typeof(AbstractEntityReadAllController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
             typeof(AbstractEntityReadAllAuthorizationFilter), policy);
@@ -138,7 +139,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateResourceAuthorization(
-        string policy = "") =>
+        string policy = UpdateAuthorizationRequirement.DefaultPolicy) =>
         AddResourceAuthorization(typeof(AbstractEntityUpdateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType),
             typeof(AbstractEntityUpdateAuthorizationFilter<TKey, TEntity>), policy,
@@ -160,7 +161,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterResourceAuthorization(
-        string policy = "")
+        string policy)
     {
         AddCreateResourceAuthorization(policy);
         AddDeleteResourceAuthorization(policy);
@@ -185,10 +186,60 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddQueryResourceAuthorization(
-        string policy = "")
+        string policy)
     {
         AddReadResourceAuthorization(policy);
         AddReadAllResourceAuthorization(policy);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Add all resource authorization to all controllers
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .AddResourceAuthorization("Policy")
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> AddResourceAuthorization(string policy)
+    {
+        AddCreateResourceAuthorization(policy);
+        AddDeleteResourceAuthorization(policy);
+        AddUpdateResourceAuthorization(policy);
+        AddReadResourceAuthorization(policy);
+        AddReadAllResourceAuthorization(policy);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Add all resource authorization to all controllers
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .AddResourceAuthorization()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> AddResourceAuthorization()
+    {
+        AddCreateResourceAuthorization();
+        AddDeleteResourceAuthorization();
+        AddUpdateResourceAuthorization();
+        AddReadResourceAuthorization();
+        AddReadAllResourceAuthorization();
 
         return this;
     }

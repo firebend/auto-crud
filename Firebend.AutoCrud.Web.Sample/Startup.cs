@@ -1,4 +1,5 @@
-using System.Text;
+using System;
+using System.IdentityModel.Tokens.Jwt;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -10,7 +11,6 @@ using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Extensions;
 using Firebend.AutoCrud.Web.Sample.Tenant;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -31,25 +31,31 @@ namespace Firebend.AutoCrud.Web.Sample
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
-            // should we just mock a token and log in the user?
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidAudience = configuration["Jwt:Audience"],
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateIssuerSigningKey = false,
+                    SignatureValidator = delegate(string token,
+                        TokenValidationParameters _)
+                    {
+                        var jwt = new JwtSecurityToken(token);
+                        return jwt;
+                    },
+                    ValidateLifetime = false,
+                    ClockSkew = TimeSpan.Zero,
+                    RequireSignedTokens = false
                 };
             });
 
             services
                 .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
                 .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer"))
-)
+                )
                 .UsingMongoCrud(configuration.GetConnectionString("Mongo"), true, mongo => mongo.AddMongoPerson())
                 .UsingEfCrud(ef =>
                 {
@@ -70,9 +76,22 @@ namespace Firebend.AutoCrud.Web.Sample
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ReadAll", policy => policy.Requirements.Add(new ReadAllAuthorizationRequirement()));
+                options.AddPolicy(ReadAllAuthorizationRequirement.DefaultPolicy,
+                    policy => policy.Requirements.Add(new ReadAllAuthorizationRequirement()));
+                options.AddPolicy(ReadAuthorizationRequirement.DefaultPolicy,
+                    policy => policy.Requirements.Add(new ReadAuthorizationRequirement()));
+                options.AddPolicy(CreateAuthorizationRequirement.DefaultPolicy,
+                    policy => policy.Requirements.Add(new CreateAuthorizationRequirement()));
+                options.AddPolicy(UpdateAuthorizationRequirement.DefaultPolicy,
+                    policy => policy.Requirements.Add(new UpdateAuthorizationRequirement()));
+                options.AddPolicy(DeleteAuthorizationRequirement.DefaultPolicy,
+                    policy => policy.Requirements.Add(new DeleteAuthorizationRequirement()));
             });
+            services.AddSingleton<IAuthorizationHandler, ReadAllAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, ReadAuthorizationHandler>();
             services.AddSingleton<IAuthorizationHandler, CreateAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, UpdateAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, DeleteAuthorizationHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -83,6 +102,12 @@ namespace Firebend.AutoCrud.Web.Sample
                 app.UseDeveloperExceptionPage();
             }
 
+            app.Use(async (context, next) =>
+            {
+                context.Request.Headers.Add("Authorization",
+                    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY0NTgwMDQwMSwiaWF0IjoxNjQ1ODAwNDAxfQ.XGjDqgMLK-D_X5EZmpeFqslflX6QxEfhCibPLwALP2I");
+                await next(context);
+            });
             app.UseRouting();
 
             app.UseAuthentication();

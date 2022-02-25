@@ -19,33 +19,6 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
 
 
     /// <summary>
-    /// Add all authorization requirements to requests for an entity that use the specified controller
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// forecast.WithDefaultDatabase("Samples")
-    ///      .WithCollection("WeatherForecasts")
-    ///      .WithFullTextSearch()
-    ///      .AddCrud()
-    ///      .AddControllers(controllers => controllers
-    ///          .WithAllControllers()
-    ///          .AddAllResourceAuthorizations()
-    /// </code>
-    /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddAllAuthorizationsPolicies(string policy = "")
-    {
-        AddCreateAuthorizationPolicy(policy);
-        AddDeleteAuthorizationPolicy(policy);
-        AddUpdateAuthorizationPolicy(policy);
-        AddReadAuthorizationPolicy(policy);
-        AddReadAllAuthorizationPolicy(policy);
-        // AddSearchAuthorizationPolicy(policy);
-
-        return this;
-    }
-
-
-    /// <summary>
     /// Adds an authorization policy to requests for an entity that use the specified controller
     /// </summary>
     /// <param name="type">The type of the controller to add the policy for</param>
