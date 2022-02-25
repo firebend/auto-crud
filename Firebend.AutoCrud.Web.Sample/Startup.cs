@@ -82,6 +82,8 @@ namespace Firebend.AutoCrud.Web.Sample
                     policy => policy.Requirements.Add(new ReadAuthorizationRequirement()));
                 options.AddPolicy(CreateAuthorizationRequirement.DefaultPolicy,
                     policy => policy.Requirements.Add(new CreateAuthorizationRequirement()));
+                options.AddPolicy(CreateMultipleAuthorizationRequirement.DefaultPolicy,
+                    policy => policy.Requirements.Add(new CreateMultipleAuthorizationRequirement()));
                 options.AddPolicy(UpdateAuthorizationRequirement.DefaultPolicy,
                     policy => policy.Requirements.Add(new UpdateAuthorizationRequirement()));
                 options.AddPolicy(DeleteAuthorizationRequirement.DefaultPolicy,
@@ -90,6 +92,7 @@ namespace Firebend.AutoCrud.Web.Sample
             services.AddSingleton<IAuthorizationHandler, ReadAllAuthorizationHandler>();
             services.AddSingleton<IAuthorizationHandler, ReadAuthorizationHandler>();
             services.AddSingleton<IAuthorizationHandler, CreateAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, CreateMultipleAuthorizationHandler>();
             services.AddSingleton<IAuthorizationHandler, UpdateAuthorizationHandler>();
             services.AddSingleton<IAuthorizationHandler, DeleteAuthorizationHandler>();
         }

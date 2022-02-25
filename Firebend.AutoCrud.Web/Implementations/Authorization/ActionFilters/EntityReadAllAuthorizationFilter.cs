@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -7,11 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class AbstractEntityReadAuthorizationFilter : IAsyncResultFilter
+public class EntityReadAllAuthorizationFilter : IAsyncResultFilter
 {
     private readonly string _policy;
 
-    public AbstractEntityReadAuthorizationFilter(string policy)
+    public EntityReadAllAuthorizationFilter(string policy)
     {
         _policy = policy;
     }
@@ -28,10 +31,10 @@ public class AbstractEntityReadAuthorizationFilter : IAsyncResultFilter
 
         if (context.Result.GetType() == typeof(OkObjectResult))
         {
-            var entity = ((OkObjectResult)context.Result).Value;
+            var entities = ((OkObjectResult)context.Result).Value;
 
             var authorizationResult =
-                await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);
+                await authorizationService.AuthorizeAsync(context.HttpContext.User, entities, _policy);
 
             if (!authorizationResult.Succeeded)
             {
@@ -42,3 +45,4 @@ public class AbstractEntityReadAuthorizationFilter : IAsyncResultFilter
         await next();
     }
 }
+

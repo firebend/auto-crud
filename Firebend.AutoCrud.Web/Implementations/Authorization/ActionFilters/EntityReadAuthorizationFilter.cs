@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,36 +7,35 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class AbstractEntityCreateAuthorizationFilter : IAsyncActionFilter
+public class EntityReadAuthorizationFilter : IAsyncResultFilter
 {
-    public static readonly string[] RequiredProperties = {"ViewModelType"};
     private readonly string _policy;
 
-    public Type ViewModelType { get; set; }
-
-    public AbstractEntityCreateAuthorizationFilter(string policy)
+    public EntityReadAuthorizationFilter(string policy)
     {
         _policy = policy;
     }
 
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
         var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
+
         if (authorizationService == null)
         {
             await next();
             return;
         }
 
-        if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue?.GetType() == ViewModelType)
+        if (context.Result.GetType() == typeof(OkObjectResult))
         {
+            var entity = ((OkObjectResult)context.Result).Value;
+
             var authorizationResult =
-                await authorizationService.AuthorizeAsync(context.HttpContext.User, paramValue, _policy);
+                await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);
 
             if (!authorizationResult.Succeeded)
             {
                 context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
-                return;
             }
         }
 

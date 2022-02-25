@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -11,16 +10,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class AbstractEntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter
+public class EntityDeleteAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    public static readonly string[] RequiredProperties = {"ViewModelType"};
     private readonly string _policy;
 
-    public Type ViewModelType { get; set; }
-
-    public AbstractEntityUpdateAuthorizationFilter(string policy)
+    public EntityDeleteAuthorizationFilter(string policy)
     {
         _policy = policy;
     }
@@ -35,28 +31,8 @@ public class AbstractEntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActi
             return;
         }
 
-        var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
-
-        if (authorizationService == null)
-        {
-            await next();
-            return;
-        }
-
-        if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue?.GetType() == ViewModelType)
-        {
-            var authorizationResult =
-                await authorizationService.AuthorizeAsync(context.HttpContext.User, paramValue, _policy);
-
-            if (!authorizationResult.Succeeded)
-            {
-                context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
-                return;
-            }
-        }
-        else if (context.HttpContext.Request.Method == HttpMethods.Patch &&
-                 context.ActionArguments.TryGetValue(nameof(IEntity<TKey>.Id).ToLower(), out var idValue) &&
-                 idValue is string entityIdString)
+        if (context.ActionArguments.TryGetValue(nameof(IEntity<TKey>.Id).ToLower(), out var paramValue) &&
+            paramValue is string entityIdString)
         {
             var entityId = keyParser.ParseKey(entityIdString);
             if (entityId == null)
@@ -64,10 +40,19 @@ public class AbstractEntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActi
                 await next();
                 return;
             }
+            var entity = await
+                readService.GetByKeyAsync(entityId.Value, context.HttpContext.RequestAborted);
 
-            var entity = await readService.GetByKeyAsync(entityId.Value, context.HttpContext.RequestAborted);
+            var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
+            if (authorizationService == null)
+            {
+                await next();
+                return;
+            }
+
             var authorizationResult =
                 await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);
+
             if (!authorizationResult.Succeeded)
             {
                 context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);

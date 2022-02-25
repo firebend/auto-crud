@@ -50,15 +50,39 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .AddCreateResourceAuthorization(new []{ MyRequirement })
+    ///          .AddCreateResourceAuthorization()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateResourceAuthorization(
         string policy = CreateAuthorizationRequirement.DefaultPolicy)
         => AddResourceAuthorization(typeof(AbstractEntityCreateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType),
-            typeof(AbstractEntityCreateAuthorizationFilter), policy,
-            AbstractEntityCreateAuthorizationFilter.RequiredProperties, new object[] {CreateViewModelType});
+            typeof(EntityCreateAuthorizationFilter), policy,
+            EntityCreateAuthorizationFilter.RequiredProperties, new object[] {CreateViewModelType});
+
+    /// <summary>
+    /// Adds resource authorization to Create requests using the abstract create controller
+    /// </summary>
+    /// <param name="policy">The resource authorization policy</param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .AddCreateMultipleResourceAuthorization()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateMultipleResourceAuthorization(
+        string policy = CreateMultipleAuthorizationRequirement.DefaultPolicy)
+        => AddResourceAuthorization(typeof(AbstractEntityCreateMultipleController<,,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType,
+                    CreateMultipleViewModelType, ReadViewModelType),
+            typeof(EntityCreateMultipleAuthorizationFilter), policy,
+            EntityCreateMultipleAuthorizationFilter.RequiredProperties,
+            new object[] {CreateMultipleViewModelWrapperType});
 
     /// <summary>
     /// Adds resource authorization to DELETE requests using the abstract delete controller
@@ -72,14 +96,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .AddDeleteResourceAuthorization(new []{ MyRequirement })
+    ///          .AddDeleteResourceAuthorization()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteResourceAuthorization(
         string policy = DeleteAuthorizationRequirement.DefaultPolicy)
         => AddResourceAuthorization(typeof(AbstractEntityDeleteController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityDeleteAuthorizationFilter<TKey, TEntity>), policy);
+            typeof(EntityDeleteAuthorizationFilter<TKey, TEntity>), policy);
 
     /// <summary>
     /// Adds resource authorization to GET requests using the abstract read controller
@@ -93,14 +117,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .AddReadResourceAuthorization(new []{ MyRequirement })
+    ///          .AddReadResourceAuthorization()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadResourceAuthorization(
         string policy = ReadAuthorizationRequirement.DefaultPolicy)
         => AddResourceAuthorization(typeof(AbstractEntityReadController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityReadAuthorizationFilter), policy);
+            typeof(EntityReadAuthorizationFilter), policy);
 
     /// <summary>
     /// Adds resource authorization to GET `/all` requests using the abstract read all controller
@@ -114,14 +138,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .AddReadAllResourceAuthorization(new []{ MyRequirement })
+    ///          .AddReadAllResourceAuthorization()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllResourceAuthorization(
         string policy = ReadAllAuthorizationRequirement.DefaultPolicy)
         => AddResourceAuthorization(typeof(AbstractEntityReadAllController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityReadAllAuthorizationFilter), policy);
+            typeof(EntityReadAllAuthorizationFilter), policy);
 
     /// <summary>
     /// Adds resource authorization to PUT requests using the abstract update controller
@@ -135,15 +159,15 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .AddUpdateResourceAuthorization(new []{ MyRequirement })
+    ///          .AddUpdateResourceAuthorization()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateResourceAuthorization(
         string policy = UpdateAuthorizationRequirement.DefaultPolicy) =>
         AddResourceAuthorization(typeof(AbstractEntityUpdateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType),
-            typeof(AbstractEntityUpdateAuthorizationFilter<TKey, TEntity>), policy,
-            AbstractEntityUpdateAuthorizationFilter<TKey, TEntity>.RequiredProperties, new object[] {UpdateViewModelType});
+            typeof(EntityUpdateAuthorizationFilter<TKey, TEntity>), policy,
+            EntityUpdateAuthorizationFilter<TKey, TEntity>.RequiredProperties, new object[] {UpdateViewModelType});
 
     /// <summary>
     /// Adds resource authorization to all requests that modify an entity (Create, Update, and Delete) and use the abstract controllers
@@ -157,13 +181,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .AddAlterResourceAuthorization(new []{ MyRequirement })
+    ///          .AddAlterResourceAuthorization()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterResourceAuthorization(
         string policy)
     {
         AddCreateResourceAuthorization(policy);
+        AddCreateMultipleResourceAuthorization(policy);
         AddDeleteResourceAuthorization(policy);
         AddUpdateResourceAuthorization(policy);
 
@@ -182,7 +207,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .AddQueryResourceAuthorization(new []{ MyRequirement })
+    ///          .AddQueryResourceAuthorization()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddQueryResourceAuthorization(
@@ -211,6 +236,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddResourceAuthorization(string policy)
     {
         AddCreateResourceAuthorization(policy);
+        AddCreateMultipleResourceAuthorization(policy);
         AddDeleteResourceAuthorization(policy);
         AddUpdateResourceAuthorization(policy);
         AddReadResourceAuthorization(policy);
@@ -236,6 +262,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddResourceAuthorization()
     {
         AddCreateResourceAuthorization();
+        AddCreateMultipleResourceAuthorization();
         AddDeleteResourceAuthorization();
         AddUpdateResourceAuthorization();
         AddReadResourceAuthorization();
