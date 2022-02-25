@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -14,11 +14,13 @@ public class AbstractEntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActi
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    private IEnumerable<IAuthorizationRequirement> _requirements;
+    private readonly string _policy;
 
-    public AbstractEntityUpdateAuthorizationFilter(IEnumerable<IAuthorizationRequirement> requirements)
+    public Type ViewModelType { get; set; }
+
+    public AbstractEntityUpdateAuthorizationFilter(string policy)
     {
-        _requirements = requirements;
+        _policy = policy;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -39,13 +41,10 @@ public class AbstractEntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActi
             return;
         }
 
-        if (context.ActionArguments.TryGetValue(nameof(IEntity<TKey>.Id).ToLower(), out var paramValue) && paramValue is TKey entityId)
+        if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue?.GetType() == ViewModelType)
         {
-            var entity = await
-                readService.GetByKeyAsync(entityId, context.HttpContext.RequestAborted);
-
             var authorizationResult =
-                await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _requirements);
+                await authorizationService.AuthorizeAsync(context.HttpContext.User, paramValue, _policy);
 
             if (!authorizationResult.Succeeded)
             {

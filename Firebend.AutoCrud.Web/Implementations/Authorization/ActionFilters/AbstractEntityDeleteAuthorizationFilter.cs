@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -14,11 +13,11 @@ public class AbstractEntityDeleteAuthorizationFilter<TKey, TEntity> : IAsyncActi
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    private IEnumerable<IAuthorizationRequirement> _requirements;
+    private readonly string _policy;
 
-    public AbstractEntityDeleteAuthorizationFilter(IEnumerable<IAuthorizationRequirement> requirements)
+    public AbstractEntityDeleteAuthorizationFilter(string policy)
     {
-        _requirements = requirements;
+        _policy = policy;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -43,7 +42,7 @@ public class AbstractEntityDeleteAuthorizationFilter<TKey, TEntity> : IAsyncActi
                 readService.GetByKeyAsync(entityId, context.HttpContext.RequestAborted);
 
             var authorizationResult =
-                await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _requirements);
+                await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);
 
             if (!authorizationResult.Succeeded)
             {

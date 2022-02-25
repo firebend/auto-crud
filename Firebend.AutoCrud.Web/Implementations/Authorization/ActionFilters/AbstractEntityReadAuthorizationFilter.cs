@@ -1,7 +1,4 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,21 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class AbstractEntityReadAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter
-    where TKey : struct
-    where TEntity : class, IEntity<TKey>
+public class AbstractEntityReadAuthorizationFilter : IAsyncResultFilter
 {
-    private IEnumerable<IAuthorizationRequirement> _requirements;
+    private readonly string _policy;
 
-    public AbstractEntityReadAuthorizationFilter(IEnumerable<IAuthorizationRequirement> requirements)
+    public AbstractEntityReadAuthorizationFilter(string policy)
     {
-        _requirements = requirements;
+        _policy = policy;
     }
 
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
-        await next();
-
         var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
 
         if (authorizationService == null)
@@ -33,15 +26,17 @@ public class AbstractEntityReadAuthorizationFilter<TKey, TEntity> : IAsyncAction
             return;
         }
 
-        var entity = (TEntity)default; // TODO get entity from response
-
-        var authorizationResult =
-            await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _requirements);
-
-        if (!authorizationResult.Succeeded)
+        if (context.Result.GetType() == typeof(OkObjectResult))
         {
-            context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
-            return;
+            var entity = ((OkObjectResult)context.Result).Value;
+
+            var authorizationResult =
+                await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);
+
+            if (!authorizationResult.Succeeded)
+            {
+                context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+            }
         }
 
         await next();

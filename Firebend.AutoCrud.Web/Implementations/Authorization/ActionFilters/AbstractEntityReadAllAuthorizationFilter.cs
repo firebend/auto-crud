@@ -10,36 +10,39 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class AbstractEntityReadAllAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter
-    where TKey : struct
-    where TEntity : class, IEntity<TKey>
+public class AbstractEntityReadAllAuthorizationFilter : IAsyncResultFilter
 {
-    private IEnumerable<IAuthorizationRequirement> _requirements;
+    private readonly string _policy;
 
-    public AbstractEntityReadAllAuthorizationFilter(IEnumerable<IAuthorizationRequirement> requirements)
+    public AbstractEntityReadAllAuthorizationFilter(string policy)
     {
-        _requirements = requirements;
+        _policy = policy;
     }
 
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
-        await next();
-
         var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
+
         if (authorizationService == null)
         {
             await next();
             return;
         }
 
-        var entities = new TEntity[] { }; // TODO get response to validate
-        var authorizationResult =
-            await authorizationService.AuthorizeAsync(context.HttpContext.User, entities, _requirements);
-
-        if (!authorizationResult.Succeeded)
+        if (context.Result.GetType() == typeof(OkObjectResult))
         {
-            context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
-            return;
+            var entities = ((OkObjectResult)context.Result).Value;
+
+            var authorizationResult =
+                await authorizationService.AuthorizeAsync(context.HttpContext.User, entities, _policy);
+
+            if (!authorizationResult.Succeeded)
+            {
+                context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+            }
         }
+
+        await next();
     }
 }
+

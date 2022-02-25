@@ -1,7 +1,6 @@
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +13,13 @@ public class AbstractEntityCreateAuthorizationFilter<TKey, TEntity> : IAsyncActi
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    private IEnumerable<IAuthorizationRequirement> _requirements;
+    private readonly string _policy;
 
-    public AbstractEntityCreateAuthorizationFilter(IEnumerable<IAuthorizationRequirement> requirements)
+    public Type ViewModelType { get; set; }
+
+    public AbstractEntityCreateAuthorizationFilter(string policy)
     {
-        _requirements = requirements;
+        _policy = policy;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -30,10 +31,10 @@ public class AbstractEntityCreateAuthorizationFilter<TKey, TEntity> : IAsyncActi
             return;
         }
 
-        if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue is TEntity entity)
+        if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue?.GetType() == ViewModelType)
         {
             var authorizationResult =
-                await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _requirements);
+                await authorizationService.AuthorizeAsync(context.HttpContext.User, paramValue, _policy);
 
             if (!authorizationResult.Succeeded)
             {
