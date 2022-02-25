@@ -7,6 +7,7 @@ namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
 public class CreateAuthorizationHandler : AuthorizationHandler<CreateAuthorizationRequirement, Document>
 {
+    // logger?
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         CreateAuthorizationRequirement requirement,
@@ -16,6 +17,3 @@ public class CreateAuthorizationHandler : AuthorizationHandler<CreateAuthorizati
         return Task.CompletedTask;
     }
 }
-
-// change extensions as configurations on the sample project
-// create an mvcbuilder extension for registering the action filters

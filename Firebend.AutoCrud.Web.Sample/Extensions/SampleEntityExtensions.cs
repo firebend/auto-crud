@@ -67,8 +67,18 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithIoControllers()
                         .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                         .WithOpenApiGroupName("The Beautiful Mongo People")
-                        .WithRoute("api/v1/mongo-person"))
-        );
+                        .WithRoute("api/v1/mongo-person")
+                        // .AddAllAuthorizationsPolicies()
+                        .AddReadAllAuthorizationPolicy("ReadAll")
+                        // .AddAlterResourceAuthorization()
+                        // .AddAllResourceAuthorizations()
+                        // .AddReadResourceAuthorization()
+                        // .AddReadAllResourceAuthorization()
+                        // .AddCreateResourceAuthorization()
+                        // .AddUpdateResourceAuthorization()
+                        // .AddDeleteResourceAuthorization()
+                    )
+            );
 
         public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,
             IConfiguration configuration) =>
