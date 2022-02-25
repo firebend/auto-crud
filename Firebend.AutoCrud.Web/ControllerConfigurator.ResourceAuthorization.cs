@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
@@ -25,10 +27,12 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddResourceAuthorization(Type type, Type filterType,
-        string policy, Type viewModelType)
+        string policy,
+        string[] propertyNames = null,
+        object[] propertyValues = null)
     {
         var (attributeType, attributeBuilder) =
-            GetResourceAuthorizationAttributeInfo(filterType, policy, viewModelType);
+            GetResourceAuthorizationAttributeInfo(filterType, policy, propertyNames, propertyValues);
         Builder.WithAttribute(type, attributeType, attributeBuilder);
         return this;
     }
@@ -52,7 +56,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string policy = "")
         => AddResourceAuthorization(typeof(AbstractEntityCreateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType),
-            typeof(AbstractEntityCreateAuthorizationFilter<TKey, TEntity>), policy, CreateViewModelType);
+            typeof(AbstractEntityCreateAuthorizationFilter), policy,
+            AbstractEntityCreateAuthorizationFilter.RequiredProperties, new object[] {CreateViewModelType});
 
     /// <summary>
     /// Adds resource authorization to DELETE requests using the abstract delete controller
@@ -73,7 +78,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string policy = "")
         => AddResourceAuthorization(typeof(AbstractEntityDeleteController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityDeleteAuthorizationFilter<TKey, TEntity>), policy, null);
+            typeof(AbstractEntityDeleteAuthorizationFilter<TKey, TEntity>), policy);
 
     /// <summary>
     /// Adds resource authorization to GET requests using the abstract read controller
@@ -94,7 +99,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string policy = "")
         => AddResourceAuthorization(typeof(AbstractEntityReadController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityReadAuthorizationFilter), policy, null);
+            typeof(AbstractEntityReadAuthorizationFilter), policy);
 
     /// <summary>
     /// Adds resource authorization to GET `/all` requests using the abstract read all controller
@@ -115,7 +120,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string policy = "")
         => AddResourceAuthorization(typeof(AbstractEntityReadAllController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(AbstractEntityReadAllAuthorizationFilter), policy, null);
+            typeof(AbstractEntityReadAllAuthorizationFilter), policy);
 
     /// <summary>
     /// Adds resource authorization to PUT requests using the abstract update controller
@@ -133,10 +138,11 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateResourceAuthorization(
-        string policy = "")
-        => AddResourceAuthorization(typeof(AbstractEntityUpdateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType, UpdateViewModelType),
-            typeof(AbstractEntityUpdateAuthorizationFilter<TKey, TEntity>), policy, UpdateViewModelType);
+        string policy = "") =>
+        AddResourceAuthorization(typeof(AbstractEntityUpdateController<,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType),
+            typeof(AbstractEntityUpdateAuthorizationFilter<TKey, TEntity>), policy,
+            AbstractEntityUpdateAuthorizationFilter<TKey, TEntity>.RequiredProperties, new object[] {UpdateViewModelType});
 
     /// <summary>
     /// Adds resource authorization to all requests that modify an entity (Create, Update, and Delete) and use the abstract controllers
@@ -188,10 +194,12 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     }
 
     private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetResourceAuthorizationAttributeInfo(
-        Type authType,
-        string policy, Type viewModelType)
+        Type filterType,
+        string policy,
+        string[] propertyNames,
+        object[] propertyValues)
     {
-        var authCtor = authType.GetConstructor(new[] {typeof(string)});
+        var authCtor = filterType.GetConstructor(new[] {typeof(string)});
 
         if (authCtor == null)
         {
@@ -200,16 +208,21 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
 
         var args = new object[] {policy};
 
-        if (viewModelType == null)
+        if (propertyNames == null || propertyValues == null)
         {
-            return (authType,
+            return (filterType,
                 new CustomAttributeBuilder(authCtor, args));
         }
 
-        var propertyInfos = new[] {authType.GetProperty("ViewModelType")};
-        var propertyValues = new object[] {viewModelType};
+        var propertyInfos = GetPropertyInfos(filterType, propertyNames);
 
-        return (authType,
+        return (filterType,
             new CustomAttributeBuilder(authCtor, args, propertyInfos, propertyValues));
+    }
+
+    private PropertyInfo[] GetPropertyInfos(Type filterType, string[] propertyNames)
+    {
+        var propertyInfos = propertyNames.Select(filterType.GetProperty);
+        return propertyInfos.ToArray();
     }
 }

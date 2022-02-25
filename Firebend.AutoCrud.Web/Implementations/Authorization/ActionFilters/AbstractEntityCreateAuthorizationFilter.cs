@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class AbstractEntityCreateAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter
-    where TKey : struct
-    where TEntity : class, IEntity<TKey>
+public class AbstractEntityCreateAuthorizationFilter : IAsyncActionFilter
 {
+    public static readonly string[] RequiredProperties = {"ViewModelType"};
     private readonly string _policy;
 
     public Type ViewModelType { get; set; }

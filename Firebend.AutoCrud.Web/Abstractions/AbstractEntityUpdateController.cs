@@ -17,6 +17,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
+    [ApiController]
     public abstract class AbstractEntityUpdateController<TKey, TEntity, TUpdateViewModel, TReadViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct

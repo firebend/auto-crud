@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,23 +24,31 @@ public class AbstractEntityDeleteAuthorizationFilter<TKey, TEntity> : IAsyncActi
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var readService = context.HttpContext.RequestServices.GetService<IEntityReadService<TKey, TEntity>>();
-        if (readService == null)
+        var keyParser = context.HttpContext.RequestServices.GetService<IEntityKeyParser<TKey, TEntity>>();
+        if (readService == null || keyParser == null)
         {
             await next();
             return;
         }
 
-        var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
-        if (authorizationService == null)
+        if (context.ActionArguments.TryGetValue(nameof(IEntity<TKey>.Id).ToLower(), out var paramValue) &&
+            paramValue is string entityIdString)
         {
-            await next();
-            return;
-        }
-
-        if (context.ActionArguments.TryGetValue(nameof(IEntity<TKey>.Id).ToLower(), out var paramValue) && paramValue is TKey entityId)
-        {
+            var entityId = keyParser.ParseKey(entityIdString);
+            if (entityId == null)
+            {
+                await next();
+                return;
+            }
             var entity = await
-                readService.GetByKeyAsync(entityId, context.HttpContext.RequestAborted);
+                readService.GetByKeyAsync(entityId.Value, context.HttpContext.RequestAborted);
+
+            var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
+            if (authorizationService == null)
+            {
+                await next();
+                return;
+            }
 
             var authorizationResult =
                 await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);

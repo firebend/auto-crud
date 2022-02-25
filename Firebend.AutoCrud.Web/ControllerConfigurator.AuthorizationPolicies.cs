@@ -205,7 +205,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
         => AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType, UpdateViewModelType),
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType),
             policy);
 
     /// <summary>

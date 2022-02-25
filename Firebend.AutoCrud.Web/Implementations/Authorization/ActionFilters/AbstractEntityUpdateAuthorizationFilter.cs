@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ public class AbstractEntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActi
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
+    public static readonly string[] RequiredProperties = {"ViewModelType"};
     private readonly string _policy;
 
     public Type ViewModelType { get; set; }
@@ -26,8 +28,8 @@ public class AbstractEntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActi
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var readService = context.HttpContext.RequestServices.GetService<IEntityReadService<TKey, TEntity>>();
-
-        if (readService == null)
+        var keyParser = context.HttpContext.RequestServices.GetService<IEntityKeyParser<TKey, TEntity>>();
+        if (readService == null || keyParser == null)
         {
             await next();
             return;
@@ -46,6 +48,26 @@ public class AbstractEntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActi
             var authorizationResult =
                 await authorizationService.AuthorizeAsync(context.HttpContext.User, paramValue, _policy);
 
+            if (!authorizationResult.Succeeded)
+            {
+                context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+                return;
+            }
+        }
+        else if (context.HttpContext.Request.Method == HttpMethods.Patch &&
+                 context.ActionArguments.TryGetValue(nameof(IEntity<TKey>.Id).ToLower(), out var idValue) &&
+                 idValue is string entityIdString)
+        {
+            var entityId = keyParser.ParseKey(entityIdString);
+            if (entityId == null)
+            {
+                await next();
+                return;
+            }
+
+            var entity = await readService.GetByKeyAsync(entityId.Value, context.HttpContext.RequestAborted);
+            var authorizationResult =
+                await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);
             if (!authorizationResult.Succeeded)
             {
                 context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
