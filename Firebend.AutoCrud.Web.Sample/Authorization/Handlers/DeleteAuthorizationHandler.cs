@@ -13,6 +13,7 @@ public class DeleteAuthorizationHandler : AuthorizationHandler<DeleteAuthorizati
         DeleteAuthorizationRequirement requirement,
         IDataAuth resource)
     {
+        // Authorization business logic comes here
         context.Succeed(requirement);
         return Task.CompletedTask;
     }

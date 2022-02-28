@@ -13,6 +13,7 @@ public class ReadAllAuthorizationHandler : AuthorizationHandler<ReadAllAuthoriza
         ReadAllAuthorizationRequirement requirement,
         IEnumerable<IDataAuth> resource)
     {
+        // Authorization business logic comes here
         context.Succeed(requirement);
         return Task.CompletedTask;
     }

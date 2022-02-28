@@ -13,6 +13,7 @@ public class ReadAuthorizationHandler : AuthorizationHandler<ReadAuthorizationRe
         ReadAuthorizationRequirement requirement,
         IDataAuth resource)
     {
+        // Authorization business logic comes here
         context.Succeed(requirement);
         return Task.CompletedTask;
     }

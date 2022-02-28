@@ -74,6 +74,7 @@ namespace Firebend.AutoCrud.Web.Sample
 
             services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
 
+            // Define the policies
             services.AddAuthorization(options =>
             {
                 options.AddPolicy(ReadAllAuthorizationRequirement.DefaultPolicy,
@@ -89,6 +90,8 @@ namespace Firebend.AutoCrud.Web.Sample
                 options.AddPolicy(DeleteAuthorizationRequirement.DefaultPolicy,
                     policy => policy.Requirements.Add(new DeleteAuthorizationRequirement()));
             });
+
+            // Inject the resource authorization handlers
             services.AddSingleton<IAuthorizationHandler, ReadAllAuthorizationHandler>();
             services.AddSingleton<IAuthorizationHandler, ReadAuthorizationHandler>();
             services.AddSingleton<IAuthorizationHandler, CreateAuthorizationHandler>();

@@ -14,6 +14,7 @@ public class CreateMultipleAuthorizationHandler : AuthorizationHandler<CreateMul
         CreateMultipleAuthorizationRequirement requirement,
         IDataAuth resource)
     {
+        // Authorization business logic comes here
         context.Succeed(requirement);
         return Task.CompletedTask;
     }

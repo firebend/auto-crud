@@ -12,6 +12,7 @@ public class SearchAuthorizationHandler : AuthorizationHandler<SearchAuthorizati
         SearchAuthorizationRequirement requirement,
         Document resource)
     {
+        // Authorization business logic comes here
         context.Succeed(requirement);
         return Task.CompletedTask;
     }

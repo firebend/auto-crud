@@ -13,6 +13,7 @@ public class UpdateAuthorizationHandler : AuthorizationHandler<UpdateAuthorizati
         UpdateAuthorizationRequirement requirement,
         IDataAuth resource)
     {
+        // Authorization business logic comes here
         context.Succeed(requirement);
         return Task.CompletedTask;
     }
