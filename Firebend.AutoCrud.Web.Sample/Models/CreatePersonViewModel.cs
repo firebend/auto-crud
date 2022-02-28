@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class CreatePersonViewModel
+    public class CreatePersonViewModel: IDataAuth
     {
         public CreatePersonViewModel()
         {
@@ -27,11 +27,10 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             Body = new PersonViewModelBase(entity);
         }
 
-        [FromBody]
         public PersonViewModelBase Body { get; set; }
     }
 
-    public class PersonViewModelBase
+    public class PersonViewModelBase: IDataAuth
     {
         public PersonViewModelBase()
         {
@@ -63,7 +62,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string OtherEmail { get; set; }
     }
 
-    public class GetPersonViewModel : PersonViewModelBase, IEntity<Guid>, ICustomFieldsEntity<Guid>, IDataAuth
+    public class GetPersonViewModel : PersonViewModelBase, IEntity<Guid>, ICustomFieldsEntity<Guid>
     {
         private static readonly string[] Ignores = { nameof(CustomFields) };
         public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }

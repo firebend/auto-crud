@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.IntegrationTests
     [TestClass]
     public class EfEndToEndTest : BaseTest<
         Guid,
-        PersonViewModelBase,
+        CreatePersonViewModel,
         PersonViewModelBase,
         GetPersonViewModel,
         PersonExport>
@@ -21,15 +21,17 @@ namespace Firebend.AutoCrud.IntegrationTests
         [TestMethod]
         public async Task Ef_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
 
-        public override Task<PersonViewModelBase> GenerateCreateRequestAsync()
-            => Task.FromResult(PersonFaker.Faker.Generate());
+        public override Task<CreatePersonViewModel> GenerateCreateRequestAsync()
+            => Task.FromResult(new CreatePersonViewModel {Body = PersonFaker.Faker.Generate()});
 
-        protected override Task<PersonViewModelBase> GenerateUpdateRequestAsync(PersonViewModelBase createRequest)
+        protected override Task<PersonViewModelBase> GenerateUpdateRequestAsync(CreatePersonViewModel createRequest)
             => Task.FromResult(PersonFaker.Faker.Generate());
 
         protected override Task<JsonPatchDocument> GeneratePatchAsync()
-            => Task.FromResult(PatchFaker.MakeReplacePatch<PersonViewModelBase, string>(x => x.Email, new Faker().Person.Email));
+            => Task.FromResult(
+                PatchFaker.MakeReplacePatch<PersonViewModelBase, string>(x => x.Email, new Faker().Person.Email));
 
-        protected override Task<UserInfoPostDto> GenerateAuthenticateRequestAsync() => throw new NotImplementedException();
+        protected override Task<UserInfoPostDto> GenerateAuthenticateRequestAsync() =>
+            throw new NotImplementedException();
     }
 }

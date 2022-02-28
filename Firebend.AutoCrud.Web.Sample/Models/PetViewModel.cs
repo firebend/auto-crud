@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string PetType { get; set; }
     }
 
-    public class CreatePetViewModel
+    public class CreatePetViewModel: IDataAuth
     {
         [FromRoute(Name = "personId")]
         public Guid PersonId { get; set; }

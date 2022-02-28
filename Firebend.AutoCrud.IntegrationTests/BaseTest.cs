@@ -77,9 +77,7 @@ namespace Firebend.AutoCrud.IntegrationTests
 
         public async Task<TReadResponse> PostAsync(TCreateRequest model)
         {
-            var res = await Url.WithOAuthBearerToken(_token).PostJsonAsync(model);
-
-            var response = _token is not null
+            var response = !string.IsNullOrEmpty(_token)
                 ? await Url.WithHeader("Authorization",
                         $"Bearer {_token}")
                     .PostJsonAsync(model)
