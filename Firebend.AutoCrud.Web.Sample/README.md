@@ -107,3 +107,20 @@ services.AddSingleton<IAuthorizationHandler, DeleteAuthorizationHandler>();
 You can inject different handlers for the resource policies. If you want to use the existing handlers, you may want to add your own business logic into them.
 
 As a data contract, we created a sample interface as `IDataAuth`. This interface can carry the properties for addressing the authorization business logic.
+
+### Usage
+
+[SampleEntityExtensions.cs](./Extensions/SampleEntityExtensions.cs)
+
+```c#
+public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenerator generator) =>
+            generator.AddEntity<Guid, MongoTenantPerson>(person =>
+                person.WithDefaultDatabase("Samples")
+                    ...
+                    .AddControllers(controllers => controllers
+                        ...
+                        .AddResourceAuthorization()
+                    )
+            );
+
+```
