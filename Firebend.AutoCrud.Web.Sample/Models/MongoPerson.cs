@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string NickName { get; set; }
     }
 
-    public class MongoTenantPerson : MongoPerson, ITenantEntity<int>, ICustomFieldsEntity<Guid>
+    public class MongoTenantPerson : MongoPerson, ITenantEntity<int>, ICustomFieldsEntity<Guid>, IDataAuth
     {
         public int TenantId { get; set; }
         public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }

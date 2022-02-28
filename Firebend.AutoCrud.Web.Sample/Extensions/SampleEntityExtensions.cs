@@ -7,6 +7,7 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 using Firebend.AutoCrud.CustomFields.EntityFramework;
 using Firebend.AutoCrud.CustomFields.Mongo;
@@ -62,6 +63,13 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         .WithReadViewModel(x => new GetPersonViewModel(x))
+                        .WithCreateViewModel<CreatePersonViewModel>(x =>
+                        {
+                            var mongoTenantPerson = new MongoTenantPerson();
+                            x.CopyPropertiesTo(mongoTenantPerson);
+
+                            return mongoTenantPerson;
+                        })
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
                         .WithIoControllers()

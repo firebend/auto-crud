@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.IntegrationTests
     [TestClass]
     public class MongoEndToEndTest : BaseTest<
         Guid,
-        PersonViewModelBase,
+        CreatePersonViewModel,
         PersonViewModelBase,
         GetPersonViewModel,
         PersonExport>
@@ -27,10 +27,10 @@ namespace Firebend.AutoCrud.IntegrationTests
         [TestMethod]
         public async Task Mongo_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
 
-        public override Task<PersonViewModelBase> GenerateCreateRequestAsync()
-            => Task.FromResult(PersonFaker.Faker.Generate());
+        public override Task<CreatePersonViewModel> GenerateCreateRequestAsync()
+            => Task.FromResult(new CreatePersonViewModel {Body = PersonFaker.Faker.Generate()});
 
-        protected override Task<PersonViewModelBase> GenerateUpdateRequestAsync(PersonViewModelBase createRequest)
+        protected override Task<PersonViewModelBase> GenerateUpdateRequestAsync(CreatePersonViewModel createRequest)
             => Task.FromResult(PersonFaker.Faker.Generate());
 
         protected override Task<JsonPatchDocument> GeneratePatchAsync()

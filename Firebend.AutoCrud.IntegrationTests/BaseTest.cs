@@ -552,7 +552,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             }
 
             var authenticateRequest = await GenerateAuthenticateRequestAsync();
-            authenticateRequest.Password = "123456@Qwerty";
+
             var response = await AuthenticationUrl.PostJsonAsync(authenticateRequest);
 
             response.Should().NotBeNull();
