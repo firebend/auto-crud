@@ -29,5 +29,7 @@ namespace Firebend.AutoCrud.IntegrationTests
 
         protected override Task<JsonPatchDocument> GeneratePatchAsync()
             => Task.FromResult(PatchFaker.MakeReplacePatch<PersonViewModelBase, string>(x => x.Email, new Faker().Person.Email));
+
+        protected override Task<UserInfoPostDto> GenerateAuthenticateRequestAsync() => throw new NotImplementedException();
     }
 }

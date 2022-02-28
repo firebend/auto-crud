@@ -182,7 +182,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithUpdateViewModel<PutPetViewModel>(pet => new EfPet(pet))
                         .WithRoute("/api/v1/ef-person/{personId:guid}/pets")
                         .WithAllControllers(true)
-                        .AddResourceAuthorization()
+                        // .AddResourceAuthorization()
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
                         .WithChangeTrackingControllers()
                         .WithIoControllers()

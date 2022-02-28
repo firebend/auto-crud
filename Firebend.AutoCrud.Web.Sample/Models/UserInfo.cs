@@ -1,6 +1,6 @@
 using System;
 
-namespace Firebend.AutoCrud.Web.Sample.Authorization;
+namespace Firebend.AutoCrud.Web.Sample.Models;
 
 public class UserInfo
 {

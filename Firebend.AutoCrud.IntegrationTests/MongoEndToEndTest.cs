@@ -18,6 +18,12 @@ namespace Firebend.AutoCrud.IntegrationTests
     {
         public override string Url => "http://localhost:5000/api/v1/mongo-person";
 
+        protected override string AuthenticationUrl => "http://localhost:5000/api/token";
+        protected override bool AuthenticationRequired => true;
+
+        protected override Task<UserInfoPostDto> GenerateAuthenticateRequestAsync()
+            => Task.FromResult(UserFaker.Faker.Generate());
+
         [TestMethod]
         public async Task Mongo_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
 
