@@ -27,6 +27,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             Body = new PersonViewModelBase(entity);
         }
 
+        [FromBody]
         public PersonViewModelBase Body { get; set; }
     }
 
@@ -107,7 +108,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public DateTimeOffset ModifiedDate { get; set; }
     }
 
-    public class CreateMultiplePeopleViewModel : IMultipleEntityViewModel<PersonViewModelBase>
+    public class CreateMultiplePeopleViewModel : IMultipleEntityViewModel<PersonViewModelBase>, IDataAuth
     {
         [FromBody]
         public IEnumerable<PersonViewModelBase> Entities { get; set; }
