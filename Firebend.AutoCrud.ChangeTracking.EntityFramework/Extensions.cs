@@ -67,7 +67,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
                 throw new Exception("Please configure the builder's db context first.");
             }
 
-            var providerType = typeof(AbstractChangeTrackingDbContextProvider<,,>)
+            var providerType = (efBuilder.IsTenantEntity ?
+                typeof(AbstractElasticChangeTrackingDbContextProvider<,,>):
+                typeof(AbstractChangeTrackingDbContextProvider<,,>))
                 .MakeGenericType(efBuilder.EntityKeyType, efBuilder.EntityType, efBuilder.DbContextType);
 
             configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>>(providerType);

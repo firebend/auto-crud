@@ -24,7 +24,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking\Firebend.AutoCrud.ChangeTracking.csproj" />
-      <ProjectReference Include="..\Firebend.AutoCrud.EntityFramework\Firebend.AutoCrud.EntityFramework.csproj" />
+      <ProjectReference Include="..\Firebend.AutoCrud.EntityFramework.Elastic\Firebend.AutoCrud.EntityFramework.Elastic.csproj" />
     </ItemGroup>
 
     <ItemGroup>
