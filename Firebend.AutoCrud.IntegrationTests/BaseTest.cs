@@ -11,9 +11,7 @@ using CsvHelper.Configuration;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.IntegrationTests.Fakers;
-using Firebend.AutoCrud.IntegrationTests.Interfaces;
 using Firebend.AutoCrud.IntegrationTests.Models;
-using Firebend.AutoCrud.Web.Sample.Models;
 using Firebend.JsonPatch.Extensions;
 using FluentAssertions;
 using Flurl;
@@ -77,11 +75,7 @@ namespace Firebend.AutoCrud.IntegrationTests
 
         public async Task<TReadResponse> PostAsync(TCreateRequest model)
         {
-            var response = !string.IsNullOrEmpty(_token)
-                ? await Url.WithHeader("Authorization",
-                        $"Bearer {_token}")
-                    .PostJsonAsync(model)
-                : await Url.PostJsonAsync(model);
+            var response = await Url.PostJsonAsync(model);
 
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(201);
@@ -540,38 +534,8 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
         }
 
-        protected virtual bool AuthenticationRequired => false;
-        protected virtual string AuthenticationUrl => string.Empty;
-        protected abstract Task<UserInfoPostDto> GenerateAuthenticateRequestAsync();
-        private string _token;
-        protected virtual async Task Authenticate()
-        {
-            if (string.IsNullOrEmpty(AuthenticationUrl))
-            {
-                throw new NotImplementedException("The AuthenticationUrl property must be set.");
-            }
-
-            var authenticateRequest = await GenerateAuthenticateRequestAsync();
-
-            var response = await AuthenticationUrl.PostJsonAsync(authenticateRequest);
-
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseModel = await response.GetStringAsync();
-
-            responseModel.Should().NotBeNull();
-
-            _token = responseModel;
-        }
-
         protected virtual async Task EndToEndAsync(Func<TReadResponse, string> searchSelector)
         {
-            if (AuthenticationRequired)
-            {
-                await Authenticate();
-            }
-
             var createRequest = await GenerateCreateRequestAsync();
 
             var result = await PostAsync(createRequest);

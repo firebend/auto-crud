@@ -105,12 +105,12 @@ namespace Firebend.AutoCrud.Web.Sample
                 app.UseDeveloperExceptionPage();
             }
 
-            // app.Use(async (context, next) =>
-            // {
-            //     context.Request.Headers.Add("Authorization",
-            //         "Bearer eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY0NTgwMDQwMSwiaWF0IjoxNjQ1ODAwNDAxfQ.XGjDqgMLK-D_X5EZmpeFqslflX6QxEfhCibPLwALP2I");
-            //     await next(context);
-            // });
+            app.Use(async (context, next) =>
+            {
+                context.Request.Headers.Add("Authorization",
+                    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY0NTgwMDQwMSwiaWF0IjoxNjQ1ODAwNDAxfQ.XGjDqgMLK-D_X5EZmpeFqslflX6QxEfhCibPLwALP2I");
+                await next(context);
+            });
             app.UseRouting();
 
             app.UseAuthentication();
