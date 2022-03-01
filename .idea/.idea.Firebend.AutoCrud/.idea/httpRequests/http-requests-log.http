@@ -1,0 +1,509 @@
+PUT https://localhost:5001/api/v1/ef-person/0226d9c0-1748-4e60-da64-08d9fba1a20a
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Hank",
+    "lastName": "Hill",
+    "nickName": "Hanky Panky"
+}
+
+<> 2022-03-01T104553.200.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T104549.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T104546.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T104249.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T104208.201.json
+
+###
+
+PUT https://localhost:5001/api/v1/ef-person/0226d9c0-1748-4e60-da64-08d9fba1a20a
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Hank",
+    "lastName": "Hill",
+    "nickName": "Hanky Panky"
+}
+
+<> 2022-03-01T104005.200.json
+
+###
+
+PUT https://localhost:5001/api/v1/ef-person/0226d9c0-1748-4e60-da64-08d9fba1a20a
+Content-Type: application/json
+
+{
+    "firstName": "Hank",
+    "lastName": "Hill",
+    "nickName": "Hanky Panky"
+}
+
+<> 2022-03-01T103815.200.json
+
+###
+
+PUT https://localhost:5001/api/v1/ef-person/0226d9c0-1748-4e60-da64-08d9fba1a20a
+Content-Type: application/json
+
+{
+    "firstName": "Hank",
+    "lastName": "Hill",
+    "nickName": "Hanky Panky"
+}
+
+<> 2022-03-01T103741.200.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T103632.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T103628.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T093112.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T093043.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T092707.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T092703.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-03-01T092652.201.json
+
+###
+
+PUT http://localhost:5000/api/v1/mongo-person/da46d0a8-7fd2-4e5c-9577-5950f22c0818/custom-fields/17f1d412-6ad4-4e6f-bb60-db22c6a81121
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "put again"
+}
+
+<> 2022-02-21T110849.200.json
+
+###
+
+PUT http://localhost:5000/api/v1/mongo-person/a6b178c0-8e5a-402a-aa0e-5128f5dd749c/custom-fields/17f1d412-6ad4-4e6f-bb60-db22c6a81121
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "put again"
+}
+
+<> 2022-02-21T110835.404.json
+
+###
+
+POST http://localhost:5000/api/v1/mongo-person/da46d0a8-7fd2-4e5c-9577-5950f22c0818/custom-fields/
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "lil-baby"
+}
+
+<> 2022-02-21T110803.200.json
+
+###
+
+POST https://localhost:5001/api/v1/mongo-person
+Content-Type: application/json
+
+{
+    "firstName": "Simon",
+    "lastName": "Sample",
+    "ignoreMe": "Todd"
+}
+
+<> 2022-02-21T110738.201.json
+
+###
+
+POST https://localhost:5001/api/v1/mongo-person
+Content-Type: application/json
+
+{
+    "firstName": "Simon",
+    "lastName": "Sample",
+    "ignoreMe": "Todd"
+}
+
+<> 2022-02-21T110542.201.json
+
+###
+
+POST http://localhost:5000/api/v1/mongo-person/93ed6f3d-960b-4acd-93de-d837742add10/custom-fields/
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "lil-baby"
+}
+
+<> 2022-02-21T110429.200.json
+
+###
+
+POST http://localhost:5000/api/v1/mongo-person/93ed6f3d-960b-4acd-93de-d837742add10/custom-fields/
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "lil-baby"
+}
+
+<> 2022-02-21T110346.200.json
+
+###
+
+POST https://localhost:5001/api/v1/mongo-person
+Content-Type: application/json
+
+{
+    "firstName": "Simon",
+    "lastName": "Sample",
+    "ignoreMe": "Todd"
+}
+
+<> 2022-02-21T110318.201.json
+
+###
+
+POST http://localhost:5000/api/v1/mongo-person/29e42b9b-8d96-4613-98f2-09833b4a61e0/custom-fields/
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "lil-baby"
+}
+
+<> 2022-02-21T105943.200.json
+
+###
+
+POST https://localhost:5001/api/v1/mongo-person
+Content-Type: application/json
+
+{
+    "firstName": "Simon",
+    "lastName": "Sample",
+    "ignoreMe": "Todd"
+}
+
+<> 2022-02-21T105911.201.json
+
+###
+
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+
+<> 2022-02-21T105853.201.json
+
+###
+
+POST http://localhost:5000/api/v1/ef-person/1a9126c0-5d14-4804-6067-08d9af8c4fd0/custom-fields
+Content-Type: application/json
+
+{
+    "key" : "shirt size",
+    "value": "large"
+}
+
+<> 2022-02-21T105842.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person/all
+
+<> 2022-02-21T105832.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T105826.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+<> 2022-02-21T105824.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T105822.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+<> 2022-02-21T105820.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+<> 2022-02-21T105819.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T105817.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T104540.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T104539.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+<> 2022-02-21T104537.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T104534.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+<> 2022-02-21T104522.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T095707.500.txt
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+<> 2022-02-21T095704.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+<> 2022-02-21T095201.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T095155.200.json
+
+###
+
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+<> 2022-02-21T095154.200.json
+
+###
