@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Web.Sample.Elastic
             //*******************************************
             if (scoped.HasContext)
             {
-                if(scoped.GetContext()?.TryGetMessage(out ConsumeContext<DomainEventBase> message) ?? false)
+                if (scoped.GetContext()?.TryGetMessage(out ConsumeContext<DomainEventBase> message) ?? false)
                 {
                     var tenant = message.Message?.EventContext?.GetCustomContext<SampleDomainEventContext>()?.Tenant;
 
