@@ -68,7 +68,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
             }
 
             var providerType = (efBuilder.IsTenantEntity ?
-                typeof(AbstractElasticChangeTrackingDbContextProvider<,,>):
+                typeof(AbstractElasticChangeTrackingDbContextProvider<,,>) :
                 typeof(AbstractChangeTrackingDbContextProvider<,,>))
                 .MakeGenericType(efBuilder.EntityKeyType, efBuilder.EntityType, efBuilder.DbContextType);
 
