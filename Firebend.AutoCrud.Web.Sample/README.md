@@ -52,6 +52,20 @@ The sample project uses token base `authentication` method. For the `authorizati
 - Resource Base
 
 ### Configuration
+
+```mermaid
+    graph TD;
+    id1[Configure Authentication]
+    id2[Create Resource Authorization Handlers]
+    id3[Register Auth Policies]
+    id4[Register Auth Handlers]
+    
+    id1-->id2;
+    id2-->id3;
+    id3-->id4;
+```
+
+#### Authentication
 For the authentication, on the sample project we set the token statically on the `Startup.cs` file for the test purpose as below;
 
 ```c#
@@ -64,6 +78,8 @@ app.Use(async (context, next) =>
 ```
 
 You may want configure it for your own authentication logic.
+
+#### Authorization
 
 For the `resource authorization`, we created the Authorization Handlers.
 
@@ -80,28 +96,11 @@ These handlers are injected at the startup file.
 ```c#
 // startup.cs
 
-services.AddAuthorization(options =>
-    {
-        options.AddPolicy(ReadAllAuthorizationRequirement.DefaultPolicy,
-            policy => policy.Requirements.Add(new ReadAllAuthorizationRequirement()));
-        options.AddPolicy(ReadAuthorizationRequirement.DefaultPolicy,
-            policy => policy.Requirements.Add(new ReadAuthorizationRequirement()));
-        options.AddPolicy(CreateAuthorizationRequirement.DefaultPolicy,
-            policy => policy.Requirements.Add(new CreateAuthorizationRequirement()));
-        options.AddPolicy(CreateMultipleAuthorizationRequirement.DefaultPolicy,
-            policy => policy.Requirements.Add(new CreateMultipleAuthorizationRequirement()));
-        options.AddPolicy(UpdateAuthorizationRequirement.DefaultPolicy,
-            policy => policy.Requirements.Add(new UpdateAuthorizationRequirement()));
-        options.AddPolicy(DeleteAuthorizationRequirement.DefaultPolicy,
-            policy => policy.Requirements.Add(new DeleteAuthorizationRequirement()));
-    });
-            
-services.AddSingleton<IAuthorizationHandler, ReadAllAuthorizationHandler>();
-services.AddSingleton<IAuthorizationHandler, ReadAuthorizationHandler>();
-services.AddSingleton<IAuthorizationHandler, CreateAuthorizationHandler>();
-services.AddSingleton<IAuthorizationHandler, CreateMultipleAuthorizationHandler>();
-services.AddSingleton<IAuthorizationHandler, UpdateAuthorizationHandler>();
-services.AddSingleton<IAuthorizationHandler, DeleteAuthorizationHandler>();
+services
+    ...
+    .AddDefaultResourceAuthorizationRequirements()
+    .AddResourceAuthorizationHandlers();
+
 ```
 
 You can inject different handlers for the resource policies. If you want to use the existing handlers, you may want to add your own business logic into them.
