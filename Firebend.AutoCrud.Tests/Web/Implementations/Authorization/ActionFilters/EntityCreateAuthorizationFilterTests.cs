@@ -32,7 +32,6 @@ public class EntityCreateAuthorizationFilterTests
     {
         _fixture = new Fixture();
         _fixture.Customize(new AutoMoqCustomization());
-        _fixture.Customize<BindingInfo>(c => c.OmitAutoProperties());
 
         _httpContext = new Mock<HttpContext>();
         _serviceProvider = new Mock<IServiceProvider>();
@@ -98,8 +97,10 @@ public class EntityCreateAuthorizationFilterTests
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter("ResourceCreate");
-        entityCreateAuthorizationFilter.ViewModelType = typeof(PostFunTestClass);
+        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter("ResourceCreate")
+        {
+            ViewModelType = typeof(PostFunTestClass)
+        };
         entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, It.IsAny<ActionExecutionDelegate>());
 
         // then
