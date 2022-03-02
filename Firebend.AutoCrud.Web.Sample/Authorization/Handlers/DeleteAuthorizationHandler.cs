@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
-public class DeleteAuthorizationHandler : AuthorizationHandler<DeleteAuthorizationRequirement, IDataAuth>
+public class DeleteAuthorizationHandler : AuthorizationHandler<DeleteAuthorizationRequirement, IEntityDataAuth>
 {
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         DeleteAuthorizationRequirement requirement,
-        IDataAuth resource)
+        IEntityDataAuth resource)
     {
         context.Succeed(requirement);
         return Task.CompletedTask;

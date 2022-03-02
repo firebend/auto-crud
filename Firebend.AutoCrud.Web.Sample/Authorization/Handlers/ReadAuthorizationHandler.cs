@@ -6,14 +6,23 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
-public class ReadAuthorizationHandler : AuthorizationHandler<ReadAuthorizationRequirement, IDataAuth>
+public class ReadAuthorizationHandler : AuthorizationHandler<ReadAuthorizationRequirement, IEntityDataAuth>
 {
-    protected override Task HandleRequirementAsync(
+    private readonly DataAuthService _dataAuthService;
+
+    public ReadAuthorizationHandler(DataAuthService dataAuthService)
+    {
+        _dataAuthService = dataAuthService;
+    }
+
+    protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         ReadAuthorizationRequirement requirement,
-        IDataAuth resource)
+        IEntityDataAuth resource)
     {
-        context.Succeed(requirement);
-        return Task.CompletedTask;
+        if (await _dataAuthService.AuthorizeAsync(context.User, resource.DataAuth))
+        {
+            context.Succeed(requirement);
+        }
     }
 }

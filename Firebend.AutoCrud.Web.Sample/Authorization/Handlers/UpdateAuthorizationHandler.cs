@@ -1,4 +1,4 @@
-using System.Reflection.Metadata;
+using System.Linq;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Firebend.AutoCrud.Web.Sample.Models;
@@ -6,14 +6,44 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
-public class UpdateAuthorizationHandler : AuthorizationHandler<UpdateAuthorizationRequirement, IDataAuth>
+public class PutAuthorizationHandler : AuthorizationHandler<UpdateAuthorizationRequirement, EntityViewModelCreate>
 {
-    protected override Task HandleRequirementAsync(
+    private readonly DataAuthService _dataAuthService;
+
+    public PutAuthorizationHandler(DataAuthService dataAuthService)
+    {
+        _dataAuthService = dataAuthService;
+    }
+
+    protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         UpdateAuthorizationRequirement requirement,
-        IDataAuth resource)
+        EntityViewModelCreate resource)
     {
-        context.Succeed(requirement);
-        return Task.CompletedTask;
+        if (await _dataAuthService.AuthorizeAsync(context.User, resource.Body.DataAuth))
+        {
+            context.Succeed(requirement);
+        }
+    }
+}
+
+public class PatchAuthorizationHandler : AuthorizationHandler<UpdateAuthorizationRequirement, IEntityDataAuth>
+{
+    private readonly DataAuthService _dataAuthService;
+
+    public PatchAuthorizationHandler(DataAuthService dataAuthService)
+    {
+        _dataAuthService = dataAuthService;
+    }
+
+    protected override async Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        UpdateAuthorizationRequirement requirement,
+        IEntityDataAuth resource)
+    {
+        if (await _dataAuthService.AuthorizeAsync(context.User, resource.DataAuth))
+        {
+            context.Succeed(requirement);
+        }
     }
 }

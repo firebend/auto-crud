@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
-public class CreateMultipleAuthorizationHandler : AuthorizationHandler<CreateMultipleAuthorizationRequirement, IDataAuth>
+public class CreateMultipleAuthorizationHandler : AuthorizationHandler<CreateMultipleAuthorizationRequirement, EntityViewModelCreate>
 {
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         CreateMultipleAuthorizationRequirement requirement,
-        IDataAuth resource)
+        EntityViewModelCreate resource)
     {
         context.Succeed(requirement);
         return Task.CompletedTask;

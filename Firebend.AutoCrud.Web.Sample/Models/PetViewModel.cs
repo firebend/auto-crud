@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class PetBaseViewModel
+    public class PetBaseViewModel: EntityViewModelBase
     {
         [Required]
         [MaxLength(205)]
@@ -18,13 +18,23 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string PetType { get; set; }
     }
 
-    public class CreatePetViewModel: IDataAuth
+    public class CreatePetViewModel: EntityViewModelCreate
     {
+        private PetBaseViewModel _body;
+
         [FromRoute(Name = "personId")]
         public Guid PersonId { get; set; }
 
         [FromBody]
-        public PetBaseViewModel Body { get; set; }
+        public new PetBaseViewModel Body
+        {
+            get => _body;
+            set
+            {
+                _body = value;
+                base.Body = value;
+            }
+        }
     }
 
     public class PutPetViewModel : PetBaseViewModel, IEntity<Guid>
@@ -40,10 +50,8 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public Guid Id { get; set; }
     }
 
-    public class GetPetViewModel : PutPetViewModel
+    public class GetPetViewModel: EntityViewModelRead<EfPet>
     {
-        public DateTimeOffset CreatedDate { get; set; }
-        public DateTimeOffset ModifiedDate { get; set; }
         public bool IsDeleted { get; set; }
         public PetPersonViewModel Person { get; set; }
 
@@ -66,7 +74,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         }
     }
 
-    public class ExportPetViewModel
+    public class ExportPetViewModel: EntityViewModelExport<EfPet>
     {
         [Export(Name = "Person Id", Order = 0)]
         public Guid? PersonId { get; set; }

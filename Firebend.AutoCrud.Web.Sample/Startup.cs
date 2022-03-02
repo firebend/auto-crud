@@ -1,11 +1,13 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
+using Firebend.AutoCrud.Web.Sample.Authorization;
 using Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
@@ -27,10 +29,16 @@ namespace Firebend.AutoCrud.Web.Sample
 {
     public static class Startup
     {
+        private const string AuthorizationHeaderKey = "Authorization";
+
+        private const string AuthorizationHeaderValue =
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY0NTgwMDQwMSwiaWF0IjoxNjQ1ODAwNDAxfQ.XGjDqgMLK-D_X5EZmpeFqslflX6QxEfhCibPLwALP2I";
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
+            // Do not use this code in production
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
@@ -89,12 +97,14 @@ namespace Firebend.AutoCrud.Web.Sample
                 options.AddPolicy(DeleteAuthorizationRequirement.DefaultPolicy,
                     policy => policy.Requirements.Add(new DeleteAuthorizationRequirement()));
             });
-            services.AddSingleton<IAuthorizationHandler, ReadAllAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, ReadAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, CreateAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, CreateMultipleAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, UpdateAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, DeleteAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, ReadAllAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, ReadAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, CreateAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, CreateMultipleAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, PutAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, PatchAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, DeleteAuthorizationHandler>();
+            services.AddScoped<DataAuthService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -105,12 +115,15 @@ namespace Firebend.AutoCrud.Web.Sample
                 app.UseDeveloperExceptionPage();
             }
 
-            // app.Use(async (context, next) =>
-            // {
-            //     context.Request.Headers.Add("Authorization",
-            //         "Bearer eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY0NTgwMDQwMSwiaWF0IjoxNjQ1ODAwNDAxfQ.XGjDqgMLK-D_X5EZmpeFqslflX6QxEfhCibPLwALP2I");
-            //     await next(context);
-            // });
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Headers.All(h => h.Key != AuthorizationHeaderKey))
+                {
+                    context.Request.Headers.Add(AuthorizationHeaderKey, AuthorizationHeaderValue);
+                }
+
+                await next(context);
+            });
             app.UseRouting();
 
             app.UseAuthentication();

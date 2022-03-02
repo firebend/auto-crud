@@ -4,13 +4,16 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Firebend.AutoCrud.Web.Sample.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Firebend.AutoCrud.Web.Sample.Controllers;
 
     [Route("api/token")]
+    [AllowAnonymous]
     [ApiController]
     public class TokenController : ControllerBase
     {
@@ -30,27 +33,28 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers;
 
                 if (user != null)
                 {
+                    var tokenHandler = new JwtSecurityTokenHandler();
                     var claims = new[] {
                         new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
                         new Claim("UserId", user.UserId.ToString()),
-                        new Claim("UserName", user.UserName),
-                        new Claim("Email", user.Email)
+                        new Claim(JwtRegisteredClaimNames.Email, user.Email)
                     };
 
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                    var key = Encoding.ASCII.GetBytes(_configuration["Jwt:key"]);
 
-                    var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                    var tokenDescriptor = new SecurityTokenDescriptor
+                    {
+                        Subject = new ClaimsIdentity(claims),
+                        Expires = DateTime.UtcNow.AddHours(1),
+                        Issuer = _configuration["Jwt:Issuer"],
+                        Audience = _configuration["Jwt:Audience"],
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    };
+                    var token = tokenHandler.CreateToken(tokenDescriptor);
 
-                    var token = new JwtSecurityToken(
-                        _configuration["Jwt:Issuer"],
-                        _configuration["Jwt:Audience"],
-                        claims,
-                        expires: DateTime.UtcNow.AddMinutes(10),
-                        signingCredentials: signIn);
-
-                    return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+                    return Ok(new { Token = tokenHandler.WriteToken(token), Message = "Success" });
                 }
                 else
                 {

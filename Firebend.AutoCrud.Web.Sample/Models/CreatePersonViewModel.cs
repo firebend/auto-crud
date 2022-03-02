@@ -10,8 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class CreatePersonViewModel: IDataAuth
+    public class CreatePersonViewModel: EntityViewModelCreate
     {
+        private PersonViewModelBase _body;
+
         public CreatePersonViewModel()
         {
 
@@ -28,10 +30,18 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         }
 
         [FromBody]
-        public PersonViewModelBase Body { get; set; }
+        public new PersonViewModelBase Body
+        {
+            get => _body;
+            set
+            {
+                _body = value;
+                base.Body = value;
+            }
+        }
     }
 
-    public class PersonViewModelBase: IDataAuth
+    public class PersonViewModelBase: EntityViewModelBase
     {
         public PersonViewModelBase()
         {
@@ -108,7 +118,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public DateTimeOffset ModifiedDate { get; set; }
     }
 
-    public class CreateMultiplePeopleViewModel : IMultipleEntityViewModel<PersonViewModelBase>, IDataAuth
+    public class CreateMultiplePeopleViewModel : IMultipleEntityViewModel<PersonViewModelBase>
     {
         [FromBody]
         public IEnumerable<PersonViewModelBase> Entities { get; set; }
