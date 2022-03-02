@@ -78,33 +78,12 @@ namespace Firebend.AutoCrud.Web.Sample
                 .AddScoped<IDistributedLockService, CustomLockService>()
                 .AddControllers()
                 .AddNewtonsoftJson()
-                .AddFirebendAutoCrudWeb(services);
+                .AddFirebendAutoCrudWeb(services)
+                .AddDefaultResourceAuthorizationRequirements()
+                .AddResourceAuthorizationHandlers();
 
             services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy(ReadAllAuthorizationRequirement.DefaultPolicy,
-                    policy => policy.Requirements.Add(new ReadAllAuthorizationRequirement()));
-                options.AddPolicy(ReadAuthorizationRequirement.DefaultPolicy,
-                    policy => policy.Requirements.Add(new ReadAuthorizationRequirement()));
-                options.AddPolicy(CreateAuthorizationRequirement.DefaultPolicy,
-                    policy => policy.Requirements.Add(new CreateAuthorizationRequirement()));
-                options.AddPolicy(CreateMultipleAuthorizationRequirement.DefaultPolicy,
-                    policy => policy.Requirements.Add(new CreateMultipleAuthorizationRequirement()));
-                options.AddPolicy(UpdateAuthorizationRequirement.DefaultPolicy,
-                    policy => policy.Requirements.Add(new UpdateAuthorizationRequirement()));
-                options.AddPolicy(DeleteAuthorizationRequirement.DefaultPolicy,
-                    policy => policy.Requirements.Add(new DeleteAuthorizationRequirement()));
-            });
-            services.AddScoped<IAuthorizationHandler, ReadAllAuthorizationHandler>();
-            services.AddScoped<IAuthorizationHandler, ReadAuthorizationHandler>();
-            services.AddScoped<IAuthorizationHandler, CreateAuthorizationHandler>();
-            services.AddScoped<IAuthorizationHandler, CreateMultipleAuthorizationHandler>();
-            services.AddScoped<IAuthorizationHandler, PutAuthorizationHandler>();
-            services.AddScoped<IAuthorizationHandler, PatchAuthorizationHandler>();
-            services.AddScoped<IAuthorizationHandler, DeleteAuthorizationHandler>();
-            services.AddScoped<DataAuthService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

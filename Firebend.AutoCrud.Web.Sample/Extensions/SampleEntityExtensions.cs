@@ -67,7 +67,18 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         {
                             var mongoTenantPerson = new MongoTenantPerson();
                             x.Body.CopyPropertiesTo(mongoTenantPerson);
-
+                            return mongoTenantPerson;
+                        })
+                        .WithUpdateViewModel<CreatePersonViewModel>(x =>
+                        {
+                            var mongoTenantPerson = new MongoTenantPerson();
+                            x.Body.CopyPropertiesTo(mongoTenantPerson);
+                            return mongoTenantPerson;
+                        })
+                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
+                        {
+                            var mongoTenantPerson = new MongoTenantPerson();
+                            vm.CopyPropertiesTo(mongoTenantPerson);
                             return mongoTenantPerson;
                         })
                         .WithAllControllers(true)
