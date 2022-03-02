@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Web.Sample.Models;
-using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Firebend.AutoCrud.Web.Sample.Authorization;
 

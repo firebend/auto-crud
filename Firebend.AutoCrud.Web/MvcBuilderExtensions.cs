@@ -10,7 +10,8 @@ namespace Firebend.AutoCrud.Web
 {
     public static class MvcBuilderExtensions
     {
-        public static IMvcBuilder AddFirebendAutoCrudWeb(this IMvcBuilder builder, IServiceCollection serviceCollection) =>
+        public static IMvcBuilder
+            AddFirebendAutoCrudWeb(this IMvcBuilder builder, IServiceCollection serviceCollection) =>
             builder.ConfigureApplicationPartManager(manager =>
             {
                 if (manager.FeatureProviders.Any(fp => fp is FirebendAutoCrudControllerConvention))
@@ -43,6 +44,7 @@ namespace Firebend.AutoCrud.Web
         }
 
         public static void AddResourceAuthorizationHandlers(this IMvcBuilder builder)
-            => builder.Services.RegisterAllTypes<IAuthorizationHandler>(new []{Assembly.GetEntryAssembly()});
+            => builder.Services.RegisterAllTypes<IAuthorizationHandler>(new[] {Assembly.GetEntryAssembly()},
+                ServiceLifetime.Scoped);
     }
 }

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Firebend.AutoCrud.Web.Sample.Models;

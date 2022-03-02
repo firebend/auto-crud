@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Firebend.AutoCrud.Web.Sample.Models;

@@ -1,15 +1,9 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 
 namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 

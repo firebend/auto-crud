@@ -6,15 +6,12 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
-using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Firebend.AutoCrud.Web.Sample.Authorization;
-using Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Extensions;
 using Firebend.AutoCrud.Web.Sample.Tenant;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -82,6 +79,7 @@ namespace Firebend.AutoCrud.Web.Sample
                 .AddDefaultResourceAuthorizationRequirements()
                 .AddResourceAuthorizationHandlers();
 
+            services.AddScoped<DataAuthService>();
             services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
 
         }
