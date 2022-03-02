@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class PetBaseViewModel: EntityViewModelBase
+    public class PetBaseViewModel: IEntityViewModelBase
     {
         [Required]
         [MaxLength(205)]
@@ -16,25 +16,17 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         [Required]
         [MaxLength(250)]
         public string PetType { get; set; }
+
+        public DataAuth DataAuth { get; set; }
     }
 
-    public class CreatePetViewModel: EntityViewModelCreate
+    public class CreatePetViewModel: IEntityViewModelCreate<PetBaseViewModel>
     {
-        private PetBaseViewModel _body;
-
         [FromRoute(Name = "personId")]
         public Guid PersonId { get; set; }
 
         [FromBody]
-        public new PetBaseViewModel Body
-        {
-            get => _body;
-            set
-            {
-                _body = value;
-                base.Body = value;
-            }
-        }
+        public PetBaseViewModel Body { get; set; }
     }
 
     public class PutPetViewModel : PetBaseViewModel, IEntity<Guid>
@@ -50,7 +42,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public Guid Id { get; set; }
     }
 
-    public class GetPetViewModel: EntityViewModelRead<EfPet>
+    public class GetPetViewModel: IEntityViewModelRead<EfPet>
     {
         public bool IsDeleted { get; set; }
         public PetPersonViewModel Person { get; set; }
@@ -72,9 +64,13 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             this.Person = new PetPersonViewModel();
             pet.Person.CopyPropertiesTo(this.Person);
         }
+
+        public Guid Id { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 
-    public class ExportPetViewModel: EntityViewModelExport<EfPet>
+    public class ExportPetViewModel: IEntityViewModelExport
     {
         [Export(Name = "Person Id", Order = 0)]
         public Guid? PersonId { get; set; }
@@ -116,6 +112,8 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             PersonId = pet.Person?.Id;
             PetId = pet.Id;
         }
+
+        public Guid Id { get; set; }
     }
 
 }

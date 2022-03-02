@@ -1,48 +1,28 @@
 using System;
-using Firebend.AutoCrud.Core.Extensions;
+using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Sample.Models;
 
-public class EntityViewModelBase: IEntityDataAuth
+public interface IEntityViewModelBase : IEntityDataAuth
 {
-    public DataAuth DataAuth { get; set; }
 }
 
-public class EntityViewModelCreate
+public interface IEntityViewModelCreate<T> where T : IEntityDataAuth
 {
-    public IEntityDataAuth Body { get; set; }
+    T Body { get; set; }
 }
 
-public class EntityViewModelRead<TEntity> : EntityViewModelBase, IEntity<Guid>
+public interface IEntityViewModelCreateMultiple<T> : IMultipleEntityViewModel<T> where T : IEntityDataAuth
+{
+}
+
+public interface IEntityViewModelRead<TEntity> : IEntity<Guid>, IModifiedEntity
     where TEntity : IEntity<Guid>, IEntityDataAuth
 {
-    public Guid Id { get; set; }
-    public DateTimeOffset CreatedDate { get; set; }
-    public DateTimeOffset ModifiedDate { get; set; }
-
-    public EntityViewModelRead()
-    {
-    }
-
-    public EntityViewModelRead(TEntity type)
-    {
-        type?.CopyPropertiesTo(this);
-    }
 }
 
-public class EntityViewModelExport<T> : EntityViewModelBase, IEntity<Guid>
+public interface IEntityViewModelExport : IEntity<Guid>, IModifiedEntity
 {
-    public Guid Id { get; set; }
-    public DateTimeOffset CreatedDate { get; set; }
-    public DateTimeOffset ModifiedDate { get; set; }
-
-    public EntityViewModelExport()
-    {
-    }
-
-    public EntityViewModelExport(T type)
-    {
-        type?.CopyPropertiesTo(this);
-    }
 }

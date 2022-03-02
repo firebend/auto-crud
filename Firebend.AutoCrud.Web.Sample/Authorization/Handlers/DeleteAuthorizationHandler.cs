@@ -7,13 +7,22 @@ namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
 public class DeleteAuthorizationHandler : AuthorizationHandler<DeleteAuthorizationRequirement, IEntityDataAuth>
 {
-    protected override Task HandleRequirementAsync(
+    private readonly DataAuthService _dataAuthService;
+
+    public DeleteAuthorizationHandler(DataAuthService dataAuthService)
+    {
+        _dataAuthService = dataAuthService;
+    }
+
+    protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         DeleteAuthorizationRequirement requirement,
         IEntityDataAuth resource)
     {
-        // Authorization business logic comes here
-        context.Succeed(requirement);
-        return Task.CompletedTask;
+        if (resource.DataAuth is not null &&
+            await _dataAuthService.AuthorizeAsync(context.User, resource.DataAuth))
+        {
+            context.Succeed(requirement);
+        }
     }
 }
