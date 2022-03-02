@@ -1,11 +1,7 @@
-using System.Threading.Tasks;
-using AutoFixture;
-using AutoFixture.AutoMoq;
 using Firebend.AutoCrud.Core.Extensions;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using NUnit.Framework.Interfaces;
 
 namespace Firebend.AutoCrud.Tests.Core;
 
@@ -23,7 +19,6 @@ public class ServiceCollectionExtensionTests
         var serviceBuilder = serviceCollection.BuildServiceProvider();
 
         var testService = serviceBuilder.GetService<ITestService>();
-        var testServiceA = serviceBuilder.GetService<TestServiceA>();
 
         // then
         testService.Should().NotBeNull();
