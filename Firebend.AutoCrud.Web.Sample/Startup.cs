@@ -81,6 +81,7 @@ namespace Firebend.AutoCrud.Web.Sample
 
             services.AddScoped<DataAuthService>();
             services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
         }
 
