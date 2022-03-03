@@ -14,7 +14,6 @@ using Firebend.AutoCrud.CustomFields.Mongo;
 using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
-using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
@@ -172,7 +171,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithUpdateViewModel<PutPetViewModel>(pet => new EfPet(pet))
                         .WithRoute("/api/v1/ef-person/{personId:guid}/pets")
                         .WithAllControllers(true)
-                        // .AddResourceAuthorization()
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
