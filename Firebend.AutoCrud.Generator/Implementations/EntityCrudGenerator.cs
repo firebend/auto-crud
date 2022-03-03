@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Models;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Generator.Implementations
 {
-    public abstract class EntityCrudGenerator : IEntityCrudGenerator
+    public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
     {
         private readonly object _lock = new();
         private bool _isGenerated;
@@ -26,7 +27,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             ServiceCollection = serviceCollection;
         }
 
-        protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(DynamicClassGenerator.Instance, serviceCollection)
+        protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(new DynamicClassGenerator(), serviceCollection)
         {
         }
 
@@ -334,5 +335,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             return this;
         }
+
+        protected override void DisposeManagedObjects() => _classGenerator?.Dispose();
     }
 }

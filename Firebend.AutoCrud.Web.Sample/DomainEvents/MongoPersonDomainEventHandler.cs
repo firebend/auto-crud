@@ -11,36 +11,36 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 {
-    public partial class EfPersonDomainEventHandler : BaseDisposable, IEntityAddedDomainEventSubscriber<EfPerson>,
-        IEntityUpdatedDomainEventSubscriber<EfPerson>
+    public partial class MongoPersonDomainEventHandler : BaseDisposable, IEntityAddedDomainEventSubscriber<MongoTenantPerson>,
+        IEntityUpdatedDomainEventSubscriber<MongoTenantPerson>
     {
-        [LoggerMessage(EventId = 0, Message = "Person Added! Person: {modifiedJson}. Context: {contextJson}", Level = LogLevel.Debug)]
+        [LoggerMessage(EventId = 0, Message = "Mongo Person Added! Person: {modifiedJson}. Context: {contextJson}", Level = LogLevel.Debug)]
         public static partial void LogPersonAdded(ILogger logger, string modifiedJson, string contextJson);
 
-        [LoggerMessage(EventId = 2, Message = "Catch Phrase: {catchPhrase}", Level = LogLevel.Debug)]
+        [LoggerMessage(EventId = 2, Message = "Mongo Catch Phrase: {catchPhrase}", Level = LogLevel.Debug)]
         public static partial void LogCatchPhrase(ILogger logger, string catchPhrase);
 
-        [LoggerMessage(EventId = 3, Message = "Catch Phrase From Scope: {catchPhrase}", Level = LogLevel.Debug)]
+        [LoggerMessage(EventId = 3, Message = "Mongo Catch Phrase From Scope: {catchPhrase}", Level = LogLevel.Debug)]
         public static partial void LogCatchPhraseFromScope(ILogger logger, string catchPhrase);
 
-        [LoggerMessage(EventId = 4, Message = "No Scope Context", Level = LogLevel.Debug)]
+        [LoggerMessage(EventId = 4, Message = "Mongo No Scope Context", Level = LogLevel.Debug)]
         public static partial void LogNoScopeContext(ILogger logger);
 
-        [LoggerMessage(EventId = 5, Message = "Person Updated! Original: {originalJson}. Modified: {modifiedJson}. Context: {contextJson}",
+        [LoggerMessage(EventId = 5, Message = "Mongo Person Updated! Original: {originalJson}. Modified: {modifiedJson}. Context: {contextJson}",
             Level = LogLevel.Debug)]
         public static partial void LogPersonUpdated(ILogger logger, string originalJson, string modifiedJson, string contextJson);
 
-        private readonly ILogger _logger;
+        private readonly ILogger<MongoPersonDomainEventHandler> _logger;
         private readonly ScopedConsumeContextProvider _scoped;
 
-        public EfPersonDomainEventHandler(ILogger<EfPersonDomainEventHandler> logger,
+        public MongoPersonDomainEventHandler(ILogger<MongoPersonDomainEventHandler> logger,
             ScopedConsumeContextProvider scoped)
         {
             _logger = logger;
             _scoped = scoped;
         }
 
-        public Task EntityAddedAsync(EntityAddedDomainEvent<EfPerson> domainEvent, CancellationToken cancellationToken = default)
+        public Task EntityAddedAsync(EntityAddedDomainEvent<MongoTenantPerson> domainEvent, CancellationToken cancellationToken = default)
         {
             var modified = domainEvent.Entity;
             var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
@@ -61,7 +61,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             return Task.CompletedTask;
         }
 
-        public Task EntityUpdatedAsync(EntityUpdatedDomainEvent<EfPerson> domainEvent, CancellationToken cancellationToken = default)
+        public Task EntityUpdatedAsync(EntityUpdatedDomainEvent<MongoTenantPerson> domainEvent, CancellationToken cancellationToken = default)
         {
             var original = domainEvent.Previous;
             var modified = domainEvent.Modified;

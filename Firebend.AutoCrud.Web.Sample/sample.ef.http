@@ -9,6 +9,16 @@ Content-Type: application/json
     "createdDate": "2020-01-01"
 }
 ###
+POST https://localhost:5001/api/v1/ef-person
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
+
+{
+    "firstName": "Peggy",
+    "lastName": "Sue",
+    "createdDate": "2020-01-01"
+}
+###
 POST https://localhost:5001/api/v1/ef-person/multiple
 Content-Type: application/json
 
@@ -24,8 +34,9 @@ Content-Type: application/json
     }
 ]
 ###
-PUT https://localhost:5001/api/v1/ef-person/73686799-cf49-40f8-12e1-08d89c52a9fc
+PUT https://localhost:5001/api/v1/ef-person/0226d9c0-1748-4e60-da64-08d9fba1a20a
 Content-Type: application/json
+x-fb-ac-tenant: Dneberif
 
 {
     "firstName": "Hank",
@@ -55,6 +66,11 @@ https://localhost:5001/api/v1/ef-person/all
 
 ###
 https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+
+###
+GET https://localhost:5001/api/v1/ef-person?pageSize=10&pageNumber=1
+Content-Type: application/json
+x-fb-ac-tenant: Dneberif
 
 ###
 https://localhost:5001/api/v1/ef-person?search=Fox&pageSize=10&pageNumber=1&modifiedStartDate=2021-01-12T15:24:22.285552-06:00

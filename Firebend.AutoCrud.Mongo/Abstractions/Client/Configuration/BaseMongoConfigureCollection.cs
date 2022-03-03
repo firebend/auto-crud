@@ -22,13 +22,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
         protected virtual async Task ConfigureAsync(IMongoEntityConfiguration<TKey, TEntity> configuration,
             CancellationToken cancellationToken)
         {
-            var fullCollectionName = $"{configuration.DatabaseName}.{configuration.CollectionName}";
-
-            BaseMongoConfigureCollectionLogger.ConfiguringCollection(_logger, fullCollectionName);
+            BaseMongoConfigureCollectionLogger.ConfiguringCollection(_logger, configuration.DatabaseName, configuration.CollectionName);
             await _indexClient.CreateCollectionAsync(configuration, cancellationToken).ConfigureAwait(false);
 
-            BaseMongoConfigureCollectionLogger.ConfiguringIndexes(_logger, fullCollectionName);
+            BaseMongoConfigureCollectionLogger.ConfiguringIndexes(_logger, configuration.DatabaseName, configuration.CollectionName);
             await _indexClient.BuildIndexesAsync(configuration, cancellationToken).ConfigureAwait(false);
+
+            BaseMongoConfigureCollectionLogger.Done(_logger, configuration.DatabaseName, configuration.CollectionName);
         }
     }
 }

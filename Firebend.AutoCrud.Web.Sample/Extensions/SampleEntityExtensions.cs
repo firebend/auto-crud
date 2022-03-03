@@ -42,8 +42,13 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithShardMode(MongoTenantShardMode.Database)
                     .AddCustomFields()
                     .AddDomainEvents(domainEvents => domainEvents
-                        .WithMongoChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
-                        .WithMassTransit())
+                        .WithMongoChangeTracking(new ChangeTrackingOptions
+                        {
+                            PersistCustomContext = true
+                        })
+                        .WithMassTransit()
+                        .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
+                        .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters, MongoCustomSearchHandler>()
                         .WithCrud()

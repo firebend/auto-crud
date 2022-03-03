@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
         /// a <see cref="AbstractEntityFrameworkChangeTrackingReadService{TEntityKey,TEntity}"/> to read changes.
         /// It also registers <see cref="AbstractChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="AbstractChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
         /// and <see cref="AbstractChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
-        /// A <see cref="AbstractChangeTrackingDbContextProvider{TEntityKey,TEntity}"/> is registered so that a special change tracking Entity Framework context
+        /// A <see cref="AbstractChangeTrackingDbContextProvider{TEntityKey,TEntity,TContext}"/> is registered so that a special change tracking Entity Framework context
         /// can be used to persist the changes.
         /// </summary>
         /// <param name="configurator">
@@ -67,7 +67,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework
                 throw new Exception("Please configure the builder's db context first.");
             }
 
-            var providerType = typeof(AbstractChangeTrackingDbContextProvider<,,>)
+            var providerType = (efBuilder.IsTenantEntity ?
+                typeof(AbstractElasticChangeTrackingDbContextProvider<,,>) :
+                typeof(AbstractChangeTrackingDbContextProvider<,,>))
                 .MakeGenericType(efBuilder.EntityKeyType, efBuilder.EntityType, efBuilder.DbContextType);
 
             configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>>(providerType);

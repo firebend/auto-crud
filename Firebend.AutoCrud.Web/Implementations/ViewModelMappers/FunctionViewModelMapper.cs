@@ -39,10 +39,10 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
             _to = to;
         }
 
-        private TEntity ToEntity(TViewModel model)
+        private static TEntity ToEntity(TViewModel model)
             => _from?.Invoke(model);
 
-        private TViewModel ToViewModel(TEntity entity)
+        private static TViewModel ToViewModel(TEntity entity)
             => _to?.Invoke(entity);
 
         public Task<TEntity> FromAsync(TViewModel model, CancellationToken cancellationToken = default)
