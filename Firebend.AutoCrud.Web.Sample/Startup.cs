@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -79,6 +80,7 @@ namespace Firebend.AutoCrud.Web.Sample
                 .AddNewtonsoftJson()
                 .AddFirebendAutoCrudWeb(services)
                 .AddDefaultResourceAuthorizationRequirements()
+                .AddDefaultChangeTrackingResourceAuthorizationRequirement()
                 .AddResourceAuthorizationHandlers();
 
             services.AddScoped<DataAuthService>();
