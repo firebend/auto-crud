@@ -47,11 +47,11 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
 
             LogPersonAdded(_logger, modifiedJson, contextJson);
-            LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
+            LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
 
             if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityAddedDomainEvent<EfPerson>> consumeContext))
             {
-                LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
+                LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
             }
             else
             {
@@ -71,11 +71,11 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 
             LogPersonUpdated(_logger, originalJson, modifiedJson, contextJson);
 
-            LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
+            LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
 
             if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityAddedDomainEvent<EfPerson>> consumeContext))
             {
-                LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<CatchPhraseModel>()?.CatchPhrase);
+                LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
             }
             else
             {
