@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public Guid Id { get; set; }
     }
 
-    public class GetPetViewModel: IEntityViewModelRead<EfPet>
+    public class GetPetViewModel: IEntityViewModelRead<Guid>
     {
         public bool IsDeleted { get; set; }
         public PetPersonViewModel Person { get; set; }

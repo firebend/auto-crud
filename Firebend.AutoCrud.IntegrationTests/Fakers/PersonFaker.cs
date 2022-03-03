@@ -17,7 +17,8 @@ namespace Firebend.AutoCrud.IntegrationTests.Fakers
                     .RuleFor(x => x.FirstName, f => f.Person.FirstName)
                     .RuleFor(x => x.LastName, f => f.Person.LastName)
                     .RuleFor(x => x.NickName, f => f.Person.UserName)
-                    .RuleFor(x => x.OtherEmail, f => f.Person.Email);
+                    .RuleFor(x => x.OtherEmail, f => f.Person.Email)
+                    .RuleFor(x => x.DataAuth, f => new DataAuth {UserEmails = new[] {f.Person.Email}});
 
                 return _fakerViewModelBase;
             }

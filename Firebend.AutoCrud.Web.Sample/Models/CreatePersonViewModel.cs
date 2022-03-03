@@ -64,7 +64,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public DataAuth DataAuth { get; set; }
     }
 
-    public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<EfPerson>, ICustomFieldsEntity<Guid>
+    public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<Guid>, ICustomFieldsEntity<Guid>
     {
         private static readonly string[] Ignores = { nameof(CustomFields) };
         public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }

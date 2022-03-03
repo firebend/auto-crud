@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Bogus;
 using Firebend.AutoCrud.IntegrationTests.Fakers;
 using Firebend.AutoCrud.Web.Sample.Models;
+using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,21 +12,33 @@ namespace Firebend.AutoCrud.IntegrationTests
     [TestClass]
     public class EfEndToEndTest : BaseTest<
         Guid,
-        CreatePersonViewModel,
+        PersonViewModelBase,
         PersonViewModelBase,
         GetPersonViewModel,
         PersonExport>
     {
-        public override string Url => "http://localhost:5000/api/v1/ef-person";
+        protected override string Url => $"{BaseUrl}/v1/ef-person";
 
         [TestMethod]
         public async Task Ef_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
 
-        public override Task<CreatePersonViewModel> GenerateCreateRequestAsync()
-            => Task.FromResult(new CreatePersonViewModel {Body = PersonFaker.Faker.Generate()});
+        protected override Task<UserInfoPostDto> GenerateAuthenticateRequestAsync()
+            => Task.FromResult(new UserInfoPostDto {Email = "developer@test.com", Password = "password"});
 
-        protected override Task<PersonViewModelBase> GenerateUpdateRequestAsync(CreatePersonViewModel createRequest)
-            => Task.FromResult(PersonFaker.Faker.Generate());
+        protected override Task<PersonViewModelBase> GenerateCreateRequestAsync()
+        {
+            var faked = PersonFaker.Faker.Generate();
+            faked.DataAuth.UserEmails = new[] {"developer@test.com"};
+            return Task.FromResult(faked);
+        }
+
+        protected override Task<PersonViewModelBase> GenerateUpdateRequestAsync(PersonViewModelBase createRequest)
+        {
+            var clone = createRequest.Clone();
+            var faked = PersonFaker.Faker.Generate();
+            clone.NickName = faked.NickName;
+            return Task.FromResult(clone);
+        }
 
         protected override Task<JsonPatchDocument> GeneratePatchAsync()
             => Task.FromResult(

@@ -17,8 +17,8 @@ public interface IEntityViewModelCreateMultiple<T> : IMultipleEntityViewModel<T>
 {
 }
 
-public interface IEntityViewModelRead<TEntity> : IEntity<Guid>, IModifiedEntity
-    where TEntity : IEntity<Guid>, IEntityDataAuth
+public interface IEntityViewModelRead<TKey> : IEntity<TKey>, IModifiedEntity
+    where TKey: struct
 {
 }
 
