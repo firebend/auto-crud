@@ -73,7 +73,7 @@ public class EntityCreateMultipleAuthorizationFilterTests
         }
 
         // when
-        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy);
+        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter<EntityCreateMultipleAuthorizationFilterTestClass>(_policy);
         entityCreateMultipleAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext, Next);
     }
 
@@ -99,10 +99,7 @@ public class EntityCreateMultipleAuthorizationFilterTests
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy)
-        {
-            ViewModelType = typeof(EntityCreateMultipleAuthorizationFilterTestClass)
-        };
+        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter<EntityCreateMultipleAuthorizationFilterTestClass>(_policy);
         entityCreateMultipleAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, It.IsAny<ActionExecutionDelegate>());
 
         // then
@@ -129,7 +126,7 @@ public class EntityCreateMultipleAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         // when
-        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy);
+        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter<EntityCreateMultipleAuthorizationFilterTestClass>(_policy);
 
         Task<ActionExecutedContext> Next()
         {
