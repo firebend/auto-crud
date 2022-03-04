@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,12 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class EntityCreateMultipleAuthorizationFilter : IAsyncActionFilter
+public class EntityCreateMultipleAuthorizationFilter<TViewModel> : IAsyncActionFilter
 {
-    public static readonly string[] RequiredProperties = {"ViewModelType"};
     private readonly string _policy;
-
-    public Type ViewModelType { get; set; }
 
     public EntityCreateMultipleAuthorizationFilter(string policy)
     {
@@ -29,7 +25,7 @@ public class EntityCreateMultipleAuthorizationFilter : IAsyncActionFilter
             return;
         }
 
-        if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue?.GetType() == ViewModelType)
+        if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue is TViewModel)
         {
             var authorizationResult =
                 await authorizationService.AuthorizeAsync(context.HttpContext.User, paramValue, _policy);

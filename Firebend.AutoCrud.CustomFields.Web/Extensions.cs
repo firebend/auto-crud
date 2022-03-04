@@ -1,46 +1,114 @@
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.CustomFields.Web.Abstractions;
+using Firebend.AutoCrud.CustomFields.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Firebend.AutoCrud.CustomFields.Web
+namespace Firebend.AutoCrud.CustomFields.Web;
+
+public static class Extensions
 {
-    public static class Extensions
+    public static ControllerConfigurator<TBuilder, TKey, TEntity> WithCustomFieldsControllers<TBuilder, TKey, TEntity>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+        string entityName = null,
+        string entityNamePlural = null,
+        string openApiName = null)
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
-        public static ControllerConfigurator<TBuilder, TKey, TEntity> WithCustomFieldsControllers<TBuilder, TKey, TEntity>(
-            this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
-            string entityName = null,
-            string entityNamePlural = null,
-            string openApiName = null)
-            where TBuilder : EntityCrudBuilder<TKey, TEntity>
-            where TKey : struct
-            where TEntity : class, IEntity<TKey>
+        var createController = typeof(AbstractCustomFieldsCreateController<,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType);
+
+        configurator.WithController(createController, createController, entityName, entityNamePlural, openApiName);
+
+        var updateController = typeof(AbstractCustomAttributeUpdateController<,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType);
+
+        configurator.WithController(updateController, updateController, entityName, entityNamePlural, openApiName);
+
+        var deleteController = typeof(AbstractCustomFieldsDeleteController<,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType);
+
+        configurator.WithController(deleteController, deleteController, entityName, entityNamePlural, openApiName);
+
+        var searchController = typeof(AbstractCustomFieldsSearchController<,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType);
+
+        configurator.WithController(searchController, searchController, entityName, entityNamePlural, openApiName);
+
+        return configurator;
+    }
+
+    /// <summary>
+    /// Adds resource authorization to change tracking read requests using the abstract change tracking controller
+    /// </summary>
+    /// <param name="policy">The resource authorization policy</param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithChangeTrackingControllers()
+    ///          .AddChangeTrackingResourceAuthorization()
+    /// </code>
+    /// </example>
+    public static ControllerConfigurator<TBuilder, TKey, TEntity> AddCustomFieldsResourceAuthorization<TBuilder,
+        TKey,
+        TEntity>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+        string policy = CustomFieldsAuthorizationRequirement.DefaultPolicy)
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+    {
+        var createController = typeof(AbstractCustomFieldsCreateController<,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType);
+
+        configurator.AddResourceAuthorization(createController,
+            typeof(CustomFieldsAuthorizationFilter<TKey, TEntity>), policy);
+
+        var updateController = typeof(AbstractCustomAttributeUpdateController<,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType);
+
+        configurator.AddResourceAuthorization(updateController,
+            typeof(CustomFieldsAuthorizationFilter<TKey, TEntity>), policy);
+
+        var deleteController = typeof(AbstractCustomFieldsDeleteController<,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType);
+
+        configurator.AddResourceAuthorization(deleteController,
+            typeof(CustomFieldsAuthorizationFilter<TKey, TEntity>), policy);
+
+        // var searchController = typeof(AbstractCustomFieldsSearchController<,>)
+        //     .MakeGenericType(configurator.Builder.EntityKeyType,
+        //         configurator.Builder.EntityType);
+        //
+        // configurator.AddResourceAuthorization(createController,
+        //     typeof(CustomFieldsAuthorizationFilter<TKey, TEntity>), policy);
+
+        return configurator;
+    }
+
+    public static IMvcBuilder AddDefaultCustomFieldsResourceAuthorizationRequirement(this IMvcBuilder builder)
+    {
+        builder.Services.AddAuthorization(options =>
         {
-            var createController = typeof(AbstractCustomFieldsCreateController<,>)
-                .MakeGenericType(configurator.Builder.EntityKeyType,
-                    configurator.Builder.EntityType);
+            options.AddPolicy(CustomFieldsAuthorizationRequirement.DefaultPolicy,
+                policy => policy.Requirements.Add(new CustomFieldsAuthorizationRequirement()));
+        });
 
-            configurator.WithController(createController, createController, entityName, entityNamePlural, openApiName);
-
-            var updateController = typeof(AbstractCustomAttributeUpdateController<,>)
-                .MakeGenericType(configurator.Builder.EntityKeyType,
-                    configurator.Builder.EntityType);
-
-            configurator.WithController(updateController, updateController, entityName, entityNamePlural, openApiName);
-
-            var deleteController = typeof(AbstractCustomFieldsDeleteController<,>)
-                .MakeGenericType(configurator.Builder.EntityKeyType,
-                    configurator.Builder.EntityType);
-
-            configurator.WithController(deleteController, deleteController, entityName, entityNamePlural, openApiName);
-
-            var searchController = typeof(AbstractCustomFieldsSearchController<,>)
-                .MakeGenericType(configurator.Builder.EntityKeyType,
-                    configurator.Builder.EntityType);
-
-            configurator.WithController(searchController, searchController, entityName, entityNamePlural, openApiName);
-
-            return configurator;
-        }
+        return builder;
     }
 }

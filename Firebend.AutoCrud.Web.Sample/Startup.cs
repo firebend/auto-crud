@@ -5,6 +5,7 @@ using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.Authorization;
@@ -81,6 +82,7 @@ namespace Firebend.AutoCrud.Web.Sample
                 .AddFirebendAutoCrudWeb(services)
                 .AddDefaultResourceAuthorizationRequirements()
                 .AddDefaultChangeTrackingResourceAuthorizationRequirement()
+                .AddDefaultCustomFieldsResourceAuthorizationRequirement()
                 .AddResourceAuthorizationHandlers();
 
             services.AddScoped<DataAuthService>();
