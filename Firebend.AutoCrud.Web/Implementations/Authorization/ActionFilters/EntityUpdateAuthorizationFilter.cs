@@ -43,6 +43,10 @@ public class EntityUpdateAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter
             return;
         }
 
+        context.ActionArguments.TryGetValue(nameof(IEntity<TKey>.Id).ToLower(), out var idV);
+        var idvC = context.ActionArguments.TryGetValue(nameof(IEntity<TKey>.Id).ToLower(), out var idV2) &&
+                   idV2 is string eis;
+
         if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue?.GetType() == ViewModelType)
         {
             var authorizationResult =
