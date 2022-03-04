@@ -54,7 +54,7 @@ namespace Firebend.AutoCrud.Mongo
             serviceCollection.TryAddScoped<IMongoIndexMergeService, MongoIndexMergeService>();
             serviceCollection.TryAddScoped<IMongoIndexComparisonService, MongoIndexComparisonService>();
 
-            var mongo = serviceCollection.UsingMongoCrud(connectionString, enableLogging);
+            using var mongo = serviceCollection.UsingMongoCrud(connectionString, enableLogging);
             configure(mongo);
             return mongo.Generate();
         }

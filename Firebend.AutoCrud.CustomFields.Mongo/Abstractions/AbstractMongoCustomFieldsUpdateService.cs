@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
     private readonly IEntityDomainEventPublisher _domainEventPublisher;
     private readonly bool _isDefaultPublisher;
 
-    private static readonly string CustomFieldsName = nameof(ICustomFieldsEntity<Guid>.CustomFields);
+    private const string CustomFieldsName = nameof(ICustomFieldsEntity<Guid>.CustomFields);
     private const string ArrayDefFieldName = "customField";
     private const string ArrayFilterDefId = $"{ArrayDefFieldName}._id";
 
@@ -103,7 +104,16 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
         }
 
         var patch = new JsonPatchDocument<TEntity>();
-        patch.Add(x => x.CustomFields, customField);
+
+        if ((result.CustomFields?.Count ?? 0) <= 0)
+        {
+            patch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>> { customField });
+        }
+        else
+        {
+            patch.Add(x => x.CustomFields, customField);
+        }
+
 
         await PublishUpdatedDomainEventAsync(result, patch, entityTransaction, cancellationToken);
         return customField;
@@ -177,17 +187,26 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
             return null;
         }
 
+        var entityPatch = new JsonPatchDocument<TEntity>();
         var entity = result.Clone();
         var index = entity.CustomFields.FindIndex(x => x.Id == key);
-        var entityPatch = new JsonPatchDocument<TEntity>();
-        foreach (var operation in jsonPatchDocument.Operations)
+
+        if (entity.CustomFields?.Count <= 0)
         {
-            var path = $"/{CustomFieldsName}/{index}{operation.path}";
-            entityPatch.Operations.Add(new Operation<TEntity>(operation.op, path, operation.from, operation.value));
+            entityPatch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>> { entity.CustomFields[index] });
         }
+        else
+        {
+            foreach (var operation in jsonPatchDocument.Operations)
+            {
+                var path = $"/{CustomFieldsName}/{index}{operation.path}";
+                entityPatch.Operations.Add(new Operation<TEntity>(operation.op, path, operation.from, operation.value));
+            }
+        }
+
         entityPatch.ApplyTo(entity);
         await PublishUpdatedDomainEventAsync(result, entityPatch, entityTransaction, cancellationToken);
-        return entity?.CustomFields?.FirstOrDefault(x => x.Id == key);
+        return entity.CustomFields?.FirstOrDefault(x => x.Id == key);
     }
 
     private static string FixMongoPatchPath(Operation<CustomFieldsEntity<TKey>> operation)

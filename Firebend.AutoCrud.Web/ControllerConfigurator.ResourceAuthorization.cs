@@ -27,7 +27,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddResourceAuthorization(new (){ MyRequirement })
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddResourceAuthorization(Type type, Type filterType,
+    private ControllerConfigurator<TBuilder, TKey, TEntity> AddResourceAuthorization(Type type, Type filterType,
         string policy,
         string[] propertyNames = null,
         object[] propertyValues = null)

@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -26,9 +25,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
                 .GetAllEntityConfigurationsAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var configureTasks = configurations.Select(x => ConfigureAsync(x, cancellationToken));
-
-            await Task.WhenAll(configureTasks).ConfigureAwait(false);
+            foreach (var configuration in configurations)
+            {
+                await ConfigureAsync(configuration, cancellationToken);
+            }
         }
     }
 }

@@ -26,6 +26,8 @@ public class PersonDbContext : DbContext, IDbContext
         this.AddCustomFieldsConfigurations(modelBuilder);
 
         AddDataAuthConfigurations(modelBuilder);
+        modelBuilder.AddJsonArrayIsEmptySupport();
+        modelBuilder.AddJsonValueSupport();
     }
 
     private void AddDataAuthConfigurations(ModelBuilder modelBuilder)

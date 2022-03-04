@@ -5,7 +5,7 @@ using Firebend.AutoCrud.Core.Models.ClassGeneration;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration
 {
-    public interface IDynamicClassGenerator
+    public interface IDynamicClassGenerator : IDisposable
     {
         Type GenerateDynamicClass(Type classType,
             string typeSignature,

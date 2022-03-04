@@ -65,7 +65,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         {
             var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options, _changeTrackingOptionsProvider);
 
-            var key = $"{typeof(TEntity).FullName}.Changes";
+            var key = GetScaffoldingKey(typeof(TEntity));
 
             await _memoizer.MemoizeAsync<(
                 AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> self,
@@ -79,6 +79,8 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
             return context;
         }
+
+        protected virtual string GetScaffoldingKey(Type type) => $"{type.FullName}.Changes.Scaffolding";
 
         private async Task<bool> ScaffoldAsync(ChangeTrackingDbContext<TEntityKey, TEntity> context, CancellationToken cancellationToken)
         {

@@ -3,21 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Models.ClassGeneration;
 
 namespace Firebend.AutoCrud.Generator.Implementations
 {
-    public class DynamicClassGenerator : IDynamicClassGenerator
+    public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
     {
-        private static DynamicClassGenerator _instance;
-        public static DynamicClassGenerator Instance => _instance ??= new DynamicClassGenerator();
-
-        protected DynamicClassGenerator()
-        {
-
-        }
-
         public Type GenerateDynamicClass(Type classType,
             string typeSignature,
             List<Type> implementedTypes,
@@ -94,7 +87,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             var iProperties = interfaceType.GetProperties().Select(x => new PropertySet { Name = x.Name, Type = x.PropertyType, Override = true });
 
-            properties ??= new PropertySet[0];
+            properties ??= Array.Empty<PropertySet>();
 
             properties = properties
                 .Union(iProperties
@@ -257,7 +250,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 typeAttributes,
                 parentType,
                 interfaces);
-
             return tb;
         }
 

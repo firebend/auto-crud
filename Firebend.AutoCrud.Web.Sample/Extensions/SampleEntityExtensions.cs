@@ -14,7 +14,6 @@ using Firebend.AutoCrud.CustomFields.Mongo;
 using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
-using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
@@ -47,17 +46,11 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         {
                             PersistCustomContext = true
                         })
-                        .WithMassTransit())
+                        .WithMassTransit()
+                        .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
+                        .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
                     .AddCrud(crud => crud
-                        .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(parameters?.NickName))
-                            {
-                                query = query.Where(x => x.NickName == parameters.NickName);
-                            }
-
-                            return query;
-                        })
+                        .WithSearchHandler<CustomSearchParameters, MongoCustomSearchHandler>()
                         .WithCrud()
                     )
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
@@ -83,6 +76,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         })
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
+                        .AddChangeTrackingResourceAuthorization()
                         .WithIoControllers()
                         .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                         .WithOpenApiGroupName("The Beautiful Mongo People")
@@ -109,10 +103,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddCustomFields(cf =>
                         cf.AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                         {
-                            de.WithEfChangeTracking(new ChangeTrackingOptions
-                            {
-                                PersistCustomContext = true
-                            })
+                            de.WithEfChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
                                 .WithMassTransit();
                         }).AddControllers(controllers => controllers
                             .WithChangeTrackingControllers()
@@ -120,27 +111,11 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
                             .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
-                        .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(parameters?.NickName))
-                            {
-                                query = query.Where(x => x.NickName == parameters.NickName);
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(parameters?.Search))
-                            {
-                                query = query.Where(x => EF.Functions.ContainsAny(x.FirstName, parameters.Search));
-                            }
-
-                            return query;
-                        })
+                        .WithSearchHandler<CustomSearchParameters, EfCustomSearchHandler>()
                         .WithCrud()
-                        )
+                    )
                     .AddDomainEvents(events => events
-                        .WithEfChangeTracking(new ChangeTrackingOptions
-                        {
-                            PersistCustomContext = true
-                        })
+                        .WithEfChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
                         .WithMassTransit()
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
@@ -151,11 +126,13 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithReadViewModel<GetPersonViewModel, PersonViewModelMapper>()
                         //.WithReadViewModel(entity => new GetPersonViewModel(entity))
-                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, viewModel) => new EfPerson(viewModel))
+                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>(
+                            (_, viewModel) => new EfPerson(viewModel))
                         .WithAllControllers(true)
                         .AddResourceAuthorization()
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
+                        .AddChangeTrackingResourceAuthorization()
                         .WithCustomFieldsControllers(openApiName: "The Beautiful Sql People Custom Fields")
                         .WithIoControllers()
                         .WithMaxPageSize(20)
@@ -201,7 +178,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithUpdateViewModel<PutPetViewModel>(pet => new EfPet(pet))
                         .WithRoute("/api/v1/ef-person/{personId:guid}/pets")
                         .WithAllControllers(true)
-                        // .AddResourceAuthorization()
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
                         .WithChangeTrackingControllers()
                         .WithIoControllers()
@@ -211,12 +187,17 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 
     public class PersonViewModelMapper : IReadViewModelMapper<Guid, EfPerson, GetPersonViewModel>
     {
-        public Task<EfPerson> FromAsync(GetPersonViewModel model, CancellationToken cancellationToken = default) => null;
+        public Task<EfPerson> FromAsync(GetPersonViewModel model, CancellationToken cancellationToken = default) =>
+            null;
 
-        public Task<IEnumerable<EfPerson>> FromAsync(IEnumerable<GetPersonViewModel> model, CancellationToken cancellationToken = default) => null;
+        public Task<IEnumerable<EfPerson>> FromAsync(IEnumerable<GetPersonViewModel> model,
+            CancellationToken cancellationToken = default) => null;
 
-        public Task<GetPersonViewModel> ToAsync(EfPerson entity, CancellationToken cancellationToken = default) => Task.FromResult(new GetPersonViewModel(entity));
+        public Task<GetPersonViewModel> ToAsync(EfPerson entity, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new GetPersonViewModel(entity));
 
-        public Task<IEnumerable<GetPersonViewModel>> ToAsync(IEnumerable<EfPerson> entity, CancellationToken cancellationToken = default) => Task.FromResult(entity.Select(x => new GetPersonViewModel(x)));
+        public Task<IEnumerable<GetPersonViewModel>> ToAsync(IEnumerable<EfPerson> entity,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(entity.Select(x => new GetPersonViewModel(x)));
     }
 }

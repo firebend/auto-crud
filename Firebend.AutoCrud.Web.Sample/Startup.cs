@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -59,6 +60,8 @@ namespace Firebend.AutoCrud.Web.Sample
 
             services
                 .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
+                .AddHttpContextAccessor()
+                .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer")))
                 .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer"))
                 )
                 .UsingMongoCrud(configuration.GetConnectionString("Mongo"), true, mongo => mongo.AddMongoPerson())
@@ -77,11 +80,11 @@ namespace Firebend.AutoCrud.Web.Sample
                 .AddNewtonsoftJson()
                 .AddFirebendAutoCrudWeb(services)
                 .AddDefaultResourceAuthorizationRequirements()
+                .AddDefaultChangeTrackingResourceAuthorizationRequirement()
                 .AddResourceAuthorizationHandlers();
 
             services.AddScoped<DataAuthService>();
             services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
