@@ -1,4 +1,4 @@
-    using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -63,7 +63,7 @@ public class EntityUpdateAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         // when
-        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest>(_policy);
+        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest, UpdateViewModelTest>(_policy);
 
         // then
         entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
@@ -83,7 +83,7 @@ public class EntityUpdateAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         // when
-        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest>(_policy);
+        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest, UpdateViewModelTest>(_policy);
 
         // then
         entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
@@ -107,7 +107,7 @@ public class EntityUpdateAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         // when
-        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest>(_policy);
+        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest, UpdateViewModelTest>(_policy);
 
         // then
         entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
@@ -142,10 +142,8 @@ public class EntityUpdateAuthorizationFilterTests
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest>("ResourceUpdate")
-        {
-            ViewModelType = typeof(UpdateViewModelTest)
-        };
+        var entityUpdateAuthorizationFilter =
+            new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest, UpdateViewModelTest>(_policy);
         entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
 
         // then
@@ -183,10 +181,8 @@ public class EntityUpdateAuthorizationFilterTests
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest>("ResourceUpdate")
-        {
-            ViewModelType = typeof(UpdateViewModelTest)
-        };
+        var entityUpdateAuthorizationFilter =
+            new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest, UpdateViewModelTest>(_policy);
 
         // then
         entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
@@ -224,10 +220,7 @@ public class EntityUpdateAuthorizationFilterTests
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest>("ResourceUpdate")
-        {
-            ViewModelType = typeof(UpdateViewModelTest)
-        };
+        var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest, UpdateViewModelTest>(_policy);
 
         // then
         entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);

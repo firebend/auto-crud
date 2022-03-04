@@ -73,7 +73,7 @@ public class EntityCreateMultipleAuthorizationFilterTests
         }
 
         // when
-        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy);
+        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter<CreateMultipleEntityTest>(_policy);
         entityCreateMultipleAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext, Next);
     }
 
@@ -94,15 +94,13 @@ public class EntityCreateMultipleAuthorizationFilterTests
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var postObject = _fixture.Create<EntityCreateMultipleAuthorizationFilterTestClass>();
+        var postObject = _fixture.Create<CreateMultipleEntityTest>();
         var actionArguments = new Dictionary<string, object> {{"body", postObject}};
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy)
-        {
-            ViewModelType = typeof(EntityCreateMultipleAuthorizationFilterTestClass)
-        };
+        var entityCreateMultipleAuthorizationFilter =
+            new EntityCreateMultipleAuthorizationFilter<CreateMultipleEntityTest>(_policy);
         entityCreateMultipleAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, It.IsAny<ActionExecutionDelegate>());
 
         // then
@@ -129,7 +127,7 @@ public class EntityCreateMultipleAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         // when
-        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy);
+        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter<CreateEntityTest>(_policy);
 
         Task<ActionExecutedContext> Next()
         {
@@ -143,7 +141,7 @@ public class EntityCreateMultipleAuthorizationFilterTests
     }
 }
 
-public class EntityCreateMultipleAuthorizationFilterTestClass
+public class CreateMultipleEntityTest
 {
     public int Id { get; set; }
     public string Name { get; set; }

@@ -73,7 +73,7 @@ public class EntityCreateAuthorizationFilterTests
         }
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter(_policy);
+        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter<CreateEntityTest>(_policy);
         entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext, Next);
     }
 
@@ -94,15 +94,12 @@ public class EntityCreateAuthorizationFilterTests
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var postObject = _fixture.Create<PostFunTestClass>();
+        var postObject = _fixture.Create<CreateEntityTest>();
         var actionArguments = new Dictionary<string, object> {{"body", postObject}};
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter(_policy)
-        {
-            ViewModelType = typeof(PostFunTestClass)
-        };
+        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter<CreateEntityTest>(_policy);
         entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, It.IsAny<ActionExecutionDelegate>());
 
         // then
@@ -129,7 +126,7 @@ public class EntityCreateAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter(_policy);
+        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter<CreateEntityTest>(_policy);
 
         Task<ActionExecutedContext> Next()
         {
@@ -143,7 +140,7 @@ public class EntityCreateAuthorizationFilterTests
     }
 }
 
-public class PostFunTestClass
+public class CreateEntityTest
 {
     public string WhoAreYou { get; set; }
     public bool AreYouHavingFun { get; set; }
