@@ -20,14 +20,14 @@ using NUnit.Framework;
 namespace Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
 
 [TestFixture]
-public class EntityCreateAuthorizationFilterTests
+public class EntityCreateMultipleAuthorizationFilterTests
 {
     private Fixture _fixture;
     private Mock<HttpContext> _httpContext;
     private Mock<IServiceProvider> _serviceProvider;
     private Mock<ActionContext> _actionContext;
 
-    private string _policy = "ResourceCreate";
+    private string _policy = "ResourceCreateMultiple";
 
     [SetUp]
     public void SetUpFixture()
@@ -73,8 +73,8 @@ public class EntityCreateAuthorizationFilterTests
         }
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter(_policy);
-        entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext, Next);
+        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy);
+        entityCreateMultipleAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext, Next);
     }
 
     [Test]
@@ -86,7 +86,7 @@ public class EntityCreateAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CreateAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CreateMultipleAuthorizationRequirement()})));
 
         _serviceProvider.Setup(s
                 => s.GetService(typeof(IAuthorizationService)))
@@ -94,16 +94,16 @@ public class EntityCreateAuthorizationFilterTests
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var postObject = _fixture.Create<PostFunTestClass>();
+        var postObject = _fixture.Create<EntityCreateMultipleAuthorizationFilterTestClass>();
         var actionArguments = new Dictionary<string, object> {{"body", postObject}};
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter(_policy)
+        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy)
         {
-            ViewModelType = typeof(PostFunTestClass)
+            ViewModelType = typeof(EntityCreateMultipleAuthorizationFilterTestClass)
         };
-        entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, It.IsAny<ActionExecutionDelegate>());
+        entityCreateMultipleAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, It.IsAny<ActionExecutionDelegate>());
 
         // then
         actionExecutingContext.Object.Result.Should().NotBeNull();
@@ -120,7 +120,7 @@ public class EntityCreateAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CreateAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CreateMultipleAuthorizationRequirement()})));
 
         _serviceProvider.Setup(s
                 => s.GetService(typeof(IAuthorizationService)))
@@ -129,7 +129,7 @@ public class EntityCreateAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter(_policy);
+        var entityCreateMultipleAuthorizationFilter = new EntityCreateMultipleAuthorizationFilter(_policy);
 
         Task<ActionExecutedContext> Next()
         {
@@ -139,13 +139,12 @@ public class EntityCreateAuthorizationFilterTests
             return Task.FromResult(ctx);
         }
 
-        entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
+        entityCreateMultipleAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
     }
 }
 
-public class PostFunTestClass
+public class EntityCreateMultipleAuthorizationFilterTestClass
 {
-    public string WhoAreYou { get; set; }
-    public bool AreYouHavingFun { get; set; }
-    public DateTime LastTimeYouHadFun { get; set; }
+    public int Id { get; set; }
+    public string Name { get; set; }
 }
