@@ -931,11 +931,11 @@ namespace Firebend.AutoCrud.IntegrationTests
             var entities = await Task.WhenAll(tasks);
             await PostMultipleUnauthorizedAsync(entities);
 
-            // await PostCustomFieldsUnauthorizedAsync(CreatedKey);
-            // await PutCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
-            // await PatchCustomFieldsAsync(CreatedKey, customField.Id);
-            // await SearchCustomFieldsAsync(customField.Key);
-            // await DeleteCustomFieldsAsync(CreatedKey, customField.Id);
+            await PostCustomFieldsUnauthorizedAsync(CreatedKey);
+            await PutCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
+            await PatchCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
+            await DeleteCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
+            // await SearchCustomFieldsUnauthorizedAsync(customField.Key);
         }
     }
 }
