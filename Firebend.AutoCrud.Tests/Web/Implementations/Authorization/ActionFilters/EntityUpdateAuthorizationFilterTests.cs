@@ -223,7 +223,7 @@ public class EntityUpdateAuthorizationFilterTests
         var entityUpdateAuthorizationFilter = new EntityUpdateAuthorizationFilter<Guid, UpdateViewModelTest, UpdateViewModelTest>(_policy);
 
         // then
-        entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
+        entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, default);
 
         actionExecutingContext.Object.Result.Should().NotBeNull();
         actionExecutingContext.Object.Result.Should().BeOfType<StatusCodeResult>();
