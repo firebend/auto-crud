@@ -48,9 +48,9 @@ public class EntityChangeTrackingAuthorizationFilter<TKey, TEntity> : IAsyncActi
                 await next();
                 return;
             }
+
             var entity = await
                 readService.GetByKeyAsync(entityId.Value, context.HttpContext.RequestAborted);
-
 
             var authorizationResult =
                 await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);

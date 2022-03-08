@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
@@ -228,6 +229,10 @@ public class EntityUpdateAuthorizationFilterTests
         actionExecutingContext.Object.Result.Should().NotBeNull();
         actionExecutingContext.Object.Result.Should().BeOfType<StatusCodeResult>();
         actionExecutingContext.Object.Result.As<StatusCodeResult>().StatusCode.Should().Be(403);
+
+        entityReadService.Verify(v => v.GetByKeyAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
+        entityKeyParser.Verify(v => v.ParseKey(It.IsAny<string>()), Times.Once);
+        authorizationService.Verify(v => v.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
     }
 
     private Task<ActionExecutedContext> Next()

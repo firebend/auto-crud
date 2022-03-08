@@ -107,6 +107,8 @@ public class EntityCreateMultipleAuthorizationFilterTests
         actionExecutingContext.Object.Result.Should().NotBeNull();
         actionExecutingContext.Object.Result.Should().BeOfType<StatusCodeResult>();
         actionExecutingContext.Object.Result.As<StatusCodeResult>().StatusCode.Should().Be(403);
+
+        authorizationService.Verify(v => v.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
     }
 
     [Test]

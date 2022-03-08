@@ -131,5 +131,7 @@ public class EntityReadAuthorizationFilterTests
         resultExecutingContext.Object.Result.Should().NotBeNull();
         resultExecutingContext.Object.Result.Should().BeOfType<StatusCodeResult>();
         resultExecutingContext.Object.Result.As<StatusCodeResult>().StatusCode.Should().Be(403);
+
+        authorizationService.Verify(v => v.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
     }
 }
