@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         where TReadResponse : class, IEntityViewModelBase, IEntity<TKey>, ICustomFieldsEntity<TKey>
         where TExport : class, IEntityViewModelExport
     {
-        protected string BaseUrl { get; } = "http://localhost:5020/api";
+        protected string BaseUrl => "http://localhost:5020/api";
         protected abstract string Url { get; }
 
         protected List<IFlurlResponse> Responses { get; } = new();
