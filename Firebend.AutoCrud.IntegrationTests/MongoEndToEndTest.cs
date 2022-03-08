@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         GetPersonViewModel,
         PersonExport>
     {
-        protected override string Url => $"{BaseUrl}/api/v1/mongo-person";
+        protected override string Url => $"{BaseUrl}/v1/mongo-person";
 
         [TestMethod]
         public async Task Mongo_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
