@@ -15,7 +15,7 @@ sudo ln -s /opt/homebrew/opt/mono-libgdiplus/lib/libgdiplus.dylib /usr/local/sha
 
 ### Project Setup
 
-We need to define the connection strings (into `secrets` file or `appsettings.json` file)
+We need to define the connection strings into `secrets` file or `appsettings.json` file)
 
 ```json
 {
@@ -69,10 +69,13 @@ The sample project uses token base `authentication` method. For the `authorizati
 For the authentication, on the sample project we set the token statically on the `Startup.cs` file for the test purpose as below;
 
 ```c#
-app.Use(async (context, next) =>
+  app.Use(async (context, next) =>
             {
-                context.Request.Headers.Add("Authorization",
-                    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY0NTgwMDQwMSwiaWF0IjoxNjQ1ODAwNDAxfQ.XGjDqgMLK-D_X5EZmpeFqslflX6QxEfhCibPLwALP2I");
+                if (context.Request.Headers.All(h => h.Key != AuthorizationHeaderKey))
+                {
+                    context.Request.Headers.Add(AuthorizationHeaderKey, AuthorizationHeaderValue);
+                }
+
                 await next(context);
             });
 ```
@@ -83,15 +86,17 @@ You may want configure it for your own authentication logic.
 
 For the `resource authorization`, we created the Authorization Handlers.
 
+- [ChangeTrackingAuthorizationHandler.cs](./Authorization/Handlers/ChangeTrackingAuthorizationHandler.cs)
 - [CreateAuthorizationHandler.cs](./Authorization/Handlers/CreateAuthorizationHandler.cs)
 - [CreateMultipleAuthorizationHandler.cs](./Authorization/Handlers/CreateMultipleAuthorizationHandler.cs)
+- [CustomFieldsAuthorizationHandler](./Authorization/Handlers/CustomFieldsAuthorizationHandler.cs)
 - [DeleteAuthorizationHandler.cs](./Authorization/Handlers/DeleteAuthorizationHandler.cs)
 - [ReadAllAuthorizationHandler.cs](./Authorization/Handlers/ReadAllAuthorizationHandler.cs)
 - [ReadAuthorizationHandler.cs](./Authorization/Handlers/ReadAuthorizationHandler.cs)
-- [SearchAuthorizationHandler.cs](./Authorization/Handlers/SearchAuthorizationHandler.cs)
+- [EntitySearchAuthorizationHandler.cs](./Authorization/Handlers/EntitySearchAuthorizationHandler.cs)
 - [UpdateAuthorizationHandler.cs](./Authorization/Handlers/UpdateAuthorizationHandler.cs)
 
-These handlers are injected at the startup file. 
+These handlers are injected on the startup file. 
 
 ```c#
 // startup.cs
@@ -105,7 +110,7 @@ services
 
 You can inject different handlers for the resource policies. If you want to use the existing handlers, you may want to add your own business logic into them.
 
-As a data contract, we created a sample interface as `IDataAuth`. This interface can carry the properties for addressing the authorization business logic.
+As a data contract, we created a sample interface as [IDataAuth](./Models/IDataAuth.cs). This interface can carry the properties for addressing the authorization business logic.
 
 ### Usage
 
@@ -119,7 +124,44 @@ public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenera
                     .AddControllers(controllers => controllers
                         ...
                         .AddResourceAuthorization()
+                        .AddChangeTrackingResourceAuthorization()
+                        .AddCustomFieldsResourceAuthorization()
                     )
             );
 
 ```
+
+To handle resource authorization for search, you can add custom search handlers.
+
+```c#
+ public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,
+            IConfiguration configuration) =>
+            generator.AddEntity<Guid, EfPerson>(person =>
+                person.WithDbContext<PersonDbContext>()
+                    ...
+                    .AddCrud(crud => crud
+                        .WithSearchHandler<CustomSearchParameters, EfCustomSearchHandler>()
+                        .WithCrud()
+                    )
+```
+
+To handle resource authorization for custom field search, you can add custom search handlers.
+
+```c#
+generator.AddEntity<Guid, EfPerson>(person =>
+                person.WithDbContext<PersonDbContext>()
+                    ....
+                    .AddCustomFields(cf =>
+                        cf.WithSearchHandler<EntitySearchAuthorizationHandler<Guid,
+                                EfPerson, CustomFieldsSearchRequest>>()
+                            .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
+                            {
+                                de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
+                                    .WithMassTransit();
+                            }).AddControllers(controllers => controllers
+                                .WithChangeTrackingControllers()
+                                .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
+                                .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
+                                .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
+```
+
