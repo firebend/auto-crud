@@ -9,6 +9,7 @@ using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.EntityFramework;
 using Firebend.AutoCrud.CustomFields.Mongo;
 using Firebend.AutoCrud.CustomFields.Web;
@@ -20,6 +21,7 @@ using Firebend.AutoCrud.Io.Web;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Mongo.Models;
 using Firebend.AutoCrud.Web.Interfaces;
+using Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
@@ -40,12 +42,13 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithShardKeyProvider<SampleKeyProviderMongo>()
                     .WithAllShardsProvider<SampleAllShardsMongoProvider>()
                     .WithShardMode(MongoTenantShardMode.Database)
-                    .AddCustomFields()
+                    .AddCustomFields(cf => cf
+                        .WithSearchHandler<EntitySearchAuthorizationHandler<Guid,
+                            MongoTenantPerson, CustomFieldsSearchRequest>>()
+                        .WithCustomFields()
+                    )
                     .AddDomainEvents(domainEvents => domainEvents
-                        .WithMongoChangeTracking(new ChangeTrackingOptions
-                        {
-                            PersistCustomContext = true
-                        })
+                        .WithMongoChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
                         .WithMassTransit()
                         .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
@@ -102,15 +105,17 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
                     .AddCustomFields(cf =>
-                        cf.AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
-                        {
-                            de.WithEfChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
-                                .WithMassTransit();
-                        }).AddControllers(controllers => controllers
-                            .WithChangeTrackingControllers()
-                            .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
-                            .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
-                            .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
+                        cf.WithSearchHandler<EntitySearchAuthorizationHandler<Guid,
+                                EfPerson, CustomFieldsSearchRequest>>()
+                            .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
+                            {
+                                de.WithEfChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
+                                    .WithMassTransit();
+                            }).AddControllers(controllers => controllers
+                                .WithChangeTrackingControllers()
+                                .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
+                                .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
+                                .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
                         .WithSearchHandler<CustomSearchParameters, EfCustomSearchHandler>()
                         .WithCrud()

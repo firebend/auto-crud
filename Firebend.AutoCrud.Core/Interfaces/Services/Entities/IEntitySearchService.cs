@@ -7,7 +7,7 @@ using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
-    public interface IEntitySearchService<TKey, TEntity, TSearch> : IDisposable
+    public interface IEntitySearchService<TKey, TEntity, in TSearch> : IDisposable
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TSearch : EntitySearchRequest

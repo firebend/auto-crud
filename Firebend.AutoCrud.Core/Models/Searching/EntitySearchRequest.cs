@@ -1,7 +1,9 @@
 
+using Firebend.AutoCrud.Core.Interfaces.Models;
+
 namespace Firebend.AutoCrud.Core.Models.Searching
 {
-    public class EntitySearchRequest
+    public class EntitySearchRequest : IEntitySearchRequest
     {
         /// <summary>
         /// The starting page number for this search request.

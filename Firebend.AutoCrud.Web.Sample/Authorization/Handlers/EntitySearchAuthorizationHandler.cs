@@ -2,7 +2,7 @@ using System.Linq;
 using System.Security.Claims;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Models.Searching;
+using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -14,7 +14,7 @@ public abstract class
     EntitySearchAuthorizationHandler<TKey, TEntity, TSearch> : IEntitySearchHandler<TKey, TEntity, TSearch>
     where TKey : struct
     where TEntity : IEntity<TKey>, IEntityDataAuth
-    where TSearch : EntitySearchRequest
+    where TSearch : IEntitySearchRequest
 {
     private readonly ClaimsPrincipal _user;
 
@@ -43,5 +43,16 @@ public abstract class
 
         return queryable.Where(x => x.DataAuth == null || x.DataAuth.UserEmails.Length == 0 ||
                                     x.DataAuth.UserEmails.Any(userEmail => userEmail.ToLower() == email));
+    }
+}
+
+public class
+    CustomFieldsSearchAuthorizationHandler<TKey, TEntity> : EntitySearchAuthorizationHandler<TKey, TEntity,
+        CustomFieldsSearchRequest>
+    where TKey : struct
+    where TEntity : IEntity<TKey>, IEntityDataAuth
+{
+    public CustomFieldsSearchAuthorizationHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+    {
     }
 }

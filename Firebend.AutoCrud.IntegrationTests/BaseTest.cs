@@ -935,7 +935,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             await PutCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
             await PatchCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
             await DeleteCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
-            // await SearchCustomFieldsUnauthorizedAsync(customField.Key);
+            await SearchCustomFieldsUnauthorizedAsync(customField.Key);
         }
     }
 }

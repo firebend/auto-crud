@@ -1,10 +1,10 @@
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
@@ -16,25 +16,25 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
     public abstract class AbstractEfCustomFieldSearchService<TKey, TEntity, TCustomFieldsEntity> :
         BaseDisposable,
         ICustomFieldsSearchService<TKey, TEntity>
-        where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
         where TKey : struct
+        where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
         where TCustomFieldsEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>
     {
-        private readonly IEntityFrameworkQueryClient<Guid, TCustomFieldsEntity> _queryClient;
+        private readonly IEntityFrameworkQueryClient<TKey, TEntity> _queryClient;
         private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
+        private readonly IEntitySearchHandler<TKey, TEntity, CustomFieldsSearchRequest> _searchHandler;
 
-        protected AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<Guid, TCustomFieldsEntity> queryClient,
-            ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator)
+        protected AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<TKey, TEntity> queryClient,
+            ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator,
+            IEntitySearchHandler<TKey, TEntity, CustomFieldsSearchRequest> searchHandler = null)
         {
             _queryClient = queryClient;
             _customFieldsStorageCreator = customFieldsStorageCreator;
+            _searchHandler = searchHandler;
         }
 
 
-        public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(string key,
-            string value,
-            int? pageNumber,
-            int? pageSize,
+        public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(CustomFieldsSearchRequest searchRequest,
             CancellationToken cancellationToken = default)
         {
             await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
@@ -43,38 +43,45 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
                 .GetQueryableAsync(true, cancellationToken)
                 .ConfigureAwait(false);
 
-            using (context)
+            if (_searchHandler != null)
+            {
+                query = _searchHandler.HandleSearch(query, searchRequest);
+            }
+
+            var fieldsQuery = query.SelectMany(x => x.CustomFields);
+
+            await using (context)
             {
 
-                if (!string.IsNullOrWhiteSpace(key))
+                if (!string.IsNullOrWhiteSpace(searchRequest.Key))
                 {
-                    query = query.Where(x => x.Key == key);
+                    fieldsQuery = fieldsQuery.Where(x => x.Key == searchRequest.Key);
                 }
 
-                if (!string.IsNullOrWhiteSpace(value))
+                if (!string.IsNullOrWhiteSpace(searchRequest.Value))
                 {
-                    query = query.Where(x => x.Value.Contains(value));
+                    fieldsQuery = fieldsQuery.Where(x => x.Value.Contains(searchRequest.Value));
                 }
 
-                var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
+                var count = await fieldsQuery.LongCountAsync(cancellationToken).ConfigureAwait(false);
 
-                query = query.OrderBy(x => x.Key);
+                fieldsQuery = fieldsQuery.OrderBy(x => x.Key);
 
-                if ((pageNumber ?? 0) > 0 && (pageSize ?? 0) > 0)
+                if ((searchRequest.PageNumber ?? 0) > 0 && (searchRequest.PageSize ?? 0) > 0)
                 {
-                    query = query
-                        .Skip((pageNumber.Value - 1) * pageSize.Value)
-                        .Take(pageSize.Value);
+                    fieldsQuery = fieldsQuery
+                        .Skip((searchRequest.PageNumber!.Value - 1) * searchRequest.PageSize!.Value)
+                        .Take(searchRequest.PageSize.Value);
                 }
 
-                var records = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+                var records = await fieldsQuery.ToListAsync(cancellationToken).ConfigureAwait(false);
 
                 return new EntityPagedResponse<CustomFieldsEntity<TKey>>
                 {
-                    Data = records.Select(x => x.ToCustomFields()).ToList(),
-                    CurrentPage = pageNumber,
+                    Data = records.Select(x => ((TCustomFieldsEntity)x).ToCustomFields()).ToList(),
+                    CurrentPage = searchRequest.PageNumber,
                     TotalRecords = count,
-                    CurrentPageSize = pageSize
+                    CurrentPageSize = searchRequest.PageSize
                 };
             }
         }

@@ -3,7 +3,6 @@ using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +39,7 @@ public class EntityChangeTrackingAuthorizationFilter<TKey, TEntity> : IAsyncActi
             return;
         }
 
-        if (context.ActionArguments.TryGetValue(nameof(ChangeTrackingModel<TKey, TEntity>.EntityId).Pascalize(), out var paramValue) &&
+        if (context.ActionArguments.TryGetValue(nameof(ChangeTrackingModel<TKey, TEntity>.EntityId), out var paramValue) &&
             paramValue is string entityIdString)
         {
             var entityId = keyParser.ParseKey(entityIdString);

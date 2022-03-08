@@ -28,44 +28,38 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(200, "All the custom fields for {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         public async Task<ActionResult<EntityPagedResponse<CustomFieldsEntity<TKey>>>> SearchCustomFieldsAsync(
-                [FromQuery] string key,
-                [FromQuery] string value,
-                [FromQuery] int pageNumber,
-                [FromQuery] int pageSize,
-                CancellationToken cancellationToken)
+            [FromQuery] CustomFieldsSearchRequest searchRequest,
+            CancellationToken cancellationToken)
         {
-
             Response.RegisterForDispose(_searchService);
 
-            if (pageNumber <= 0)
+            if (searchRequest.PageNumber <= 0)
             {
-                ModelState.AddModelError(nameof(pageNumber), "Must be greater than zero.");
+                ModelState.AddModelError(nameof(searchRequest.PageNumber), "Must be greater than zero.");
                 return GetInvalidModelStateResult();
             }
 
-            if (pageSize <= 0)
+            if (searchRequest.PageSize <= 0)
             {
-                ModelState.AddModelError(nameof(pageNumber), "Must be greater than zero.");
+                ModelState.AddModelError(nameof(searchRequest.PageSize), "Must be greater than zero.");
                 return GetInvalidModelStateResult();
             }
 
-            if (pageSize > 100)
+            if (searchRequest.PageSize > 100)
             {
-                ModelState.AddModelError(nameof(pageNumber), "Must be less than or equal to 100.");
+                ModelState.AddModelError(nameof(searchRequest.PageSize), "Must be less than or equal to 100.");
                 return GetInvalidModelStateResult();
             }
 
-            if (string.IsNullOrWhiteSpace(key) && string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(searchRequest.Key) && string.IsNullOrWhiteSpace(searchRequest.Value))
             {
-                ModelState.AddModelError(nameof(key), $"A {nameof(key)} or {nameof(value)} must be provided to search");
+                ModelState.AddModelError(nameof(searchRequest.Key),
+                    $"A {nameof(searchRequest.Key)} or {nameof(searchRequest.Value)} must be provided to search");
                 return GetInvalidModelStateResult();
             }
 
             var result = await _searchService.SearchAsync(
-                    key,
-                    value,
-                    pageNumber,
-                    pageSize,
+                    searchRequest,
                     cancellationToken)
                 .ConfigureAwait(false);
 
