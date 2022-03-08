@@ -33,6 +33,13 @@ public class CustomFieldsAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter
             return;
         }
 
+        var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
+        if (authorizationService == null)
+        {
+            await next();
+            return;
+        }
+
         if (context.ActionArguments.TryGetValue(nameof(CustomFieldsEntity<TKey>.EntityId).Pascalize(), out var paramValue) &&
             paramValue is string entityIdString)
         {
@@ -44,13 +51,6 @@ public class CustomFieldsAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter
             }
             var entity = await
                 readService.GetByKeyAsync(entityId.Value, context.HttpContext.RequestAborted);
-
-            var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
-            if (authorizationService == null)
-            {
-                await next();
-                return;
-            }
 
             var authorizationResult =
                 await authorizationService.AuthorizeAsync(context.HttpContext.User, entity, _policy);
