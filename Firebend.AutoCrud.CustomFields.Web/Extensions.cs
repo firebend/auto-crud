@@ -91,13 +91,6 @@ public static class Extensions
         configurator.AddResourceAuthorization(deleteController,
             typeof(CustomFieldsAuthorizationFilter<TKey, TEntity>), policy);
 
-        // var searchController = typeof(AbstractCustomFieldsSearchController<,>)
-        //     .MakeGenericType(configurator.Builder.EntityKeyType,
-        //         configurator.Builder.EntityType);
-        //
-        // configurator.AddResourceAuthorization(createController,
-        //     typeof(CustomFieldsAuthorizationFilter<TKey, TEntity>), policy);
-
         return configurator;
     }
 

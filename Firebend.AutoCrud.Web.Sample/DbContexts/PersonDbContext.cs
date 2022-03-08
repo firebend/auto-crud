@@ -21,8 +21,6 @@ public class PersonDbContext : DbContext, IDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        //modelBuilder.ApplyConfiguration(new CustomFieldEntityTenantTypeConfiguration<Guid, EfPerson, Guid>("EfPeople_CustomFields", "dbo"));
-        //modelBuilder.ApplyConfiguration(new CustomFieldEntityTenantTypeConfiguration<Guid, EfPet, Guid>("EfPets_CustomFields", "dbo"));
         this.AddCustomFieldsConfigurations(modelBuilder);
 
         AddDataAuthConfigurations(modelBuilder);
