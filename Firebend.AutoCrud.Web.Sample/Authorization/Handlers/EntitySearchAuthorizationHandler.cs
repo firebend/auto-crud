@@ -3,10 +3,10 @@ using System.Security.Claims;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
+using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.Query.Internal;
-using DbFunctionsExtensions = Firebend.AutoCrud.Web.Sample.DbContexts.DbFunctionsExtensions;
 
 namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
@@ -36,8 +36,8 @@ public abstract class
         if (queryable is EntityQueryable<TEntity>)
         {
             return queryable.Where(x => x.DataAuth == null ||
-                                        DbFunctionsExtensions.JsonArrayIsEmpty(nameof(x.DataAuth), "$.UserEmails") ||
-                                        DbFunctionsExtensions.JsonValue(nameof(x.DataAuth), "$.UserEmails")
+                                        EfJsonFunctions.JsonArrayIsEmpty(nameof(x.DataAuth), "$.UserEmails") ||
+                                        EfJsonFunctions.JsonValue(nameof(x.DataAuth), "$.UserEmails")
                                             .Contains(email));
         }
 

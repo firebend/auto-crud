@@ -4,13 +4,13 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace Firebend.AutoCrud.Web.Sample.DbContexts;
+namespace Firebend.AutoCrud.EntityFramework.CustomCommands;
 
-public static class ModelBuilderExtensions
+public static class JsonModelBuilderExtensions
 {
     private static readonly MethodInfo JsonArrayIsEmptyMethod
-        = typeof(DbFunctionsExtensions)
-            .GetMethod(nameof(DbFunctionsExtensions.JsonArrayIsEmpty),
+        = typeof(EfJsonFunctions)
+            .GetMethod(nameof(EfJsonFunctions.JsonArrayIsEmpty),
                 new[] { typeof(string), typeof(string) });
 
     public static ModelBuilder AddJsonArrayIsEmptySupport(this ModelBuilder modelBuilder)
@@ -46,8 +46,8 @@ public static class ModelBuilderExtensions
     }
 
     private static readonly MethodInfo JsonArrayContainsMethod
-        = typeof(DbFunctionsExtensions)
-            .GetMethod(nameof(DbFunctionsExtensions.JsonValue),
+        = typeof(EfJsonFunctions)
+            .GetMethod(nameof(EfJsonFunctions.JsonValue),
                 new[] { typeof(string), typeof(string) });
 
     public static ModelBuilder AddJsonValueSupport(this ModelBuilder modelBuilder)
@@ -64,6 +64,7 @@ public static class ModelBuilderExtensions
                 {
                     throw new ArgumentNullException(nameof(columnName.Value));
                 }
+
                 var columnFragment = new SqlFragmentExpression(columnName.Value.ToString()!);
                 var arrayValExpression = new SqlFunctionExpression(
                     "JSON_QUERY",
@@ -77,4 +78,7 @@ public static class ModelBuilderExtensions
 
         return modelBuilder;
     }
+
+    public static ModelBuilder AddJsonFunctions(this ModelBuilder modelBuilder) =>
+        modelBuilder.AddJsonValueSupport().AddJsonArrayIsEmptySupport();
 }

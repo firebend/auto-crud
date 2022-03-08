@@ -1,6 +1,7 @@
 using Firebend.AutoCrud.CustomFields.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Comparers;
 using Firebend.AutoCrud.EntityFramework.Converters;
+using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.EntityFrameworkCore;
@@ -24,8 +25,7 @@ public class PersonDbContext : DbContext, IDbContext
         this.AddCustomFieldsConfigurations(modelBuilder);
 
         AddDataAuthConfigurations(modelBuilder);
-        modelBuilder.AddJsonArrayIsEmptySupport();
-        modelBuilder.AddJsonValueSupport();
+        modelBuilder.AddJsonFunctions();
     }
 
     private void AddDataAuthConfigurations(ModelBuilder modelBuilder)
