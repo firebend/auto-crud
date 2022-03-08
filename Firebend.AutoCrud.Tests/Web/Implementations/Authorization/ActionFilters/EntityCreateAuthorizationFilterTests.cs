@@ -27,7 +27,7 @@ public class EntityCreateAuthorizationFilterTests
     private Mock<IServiceProvider> _serviceProvider;
     private Mock<ActionContext> _actionContext;
 
-    private string _policy = "ResourceCreate";
+    private readonly string _policy = "ResourceCreate";
 
     [SetUp]
     public void SetUpFixture()
@@ -60,7 +60,7 @@ public class EntityCreateAuthorizationFilterTests
         var actionExecutingContext = new ActionExecutingContext(
             _actionContext.Object,
             Mock.Of<List<IFilterMetadata>>(),
-            Mock.Of<IDictionary<string,object>>(),
+            Mock.Of<IDictionary<string, object>>(),
             Mock.Of<Controller>()
         );
 
@@ -86,7 +86,7 @@ public class EntityCreateAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CreateAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CreateAuthorizationRequirement() })));
 
         _serviceProvider.Setup(s
                 => s.GetService(typeof(IAuthorizationService)))
@@ -95,7 +95,7 @@ public class EntityCreateAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         var postObject = _fixture.Create<CreateEntityTest>();
-        var actionArguments = new Dictionary<string, object> {{"body", postObject}};
+        var actionArguments = new Dictionary<string, object> { { "body", postObject } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -117,7 +117,7 @@ public class EntityCreateAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CreateAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CreateAuthorizationRequirement() })));
 
         _serviceProvider.Setup(s
                 => s.GetService(typeof(IAuthorizationService)))

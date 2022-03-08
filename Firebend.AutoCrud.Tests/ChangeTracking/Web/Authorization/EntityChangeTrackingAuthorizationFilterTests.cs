@@ -4,9 +4,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
+using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +29,7 @@ public class EntityChangeTrackingAuthorizationFilterTests
     private Mock<ActionContext> _actionContext;
     private DefaultHttpContext _defaultHttpContext;
 
-    private string _policy = "ResourceChangeTracking";
+    private readonly string _policy = "ResourceChangeTracking";
 
     [SetUp]
     public void SetUp()
@@ -129,7 +129,7 @@ public class EntityChangeTrackingAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new ChangeTrackingAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new ChangeTrackingAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
@@ -160,13 +160,13 @@ public class EntityChangeTrackingAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new ChangeTrackingAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new ChangeTrackingAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var actionArguments = new Dictionary<string, object> {{"EntityId", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "EntityId", Guid.NewGuid().ToString() } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -197,13 +197,13 @@ public class EntityChangeTrackingAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new ChangeTrackingAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new ChangeTrackingAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var actionArguments = new Dictionary<string, object> {{"EntityId", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "EntityId", Guid.NewGuid().ToString() } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -228,7 +228,7 @@ public class EntityChangeTrackingAuthorizationFilterTests
 
 }
 
-public class EntityChangeTrackingAuthorizationTestClass: IEntity<Guid>
+public class EntityChangeTrackingAuthorizationTestClass : IEntity<Guid>
 {
     public Guid Id { get; set; }
 }

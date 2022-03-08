@@ -262,7 +262,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         var authCtor = authorizePolicy == null
             ? null
             : authType.GetConstructor(!string.IsNullOrWhiteSpace(authorizePolicy)
-                ? new[] {typeof(string)}
+                ? new[] { typeof(string) }
                 : Type.EmptyTypes);
 
         if (authCtor == null)
@@ -271,7 +271,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         }
 
         var args = !string.IsNullOrWhiteSpace(authorizePolicy)
-            ? new object[] {authorizePolicy}
+            ? new object[] { authorizePolicy }
             : new object[] { };
 
         return (authType, new CustomAttributeBuilder(authCtor, args));

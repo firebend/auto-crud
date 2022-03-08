@@ -11,7 +11,7 @@ public static class ModelBuilderExtensions
     private static readonly MethodInfo JsonArrayIsEmptyMethod
         = typeof(DbFunctionsExtensions)
             .GetMethod(nameof(DbFunctionsExtensions.JsonArrayIsEmpty),
-                new[] {typeof(string), typeof(string)});
+                new[] { typeof(string), typeof(string) });
 
     public static ModelBuilder AddJsonArrayIsEmptySupport(this ModelBuilder modelBuilder)
     {
@@ -31,9 +31,9 @@ public static class ModelBuilderExtensions
                 var columnFragment = new SqlFragmentExpression(columnName.Value.ToString()!);
                 var arrayStringValExpression = new SqlFunctionExpression(
                     "JSON_QUERY",
-                    new[] {columnFragment, args[1]},
+                    new[] { columnFragment, args[1] },
                     true,
-                    new[] {false, false},
+                    new[] { false, false },
                     typeof(string),
                     null);
                 var emptyArrayConstantExpression = new SqlConstantExpression(Expression.Constant("[]"), null);
@@ -48,7 +48,7 @@ public static class ModelBuilderExtensions
     private static readonly MethodInfo JsonArrayContainsMethod
         = typeof(DbFunctionsExtensions)
             .GetMethod(nameof(DbFunctionsExtensions.JsonValue),
-                new[] {typeof(string), typeof(string)});
+                new[] { typeof(string), typeof(string) });
 
     public static ModelBuilder AddJsonValueSupport(this ModelBuilder modelBuilder)
     {
@@ -67,9 +67,9 @@ public static class ModelBuilderExtensions
                 var columnFragment = new SqlFragmentExpression(columnName.Value.ToString()!);
                 var arrayValExpression = new SqlFunctionExpression(
                     "JSON_QUERY",
-                    new[] {columnFragment, args[1]},
+                    new[] { columnFragment, args[1] },
                     true,
-                    new[] {false, false},
+                    new[] { false, false },
                     typeof(string),
                     null);
                 return arrayValExpression;

@@ -26,14 +26,14 @@ public static class ControllerConfiguratorExtensions
             Type filterType,
             string policy)
     {
-        var authCtor = filterType.GetConstructor(new[] {typeof(string)});
+        var authCtor = filterType.GetConstructor(new[] { typeof(string) });
 
         if (authCtor == null)
         {
             return default;
         }
 
-        var args = new object[] {policy};
+        var args = new object[] { policy };
         return (filterType,
             new CustomAttributeBuilder(authCtor, args));
     }

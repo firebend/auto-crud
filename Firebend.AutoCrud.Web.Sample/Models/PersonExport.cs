@@ -3,7 +3,7 @@ using Firebend.AutoCrud.Core.Extensions;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class PersonExport: IEntityViewModelExport
+    public class PersonExport : IEntityViewModelExport
     {
         public PersonExport()
         {

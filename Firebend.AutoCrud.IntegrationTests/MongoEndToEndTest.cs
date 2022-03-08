@@ -23,12 +23,12 @@ namespace Firebend.AutoCrud.IntegrationTests
         public async Task Mongo_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
 
         protected override Task<UserInfoPostDto> GenerateAuthenticateRequestAsync()
-            => Task.FromResult(new UserInfoPostDto{ Email = "developer@test.com", Password = "password" });
+            => Task.FromResult(new UserInfoPostDto { Email = "developer@test.com", Password = "password" });
 
         protected override Task<PersonViewModelBase> GenerateCreateRequestAsync()
         {
             var faked = PersonFaker.Faker.Generate();
-            faked.DataAuth.UserEmails = new[] {"developer@test.com"};
+            faked.DataAuth.UserEmails = new[] { "developer@test.com" };
             return Task.FromResult(faked);
         }
 

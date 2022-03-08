@@ -27,7 +27,7 @@ public class EntityReadAllAuthorizationFilterTests
     private Mock<IServiceProvider> _serviceProvider;
     private Mock<ActionContext> _actionContext;
 
-    private string _policy = "ResourceReadAll";
+    private readonly string _policy = "ResourceReadAll";
 
     [SetUp]
     public void SetUpFixture()
@@ -64,7 +64,7 @@ public class EntityReadAllAuthorizationFilterTests
         {
             // then
             Assert.Pass();
-            var ctx = new ResultExecutedContext(_actionContext.Object, Mock.Of<List<IFilterMetadata>>(), Mock.Of<IActionResult>(),Mock.Of<Controller>());
+            var ctx = new ResultExecutedContext(_actionContext.Object, Mock.Of<List<IFilterMetadata>>(), Mock.Of<IActionResult>(), Mock.Of<Controller>());
             return Task.FromResult(ctx);
         }
 
@@ -96,7 +96,7 @@ public class EntityReadAllAuthorizationFilterTests
         {
             // then
             Assert.Pass();
-            var ctx = new ResultExecutedContext(_actionContext.Object, Mock.Of<List<IFilterMetadata>>(), Mock.Of<IActionResult>(),Mock.Of<Controller>());
+            var ctx = new ResultExecutedContext(_actionContext.Object, Mock.Of<List<IFilterMetadata>>(), Mock.Of<IActionResult>(), Mock.Of<Controller>());
             return Task.FromResult(ctx);
         }
 
@@ -112,7 +112,7 @@ public class EntityReadAllAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new ReadAllAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new ReadAllAuthorizationRequirement() })));
 
         _serviceProvider.Setup(s
                 => s.GetService(typeof(IAuthorizationService)))

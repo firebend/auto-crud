@@ -107,14 +107,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         }
 
         var attributeType = typeof(OpenApiGroupNameAttribute);
-        var attributeCtor = attributeType.GetConstructor(new[] {typeof(string)});
+        var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
 
         if (attributeCtor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] {openApiName});
+        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { openApiName });
 
         return (attributeType, attributeBuilder);
     }
@@ -134,14 +134,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
 
         var attributeType = typeof(OpenApiEntityNameAttribute);
 
-        var attributeCtor = attributeType.GetConstructor(new[] {typeof(string), typeof(string)});
+        var attributeCtor = attributeType.GetConstructor(new[] { typeof(string), typeof(string) });
 
         if (attributeCtor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] {name, plural});
+        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { name, plural });
 
         return (attributeType, attributeBuilder);
     }
@@ -150,14 +150,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string operationId)
     {
         var attributeType = typeof(OpenApiOperationIdAttribute);
-        var attributeCtor = attributeType.GetConstructor(new[] {typeof(string)});
+        var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
 
         if (attributeCtor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] {operationId});
+        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { operationId });
 
         return (attributeType, attributeBuilder);
     }

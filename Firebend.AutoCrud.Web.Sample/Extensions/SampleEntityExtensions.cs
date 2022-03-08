@@ -48,7 +48,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithCustomFields()
                     )
                     .AddDomainEvents(domainEvents => domainEvents
-                        .WithMongoChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
+                        .WithMongoChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
                         .WithMassTransit()
                         .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
@@ -109,7 +109,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                 EfPerson, CustomFieldsSearchRequest>>()
                             .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                             {
-                                de.WithEfChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
+                                de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
                                     .WithMassTransit();
                             }).AddControllers(controllers => controllers
                                 .WithChangeTrackingControllers()
@@ -121,7 +121,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithCrud()
                     )
                     .AddDomainEvents(events => events
-                        .WithEfChangeTracking(new ChangeTrackingOptions {PersistCustomContext = true})
+                        .WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
                         .WithMassTransit()
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()

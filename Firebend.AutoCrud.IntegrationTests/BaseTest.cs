@@ -415,7 +415,8 @@ namespace Firebend.AutoCrud.IntegrationTests
                 using (var csv = new CsvReader(stringReader,
                            new CsvConfiguration(CultureInfo.InvariantCulture)
                            {
-                               HeaderValidated = null, MissingFieldFound = null
+                               HeaderValidated = null,
+                               MissingFieldFound = null
                            }))
                 {
                     var records = csv.GetRecords<TExport>().ToList();
@@ -874,7 +875,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             added.Should().NotBeNull();
             added?.EntityId.Should().BeEquivalentTo(result.Id);
 
-            var ids = new List<TKey> {result.Id};
+            var ids = new List<TKey> { result.Id };
 
             var tasks = Enumerable
                 .Range(0, 5)
@@ -905,7 +906,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             CustomFieldViewModelRead customField)
         {
             var userEmail = "NotAuthorized@test.com";
-            await Authenticate(new UserInfoPostDto {Email = userEmail, Password = "password"});
+            await Authenticate(new UserInfoPostDto { Email = userEmail, Password = "password" });
 
             var createRequest = await GenerateCreateRequestAsync();
             await PostUnauthorizedAsync(createRequest);

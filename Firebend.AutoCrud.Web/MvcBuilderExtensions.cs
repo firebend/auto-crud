@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.Web
         }
 
         public static void AddResourceAuthorizationHandlers(this IMvcBuilder builder)
-            => builder.Services.RegisterAllTypes<IAuthorizationHandler>(new[] {Assembly.GetEntryAssembly()},
+            => builder.Services.RegisterAllTypes<IAuthorizationHandler>(new[] { Assembly.GetEntryAssembly() },
                 ServiceLifetime.Scoped);
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class CreatePersonViewModel: IEntityViewModelCreate<PersonViewModelBase>
+    public class CreatePersonViewModel : IEntityViewModelCreate<PersonViewModelBase>
     {
         public CreatePersonViewModel()
         {
@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public PersonViewModelBase Body { get; set; }
     }
 
-    public class PersonViewModelBase: IEntityViewModelBase
+    public class PersonViewModelBase : IEntityViewModelBase
     {
         public PersonViewModelBase()
         {

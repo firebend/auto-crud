@@ -47,7 +47,7 @@ namespace Firebend.AutoCrud.Web.Sample
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateIssuerSigningKey = false,
-                    SignatureValidator = delegate(string token,
+                    SignatureValidator = delegate (string token,
                         TokenValidationParameters _)
                     {
                         var jwt = new JwtSecurityToken(token);

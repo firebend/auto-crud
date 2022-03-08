@@ -12,29 +12,29 @@ using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegiste
 
 namespace Firebend.AutoCrud.Web.Sample.Controllers;
 
-    [Route("api/token")]
-    [AllowAnonymous]
-    [ApiController]
-    public class TokenController : ControllerBase
+[Route("api/token")]
+[AllowAnonymous]
+[ApiController]
+public class TokenController : ControllerBase
+{
+    private readonly IConfiguration _configuration;
+
+    public TokenController(IConfiguration config)
     {
-        private readonly IConfiguration _configuration;
+        _configuration = config;
+    }
 
-        public TokenController(IConfiguration config)
+    [HttpPost]
+    public IActionResult Post([FromBody] UserInfoPostDto userData)
+    {
+        if (userData is { Email: { }, Password: { } })
         {
-            _configuration = config;
-        }
+            var user = GetUser(userData.Email, userData.Password);
 
-        [HttpPost]
-        public IActionResult Post([FromBody] UserInfoPostDto userData)
-        {
-            if (userData is {Email: { }, Password: { }})
+            if (user != null)
             {
-                var user = GetUser(userData.Email, userData.Password);
-
-                if (user != null)
-                {
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var claims = new[] {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var claims = new[] {
                         new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
@@ -42,36 +42,36 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers;
                         new Claim(JwtRegisteredClaimNames.Email, user.Email)
                     };
 
-                    var key = Encoding.ASCII.GetBytes(_configuration["Jwt:key"]);
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:key"]);
 
-                    var tokenDescriptor = new SecurityTokenDescriptor
-                    {
-                        Subject = new ClaimsIdentity(claims),
-                        Expires = DateTime.UtcNow.AddHours(1),
-                        Issuer = _configuration["Jwt:Issuer"],
-                        Audience = _configuration["Jwt:Audience"],
-                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                    };
-                    var token = tokenHandler.CreateToken(tokenDescriptor);
-
-                    return Ok(new { Token = tokenHandler.WriteToken(token), Message = "Success" });
-                }
-                else
+                var tokenDescriptor = new SecurityTokenDescriptor
                 {
-                    return BadRequest("Invalid credentials");
-                }
+                    Subject = new ClaimsIdentity(claims),
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    Issuer = _configuration["Jwt:Issuer"],
+                    Audience = _configuration["Jwt:Audience"],
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                return Ok(new { Token = tokenHandler.WriteToken(token), Message = "Success" });
             }
             else
             {
-                return BadRequest();
+                return BadRequest("Invalid credentials");
             }
         }
-
-        private static UserInfo GetUser(string email, string _) => new()
+        else
         {
-            UserId = Guid.NewGuid(),
-            UserName = "John",
-            Email = email,
-            CreatedDate = DateTime.Now
-        };
+            return BadRequest();
+        }
     }
+
+    private static UserInfo GetUser(string email, string _) => new()
+    {
+        UserId = Guid.NewGuid(),
+        UserName = "John",
+        Email = email,
+        CreatedDate = DateTime.Now
+    };
+}

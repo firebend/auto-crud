@@ -32,7 +32,7 @@ public class CustomFieldsAuthorizationFilterTests
     private Mock<ActionContext> _actionContext;
     private DefaultHttpContext _defaultHttpContext;
 
-    private string _policy = "ResourceCustomFields";
+    private readonly string _policy = "ResourceCustomFields";
 
     [SetUp]
     public void SetUp()
@@ -132,7 +132,7 @@ public class CustomFieldsAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CustomFieldsAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CustomFieldsAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
@@ -163,13 +163,13 @@ public class CustomFieldsAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CustomFieldsAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CustomFieldsAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var actionArguments = new Dictionary<string, object> {{"EntityId", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "EntityId", Guid.NewGuid().ToString() } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -200,13 +200,13 @@ public class CustomFieldsAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new CustomFieldsAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CustomFieldsAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var actionArguments = new Dictionary<string, object> {{"EntityId", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "EntityId", Guid.NewGuid().ToString() } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when

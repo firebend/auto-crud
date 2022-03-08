@@ -30,7 +30,7 @@ public class EntityUpdateAuthorizationFilterTests
     private Mock<ActionContext> _actionContext;
     private DefaultHttpContext _defaultHttpContext;
 
-    private string _policy = "ResourceUpdate";
+    private readonly string _policy = "ResourceUpdate";
 
     [SetUp]
     public void SetUp()
@@ -130,7 +130,7 @@ public class EntityUpdateAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new UpdateAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
 
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
@@ -138,7 +138,7 @@ public class EntityUpdateAuthorizationFilterTests
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
         var updateViewModelTest = _fixture.Create<UpdateViewModelTest>();
-        var actionArguments = new Dictionary<string, object> {{"body", updateViewModelTest}};
+        var actionArguments = new Dictionary<string, object> { { "body", updateViewModelTest } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -169,7 +169,7 @@ public class EntityUpdateAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new UpdateAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
@@ -177,7 +177,7 @@ public class EntityUpdateAuthorizationFilterTests
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var actionArguments = new Dictionary<string, object> {{"id", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -188,7 +188,7 @@ public class EntityUpdateAuthorizationFilterTests
         entityUpdateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
     }
 
-      [Test]
+    [Test]
     public void Should_Return_403_If_It_Is_Patch_And_Id_Is_Not_Null_And_Authorization_Fail()
     {
         // given
@@ -208,7 +208,7 @@ public class EntityUpdateAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new UpdateAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
@@ -216,7 +216,7 @@ public class EntityUpdateAuthorizationFilterTests
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var actionArguments = new Dictionary<string, object> {{"id", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when

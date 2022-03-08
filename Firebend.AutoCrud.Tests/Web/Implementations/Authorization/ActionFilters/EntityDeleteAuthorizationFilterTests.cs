@@ -30,7 +30,7 @@ public class EntityDeleteAuthorizationFilterTests
     private Mock<ActionContext> _actionContext;
     private DefaultHttpContext _defaultHttpContext;
 
-    private string _policy = "ResourceDelete";
+    private readonly string _policy = "ResourceDelete";
 
     [SetUp]
     public void SetUp()
@@ -126,8 +126,8 @@ public class EntityDeleteAuthorizationFilterTests
             => s.GetService(typeof(IEntityKeyParser<Guid, DeleteEntityTest>))).Returns(entityKeyParser.Object);
 
         var authorizationService = new Mock<IAuthorizationService>();
-       _serviceProvider.Setup(s =>
-            s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
+        _serviceProvider.Setup(s =>
+             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
@@ -159,13 +159,13 @@ public class EntityDeleteAuthorizationFilterTests
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new []{ new UpdateAuthorizationRequirement()})));
+        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
 
         var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
 
-        var actionArguments = new Dictionary<string, object> {{"id", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
         actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when

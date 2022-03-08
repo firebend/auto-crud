@@ -18,7 +18,7 @@ public interface IEntityViewModelCreateMultiple<T> : IMultipleEntityViewModel<T>
 }
 
 public interface IEntityViewModelRead<TKey> : IEntity<TKey>, IModifiedEntity
-    where TKey: struct
+    where TKey : struct
 {
 }
 
