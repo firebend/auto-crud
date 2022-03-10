@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
+using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework;
@@ -211,6 +212,15 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             builder.WithRegistration<IEntityTableCreator, EntityTableCreator>(false);
 
             return builder;
+        }
+
+        public EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> WithSearchHandler<TService>()
+        {
+            var serviceType = typeof(TService);
+            var registrationType = typeof(IEntitySearchHandler<TKey, TEntity, CustomFieldsSearchRequest>);
+            Builder.WithRegistration(registrationType, serviceType,
+                registrationType);
+            return this;
         }
     }
 }

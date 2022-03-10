@@ -7,19 +7,21 @@ using Firebend.AutoCrud.ChangeTracking.EntityFramework;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.EntityFramework;
 using Firebend.AutoCrud.CustomFields.Mongo;
 using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using Firebend.AutoCrud.EntityFramework;
-using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Mongo.Models;
 using Firebend.AutoCrud.Web.Interfaces;
+using Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
@@ -40,37 +42,52 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithShardKeyProvider<SampleKeyProviderMongo>()
                     .WithAllShardsProvider<SampleAllShardsMongoProvider>()
                     .WithShardMode(MongoTenantShardMode.Database)
-                    .AddCustomFields()
+                    .AddCustomFields(cf => cf
+                        .WithSearchHandler<EntitySearchAuthorizationHandler<Guid,
+                            MongoTenantPerson, CustomFieldsSearchRequest>>()
+                        .WithCustomFields()
+                    )
                     .AddDomainEvents(domainEvents => domainEvents
-                        .WithMongoChangeTracking(new ChangeTrackingOptions
-                        {
-                            PersistCustomContext = true
-                        })
+                        .WithMongoChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
                         .WithMassTransit()
                         .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
                     .AddCrud(crud => crud
-                        .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(parameters?.NickName))
-                            {
-                                query = query.Where(x => x.NickName == parameters.NickName);
-                            }
-
-                            return query;
-                        })
+                        .WithSearchHandler<CustomSearchParameters, MongoCustomSearchHandler>()
                         .WithCrud()
                     )
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         .WithReadViewModel(x => new GetPersonViewModel(x))
+                        .WithCreateViewModel<CreatePersonViewModel>(x =>
+                        {
+                            var mongoTenantPerson = new MongoTenantPerson();
+                            x.Body.CopyPropertiesTo(mongoTenantPerson);
+                            return mongoTenantPerson;
+                        })
+                        .WithUpdateViewModel<CreatePersonViewModel>(x =>
+                        {
+                            var mongoTenantPerson = new MongoTenantPerson();
+                            x.Body.CopyPropertiesTo(mongoTenantPerson);
+                            return mongoTenantPerson;
+                        })
+                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
+                        {
+                            var mongoTenantPerson = new MongoTenantPerson();
+                            vm.CopyPropertiesTo(mongoTenantPerson);
+                            return mongoTenantPerson;
+                        })
                         .WithAllControllers(true)
                         .WithChangeTrackingControllers()
+                        .AddChangeTrackingResourceAuthorization()
+                        .AddCustomFieldsResourceAuthorization()
                         .WithIoControllers()
                         .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                         .WithOpenApiGroupName("The Beautiful Mongo People")
-                        .WithRoute("api/v1/mongo-person"))
-        );
+                        .WithRoute("api/v1/mongo-person")
+                        .AddResourceAuthorization()
+                    )
+            );
 
         public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,
             IConfiguration configuration) =>
@@ -88,40 +105,23 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
                     .AddCustomFields(cf =>
-                        cf.AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
-                        {
-                            de.WithEfChangeTracking(new ChangeTrackingOptions
+                        cf.WithSearchHandler<EntitySearchAuthorizationHandler<Guid,
+                                EfPerson, CustomFieldsSearchRequest>>()
+                            .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                             {
-                                PersistCustomContext = true
-                            })
-                                .WithMassTransit();
-                        }).AddControllers(controllers => controllers
-                            .WithChangeTrackingControllers()
-                            .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
-                            .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
-                            .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
+                                de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
+                                    .WithMassTransit();
+                            }).AddControllers(controllers => controllers
+                                .WithChangeTrackingControllers()
+                                .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
+                                .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
+                                .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
-                        .WithSearchHandler<CustomSearchParameters>((query, parameters) =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(parameters?.NickName))
-                            {
-                                query = query.Where(x => x.NickName == parameters.NickName);
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(parameters?.Search))
-                            {
-                                query = query.Where(x => EF.Functions.ContainsAny(x.FirstName, parameters.Search));
-                            }
-
-                            return query;
-                        })
+                        .WithSearchHandler<CustomSearchParameters, EfCustomSearchHandler>()
                         .WithCrud()
-                        )
+                    )
                     .AddDomainEvents(events => events
-                        .WithEfChangeTracking(new ChangeTrackingOptions
-                        {
-                            PersistCustomContext = true
-                        })
+                        .WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
                         .WithMassTransit()
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
@@ -132,10 +132,14 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithReadViewModel<GetPersonViewModel, PersonViewModelMapper>()
                         //.WithReadViewModel(entity => new GetPersonViewModel(entity))
-                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, viewModel) => new EfPerson(viewModel))
+                        .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>(
+                            (_, viewModel) => new EfPerson(viewModel))
                         .WithAllControllers(true)
+                        .AddResourceAuthorization()
                         .WithOpenApiGroupName("The Beautiful Sql People")
                         .WithChangeTrackingControllers()
+                        .AddChangeTrackingResourceAuthorization()
+                        .AddCustomFieldsResourceAuthorization()
                         .WithCustomFieldsControllers(openApiName: "The Beautiful Sql People Custom Fields")
                         .WithIoControllers()
                         .WithMaxPageSize(20)
@@ -190,12 +194,17 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 
     public class PersonViewModelMapper : IReadViewModelMapper<Guid, EfPerson, GetPersonViewModel>
     {
-        public Task<EfPerson> FromAsync(GetPersonViewModel model, CancellationToken cancellationToken = default) => null;
+        public Task<EfPerson> FromAsync(GetPersonViewModel model, CancellationToken cancellationToken = default) =>
+            null;
 
-        public Task<IEnumerable<EfPerson>> FromAsync(IEnumerable<GetPersonViewModel> model, CancellationToken cancellationToken = default) => null;
+        public Task<IEnumerable<EfPerson>> FromAsync(IEnumerable<GetPersonViewModel> model,
+            CancellationToken cancellationToken = default) => null;
 
-        public Task<GetPersonViewModel> ToAsync(EfPerson entity, CancellationToken cancellationToken = default) => Task.FromResult(new GetPersonViewModel(entity));
+        public Task<GetPersonViewModel> ToAsync(EfPerson entity, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new GetPersonViewModel(entity));
 
-        public Task<IEnumerable<GetPersonViewModel>> ToAsync(IEnumerable<EfPerson> entity, CancellationToken cancellationToken = default) => Task.FromResult(entity.Select(x => new GetPersonViewModel(x)));
+        public Task<IEnumerable<GetPersonViewModel>> ToAsync(IEnumerable<EfPerson> entity,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(entity.Select(x => new GetPersonViewModel(x)));
     }
 }

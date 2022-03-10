@@ -5,12 +5,11 @@ using System.Linq;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
-using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class CreatePersonViewModel
+    public class CreatePersonViewModel : IEntityViewModelCreate<PersonViewModelBase>
     {
         public CreatePersonViewModel()
         {
@@ -31,7 +30,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public PersonViewModelBase Body { get; set; }
     }
 
-    public class PersonViewModelBase
+    public class PersonViewModelBase : IEntityViewModelBase
     {
         public PersonViewModelBase()
         {
@@ -61,9 +60,11 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         [StringLength(300)]
         public string OtherEmail { get; set; }
+
+        public DataAuth DataAuth { get; set; }
     }
 
-    public class GetPersonViewModel : PersonViewModelBase, IEntity<Guid>, ICustomFieldsEntity<Guid>
+    public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<Guid>, ICustomFieldsEntity<Guid>
     {
         private static readonly string[] Ignores = { nameof(CustomFields) };
         public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
@@ -108,7 +109,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public DateTimeOffset ModifiedDate { get; set; }
     }
 
-    public class CreateMultiplePeopleViewModel : IMultipleEntityViewModel<PersonViewModelBase>
+    public class CreateMultiplePeopleViewModel : IEntityViewModelCreateMultiple<PersonViewModelBase>
     {
         [FromBody]
         public IEnumerable<PersonViewModelBase> Entities { get; set; }

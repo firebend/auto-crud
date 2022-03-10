@@ -12,1828 +12,907 @@ using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
-using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.Web.Abstractions;
-using Firebend.AutoCrud.Web.Attributes;
-using Firebend.AutoCrud.Web.Implementations.Options;
 using Firebend.AutoCrud.Web.Implementations.Paging;
 using Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.AutoCrud.Web.Models;
 using Humanizer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Firebend.AutoCrud.Web
+namespace Firebend.AutoCrud.Web;
+
+public static class ControllerConfiguratorCache
 {
-    public static class ControllerConfiguratorCache
+    public static bool IsSwaggerApplied { get; set; }
+    public static readonly object Lock = new();
+}
+
+public partial class ControllerConfigurator<TBuilder, TKey, TEntity> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>
+    where TBuilder : EntityCrudBuilder<TKey, TEntity>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>
+{
+    internal ControllerConfigurator(TBuilder builder) : base(builder)
     {
-        public static bool IsSwaggerApplied { get; set; }
-        public static readonly object Lock = new();
+        if (builder.EntityType == null)
+        {
+            throw new ArgumentException("Please configure an entity type for this builder first.", nameof(builder));
+        }
+
+        if (builder.EntityKeyType == null)
+        {
+            throw new ArgumentException("Please configure an entity key type for this entity first.", nameof(builder));
+        }
+
+        var name = (string.IsNullOrWhiteSpace(Builder.EntityName)
+            ? Builder.EntityType.Name
+            : Builder.EntityName).Humanize(LetterCasing.Title);
+
+        OpenApiEntityName = name;
+        OpenApiEntityNamePlural = name.Pluralize();
+
+        WithRoute($"/api/v1/{name.Kebaberize()}");
+        WithOpenApiGroupName(name);
+
+        WithValidationService<DefaultEntityValidationService<TKey, TEntity>>(false);
+
+        Builder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
+
+        WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity>>();
+        WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
+        WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultUpdateViewModelMapper<TKey, TEntity>>();
+        WithCreateMultipleViewModel<MultipleEntityViewModel<TEntity>, TEntity, DefaultCreateMultipleViewModelMapper<TKey, TEntity>>();
+        WithMaxPageSize();
     }
 
-    public class ControllerConfigurator<TBuilder, TKey, TEntity> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>
-        where TBuilder : EntityCrudBuilder<TKey, TEntity>
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>
+    public string Route { get; private set; }
+
+    private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetRouteAttributeInfo()
     {
-        internal ControllerConfigurator(TBuilder builder) : base(builder)
+        var routeType = typeof(RouteAttribute);
+        var routeCtor = routeType.GetConstructor(new[] { typeof(string) });
+
+        if (routeCtor == null)
         {
-            if (builder.EntityType == null)
-            {
-                throw new ArgumentException("Please configure an entity type for this builder first.", nameof(builder));
-            }
-
-            if (builder.EntityKeyType == null)
-            {
-                throw new ArgumentException("Please configure an entity key type for this entity first.", nameof(builder));
-            }
-
-            var name = (string.IsNullOrWhiteSpace(Builder.EntityName)
-                ? Builder.EntityType.Name
-                : Builder.EntityName).Humanize(LetterCasing.Title);
-
-            OpenApiEntityName = name;
-            OpenApiEntityNamePlural = name.Pluralize();
-
-            WithRoute($"/api/v1/{name.Kebaberize()}");
-            WithOpenApiGroupName(name);
-
-            WithValidationService<DefaultEntityValidationService<TKey, TEntity>>(false);
-
-            Builder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
-
-            WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity>>();
-            WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
-            WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultUpdateViewModelMapper<TKey, TEntity>>();
-            WithCreateMultipleViewModel<MultipleEntityViewModel<TEntity>, TEntity, DefaultCreateMultipleViewModelMapper<TKey, TEntity>>();
-            WithMaxPageSize();
+            return default;
         }
 
-        public (Type attributeType, CustomAttributeBuilder attributeBuilder) DefaultAuthorizationPolicy { get; private set; }
+        var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] { Route });
 
-        public bool HasDefaultAuthorizationPolicy => DefaultAuthorizationPolicy != default
-                                                     && DefaultAuthorizationPolicy.attributeBuilder != null
-                                                     && DefaultAuthorizationPolicy.attributeType != null;
-        public string Route { get; private set; }
+        return (routeType, attributeBuilder);
+    }
 
-        public string OpenApiGroupName { get; private set; }
+    private void AddRouteAttribute(Type controllerType)
+    {
+        var (routeType, attributeBuilder) = GetRouteAttributeInfo();
 
-        public string OpenApiEntityName { get; private set; }
+        Builder.WithAttribute(controllerType, routeType, attributeBuilder);
+    }
 
-        public string OpenApiEntityNamePlural { get; private set; }
+    /// <summary>
+    /// Registers a given controller
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="typeToCheck"></param>
+    /// <param name="genericArgs"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithController())
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type,
+        Type typeToCheck,
+        string entityName = null,
+        string entityNamePlural = null,
+        string openApiName = null,
+        params Type[] genericArgs)
+    {
+        var hasGenerics = genericArgs != null && genericArgs.Length > 0;
+        var registrationType = hasGenerics ? type.MakeGenericType(genericArgs) : type;
 
-        public Type CreateViewModelType { get; private set; }
+        var typeToCheckGeneric = hasGenerics ? typeToCheck.MakeGenericType(genericArgs) : typeToCheck;
 
-        public Type UpdateViewModelType { get; private set; }
-
-        public Type ReadViewModelType { get; private set; }
-
-        public Type CreateMultipleViewModelWrapperType { get; private set; }
-
-        public Type CreateMultipleViewModelType { get; private set; }
-
-        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetRouteAttributeInfo()
+        if (!typeToCheckGeneric.IsAssignableFrom(registrationType))
         {
-            var routeType = typeof(RouteAttribute);
-            var routeCtor = routeType.GetConstructor(new[] { typeof(string) });
-
-            if (routeCtor == null)
-            {
-                return default;
-            }
-
-            var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] { Route });
-
-            return (routeType, attributeBuilder);
+            throw new Exception($"Registration type {registrationType} is not assignable to {typeToCheckGeneric}");
         }
 
-        private void AddRouteAttribute(Type controllerType)
-        {
-            var (routeType, attributeBuilder) = GetRouteAttributeInfo();
+        Builder.WithRegistration(registrationType, registrationType);
 
-            Builder.WithAttribute(controllerType, routeType, attributeBuilder);
+        AddRouteAttribute(registrationType);
+        AddOpenApiGroupNameAttribute(registrationType, openApiName);
+        AddOpenApiEntityNameAttribute(registrationType, entityName, entityNamePlural);
+
+        if (HasDefaultAuthorizationPolicy)
+        {
+            Builder.WithAttribute(registrationType, DefaultAuthorizationPolicy.attributeType, DefaultAuthorizationPolicy.attributeBuilder);
         }
 
-        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo(string openApiName)
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a given controller
+    /// </summary>
+    /// <typeparam name="TTypeCheck"></typeparam>
+    /// <param name="type"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithController<>())
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TTypeCheck>(Type type)
+        => WithController(type, typeof(TTypeCheck));
+
+    /// <summary>
+    /// Registers a given controller
+    /// </summary>
+    /// <typeparam name="TController"></typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithController<>())
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TController>()
+        => WithController(typeof(TController), typeof(TController));
+
+    private void AddAttributeToAllControllers(Type attributeType, CustomAttributeBuilder attributeBuilder) => GetRegisteredControllers()
+        .ToList()
+        .ForEach(x => Builder.WithAttribute(x.Key, attributeType, attributeBuilder));
+
+    private IEnumerable<KeyValuePair<Type, Registration>> GetRegisteredControllers() => Builder
+        .Registrations
+        .SelectMany(x => x.Value, (pair, registration) => new KeyValuePair<Type, Registration>(pair.Key, registration))
+        .Where(x => x.Value is ServiceRegistration)
+        .Where(x => typeof(ControllerBase).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType));
+
+    /// <summary>
+    /// Specifies the base route to use for an entity
+    /// </summary>
+    /// <param name="route"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers(true)
+    ///          .WithOpenApiGroupName("Weather Forecasts")
+    ///          .WithRoute("api/v1/mongo-person"))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithRoute(string route)
+    {
+        Route = route;
+        var (aType, aBuilder) = GetRouteAttributeInfo();
+        AddAttributeToAllControllers(aType, aBuilder);
+        return this;
+    }
+
+    private ControllerConfigurator<TBuilder, TKey, TEntity> WithControllerHelper(
+        Type controllerType,
+        Type mapperInterfaceType,
+        Type registrationType,
+        Type viewModelType,
+        Type viewModelMapper,
+        bool makeRegistrationTypeGeneric = false,
+        bool makeControllerTypeGeneric = true)
+    {
+        Type mapper;
+        Type controller;
+
+        if (makeControllerTypeGeneric)
         {
-            if (string.IsNullOrWhiteSpace(openApiName))
-            {
-                openApiName = OpenApiGroupName;
-            }
-            var attributeType = typeof(OpenApiGroupNameAttribute);
-            var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
+            controller = controllerType
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
 
-            if (attributeCtor == null)
-            {
-                return default;
-            }
-
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { openApiName });
-
-            return (attributeType, attributeBuilder);
+            mapper = mapperInterfaceType
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
+        }
+        else
+        {
+            controller = controllerType;
+            mapper = mapperInterfaceType;
         }
 
-        private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiEntityNameAttribute(string name, string plural)
+        if (makeRegistrationTypeGeneric)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                name = OpenApiEntityName;
-            }
-
-            if (string.IsNullOrWhiteSpace(plural))
-            {
-                plural = name;
-            }
-
-            var attributeType = typeof(OpenApiEntityNameAttribute);
-
-            var attributeCtor = attributeType.GetConstructor(new[] { typeof(string), typeof(string) });
-
-            if (attributeCtor == null)
-            {
-                return default;
-            }
-
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { name, plural });
-
-            return (attributeType, attributeBuilder);
+            registrationType = registrationType
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
         }
 
-        private static (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiOperationIdAttributeInfo(string operationId)
+        WithController(controller, registrationType);
+
+        if (viewModelMapper != null)
         {
-            var attributeType = typeof(OpenApiOperationIdAttribute);
-            var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
-
-            if (attributeCtor == null)
-            {
-                return default;
-            }
-
-            var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { operationId });
-
-            return (attributeType, attributeBuilder);
+            Builder.WithRegistration(mapper, viewModelMapper, mapper);
         }
 
-        private void AddOpenApiGroupNameAttribute(Type controllerType, string openApiName)
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a CREATE controller for the entity
+    /// </summary>
+    /// <param name="serviceType"></param>
+    /// <param name="viewModelType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="resultModelType"></param>
+    /// <param name="resultModelTypeMapper"></param>
+    /// <param name="makeServiceGeneric"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithCreateController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type serviceType,
+        Type viewModelType,
+        Type viewModelMapper,
+        Type resultModelType,
+        Type resultModelTypeMapper,
+        bool makeServiceGeneric)
+    {
+        var controller = typeof(AbstractEntityCreateController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType,
+                Builder.EntityType,
+                viewModelType,
+                resultModelType);
+
+        if (viewModelMapper != null)
         {
-            var (attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo(openApiName);
-            Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
+            var createViewModelMapperInterface = typeof(ICreateViewModelMapper<,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, viewModelType);
+
+            Builder.WithRegistration(createViewModelMapperInterface, viewModelMapper, createViewModelMapperInterface);
         }
 
-        private void AddOpenApiEntityNameAttribute(Type controllerType, string name, string plural)
+        if (resultModelTypeMapper != null)
         {
-            var (attributeType, attributeBuilder) = GetOpenApiEntityNameAttribute(name, plural);
-            Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
+            var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
+
+            Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
         }
 
-        private void AddOpenApiOperationAttribute(Type controllerType, string operationId)
+        if (makeServiceGeneric)
         {
-            var (attributeType, attributeBuilder) = GetOpenApiOperationIdAttributeInfo(operationId);
-            Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
+            serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
+                Builder.EntityType,
+                viewModelType,
+                resultModelType);
         }
 
-        private static (Type attributeType, CustomAttributeBuilder attributeBuilder) GetAuthorizationAttributeInfo(string authorizePolicy = "")
-        {
-            var authType = typeof(AuthorizeAttribute);
+        WithController(serviceType, controller);
 
-            var authCtor = authorizePolicy == null
-                ? null
-                : authType.GetConstructor(!string.IsNullOrWhiteSpace(authorizePolicy)
-                    ? new[] { typeof(string) }
-                    : Type.EmptyTypes);
+        return this;
+    }
 
-            if (authCtor == null)
-            {
-                return default;
-            }
+    /// <summary>
+    /// Registers a CREATE controller for the entity using a service type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithCreateController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController<TRegistrationType>()
+        => WithCreateController(typeof(TRegistrationType),
+            CreateViewModelType,
+            null,
+            ReadViewModelType,
+            null,
+            false);
 
-            var args = !string.IsNullOrWhiteSpace(authorizePolicy)
-                ? new object[] { authorizePolicy }
-                : new object[] { };
+    /// <summary>
+    /// Registers a CREATE controller for the entity using auto-generated types
+    /// </summary>=
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithCreateController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController()
+        => WithCreateController(
+            typeof(AbstractEntityCreateController<,,,>),
+            CreateViewModelType,
+            null,
+            ReadViewModelType,
+            null,
+            true);
 
-            return (authType, new CustomAttributeBuilder(authCtor, args));
-        }
-
-        /// <summary>
-        /// Registers a given controller
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="typeToCheck"></param>
-        /// <param name="genericArgs"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithController())
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type,
-            Type typeToCheck,
-            string entityName = null,
-            string entityNamePlural = null,
-            string openApiName = null,
-            params Type[] genericArgs)
-        {
-            var hasGenerics = genericArgs != null && genericArgs.Length > 0;
-            var registrationType = hasGenerics ? type.MakeGenericType(genericArgs) : type;
-
-            var typeToCheckGeneric = hasGenerics ? typeToCheck.MakeGenericType(genericArgs) : typeToCheck;
-
-            if (!typeToCheckGeneric.IsAssignableFrom(registrationType))
-            {
-                throw new Exception($"Registration type {registrationType} is not assignable to {typeToCheckGeneric}");
-            }
-
-            Builder.WithRegistration(registrationType, registrationType);
-
-            AddRouteAttribute(registrationType);
-            AddOpenApiGroupNameAttribute(registrationType, openApiName);
-            AddOpenApiEntityNameAttribute(registrationType, entityName, entityNamePlural);
-
-            if (HasDefaultAuthorizationPolicy)
-            {
-                Builder.WithAttribute(registrationType, DefaultAuthorizationPolicy.attributeType, DefaultAuthorizationPolicy.attributeBuilder);
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Registers a given controller
-        /// </summary>
-        /// <typeparam name="TTypeCheck"></typeparam>
-        /// <param name="type"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithController<>())
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TTypeCheck>(Type type)
-            => WithController(type, typeof(TTypeCheck));
-
-        /// <summary>
-        /// Registers a given controller
-        /// </summary>
-        /// <typeparam name="TController"></typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithController<>())
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TController>()
-            => WithController(typeof(TController), typeof(TController));
-
-        private void AddAttributeToAllControllers(Type attributeType, CustomAttributeBuilder attributeBuilder) => GetRegisteredControllers()
-            .ToList()
-            .ForEach(x => Builder.WithAttribute(x.Key, attributeType, attributeBuilder));
-
-        private IEnumerable<KeyValuePair<Type, Registration>> GetRegisteredControllers() => Builder
-            .Registrations
-            .SelectMany(x => x.Value, (pair, registration) => new KeyValuePair<Type, Registration>(pair.Key, registration))
-            .Where(x => x.Value is ServiceRegistration)
-            .Where(x => typeof(ControllerBase).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType));
-
-        /// <summary>
-        /// Specifies the base route to use for an entity
-        /// </summary>
-        /// <param name="route"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers(true)
-        ///          .WithOpenApiGroupName("Weather Forecasts")
-        ///          .WithRoute("api/v1/mongo-person"))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithRoute(string route)
-        {
-            Route = route;
-            var (aType, aBuilder) = GetRouteAttributeInfo();
-            AddAttributeToAllControllers(aType, aBuilder);
-            return this;
-        }
-
-        private void AddSwaggerGenOptionConfiguration()
-        {
-            if (ControllerConfiguratorCache.IsSwaggerApplied)
-            {
-                return;
-            }
-
-            using var _ = AsyncDuplicateLock.Lock(ControllerConfiguratorCache.Lock);
-            {
-                if (ControllerConfiguratorCache.IsSwaggerApplied)
-                {
-                    return;
-                }
-
-                Builder.WithServiceCollectionHook(sc => sc.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>()));
-
-                ControllerConfiguratorCache.IsSwaggerApplied = true;
-            }
-        }
-
-        /// <summary>
-        /// Specifies the group name to list an entity under for OpenApi and Swagger documentation
-        /// </summary>
-        /// <param name="openApiGroupName">The group name to use</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers(true)
-        ///          .WithOpenApiGroupName("Weather Forecasts")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiGroupName(string openApiGroupName)
-        {
-            OpenApiGroupName = openApiGroupName;
-
-            var (aType, aBuilder) = GetOpenApiGroupAttributeInfo(openApiGroupName);
-
-            AddAttributeToAllControllers(aType, aBuilder);
-
-            AddSwaggerGenOptionConfiguration();
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specifies the entity name to use fo an entity under in OpenApi and Swagger documentation
-        /// </summary>
-        /// <param name="name">The entity name to use</param>
-        /// <param name="plural">Optional: the entity name to use when a plural is required, automatically pluralized if not provided</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers(true)
-        ///          .WithOpenApiGroupName("Weather Forecast")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiEntityName(string name, string plural = null)
-        {
-            OpenApiEntityName = name;
-            OpenApiEntityNamePlural = plural ?? name.Pluralize();
-
-            var (aType, aBuilder) = GetOpenApiEntityNameAttribute(OpenApiEntityName, OpenApiEntityNamePlural);
-
-            AddAttributeToAllControllers(aType, aBuilder);
-
-            AddSwaggerGenOptionConfiguration();
-
-            return this;
-        }
-
-        private ControllerConfigurator<TBuilder, TKey, TEntity> WithControllerHelper(
-            Type controllerType,
-            Type mapperInterfaceType,
-            Type registrationType,
-            Type viewModelType,
-            Type viewModelMapper,
-            bool makeRegistrationTypeGeneric = false,
-            bool makeControllerTypeGeneric = true)
-        {
-            Type mapper;
-            Type controller;
-
-            if (makeControllerTypeGeneric)
-            {
-                controller = controllerType
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
-
-                mapper = mapperInterfaceType
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
-            }
-            else
-            {
-                controller = controllerType;
-                mapper = mapperInterfaceType;
-            }
-
-            if (makeRegistrationTypeGeneric)
-            {
-                registrationType = registrationType
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
-            }
-
-            WithController(controller, registrationType);
-
-            if (viewModelMapper != null)
-            {
-                Builder.WithRegistration(mapper, viewModelMapper, mapper);
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Registers a CREATE controller for the entity
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="viewModelType"></param>
-        /// <param name="viewModelMapper"></param>
-        /// <param name="resultModelType"></param>
-        /// <param name="resultModelTypeMapper"></param>
-        /// <param name="makeServiceGeneric"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithCreateController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type serviceType,
-            Type viewModelType,
-            Type viewModelMapper,
-            Type resultModelType,
-            Type resultModelTypeMapper,
-            bool makeServiceGeneric)
-        {
-            var controller = typeof(AbstractEntityCreateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType,
-                    Builder.EntityType,
-                    viewModelType,
-                    resultModelType);
-
-            if (viewModelMapper != null)
-            {
-                var createViewModelMapperInterface = typeof(ICreateViewModelMapper<,,>)
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, viewModelType);
-
-                Builder.WithRegistration(createViewModelMapperInterface, viewModelMapper, createViewModelMapperInterface);
-            }
-
-            if (resultModelTypeMapper != null)
-            {
-                var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
-
-                Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
-            }
-
-            if (makeServiceGeneric)
-            {
-                serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
-                        Builder.EntityType,
-                        viewModelType,
-                        resultModelType);
-            }
-
-            WithController(serviceType, controller);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Registers a CREATE controller for the entity using a service type
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithCreateController<>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController<TRegistrationType>()
-            => WithCreateController(typeof(TRegistrationType),
-                CreateViewModelType,
-                null,
-                ReadViewModelType,
-                null,
-                false);
-
-        /// <summary>
-        /// Registers a CREATE controller for the entity using auto-generated types
-        /// </summary>=
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithCreateController<>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController()
-            => WithCreateController(
-                typeof(AbstractEntityCreateController<,,,>),
-                CreateViewModelType,
-                null,
-                ReadViewModelType,
-                null,
-                true);
-
-        /// <summary>
-        /// Registers a DELETE controller for the entity
-        /// </summary>
-        /// <param name="registrationType"></param>
-        /// <param name="viewModelType"></param>
-        /// <param name="viewModelMapper"></param>
-        /// <param name="makeRegistrationTypeGeneric"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithDeleteController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController(Type registrationType,
-            Type viewModelType,
-             Type viewModelMapper = null,
-            bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
-            typeof(AbstractEntityDeleteController<,,>),
+    /// <summary>
+    /// Registers a DELETE controller for the entity
+    /// </summary>
+    /// <param name="registrationType"></param>
+    /// <param name="viewModelType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="makeRegistrationTypeGeneric"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithDeleteController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController(Type registrationType,
+        Type viewModelType,
+        Type viewModelMapper = null,
+        bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
+        typeof(AbstractEntityDeleteController<,,>),
         typeof(ICreateViewModelMapper<,,>),
-            registrationType,
-            viewModelType,
-            viewModelMapper,
-            makeRegistrationTypeGeneric);
+        registrationType,
+        viewModelType,
+        viewModelMapper,
+        makeRegistrationTypeGeneric);
 
-        /// <summary>
-        /// Registers a DELETE controller for the entity using a registration type
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithDeleteController<>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController<TRegistrationType>()
-            => WithDeleteController(typeof(TRegistrationType), ReadViewModelType);
+    /// <summary>
+    /// Registers a DELETE controller for the entity using a registration type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithDeleteController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController<TRegistrationType>()
+        => WithDeleteController(typeof(TRegistrationType), ReadViewModelType);
 
-        /// <summary>
-        /// Registers a DELETE controller for the entity using auto-generated types
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithDeleteController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController()
-            => WithDeleteController(typeof(AbstractEntityDeleteController<,,>),
-                ReadViewModelType,
-                null,
-                true);
+    /// <summary>
+    /// Registers a DELETE controller for the entity using auto-generated types
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithDeleteController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController()
+        => WithDeleteController(typeof(AbstractEntityDeleteController<,,>),
+            ReadViewModelType,
+            null,
+            true);
 
-        /// <summary>
-        /// Registers a GET `/all` controller for the entity
-        /// </summary>
-        /// <param name="registrationType"></param>
-        /// <param name="viewModelType"></param>
-        /// <param name="viewModelMapper"></param>
-        /// <param name="makeRegistrationTypeGeneric"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithGetAllController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController(Type registrationType,
-            Type viewModelType,
-            Type viewModelMapper = null,
-            bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
-            typeof(AbstractEntityReadAllController<,,>),
+    /// <summary>
+    /// Registers a GET `/all` controller for the entity
+    /// </summary>
+    /// <param name="registrationType"></param>
+    /// <param name="viewModelType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="makeRegistrationTypeGeneric"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithGetAllController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController(Type registrationType,
+        Type viewModelType,
+        Type viewModelMapper = null,
+        bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
+        typeof(AbstractEntityReadAllController<,,>),
         typeof(ICreateViewModelMapper<,,>),
-            registrationType,
-            viewModelType,
-            viewModelMapper,
-            makeRegistrationTypeGeneric);
+        registrationType,
+        viewModelType,
+        viewModelMapper,
+        makeRegistrationTypeGeneric);
 
-        /// <summary>
-        /// Registers a GET `/all` controller for the entity using a registration type
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithGetAllController<>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController<TRegistrationType>() =>
-            WithGetAllController(typeof(TRegistrationType), Builder.EntityType);
+    /// <summary>
+    /// Registers a GET `/all` controller for the entity using a registration type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithGetAllController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController<TRegistrationType>() =>
+        WithGetAllController(typeof(TRegistrationType), Builder.EntityType);
 
-        /// <summary>
-        /// Registers a GET `/all` controller for the entity using auto-generated types
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithGetAllController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController()
-            => WithGetAllController(typeof(AbstractEntityReadAllController<,,>),
-                ReadViewModelType,
-                null,
-                true);
+    /// <summary>
+    /// Registers a GET `/all` controller for the entity using auto-generated types
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithGetAllController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController()
+        => WithGetAllController(typeof(AbstractEntityReadAllController<,,>),
+            ReadViewModelType,
+            null,
+            true);
 
-        /// <summary>
-        /// Registers a GET controller for the entity
-        /// </summary>
-        /// <param name="registrationType"></param>
-        /// <param name="viewModelType"></param>
-        /// <param name="viewModelMapper"></param>
-        /// <param name="makeRegistrationTypeGeneric"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithReadController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController(Type registrationType,
-            Type viewModelType,
-            Type viewModelMapper = null,
-            bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
+    /// <summary>
+    /// Registers a GET controller for the entity
+    /// </summary>
+    /// <param name="registrationType"></param>
+    /// <param name="viewModelType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="makeRegistrationTypeGeneric"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithReadController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController(Type registrationType,
+        Type viewModelType,
+        Type viewModelMapper = null,
+        bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
+        typeof(AbstractEntityReadController<,,>),
+        typeof(ICreateViewModelMapper<,,>),
+        registrationType,
+        viewModelType,
+        viewModelMapper,
+        makeRegistrationTypeGeneric);
+
+    /// <summary>
+    /// Registers a GET controller for the entity using a registration type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithReadController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController<TRegistrationType>()
+        => WithReadController(typeof(TRegistrationType), ReadViewModelType);
+
+    /// <summary>
+    /// Registers a GET controller for the entity using auto-generated types
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithReadController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController()
+        => WithReadController(
             typeof(AbstractEntityReadController<,,>),
-            typeof(ICreateViewModelMapper<,,>),
-            registrationType,
-            viewModelType,
-            viewModelMapper,
-            makeRegistrationTypeGeneric);
+            ReadViewModelType,
+            null,
+            true);
 
-        /// <summary>
-        /// Registers a GET controller for the entity using a registration type
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithReadController<>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController<TRegistrationType>()
-            => WithReadController(typeof(TRegistrationType), ReadViewModelType);
+    /// <summary>
+    /// Registers a GET controller with search enabled for the entity
+    /// </summary>
+    /// <param name="registrationType"></param>
+    /// <param name="viewModelType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="makeRegistrationTypeGeneric"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithSearchController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController(Type registrationType,
+        Type viewModelType,
+        Type viewModelMapper = null,
+        bool makeRegistrationTypeGeneric = false)
+    {
+        var controller = typeof(AbstractEntitySearchController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchRequestType, viewModelType);
 
-        /// <summary>
-        /// Registers a GET controller for the entity using auto-generated types
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithReadController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController()
-            => WithReadController(
-                typeof(AbstractEntityReadController<,,>),
-                ReadViewModelType,
-                null,
-                true);
+        var mapperInterface = typeof(IReadViewModelMapper<,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
 
-        /// <summary>
-        /// Registers a GET controller with search enabled for the entity
-        /// </summary>
-        /// <param name="registrationType"></param>
-        /// <param name="viewModelType"></param>
-        /// <param name="viewModelMapper"></param>
-        /// <param name="makeRegistrationTypeGeneric"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithSearchController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController(Type registrationType,
-            Type viewModelType,
-            Type viewModelMapper = null,
-            bool makeRegistrationTypeGeneric = false)
+        if (makeRegistrationTypeGeneric)
         {
-            var controller = typeof(AbstractEntitySearchController<,,,>)
+            registrationType = registrationType
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchRequestType, viewModelType);
-
-            var mapperInterface = typeof(IReadViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
-
-            if (makeRegistrationTypeGeneric)
-            {
-                registrationType = registrationType
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchRequestType, viewModelType);
-            }
-
-            return WithControllerHelper(controller,
-                mapperInterface,
-                registrationType,
-                ReadViewModelType,
-                viewModelMapper,
-               false,
-                false);
         }
 
-        /// <summary>
-        /// Registers a GET controller with search enabled for the entity using a registration type
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithSearchController<>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController<TRegistrationType>()
-            => WithSearchController(typeof(TRegistrationType), ReadViewModelType);
+        return WithControllerHelper(controller,
+            mapperInterface,
+            registrationType,
+            ReadViewModelType,
+            viewModelMapper,
+            false,
+            false);
+    }
 
-        /// <summary>
-        /// Registers a GET controller with search enabled for the entity using auto-generated types
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithSearchController())
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController()
-            => WithSearchController(typeof(AbstractEntitySearchController<,,,>),
-                ReadViewModelType,
-                null,
-                true);
+    /// <summary>
+    /// Registers a GET controller with search enabled for the entity using a registration type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithSearchController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController<TRegistrationType>()
+        => WithSearchController(typeof(TRegistrationType), ReadViewModelType);
 
-        /// <summary>
-        /// Registers an UPDATE controller for the entity
-        /// </summary>
-        /// <param name="registrationType"></param>
-        /// <param name="viewModelType"></param>
-        /// <param name="viewModelMapper"></param>
-        /// <param name="makeRegistrationTypeGeneric"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithUpdateController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(Type serviceType,
-            Type viewModelType,
-            Type viewModelMapper,
-            Type resultModelType,
-            Type resultModelTypeMapper,
-            bool makeServiceTypeGeneric)
+    /// <summary>
+    /// Registers a GET controller with search enabled for the entity using auto-generated types
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithSearchController())
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController()
+        => WithSearchController(typeof(AbstractEntitySearchController<,,,>),
+            ReadViewModelType,
+            null,
+            true);
+
+    /// <summary>
+    /// Registers an UPDATE controller for the entity
+    /// </summary>
+    /// <param name="registrationType"></param>
+    /// <param name="viewModelType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="makeRegistrationTypeGeneric"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithUpdateController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(Type serviceType,
+        Type viewModelType,
+        Type viewModelMapper,
+        Type resultModelType,
+        Type resultModelTypeMapper,
+        bool makeServiceTypeGeneric)
+    {
+        var controller = typeof(AbstractEntityUpdateController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType,
+                Builder.EntityType,
+                viewModelType,
+                resultModelType);
+
+        if (viewModelMapper != null)
         {
-            var controller = typeof(AbstractEntityUpdateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType,
-                    Builder.EntityType,
-                    viewModelType,
-                    resultModelType);
+            var updateMapperInterface = typeof(IUpdateViewModelMapper<,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, viewModelType);
 
-            if (viewModelMapper != null)
-            {
-                var updateMapperInterface = typeof(IUpdateViewModelMapper<,,>)
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, viewModelType);
-
-                Builder.WithRegistration(updateMapperInterface, viewModelMapper, updateMapperInterface);
-            }
-
-            if (resultModelTypeMapper != null)
-            {
-                var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
-
-                Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
-            }
-
-            if (makeServiceTypeGeneric)
-            {
-                serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
-                        Builder.EntityType,
-                        viewModelType,
-                        resultModelType);
-            }
-
-            WithController(serviceType, controller);
-
-            return this;
+            Builder.WithRegistration(updateMapperInterface, viewModelMapper, updateMapperInterface);
         }
 
-        /// <summary>
-        /// Registers an UPDATE controller for the entity using a registration type
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithUpdateController<>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController<TRegistrationType>()
-            => WithUpdateController(typeof(TRegistrationType),
-                UpdateViewModelType,
-                null,
-                ReadViewModelType,
-                null,
-                false);
-
-        /// <summary>
-        /// Registers an UPDATE controller for the entity using auto-generated types
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithUpdateController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController()
-            => WithUpdateController(
-                typeof(AbstractEntityUpdateController<,,,>),
-                UpdateViewModelType,
-                null,
-                ReadViewModelType,
-                null,
-                true);
-
-        /// <summary>
-        /// Registers a POST `/multiple` controller for the entity
-        /// </summary>
-        /// <param name="registrationType"></param>
-        /// <param name="viewModelType"></param>
-        /// <param name="viewModelMapper"></param>
-        /// <param name="makeRegistrationTypeGeneric"></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithCreateMultipleController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController(Type serviceType,
-            Type viewModelWrapperType,
-            Type viewModelType,
-            Type viewModelMapper,
-            Type resultModelType,
-            Type resultModelTypeMapper,
-            bool makeServiceGeneric)
+        if (resultModelTypeMapper != null)
         {
-            var controller = typeof(AbstractEntityCreateMultipleController<,,,,>)
-                .MakeGenericType(Builder.EntityKeyType,
-                    Builder.EntityType,
-                    viewModelWrapperType,
-                    viewModelType,
-                    resultModelType);
+            var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
 
-            if (viewModelMapper != null)
-            {
-                var createMultipleViewModelMapperInterface = typeof(ICreateMultipleViewModelMapper<,,,>)
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelWrapperType, viewModelType);
-
-                Builder.WithRegistration(createMultipleViewModelMapperInterface, viewModelMapper, createMultipleViewModelMapperInterface);
-            }
-
-            if (resultModelTypeMapper != null)
-            {
-                var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                    .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
-
-                Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
-            }
-
-            if (makeServiceGeneric)
-            {
-                serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
-                        Builder.EntityType,
-                        viewModelWrapperType,
-                        viewModelType,
-                        resultModelType);
-            }
-
-            WithController(serviceType, controller);
-
-            return this;
+            Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
         }
 
-        /// <summary>
-        /// Registers a POST `/multiple` controller for the entity using a registration type
-        /// </summary>
-        /// <typeparam name="TRegistrationType">The service type to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithCreateMultipleController<>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController<TRegistrationType>()
-            => WithCreateMultipleController(typeof(TRegistrationType),
-                CreateMultipleViewModelWrapperType,
-                CreateMultipleViewModelType,
-                null,
-                ReadViewModelType,
-                null,
-                false);
-
-        /// <summary>
-        /// Registers a POST `/multiple` controller for the entity using auto-generated types
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithCreateMultipleController()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController()
-            => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,>),
-                CreateMultipleViewModelWrapperType,
-                CreateMultipleViewModelType,
-                null,
-                ReadViewModelType,
-                null,
-                true);
-
-        /// <summary>
-        /// Registers Create, Read, Update, Delete (and, optionally, Create Multiple and Get All) controllers for an entity using auto-generated types
-        /// </summary>
-        /// <param name="includeGetAll">Optional; Whether to include the Get All controller</param>
-        /// <param name="includeMultipleCreate">Optional; Whether to include the Create Multiple controller</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers(true, true)
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithAllControllers(bool includeGetAll = false, bool includeMultipleCreate = true)
+        if (makeServiceTypeGeneric)
         {
-            WithReadController();
-            WithCreateController();
-            WithDeleteController();
-            WithSearchController();
-            WithUpdateController();
-
-            if (includeGetAll)
-            {
-                WithGetAllController();
-            }
-
-            if (includeMultipleCreate)
-            {
-                WithCreateMultipleController();
-            }
-
-            return this;
+            serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
+                Builder.EntityType,
+                viewModelType,
+                resultModelType);
         }
 
-        /// <summary>
-        /// Adds an authorization policy to requests for an entity that use the specified controller
-        /// </summary>
-        /// <param name="type">The type of the controller to add the policy for</param>
-        /// <param name="authorizePolicy">Optional; the authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddAuthorizationPlicy()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy(Type type, string authorizePolicy = "")
+        WithController(serviceType, controller);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers an UPDATE controller for the entity using a registration type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithUpdateController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController<TRegistrationType>()
+        => WithUpdateController(typeof(TRegistrationType),
+            UpdateViewModelType,
+            null,
+            ReadViewModelType,
+            null,
+            false);
+
+    /// <summary>
+    /// Registers an UPDATE controller for the entity using auto-generated types
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithUpdateController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController()
+        => WithUpdateController(
+            typeof(AbstractEntityUpdateController<,,,>),
+            UpdateViewModelType,
+            null,
+            ReadViewModelType,
+            null,
+            true);
+
+    /// <summary>
+    /// Registers a POST `/multiple` controller for the entity
+    /// </summary>
+    /// <param name="registrationType"></param>
+    /// <param name="viewModelType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="makeRegistrationTypeGeneric"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithCreateMultipleController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController(Type serviceType,
+        Type viewModelWrapperType,
+        Type viewModelType,
+        Type viewModelMapper,
+        Type resultModelType,
+        Type resultModelTypeMapper,
+        bool makeServiceGeneric)
+    {
+        var controller = typeof(AbstractEntityCreateMultipleController<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType,
+                Builder.EntityType,
+                viewModelWrapperType,
+                viewModelType,
+                resultModelType);
+
+        if (viewModelMapper != null)
         {
-            var (attributeType, attributeBuilder) = GetAuthorizationAttributeInfo(authorizePolicy);
-            Builder.WithAttribute(type, attributeType, attributeBuilder);
-            return this;
+            var createMultipleViewModelMapperInterface = typeof(ICreateMultipleViewModelMapper<,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelWrapperType, viewModelType);
+
+            Builder.WithRegistration(createMultipleViewModelMapperInterface, viewModelMapper, createMultipleViewModelMapperInterface);
         }
 
-        /// <summary>
-        /// Adds an authorization policy to requests for an entity that use the specified controller
-        /// </summary>
-        /// <typeparam name="TController">The type of the controller to add the authorization policy to</typeparam>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddAuthorizationPlicy<Controller>("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy<TController>(string policy)
-            => AddAuthorizationPolicy(typeof(TController), policy);
-
-        /// <summary>
-        /// Adds an authorization policy to Create requests using the abstract create controller
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddCreateAuthorizationPlicy("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType), policy);
-
-        /// <summary>
-        /// Adds an authorization policy to DELETE requests using the abstract delete controller
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddDeleteAuthorizationPlicy("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
-
-        /// <summary>
-        /// Adds an authorization policy to GET requests using the abstract read controller
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddReadAuthorizationPlicy("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy(typeof(AbstractEntityReadController<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
-
-        /// <summary>
-        /// Adds an authorization policy to GET `/all` requests using the abstract read all controller
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddReadAllAuthorizationPolicy("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy(typeof(AbstractEntityReadAllController<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
-
-        /// <summary>
-        /// Adds an authorization policy to search requests using the abstract search controller
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddSearchAuthorizationPolicy("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddSearchAuthorizationPolicy(string policy)
+        if (resultModelTypeMapper != null)
         {
-            var type = typeof(AbstractEntitySearchController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchType, ReadViewModelType);
+            var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, resultModelType);
 
-            return AddAuthorizationPolicy(type, policy);
+            Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
         }
 
-        /// <summary>
-        /// Adds an authorization policy to PUT requests using the abstract update controller
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddUpdateAuthorizationPolicy("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
-            => AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType, UpdateViewModelType), policy);
-
-        /// <summary>
-        /// Adds an authorization policies to all requests that modify an entity (Create, Update, and Delete) and use the abstract controllers
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddAlterAuthorizationPolicies("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterAuthorizationPolicies(string policy = "")
+        if (makeServiceGeneric)
         {
-            AddCreateAuthorizationPolicy(policy);
-            AddDeleteAuthorizationPolicy(policy);
-            AddUpdateAuthorizationPolicy(policy);
-
-            return this;
+            serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
+                Builder.EntityType,
+                viewModelWrapperType,
+                viewModelType,
+                resultModelType);
         }
 
-        /// <summary>
-        /// Adds an authorization policies to all requests that read an entity (Read, Read all, and Search) and use the abstract controllers
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddQueryAuthorizationPolicies("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddQueryAuthorizationPolicies(string policy = "")
+        WithController(serviceType, controller);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a POST `/multiple` controller for the entity using a registration type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithCreateMultipleController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController<TRegistrationType>()
+        => WithCreateMultipleController(typeof(TRegistrationType),
+            CreateMultipleViewModelWrapperType,
+            CreateMultipleViewModelType,
+            null,
+            ReadViewModelType,
+            null,
+            false);
+
+    /// <summary>
+    /// Registers a POST `/multiple` controller for the entity using auto-generated types
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithCreateMultipleController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController()
+        => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,>),
+            CreateMultipleViewModelWrapperType,
+            CreateMultipleViewModelType,
+            null,
+            ReadViewModelType,
+            null,
+            true);
+
+    /// <summary>
+    /// Registers Create, Read, Update, Delete (and, optionally, Create Multiple and Get All) controllers for an entity using auto-generated types
+    /// </summary>
+    /// <param name="includeGetAll">Optional; Whether to include the Get All controller</param>
+    /// <param name="includeMultipleCreate">Optional; Whether to include the Create Multiple controller</param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers(true, true)
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithAllControllers(bool includeGetAll = false, bool includeMultipleCreate = true)
+    {
+        WithReadController();
+        WithCreateController();
+        WithDeleteController();
+        WithSearchController();
+        WithUpdateController();
+
+        if (includeGetAll)
         {
-            AddReadAuthorizationPolicy(policy);
-            AddReadAllAuthorizationPolicy(policy);
-            AddSearchAuthorizationPolicy(policy);
-
-            return this;
+            WithGetAllController();
         }
 
-        /// <summary>
-        /// Adds an authorization policies to all requests that use the abstract controllers
-        /// </summary>
-        /// <param name="policy">The authorization policy name</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .AddAuthorizationPolicies("Policy")
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicies(string policy = "")
+        if (includeMultipleCreate)
         {
-            DefaultAuthorizationPolicy = GetAuthorizationAttributeInfo(policy);
-
-            AddAttributeToAllControllers(DefaultAuthorizationPolicy.attributeType, DefaultAuthorizationPolicy.attributeBuilder);
-
-            return this;
+            WithCreateMultipleController();
         }
 
-        /// <summary>
-        /// Registers a validation service for an entity
-        /// </summary>
-        /// <typeparam name="TService">The validation service to use</typeparam>
-        /// <param name="replace">Whether to replace the existing validation service; default=<code>true</code></param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithValidationService<ValidationService>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidationService<TService>(bool replace = true)
-            where TService : IEntityValidationService<TKey, TEntity>
-        {
-            Builder.WithRegistration<IEntityValidationService<TKey, TEntity>, TService>(replace);
-            return this;
-        }
-
-        private void ViewModelGuard(string msg)
-        {
-            if (GetRegisteredControllers().Any())
-            {
-                throw new Exception($"Controllers are already registered. {msg}");
-            }
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create endpoint
-        /// </summary>
-        /// <param name="viewModelType">The type of the view model to use</param>
-        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithCreateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel(Type viewModelType, Type viewModelMapper)
-        {
-            ViewModelGuard("Please register a Create view model before adding controllers");
-
-            CreateViewModelType = viewModelType;
-
-            var mapper = typeof(ICreateViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityType, Builder.EntityType, viewModelType);
-
-            Builder.WithRegistration(mapper, viewModelMapper, mapper);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create endpoint
-        /// </summary>
-        /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
-        /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithCreateViewModel<ViewModel, ViewModelWrapper>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel<TViewModel, TViewModelMapper>()
-            where TViewModel : class
-            where TViewModelMapper : ICreateViewModelMapper<TKey, TEntity, TViewModel>
-        {
-            ViewModelGuard("Please register a Create view model before adding controllers");
-
-            CreateViewModelType = typeof(TViewModel);
-
-            Builder.WithRegistration<ICreateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create endpoint
-        /// </summary>
-        /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithCreateViewModel<ViewModel>(viewModel => {
-        ///              var e = new WeatherForecast();
-        ///              viewModel?.Body?.CopyPropertiesTo(e);
-        ///              return e;
-        ///          }))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel<TViewModel>(
-            Func<TViewModel, TEntity> from)
-            where TViewModel : class
-        {
-            ViewModelGuard("Please register read view model before adding controllers.");
-
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(from);
-
-            CreateViewModelType = typeof(TViewModel);
-
-            Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Read endpoint
-        /// </summary>
-        /// <param name="viewModelType">The type of the view model to use</param>
-        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithReadViewModel(typeof(ViewModel), typeof(ViewModelMapper))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel(Type viewModelType, Type viewModelMapper)
-        {
-            ViewModelGuard("Please register a read view model before adding controllers");
-
-            ReadViewModelType = viewModelType;
-
-            var mapper = typeof(IReadViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
-
-            Builder.WithRegistration(mapper, viewModelMapper, mapper);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Read endpoint
-        /// </summary>
-        /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
-        /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithReadViewModel<ViewModel, ViewModelWrapper>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel<TViewModel, TViewModelMapper>()
-            where TViewModel : class
-            where TViewModelMapper : IReadViewModelMapper<TKey, TEntity, TViewModel>
-        {
-            ViewModelGuard("Please register a read view model before adding controllers");
-
-            ReadViewModelType = typeof(TViewModel);
-
-            Builder.WithRegistration<IReadViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Read endpoint
-        /// </summary>
-        /// <param name="to">A callback function that maps the entity to the view model class</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithReadViewModel<ViewModel>(entity => new ViewModel(entity)))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel<TViewModel>(
-            Func<TEntity, TViewModel> to)
-            where TViewModel : class
-        {
-            ViewModelGuard("Please registered read view model before adding controllers");
-
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(to);
-
-            ReadViewModelType = typeof(TViewModel);
-
-            Builder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Update endpoint
-        /// </summary>
-        /// <param name="viewModelType">The type of the view model to use</param>
-        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithUpdateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel(Type viewModelType, Type viewModelMapper)
-        {
-            ViewModelGuard("Please register a Update view model before adding controllers");
-
-            UpdateViewModelType = viewModelType;
-
-            var mapper = typeof(IUpdateViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
-
-            Builder.WithRegistration(mapper, viewModelMapper, mapper);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Update endpoint
-        /// </summary>
-        /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
-        /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithUpdateViewModel<ViewModel, ViewModelWrapper>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel, TViewModelMapper>()
-            where TViewModel : class
-            where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>
-        {
-            ViewModelGuard("Please register a update view model before adding controllers");
-
-            UpdateViewModelType = typeof(TViewModel);
-
-            Builder.WithRegistration<IUpdateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Update endpoint
-        /// </summary>
-        /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithUpdateViewModel<ViewModel>(viewModel => {
-        ///              var e = new WeatherForecast();
-        ///              viewModel?.Body?.CopyPropertiesTo(e);
-        ///              return e;
-        ///          }))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel>(
-            Func<TViewModel, TEntity> from)
-            where TViewModel : class
-        {
-            ViewModelGuard("Please register a update view model before adding controllers");
-
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(from);
-
-            UpdateViewModelType = typeof(TViewModel);
-
-            Builder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create `/multiple` endpoint
-        /// </summary>
-        /// <param name="viewWrapper">The type of the view model wrapper to use</param>
-        /// <param name="view">The type of the view model to use</param>
-        /// <param name="viewMapper">The type of the view model mapper to use</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithCreateMultipleViewModel(type(ViewWrapper), typeof(ViewModel), typeof(ViewModelMapper))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel(Type viewWrapper,
-            Type view,
-            Type viewMapper)
-        {
-            ViewModelGuard("Please register a Update view model before adding controllers");
-
-            CreateMultipleViewModelType = view;
-            CreateMultipleViewModelWrapperType = viewWrapper;
-
-            var mapper = typeof(ICreateMultipleViewModelMapper<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewWrapper, view);
-
-            Builder.WithRegistration(mapper, viewMapper, mapper);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create `/multiple` endpoint
-        /// </summary>
-        /// <typeparam name="TViewWrapper">The type of the view model wrapper to use</typeparam>
-        /// <typeparam name="TView">The type of the view model to use</typeparam>
-        /// <typeparam name="TMapper">The type of the view model mapper to use</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithCreateMultipleViewModel<ViewWrapper, ViewModel, ViewModelMapper>()
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel<TViewWrapper, TView, TMapper>()
-            where TView : class
-            where TViewWrapper : IMultipleEntityViewModel<TView>
-            where TMapper : ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>
-        {
-            CreateMultipleViewModelType = typeof(TView);
-            CreateMultipleViewModelWrapperType = typeof(TViewWrapper);
-
-            Builder.WithRegistration<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>, TMapper>();
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create `/multiple` endpoint
-        /// </summary>
-        /// <typeparam name="TViewWrapper">The type of the view model wrapper to use</typeparam>
-        /// <typeparam name="TView">The type of the view model to use</typeparam>
-        /// <param name="mapperFunc">A callback function that maps a view model to the entity class</typeparam>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithCreateMultipleViewModel<ViewWrapper, ViewModel>(viewModel => {
-        ///              var e = new WeatherForecast();
-        ///              viewModel?.Body?.CopyPropertiesTo(e);
-        ///              return e;
-        ///          }))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel<TViewWrapper, TView>(
-                Func<TViewWrapper, TView, TEntity> mapperFunc)
-            where TView : class
-            where TViewWrapper : IMultipleEntityViewModel<TView>
-        {
-            CreateMultipleViewModelType = typeof(TView);
-            CreateMultipleViewModelWrapperType = typeof(TViewWrapper);
-
-            var instance = new FunctionCreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>(mapperFunc);
-
-            Builder.WithRegistrationInstance<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>>(instance);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create, Update, and Read endpoints
-        /// </summary>
-        /// <param name="viewModelType">The type of the view model to use</param>
-        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithViewModel(ypeof(ViewModel), typeof(ViewModelMapper))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel(Type viewModelType, Type viewModelMapper)
-        {
-            ViewModelGuard("Please register a view model before adding controllers");
-
-            WithCreateViewModel(viewModelType, viewModelMapper);
-            WithUpdateViewModel(viewModelType, viewModelMapper);
-            WithReadViewModel(viewModelType, viewModelMapper);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create, Update, and Read endpoints
-        /// </summary>
-        /// <param name="viewModelType">The type of the view model to use</param>
-        /// <param name="viewModelMapper">The type of the view model mapper to use</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithViewModel(ypeof(ViewModel), typeof(ViewModelMapper))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel, TViewModelMapper>()
-            where TViewModel : class
-            where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>,
-                ICreateViewModelMapper<TKey, TEntity, TViewModel>,
-                IReadViewModelMapper<TKey, TEntity, TViewModel>
-        {
-            ViewModelGuard("Please register a view model before adding controllers");
-
-            WithCreateViewModel<TViewModel, TViewModelMapper>();
-            WithUpdateViewModel<TViewModel, TViewModelMapper>();
-            WithReadViewModel<TViewModel, TViewModelMapper>();
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify a custom view model to use for the entity Create, Update, and Read endpoints
-        /// </summary>
-        /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
-        /// <param name="to">A callback function that maps the entity to the view model class</param>
-        /// <param name="from">A callback function that maps the view model to the entity class</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers()
-        ///          .WithViewModel<ViewModel>(
-        ///             entity => new ViewModel(entity)
-        ///             viewModel => new WeatherForecast(viewModel)
-        ///          ))
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel>(
-                Func<TEntity, TViewModel> to,
-                Func<TViewModel, TEntity> from)
-            where TViewModel : class
-        {
-            ViewModelGuard("Please register view model before adding controllers");
-
-            var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(from, to);
-
-            CreateViewModelType = typeof(TViewModel);
-            UpdateViewModelType = typeof(TViewModel);
-            ReadViewModelType = typeof(TViewModel);
-
-            Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-            Builder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-            Builder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Specify the max page size to use for Read endpoints (except Read `/all`)
-        /// </summary>
-        /// <param name="size">Optional, default = 100; The max page size to use</param>
-        /// <example>
-        /// <code>
-        /// forecast.WithDefaultDatabase("Samples")
-        ///      .WithCollection("WeatherForecasts")
-        ///      .WithFullTextSearch()
-        ///      .AddCrud()
-        ///      .AddControllers(controllers => controllers
-        ///          .WithAllControllers(true, true)
-        ///          .WithMaxPageSize<ViewModel, ViewModelMapper>())
-        /// </code>
-        /// </example>
-        public ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxPageSize(int size = 100)
-        {
-            Builder.WithRegistrationInstance<IMaxPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(size));
-
-            return this;
-        }
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a validation service for an entity
+    /// </summary>
+    /// <typeparam name="TService">The validation service to use</typeparam>
+    /// <param name="replace">Whether to replace the existing validation service; default=<code>true</code></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithValidationService<ValidationService>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidationService<TService>(bool replace = true)
+        where TService : IEntityValidationService<TKey, TEntity>
+    {
+        Builder.WithRegistration<IEntityValidationService<TKey, TEntity>, TService>(replace);
+        return this;
+    }
+
+    /// <summary>
+    /// Specify the max page size to use for Read endpoints (except Read `/all`)
+    /// </summary>
+    /// <param name="size">Optional, default = 100; The max page size to use</param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers(true, true)
+    ///          .WithMaxPageSize<ViewModel, ViewModelMapper>())
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxPageSize(int size = 100)
+    {
+        Builder.WithRegistrationInstance<IMaxPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(size));
+
+        return this;
     }
 }

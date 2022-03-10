@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace Firebend.AutoCrud.Web.Sample.Migrations
 {
     [DbContext(typeof(PersonDbContext))]
@@ -15,35 +17,10 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.6")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "6.0.2")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            modelBuilder.Entity("Firebend.AutoCrud.Core.Models.CustomFields.CustomFieldsEntity<System.Guid>", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Key")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("ModifiedDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CustomFieldsEntity<Guid>");
-                });
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("Firebend.AutoCrud.CustomFields.EntityFramework.Models.EfCustomFieldsModelTenant<System.Guid, Firebend.AutoCrud.Web.Sample.Models.EfPerson, int>", b =>
                 {
@@ -71,10 +48,11 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EntityId")
-                        .IsClustered();
+                    b.HasIndex("EntityId");
 
-                    b.ToTable("EfPeople_CustomFields");
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("EntityId"));
+
+                    b.ToTable("EfPeople_CustomFields", (string)null);
                 });
 
             modelBuilder.Entity("Firebend.AutoCrud.CustomFields.EntityFramework.Models.EfCustomFieldsModelTenant<System.Guid, Firebend.AutoCrud.Web.Sample.Models.EfPet, int>", b =>
@@ -103,10 +81,11 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EntityId")
-                        .IsClustered();
+                    b.HasIndex("EntityId");
 
-                    b.ToTable("Pets_CustomFields");
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("EntityId"));
+
+                    b.ToTable("Pets_CustomFields", (string)null);
                 });
 
             modelBuilder.Entity("Firebend.AutoCrud.Web.Sample.Models.EfPerson", b =>
@@ -117,6 +96,9 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
 
                     b.Property<DateTimeOffset>("CreatedDate")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DataAuth")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(300)
@@ -169,6 +151,9 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
 
                     b.Property<DateTimeOffset>("CreatedDate")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DataAuth")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("EfPersonId")
                         .HasColumnType("uniqueidentifier");

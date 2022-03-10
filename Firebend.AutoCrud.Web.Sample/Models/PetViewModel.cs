@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class PetBaseViewModel
+    public class PetBaseViewModel : IEntityViewModelBase
     {
         [Required]
         [MaxLength(205)]
@@ -16,9 +16,11 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         [Required]
         [MaxLength(250)]
         public string PetType { get; set; }
+
+        public DataAuth DataAuth { get; set; }
     }
 
-    public class CreatePetViewModel
+    public class CreatePetViewModel : IEntityViewModelCreate<PetBaseViewModel>
     {
         [FromRoute(Name = "personId")]
         public Guid PersonId { get; set; }
@@ -40,10 +42,8 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public Guid Id { get; set; }
     }
 
-    public class GetPetViewModel : PutPetViewModel
+    public class GetPetViewModel : IEntityViewModelRead<Guid>
     {
-        public DateTimeOffset CreatedDate { get; set; }
-        public DateTimeOffset ModifiedDate { get; set; }
         public bool IsDeleted { get; set; }
         public PetPersonViewModel Person { get; set; }
 
@@ -64,9 +64,13 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             this.Person = new PetPersonViewModel();
             pet.Person.CopyPropertiesTo(this.Person);
         }
+
+        public Guid Id { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 
-    public class ExportPetViewModel
+    public class ExportPetViewModel : IEntityViewModelExport
     {
         [Export(Name = "Person Id", Order = 0)]
         public Guid? PersonId { get; set; }
@@ -108,6 +112,8 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             PersonId = pet.Person?.Id;
             PetId = pet.Id;
         }
+
+        public Guid Id { get; set; }
     }
 
 }
