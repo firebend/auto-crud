@@ -7,15 +7,13 @@ using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.CustomFields
 {
-    public interface ICustomFieldsSearchService<TKey, TEntity> : IDisposable
+    public interface
+        ICustomFieldsSearchService<TKey, TEntity> : IDisposable
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(
-            string key,
-            string value,
-            int? pageNumber,
-            int? pageSize,
+            CustomFieldsSearchRequest request,
             CancellationToken cancellationToken = default);
     }
 }

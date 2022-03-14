@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoFixture" Version="4.17.0" />
         <PackageReference Include="AutoFixture.AutoMoq" Version="4.17.0" />
         <PackageReference Include="FluentAssertions" Version="6.5.1" />
         <PackageReference Include="GitHubActionsTestLogger" Version="1.2.0" />
@@ -22,6 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking.Web\Firebend.AutoCrud.ChangeTracking.Web.csproj" />
+      <ProjectReference Include="..\Firebend.AutoCrud.CustomFields.Web\Firebend.AutoCrud.CustomFields.Web.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.Mongo\Firebend.AutoCrud.Mongo.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.Web\Firebend.AutoCrud.Web.csproj" />
     </ItemGroup>

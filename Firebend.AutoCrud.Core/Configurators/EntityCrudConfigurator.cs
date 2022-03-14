@@ -436,7 +436,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         /// </example>
         /// See <see cref="EntitySearchRequest" /> for building custom search fields
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>()
-            where TSearch : EntitySearchRequest
+            where TSearch : IEntitySearchRequest
         {
             var searchType = typeof(TSearch);
 
@@ -477,7 +477,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         ///  // ...
         /// </code>
         /// </example>
-        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch() => WithSearch<EntitySearchRequest>();
+        public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch() => WithSearch<IEntitySearchRequest>();
 
         /// <summary>
         /// Enables Update actions for an entity by providing a custom service
@@ -671,7 +671,7 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearchHandler<TSearch, THandler>()
             where THandler : IEntitySearchHandler<TKey, TEntity, TSearch>
-            where TSearch : EntitySearchRequest
+            where TSearch : IEntitySearchRequest
         {
             WithSearch<TSearch>();
             Builder.WithRegistration<IEntitySearchHandler<TKey, TEntity, TSearch>, THandler>();
@@ -680,7 +680,7 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearchHandler<TSearch>(
             Func<IQueryable<TEntity>, TSearch, IQueryable<TEntity>> func)
-            where TSearch : EntitySearchRequest
+            where TSearch : IEntitySearchRequest
         {
             WithSearch<TSearch>();
             Builder.WithRegistrationInstance<IEntitySearchHandler<TKey, TEntity, TSearch>>(

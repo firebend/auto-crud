@@ -3,7 +3,7 @@ using Firebend.AutoCrud.Core.Extensions;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class PersonExport
+    public class PersonExport : IEntityViewModelExport
     {
         public PersonExport()
         {
@@ -26,5 +26,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string FullName => $"{FirstName} {LastName}";
 
         public Guid Id { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 }

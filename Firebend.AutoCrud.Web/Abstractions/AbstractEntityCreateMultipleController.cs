@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-
+    [ApiController]
     public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>

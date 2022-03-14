@@ -7,11 +7,11 @@ using Firebend.AutoCrud.Core.Models.CustomFields;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class EfPet : IEntity<Guid>, IModifiedEntity, ITenantEntity<int>, IActiveEntity, ICustomFieldsEntity<Guid>
+    public class EfPet : IEntity<Guid>, IModifiedEntity, ITenantEntity<int>, IActiveEntity, ICustomFieldsEntity<Guid>,
+        IEntityDataAuth
     {
         public EfPet()
         {
-
         }
 
         public EfPet(CreatePetViewModel pet)
@@ -31,18 +31,15 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         public EfPerson Person { get; set; }
 
-        [Required]
-        [MaxLength(205)]
-        public string PetName { get; set; }
+        [Required] [MaxLength(205)] public string PetName { get; set; }
 
-        [Required]
-        [MaxLength(250)]
-        public string PetType { get; set; }
+        [Required] [MaxLength(250)] public string PetType { get; set; }
 
         public DateTimeOffset CreatedDate { get; set; }
         public DateTimeOffset ModifiedDate { get; set; }
         public int TenantId { get; set; }
         public bool IsDeleted { get; set; }
         public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
+        public DataAuth DataAuth { get; set; }
     }
 }

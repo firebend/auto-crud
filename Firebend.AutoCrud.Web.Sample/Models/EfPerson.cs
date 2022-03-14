@@ -12,7 +12,8 @@ namespace Firebend.AutoCrud.Web.Sample.Models
     [Table("EfPeople")]
     [Index(nameof(Email), IsUnique = true)]
     [Index(nameof(OtherEmail), IsUnique = true)]
-    public class EfPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity, ITenantEntity<int>, ICustomFieldsEntity<Guid>
+    public class EfPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity, ITenantEntity<int>,
+        ICustomFieldsEntity<Guid>, IEntityDataAuth
     {
         public EfPerson()
         {
@@ -28,17 +29,13 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             viewModel.CopyPropertiesTo(this);
         }
 
-        [StringLength(250)]
-        public string FirstName { get; set; }
+        [StringLength(250)] public string FirstName { get; set; }
 
-        [StringLength(250)]
-        public string LastName { get; set; }
+        [StringLength(250)] public string LastName { get; set; }
 
-        [StringLength(100)]
-        public string NickName { get; set; }
+        [StringLength(100)] public string NickName { get; set; }
 
-        [StringLength(300)]
-        public string Email { get; set; }
+        [StringLength(300)] public string Email { get; set; }
 
         [StringLength(300)]
         [Column("NotEmail")]
@@ -46,8 +43,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         public bool IsDeleted { get; set; }
 
-        [Key]
-        public Guid Id { get; set; }
+        [Key] public Guid Id { get; set; }
 
         public DateTimeOffset CreatedDate { get; set; }
         public DateTimeOffset ModifiedDate { get; set; }
@@ -56,5 +52,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public ICollection<EfPet> Pets { get; set; }
 
         public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
+
+        public DataAuth DataAuth { get; set; }
     }
 }
