@@ -94,14 +94,14 @@ public static class Extensions
         return configurator;
     }
 
-    public static IMvcBuilder AddDefaultCustomFieldsResourceAuthorizationRequirement(this IMvcBuilder builder)
+    public static IServiceCollection AddDefaultCustomFieldsResourceAuthorizationRequirement(this IServiceCollection serviceCollection)
     {
-        builder.Services.AddAuthorization(options =>
+        serviceCollection.AddAuthorization(options =>
         {
             options.AddPolicy(CustomFieldsAuthorizationRequirement.DefaultPolicy,
                 policy => policy.Requirements.Add(new CustomFieldsAuthorizationRequirement()));
         });
 
-        return builder;
+        return serviceCollection;
     }
 }
