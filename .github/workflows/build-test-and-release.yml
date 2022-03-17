@@ -47,67 +47,67 @@ jobs:
 
       - name: Pack Core
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.Core/Firebend.AutoCrud.Core.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.Core/Firebend.AutoCrud.Core.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack EntityFramework
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.EntityFramework/Firebend.AutoCrud.EntityFramework.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.EntityFramework/Firebend.AutoCrud.EntityFramework.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack EntityFramework Elastic
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.EntityFramework.Elastic/Firebend.AutoCrud.EntityFramework.Elastic.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.EntityFramework.Elastic/Firebend.AutoCrud.EntityFramework.Elastic.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Generator
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.Generator/Firebend.AutoCrud.Generator.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.Generator/Firebend.AutoCrud.Generator.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Mongo
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.Mongo/Firebend.AutoCrud.Mongo.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.Mongo/Firebend.AutoCrud.Mongo.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Web
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.DomainEvents.MassTransit/Firebend.AutoCrud.DomainEvents.MassTransit.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.DomainEvents.MassTransit/Firebend.AutoCrud.DomainEvents.MassTransit.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Domain Events MassTransit
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.Web/Firebend.AutoCrud.Web.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.Web/Firebend.AutoCrud.Web.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Change Tracking
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.ChangeTracking/Firebend.AutoCrud.ChangeTracking.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.ChangeTracking/Firebend.AutoCrud.ChangeTracking.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Change Tracking Ef
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.ChangeTracking.EntityFramework/Firebend.AutoCrud.ChangeTracking.EntityFramework.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.ChangeTracking.EntityFramework/Firebend.AutoCrud.ChangeTracking.EntityFramework.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Change Tracking Mongo
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.ChangeTracking.Mongo/Firebend.AutoCrud.ChangeTracking.Mongo.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.ChangeTracking.Mongo/Firebend.AutoCrud.ChangeTracking.Mongo.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Change Tracking Web
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.ChangeTracking.Web/Firebend.AutoCrud.ChangeTracking.Web.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.ChangeTracking.Web/Firebend.AutoCrud.ChangeTracking.Web.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack IO
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.Io/Firebend.AutoCrud.Io.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.Io/Firebend.AutoCrud.Io.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack IO Web
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.Io.Web/Firebend.AutoCrud.Io.Web.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.Io.Web/Firebend.AutoCrud.Io.Web.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Custom Fields EF
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.CustomFields.EntityFramework/Firebend.AutoCrud.CustomFields.EntityFramework.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.CustomFields.EntityFramework/Firebend.AutoCrud.CustomFields.EntityFramework.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Custom Fields Mongo
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.CustomFields.Mongo/Firebend.AutoCrud.CustomFields.Mongo.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.CustomFields.Mongo/Firebend.AutoCrud.CustomFields.Mongo.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Pack Custom Fields Web
         if: steps.versionize.outcome == 'success'
-        run: dotnet pack Firebend.AutoCrud.CustomFields.Web/Firebend.AutoCrud.CustomFields.Web.csproj --no-build --c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
+        run: dotnet pack Firebend.AutoCrud.CustomFields.Web/Firebend.AutoCrud.CustomFields.Web.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
       - name: Publish Nuget Packages
         if: steps.versionize.outcome == 'success'
