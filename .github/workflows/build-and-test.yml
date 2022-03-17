@@ -6,6 +6,7 @@ on:
       - 'main'
       - 'forks/**'
   pull_request:
+    branches: [ main ]
 
 jobs:
   build_and_test:
