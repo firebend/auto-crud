@@ -892,3 +892,7 @@ The below example configures custom fields for the Weather Forecast Tenant and:
 
 
 A "kitchen-sink" example can be found [in `Firebend.AutoCrud.Web.Sample`](https://github.com/firebend/auto-crud/tree/main/Firebend.AutoCrud.Web.Sample) that utilizes all the extension packs mentioned above. Sample `.http` files are also provided with example HTTP requests. [Get the VS Code REST client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
+
+# Contributing
+
+Commits should be made using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)

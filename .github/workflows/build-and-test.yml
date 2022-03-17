@@ -3,8 +3,10 @@ name: Build and test
 on:
   push:
     branches:
-      - '!main'
+      - 'main'
+      - 'forks/**'
   pull_request:
+    branches: [ main ]
 
 jobs:
   build_and_test:

@@ -1,32 +1,37 @@
 name: Build, Test, and Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [Build and test]
+    types: [completed]
+    branches: [main]
 
 jobs:
   build_test_and_release:
-    name: Build, test, and release
+    name: Release
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
 
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.100
+    - name: Install Versionize
+      run: dotnet tool install --global Versionize
 
-    - name: Install dependencies
-      run: dotnet restore Firebend.AutoCrud.sln
+    - name: Setup git
+      run: |
+       git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+       git config --local user.name "github-actions[bot]"
 
-    - name: Build
-      run: dotnet build Firebend.AutoCrud.sln --configuration Release --no-restore
+    - name: Versionize Release
+      id: versionize
+      run: versionize --changelog-all --exit-insignificant-commits
+      continue-on-error: true
 
-    - name: Test
-      run: dotnet test Firebend.AutoCrud.sln --logger GitHubActions --no-restore --verbosity normal --filter FullyQualifiedName\!~IntegrationTests
+    - name: No release required
+      if: steps.versionize.outcome != 'success'
+      run: echo "Skipping publishing. No release required."
 
     - name: Publish Core
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Core/Firebend.AutoCrud.Core.csproj
@@ -34,6 +39,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish EntityFramework
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.EntityFramework/Firebend.AutoCrud.EntityFramework.csproj
@@ -41,6 +47,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish EntityFramework Elastic
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.EntityFramework.Elastic/Firebend.AutoCrud.EntityFramework.Elastic.csproj
@@ -48,6 +55,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Generator
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Generator/Firebend.AutoCrud.Generator.csproj
@@ -55,6 +63,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Mongo
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Mongo/Firebend.AutoCrud.Mongo.csproj
@@ -62,6 +71,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Web
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.DomainEvents.MassTransit/Firebend.AutoCrud.DomainEvents.MassTransit.csproj
@@ -69,6 +79,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Domain Events MassTransit
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Web/Firebend.AutoCrud.Web.csproj
@@ -76,6 +87,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Change Tracking
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.ChangeTracking/Firebend.AutoCrud.ChangeTracking.csproj
@@ -83,6 +95,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Change Tracking Ef
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.ChangeTracking.EntityFramework/Firebend.AutoCrud.ChangeTracking.EntityFramework.csproj
@@ -90,6 +103,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Change Tracking Mongo
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.ChangeTracking.Mongo/Firebend.AutoCrud.ChangeTracking.Mongo.csproj
@@ -97,6 +111,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Change Tracking Web
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.ChangeTracking.Web/Firebend.AutoCrud.ChangeTracking.Web.csproj
@@ -104,6 +119,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish IO
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Io/Firebend.AutoCrud.Io.csproj
@@ -111,6 +127,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish IO Web
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Io.Web/Firebend.AutoCrud.Io.Web.csproj
@@ -118,6 +135,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Custom Fields EF
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.EntityFramework/Firebend.AutoCrud.CustomFields.EntityFramework.csproj
@@ -125,6 +143,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Custom Fields Mongo
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.Mongo/Firebend.AutoCrud.CustomFields.Mongo.csproj
@@ -132,6 +151,7 @@ jobs:
          TAG_COMMIT: false
 
     - name: Publish Custom Fields Web
+      if: steps.versionize.outcome == 'success'
       uses: rohith/publish-nuget@v2
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.Web/Firebend.AutoCrud.CustomFields.Web.csproj
