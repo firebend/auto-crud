@@ -34,7 +34,7 @@ jobs:
 
     - name: Publish Core
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Core/Firebend.AutoCrud.Core.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -42,7 +42,7 @@ jobs:
 
     - name: Publish EntityFramework
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.EntityFramework/Firebend.AutoCrud.EntityFramework.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -50,7 +50,7 @@ jobs:
 
     - name: Publish EntityFramework Elastic
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.EntityFramework.Elastic/Firebend.AutoCrud.EntityFramework.Elastic.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -58,7 +58,7 @@ jobs:
 
     - name: Publish Generator
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Generator/Firebend.AutoCrud.Generator.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -66,7 +66,7 @@ jobs:
 
     - name: Publish Mongo
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Mongo/Firebend.AutoCrud.Mongo.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -74,7 +74,7 @@ jobs:
 
     - name: Publish Web
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.DomainEvents.MassTransit/Firebend.AutoCrud.DomainEvents.MassTransit.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -82,7 +82,7 @@ jobs:
 
     - name: Publish Domain Events MassTransit
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Web/Firebend.AutoCrud.Web.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -90,7 +90,7 @@ jobs:
 
     - name: Publish Change Tracking
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.ChangeTracking/Firebend.AutoCrud.ChangeTracking.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -98,7 +98,7 @@ jobs:
 
     - name: Publish Change Tracking Ef
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.ChangeTracking.EntityFramework/Firebend.AutoCrud.ChangeTracking.EntityFramework.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -106,7 +106,7 @@ jobs:
 
     - name: Publish Change Tracking Mongo
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.ChangeTracking.Mongo/Firebend.AutoCrud.ChangeTracking.Mongo.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -114,7 +114,7 @@ jobs:
 
     - name: Publish Change Tracking Web
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.ChangeTracking.Web/Firebend.AutoCrud.ChangeTracking.Web.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -122,7 +122,7 @@ jobs:
 
     - name: Publish IO
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Io/Firebend.AutoCrud.Io.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -130,7 +130,7 @@ jobs:
 
     - name: Publish IO Web
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.Io.Web/Firebend.AutoCrud.Io.Web.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -138,7 +138,7 @@ jobs:
 
     - name: Publish Custom Fields EF
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.EntityFramework/Firebend.AutoCrud.CustomFields.EntityFramework.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -146,7 +146,7 @@ jobs:
 
     - name: Publish Custom Fields Mongo
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.Mongo/Firebend.AutoCrud.CustomFields.Mongo.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -154,7 +154,7 @@ jobs:
 
     - name: Publish Custom Fields Web
       if: steps.versionize.outcome == 'success'
-      uses: rohith/publish-nuget@v2
+      uses: alirezanet/publish-nuget@v3
       with:
          PROJECT_FILE_PATH: Firebend.AutoCrud.CustomFields.Web/Firebend.AutoCrud.CustomFields.Web.csproj
          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
