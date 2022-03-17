@@ -28,7 +28,8 @@ namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
             _searchHandler = searchHandler;
         }
 
-        public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(CustomFieldsSearchRequest searchRequest,
+        public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(
+            CustomFieldsSearchRequest searchRequest,
             CancellationToken cancellationToken = default)
         {
             Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilter = null;
