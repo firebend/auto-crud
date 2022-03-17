@@ -78,14 +78,14 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             return mongoTenantPerson;
                         })
                         .WithAllControllers(true)
+                        .WithIoControllers()
+                        .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                         .WithChangeTrackingControllers()
                         .AddChangeTrackingResourceAuthorization()
                         .AddCustomFieldsResourceAuthorization()
-                        .WithIoControllers()
-                        .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
+                        .AddResourceAuthorization()
                         .WithOpenApiGroupName("The Beautiful Mongo People")
                         .WithRoute("api/v1/mongo-person")
-                        .AddResourceAuthorization()
                     )
             );
 

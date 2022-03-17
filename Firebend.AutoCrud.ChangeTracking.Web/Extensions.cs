@@ -57,14 +57,14 @@ public static class Extensions
                     configurator.ReadViewModelType),
             typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity>), policy);
 
-    public static IMvcBuilder AddDefaultChangeTrackingResourceAuthorizationRequirement(this IMvcBuilder builder)
+    public static IServiceCollection AddDefaultChangeTrackingResourceAuthorizationRequirement(this IServiceCollection serviceCollection)
     {
-        builder.Services.AddAuthorization(options =>
+        serviceCollection.AddAuthorization(options =>
         {
             options.AddPolicy(ChangeTrackingAuthorizationRequirement.DefaultPolicy,
                 policy => policy.Requirements.Add(new ChangeTrackingAuthorizationRequirement()));
         });
 
-        return builder;
+        return serviceCollection;
     }
 }
