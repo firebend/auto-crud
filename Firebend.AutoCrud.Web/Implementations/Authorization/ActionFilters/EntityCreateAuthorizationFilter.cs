@@ -1,42 +1,22 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class EntityCreateAuthorizationFilter<TViewModel> : IAsyncActionFilter
+public class EntityCreateAuthorizationFilter<TKey, TEntity, TViewModel> : EntityAuthorizationFilter<TKey, TEntity>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>
 {
-    private readonly string _policy;
-
-    public EntityCreateAuthorizationFilter(string policy)
+    public EntityCreateAuthorizationFilter(string policy) : base(policy)
     {
-        _policy = policy;
     }
 
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    protected override async Task AuthorizeRequestAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var authorizationService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
-        if (authorizationService == null)
+        if (await TryAuthorizeBody<TViewModel>(context))
         {
             await next();
-            return;
         }
-
-        if (context.ActionArguments.TryGetValue("body", out var paramValue) && paramValue is TViewModel)
-        {
-            var authorizationResult =
-                await authorizationService.AuthorizeAsync(context.HttpContext.User, paramValue, _policy);
-
-            if (!authorizationResult.Succeeded)
-            {
-                context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
-                return;
-            }
-        }
-
-        await next();
     }
 }
