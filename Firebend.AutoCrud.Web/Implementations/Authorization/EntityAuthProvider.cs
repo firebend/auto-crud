@@ -2,6 +2,7 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization;
 
-public class EntityAuthProvider
+public class EntityAuthProvider : IEntityAuthProvider
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IServiceProvider _serviceProvider;
@@ -28,13 +29,13 @@ public class EntityAuthProvider
         var keyParser = _serviceProvider.GetService<IEntityKeyParser<TKey, TEntity>>();
         if (keyParser == null)
         {
-            throw new Exception($"Cannot resolve key parser for {nameof(TEntity)}");
+            throw new DependencyResolverException($"Cannot resolve key parser for {nameof(TEntity)}");
         }
 
         var entityId = keyParser.ParseKey(entityIdString);
         if (entityId == null)
         {
-            throw new Exception($"Failed to parse id for {nameof(TEntity)}");
+            throw new ArgumentException($"Failed to parse id for {nameof(TEntity)}");
         }
 
         return GetEntityAsync<TKey, TEntity>(entityId.Value, cancellationToken);
@@ -47,7 +48,7 @@ public class EntityAuthProvider
         var readService = _serviceProvider.GetService<IEntityReadService<TKey, TEntity>>();
         if (readService == null)
         {
-            throw new Exception($"Cannot resolve read service for {nameof(TEntity)}");
+            throw new DependencyResolverException($"Cannot resolve read service for {nameof(TEntity)}");
         }
 
         return readService.GetByKeyAsync(id, cancellationToken);

@@ -14,7 +14,7 @@ public class EntityDeleteAuthorizationFilter<TKey, TEntity> : EntityAuthorizatio
 
     protected override async Task AuthorizeRequestAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if(await TryAuthorizeById(context, nameof(IEntity<TKey>.Id)))
+        if(await TryAuthorizeById(context, nameof(IEntity<TKey>.Id).ToLower()))
         {
             await next();
         }

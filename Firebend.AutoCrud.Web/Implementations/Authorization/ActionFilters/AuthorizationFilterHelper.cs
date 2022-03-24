@@ -37,9 +37,9 @@ public static class AuthorizationFilterHelper
 
     public static bool TryGetArgument<TArg>(ActionExecutingContext context, string argName, out TArg arg)
     {
-        if (context.ActionArguments.TryGetValue(argName, out var paramValue) && paramValue is TArg typedArg)
+        if (context.ActionArguments.TryGetValue(argName, out var paramValue))
         {
-            arg = typedArg;
+            arg = (TArg)paramValue;
             return true;
         }
 

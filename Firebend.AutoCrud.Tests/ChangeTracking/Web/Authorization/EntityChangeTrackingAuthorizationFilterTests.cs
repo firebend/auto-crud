@@ -5,10 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
+using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
-using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Web.Interfaces;
+using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
+using Firebend.AutoCrud.Web.Implementations.Authorization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -28,22 +29,22 @@ public class EntityChangeTrackingAuthorizationFilterTests
     private Fixture _fixture;
     private Mock<IServiceProvider> _serviceProvider;
     private Mock<ActionContext> _actionContext;
-    private DefaultHttpContext _defaultHttpContext;
 
-    private readonly string _policy = "ResourceChangeTracking";
+    private readonly string _policy = "ResourceUpdate";
+    private Mock<ActionExecutionDelegate> _nextDelegate;
+    private DefaultHttpContext _defaultHttpContext;
+    private Mock<ActionExecutingContext> _actionExecutingContext;
+    private Mock<IEntityAuthProvider> _entityAuthProvider;
 
     [SetUp]
     public void SetUp()
     {
         _fixture = new Fixture();
         _fixture.Customize(new AutoMoqCustomization());
-
+        _nextDelegate = _fixture.Create<Mock<ActionExecutionDelegate>>();
         _defaultHttpContext = new DefaultHttpContext();
-
         _serviceProvider = new Mock<IServiceProvider>();
-
         _defaultHttpContext.RequestServices = _serviceProvider.Object;
-
         _actionContext = new Mock<ActionContext>(
             _defaultHttpContext,
             Mock.Of<RouteData>(),
@@ -51,189 +52,118 @@ public class EntityChangeTrackingAuthorizationFilterTests
             Mock.Of<ModelStateDictionary>()
         );
         _fixture.Register(() => _actionContext.Object);
+        _actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
+
+        _entityAuthProvider = _fixture.Create<Mock<IEntityAuthProvider>>();
+        _serviceProvider.Setup(s
+                => s.GetService(typeof(IEntityAuthProvider)))
+            .Returns(_entityAuthProvider.Object);
     }
 
     [Test]
-    public void Should_Next_If_Read_Service_Is_Not_Set()
+    public void Should_Throw_If_Authorization_Service_Is_Not_Set()
     {
         // given
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<,>))).Returns(default);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        // when
-        var entityChangeTrackingAuthorizationFilter = new EntityChangeTrackingAuthorizationFilter<Guid, EntityChangeTrackingAuthorizationTestClass>(_policy);
-
-        // then
-        entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
-    }
-
-    [Test]
-    public void Should_Next_If_Key_Parser_Service_Is_Not_Set()
-    {
-        // given
-        var entityReadService = new Mock<IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityReadService.Object);
-
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<,>))).Returns(default);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        // when
-        var entityChangeTrackingAuthorizationFilter = new EntityChangeTrackingAuthorizationFilter<Guid, EntityChangeTrackingAuthorizationTestClass>(_policy);
-
-        // then
-        entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
-    }
-
-    [Test]
-    public void Should_Next_If_Authorization_Service_Is_Not_Set()
-    {
-        // given
-        var entityReadService = new Mock<IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityReadService.Object);
-
-        var entityKeyParser = new Mock<IEntityKeyParser<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityKeyParser.Object);
-
         _serviceProvider.Setup(s =>
-            s.GetService(typeof(IAuthorizationService))).Returns(default);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        // when
-        var entityChangeTrackingAuthorizationFilter = new EntityChangeTrackingAuthorizationFilter<Guid, EntityChangeTrackingAuthorizationTestClass>(_policy);
-
-        // then
-        entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
-    }
-
-    [Test]
-    public void Should_Next_If_Id_Is_Null()
-    {
-        // given
-        var entityReadService = new Mock<IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityReadService.Object);
-
-        var entityKeyParser = new Mock<IEntityKeyParser<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityKeyParser.Object);
-
-        var authorizationService = new Mock<IAuthorizationService>();
-        authorizationService.Setup(a => a.AuthorizeAsync(
-            It.IsAny<ClaimsPrincipal>(),
-            It.IsAny<object>(),
-            It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new ChangeTrackingAuthorizationRequirement() })));
-        _serviceProvider.Setup(s =>
-            s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
+            s.GetService(typeof(IEntityAuthProvider))).Returns(default);
 
         // when
         var entityChangeTrackingAuthorizationFilter =
-            new EntityChangeTrackingAuthorizationFilter<Guid, EntityChangeTrackingAuthorizationTestClass>(_policy);
+            new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
-        entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
+        Assert.ThrowsAsync<DependencyResolverException>(() =>
+            entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+                _nextDelegate.Object));
+        _nextDelegate.Verify(x => x(), Times.Never);
     }
 
     [Test]
-    public void Should_Next_If_Key_Parser_Fails_To_Parse()
+    public void Should_Throw_If_Id_Is_Null()
     {
         // given
-        var entityReadService = new Mock<IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityReadService.Object);
-
-        var entityKeyParser = new Mock<IEntityKeyParser<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityKeyParser.Object);
-
-        var authorizationService = new Mock<IAuthorizationService>();
-        authorizationService.Setup(a => a.AuthorizeAsync(
-            It.IsAny<ClaimsPrincipal>(),
-            It.IsAny<object>(),
-            It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new ChangeTrackingAuthorizationRequirement() })));
-        _serviceProvider.Setup(s =>
-            s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        var actionArguments = new Dictionary<string, object> { { "EntityId", Guid.NewGuid().ToString() } };
-        actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
         var entityChangeTrackingAuthorizationFilter =
-            new EntityChangeTrackingAuthorizationFilter<Guid, EntityChangeTrackingAuthorizationTestClass>(_policy);
+            new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
-        entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
+        Assert.ThrowsAsync<ArgumentException>(() =>
+            entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+                _nextDelegate.Object));
+        _nextDelegate.Verify(x => x(), Times.Never);
     }
 
     [Test]
-    public void Should_Return_403_If_Id_Is_Not_Null_And_Authorization_Fail()
+    public async Task Should_Return_403_If_Id_Is_Not_Null_And_Authorization_Fail()
     {
         // given
-        var entityReadService = new Mock<IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityReadService.Object);
-
-        var entityKeyParser = new Mock<IEntityKeyParser<Guid, EntityChangeTrackingAuthorizationTestClass>>();
-        entityKeyParser.Setup(s
-            => s.ParseKey(It.IsAny<string>()))
-            .Returns(Guid.NewGuid());
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<Guid, EntityChangeTrackingAuthorizationTestClass>))).Returns(entityKeyParser.Object);
-
-        var authorizationService = new Mock<IAuthorizationService>();
-        authorizationService.Setup(a => a.AuthorizeAsync(
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+            It.IsAny<string>(),
             It.IsAny<ClaimsPrincipal>(),
-            It.IsAny<object>(),
-            It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new ChangeTrackingAuthorizationRequirement() })));
-        _serviceProvider.Setup(s =>
-            s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()
+        )).ReturnsAsync(
+            AuthorizationResult.Failed(
+                AuthorizationFailure.Failed(new[] {new ChangeTrackingAuthorizationRequirement()})));
 
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        var actionArguments = new Dictionary<string, object> { { "EntityId", Guid.NewGuid().ToString() } };
-        actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
+        var actionArguments = new Dictionary<string, object> {{"entityId", Guid.NewGuid().ToString()}};
+        _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
         var entityChangeTrackingAuthorizationFilter =
-            new EntityChangeTrackingAuthorizationFilter<Guid, EntityChangeTrackingAuthorizationTestClass>(_policy);
+            new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
-        entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, default);
+        await entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+            _nextDelegate.Object);
 
-        actionExecutingContext.Object.Result.Should().NotBeNull();
-        actionExecutingContext.Object.Result.Should().BeOfType<StatusCodeResult>();
-        actionExecutingContext.Object.Result.As<StatusCodeResult>().StatusCode.Should().Be(403);
+        _actionExecutingContext.Object.Result.Should().NotBeNull();
+        _actionExecutingContext.Object.Result.Should().BeOfType<ObjectResult>();
+        _actionExecutingContext.Object.Result.As<ObjectResult>().StatusCode.Should().Be(403);
 
-        entityReadService.Verify(v => v.GetByKeyAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
-        entityKeyParser.Verify(v => v.ParseKey(It.IsAny<string>()), Times.Once);
-        authorizationService.Verify(v => v.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
+        _entityAuthProvider.Verify(v =>
+            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+                It.IsAny<string>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()
+            ));
+        _nextDelegate.Verify(x => x(), Times.Never);
     }
 
-    private Task<ActionExecutedContext> Next()
+    [Test]
+    public async Task Should_Next_If_Id_Is_Not_Null_And_Authorization_Succeeds()
     {
+        // given
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+            It.IsAny<string>(),
+            It.IsAny<ClaimsPrincipal>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()
+        )).ReturnsAsync(
+            AuthorizationResult.Success());
+
+        var actionArguments = new Dictionary<string, object> {{"entityId", Guid.NewGuid().ToString()}};
+        _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
+
+        // when
+        var entityChangeTrackingAuthorizationFilter =
+            new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+
         // then
-        Assert.Pass();
-        var ctx = new ActionExecutedContext(_actionContext.Object, Mock.Of<List<IFilterMetadata>>(), Mock.Of<Controller>());
-        return Task.FromResult(ctx);
+        await entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+            _nextDelegate.Object);
+
+        _actionExecutingContext.Object.Result.Should().BeNull();
+
+        _entityAuthProvider.Verify(v =>
+            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+                It.IsAny<string>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()
+            ));
+        _nextDelegate.Verify(x => x(), Times.Once);
     }
-
-}
-
-public class EntityChangeTrackingAuthorizationTestClass : IEntity<Guid>
-{
-    public Guid Id { get; set; }
 }

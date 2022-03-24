@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
@@ -14,13 +15,12 @@ public class EntityUpdateAuthorizationFilter<TKey, TEntity, TViewModel> : Entity
 
     protected override async Task AuthorizeRequestAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (await TryAuthorizeBody<TViewModel>(context))
+        if (context.HttpContext.Request.Method == HttpMethods.Put && await TryAuthorizeBody<TViewModel>(context))
         {
             await next();
-            return;
         }
-
-        if(await TryAuthorizeById(context, nameof(IEntity<TKey>.Id)))
+        else if (context.HttpContext.Request.Method == HttpMethods.Patch &&
+                 await TryAuthorizeById(context, nameof(IEntity<TKey>.Id).ToLower()))
         {
             await next();
         }

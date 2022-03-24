@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -12,7 +14,7 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFil
     where TEntity : class, IEntity<TKey>
 {
     private readonly string _policy;
-    private EntityAuthProvider _entityAuthProvider;
+    private IEntityAuthProvider _entityAuthProvider;
 
     protected EntityAuthorizationFilter(string policy)
     {
@@ -21,11 +23,11 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFil
 
     public virtual Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        _entityAuthProvider = context.HttpContext.RequestServices.GetService<EntityAuthProvider>();
+        _entityAuthProvider = context.HttpContext.RequestServices.GetService<IEntityAuthProvider>();
 
         if (_entityAuthProvider == null)
         {
-            throw new Exception($"Unable to resolve {nameof(EntityAuthProvider)}");
+            throw new DependencyResolverException($"Unable to resolve {nameof(IEntityAuthProvider)}");
         }
 
         return AuthorizeRequestAsync(context, next);
@@ -33,17 +35,20 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFil
 
     public Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
-        _entityAuthProvider = context.HttpContext.RequestServices.GetService<EntityAuthProvider>();
+        _entityAuthProvider = context.HttpContext.RequestServices.GetService<IEntityAuthProvider>();
 
         if (_entityAuthProvider == null)
         {
-            throw new Exception($"Unable to resolve {nameof(EntityAuthProvider)}");
+            throw new DependencyResolverException($"Unable to resolve {nameof(IEntityAuthProvider)}");
         }
 
         return AuthorizeResponseAsync(context, next);
     }
 
+    [ExcludeFromCodeCoverage]
     protected virtual Task AuthorizeRequestAsync(ActionExecutingContext context, ActionExecutionDelegate next) => next();
+
+    [ExcludeFromCodeCoverage]
     protected virtual Task AuthorizeResponseAsync(ResultExecutingContext context, ResultExecutionDelegate next) => next();
 
     protected async Task<bool> TryAuthorizeResponse(ResultExecutingContext context)
@@ -65,7 +70,7 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFil
     {
         if (!AuthorizationFilterHelper.TryGetArgument<string>(context, idArgument, out var entityIdString))
         {
-            return false;
+            throw new ArgumentException($"Failed to parse {idArgument}");
         }
 
         var authorizationResult =
@@ -79,7 +84,7 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFil
     {
         if (!AuthorizationFilterHelper.TryGetArgument<TArg>(context, bodyArgument, out var body))
         {
-            return false;
+            throw new ArgumentException($"Failed to parse {bodyArgument}");
         }
 
         var authorizationResult =
