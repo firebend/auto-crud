@@ -46,10 +46,12 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFil
     }
 
     [ExcludeFromCodeCoverage]
-    protected virtual Task AuthorizeRequestAsync(ActionExecutingContext context, ActionExecutionDelegate next) => next();
+    protected virtual Task AuthorizeRequestAsync(ActionExecutingContext context, ActionExecutionDelegate next) =>
+        next();
 
     [ExcludeFromCodeCoverage]
-    protected virtual Task AuthorizeResponseAsync(ResultExecutingContext context, ResultExecutionDelegate next) => next();
+    protected virtual Task AuthorizeResponseAsync(ResultExecutingContext context, ResultExecutionDelegate next) =>
+        next();
 
     protected async Task<bool> TryAuthorizeResponse(ResultExecutingContext context)
     {
@@ -68,14 +70,21 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFil
 
     protected async Task<bool> TryAuthorizeById(ActionExecutingContext context, string idArgument)
     {
-        if (!AuthorizationFilterHelper.TryGetArgument<string>(context, idArgument, out var entityIdString))
+        TKey? entityId = null;
+        if (!AuthorizationFilterHelper.TryGetArgument<string>(context, idArgument, out var entityIdString) &&
+            !AuthorizationFilterHelper.TryGetArgument(context, idArgument, out entityId))
         {
             throw new ArgumentException($"Failed to parse {idArgument}");
         }
 
         var authorizationResult =
-            await _entityAuthProvider.AuthorizeEntityAsync<TKey, TEntity>(entityIdString, context.HttpContext.User,
-                _policy, context.HttpContext.RequestAborted);
+            entityId == null
+                ? await _entityAuthProvider.AuthorizeEntityAsync<TKey, TEntity>(entityIdString,
+                    context.HttpContext.User,
+                    _policy, context.HttpContext.RequestAborted)
+                : await _entityAuthProvider.AuthorizeEntityAsync<TKey, TEntity>(entityId.Value,
+                    context.HttpContext.User,
+                    _policy, context.HttpContext.RequestAborted);
 
         return AuthorizationFilterHelper.HandleAuthorizationResult(context, authorizationResult);
     }
