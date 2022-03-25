@@ -1,7 +1,5 @@
 using System;
-using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
 

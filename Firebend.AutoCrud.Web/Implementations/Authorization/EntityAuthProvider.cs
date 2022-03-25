@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +71,15 @@ public class EntityAuthProvider : IEntityAuthProvider
     {
         var entity = await GetEntityAsync<TKey, TEntity>(id, cancellationToken);
         return await AuthorizeEntityAsync(user, entity, policy);
+    }
+
+    public async Task<AuthorizationResult> AuthorizeEntityReadAsync<TKey, TEntity>(TKey id, ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+    {
+        var entity = await GetEntityAsync<TKey, TEntity>(id, cancellationToken);
+        return await AuthorizeEntityAsync(user, entity, ReadAuthorizationRequirement.DefaultPolicy);
     }
 
     public async Task<AuthorizationResult> AuthorizeEntityAsync(ClaimsPrincipal user, object entity, string policy) =>

@@ -26,5 +26,10 @@ public interface IEntityAuthProvider
         where TKey : struct
         where TEntity : class, IEntity<TKey>;
 
+    Task<AuthorizationResult> AuthorizeEntityReadAsync<TKey, TEntity>(TKey id, ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>;
+
     Task<AuthorizationResult> AuthorizeEntityAsync(ClaimsPrincipal user, object entity, string policy);
 }
