@@ -30,7 +30,7 @@ public class CustomControllerWithResourceAuthorizeAttribute : AbstractEntityCont
     [HttpGet]
     [Produces("application/json")]
     [TypeFilter(typeof(AuthorizeById<Guid, MongoTenantPerson>),
-        Arguments = new object[] {"personId"})]
+        Arguments = new object[] { "personId" })]
     public async Task<IActionResult> GetFullName(
         [FromRoute] Guid personId,
         CancellationToken cancellationToken)

@@ -99,7 +99,7 @@ public class EntityReadAuthorizationFilterTests
             It.IsAny<object>(),
             It.IsAny<string>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] {new ReadAuthorizationRequirement()})));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new ReadAuthorizationRequirement() })));
 
         var okObjectResult = _fixture.Create<OkObjectResult>();
         _resultExecutingContext.Object.Result = okObjectResult;

@@ -89,12 +89,12 @@ public class EntityUpdateAuthorizationFilterTests
             It.IsAny<object>(),
             It.IsAny<string>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] {new UpdateAuthorizationRequirement()})));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
 
         _defaultHttpContext.Request.Method = HttpMethods.Put;
 
         var testEntity = _fixture.Create<ActionFilterTestHelper.TestEntity>();
-        var actionArguments = new Dictionary<string, object> {{"body", testEntity}};
+        var actionArguments = new Dictionary<string, object> { { "body", testEntity } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -126,7 +126,7 @@ public class EntityUpdateAuthorizationFilterTests
         _defaultHttpContext.Request.Method = HttpMethods.Put;
 
         var testEntity = _fixture.Create<ActionFilterTestHelper.TestEntity>();
-        var actionArguments = new Dictionary<string, object> {{"body", testEntity}};
+        var actionArguments = new Dictionary<string, object> { { "body", testEntity } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -168,11 +168,11 @@ public class EntityUpdateAuthorizationFilterTests
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] {new UpdateAuthorizationRequirement()})));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
 
         _defaultHttpContext.Request.Method = HttpMethods.Patch;
 
-        var actionArguments = new Dictionary<string, object> {{"id", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -212,7 +212,7 @@ public class EntityUpdateAuthorizationFilterTests
 
         _defaultHttpContext.Request.Method = HttpMethods.Patch;
 
-        var actionArguments = new Dictionary<string, object> {{"id", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when

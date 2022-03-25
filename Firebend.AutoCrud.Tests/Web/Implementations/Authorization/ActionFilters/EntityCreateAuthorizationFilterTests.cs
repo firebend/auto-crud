@@ -83,10 +83,10 @@ public class EntityCreateAuthorizationFilterTests
             It.IsAny<object>(),
             It.IsAny<string>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] {new CreateAuthorizationRequirement()})));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CreateAuthorizationRequirement() })));
 
         var postObject = _fixture.Create<ActionFilterTestHelper.TestEntity>();
-        var actionArguments = new Dictionary<string, object> {{"body", postObject}};
+        var actionArguments = new Dictionary<string, object> { { "body", postObject } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -119,7 +119,7 @@ public class EntityCreateAuthorizationFilterTests
             AuthorizationResult.Success());
 
         var postObject = _fixture.Create<ActionFilterTestHelper.TestEntity>();
-        var actionArguments = new Dictionary<string, object> {{"body", postObject}};
+        var actionArguments = new Dictionary<string, object> { { "body", postObject } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when

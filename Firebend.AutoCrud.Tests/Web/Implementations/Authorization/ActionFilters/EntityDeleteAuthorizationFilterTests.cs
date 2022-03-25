@@ -105,9 +105,9 @@ public class EntityDeleteAuthorizationFilterTests
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] {new DeleteAuthorizationRequirement()})));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new DeleteAuthorizationRequirement() })));
 
-        var actionArguments = new Dictionary<string, object> {{"id", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -144,7 +144,7 @@ public class EntityDeleteAuthorizationFilterTests
         )).ReturnsAsync(
             AuthorizationResult.Success());
 
-        var actionArguments = new Dictionary<string, object> {{"id", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when

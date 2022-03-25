@@ -105,9 +105,9 @@ public class EntityChangeTrackingAuthorizationFilterTests
             It.IsAny<CancellationToken>()
         )).ReturnsAsync(
             AuthorizationResult.Failed(
-                AuthorizationFailure.Failed(new[] {new ChangeTrackingAuthorizationRequirement()})));
+                AuthorizationFailure.Failed(new[] { new ChangeTrackingAuthorizationRequirement() })));
 
-        var actionArguments = new Dictionary<string, object> {{"entityId", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "entityId", Guid.NewGuid().ToString() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
@@ -144,7 +144,7 @@ public class EntityChangeTrackingAuthorizationFilterTests
         )).ReturnsAsync(
             AuthorizationResult.Success());
 
-        var actionArguments = new Dictionary<string, object> {{"entityId", Guid.NewGuid().ToString()}};
+        var actionArguments = new Dictionary<string, object> { { "entityId", Guid.NewGuid().ToString() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
