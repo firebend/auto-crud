@@ -5,11 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
-using Firebend.AutoCrud.Web.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -29,176 +28,141 @@ public class EntityDeleteAuthorizationFilterTests
     private Fixture _fixture;
     private Mock<IServiceProvider> _serviceProvider;
     private Mock<ActionContext> _actionContext;
-    private DefaultHttpContext _defaultHttpContext;
 
     private readonly string _policy = "ResourceDelete";
+    private Mock<ActionExecutionDelegate> _nextDelegate;
+    private Mock<IEntityAuthProvider> _entityAuthProvider;
+    private Mock<HttpContext> _httpContext;
+    private Mock<ActionExecutingContext> _actionExecutingContext;
 
     [SetUp]
     public void SetUp()
     {
         _fixture = new Fixture();
         _fixture.Customize(new AutoMoqCustomization());
-
-        _defaultHttpContext = new DefaultHttpContext();
-
+        _nextDelegate = _fixture.Create<Mock<ActionExecutionDelegate>>();
+        _httpContext = new Mock<HttpContext>();
         _serviceProvider = new Mock<IServiceProvider>();
-
-        _defaultHttpContext.RequestServices = _serviceProvider.Object;
-
+        _httpContext.SetupProperty(s
+            => s.RequestServices, _serviceProvider.Object);
         _actionContext = new Mock<ActionContext>(
-            _defaultHttpContext,
+            _httpContext.Object,
             Mock.Of<RouteData>(),
             Mock.Of<ActionDescriptor>(),
             Mock.Of<ModelStateDictionary>()
         );
         _fixture.Register(() => _actionContext.Object);
+        _actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
+
+        _entityAuthProvider = _fixture.Create<Mock<IEntityAuthProvider>>();
+        _serviceProvider.Setup(s
+                => s.GetService(typeof(IEntityAuthProvider)))
+            .Returns(_entityAuthProvider.Object);
     }
 
     [Test]
-    public void Should_Next_If_Read_Service_Is_Not_Set()
+    public void Should_Throw_If_IEntityAuthProvider_Service_Is_Not_Set()
     {
         // given
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<,>))).Returns(default);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        // when
-        var entityDeleteAuthorizationFilter = new EntityDeleteAuthorizationFilter<Guid, DeleteEntityTest>(_policy);
-
-        // then
-        entityDeleteAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
-    }
-
-    [Test]
-    public void Should_Next_If_Key_Parser_Service_Is_Not_Set()
-    {
-        // given
-        var entityReadService = new Mock<IEntityReadService<Guid, DeleteEntityTest>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, DeleteEntityTest>))).Returns(entityReadService.Object);
-
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<,>))).Returns(default);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        // when
-        var deleteAuthorizationFilter = new EntityDeleteAuthorizationFilter<Guid, DeleteEntityTest>(_policy);
-
-        // then
-        deleteAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
-    }
-
-    [Test]
-    public void Should_Next_If_Authorization_Service_Is_Not_Set()
-    {
-        // given
-        var entityReadService = new Mock<IEntityReadService<Guid, DeleteEntityTest>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, DeleteEntityTest>))).Returns(entityReadService.Object);
-
-        var entityKeyParser = new Mock<IEntityKeyParser<Guid, DeleteEntityTest>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<Guid, DeleteEntityTest>))).Returns(entityKeyParser.Object);
-
         _serviceProvider.Setup(s =>
-            s.GetService(typeof(IAuthorizationService))).Returns(default);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        // when
-        var entityDeleteAuthorizationFilter = new EntityDeleteAuthorizationFilter<Guid, DeleteEntityTest>(_policy);
-
-        // then
-        entityDeleteAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
-    }
-
-    [Test]
-    public void Should_Next_If_Id_Is_Not_Set()
-    {
-        // given
-        var entityReadService = new Mock<IEntityReadService<Guid, DeleteEntityTest>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, DeleteEntityTest>))).Returns(entityReadService.Object);
-
-        var entityKeyParser = new Mock<IEntityKeyParser<Guid, DeleteEntityTest>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<Guid, DeleteEntityTest>))).Returns(entityKeyParser.Object);
-
-        var authorizationService = new Mock<IAuthorizationService>();
-        _serviceProvider.Setup(s =>
-             s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
+            s.GetService(typeof(IEntityAuthProvider))).Returns(default);
 
         // when
         var entityDeleteAuthorizationFilter =
-            new EntityDeleteAuthorizationFilter<Guid, DeleteEntityTest>(_policy);
+            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
-        entityDeleteAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
+        Assert.ThrowsAsync<DependencyResolverException>(() =>
+            entityDeleteAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+                _nextDelegate.Object));
+        _nextDelegate.Verify(x => x(), Times.Never);
     }
 
     [Test]
-    public void Should_Return_403_If_Id_Is_Not_Null_And_Authorization_Fails()
+    public void Should_Throw_If_Id_Is_Not_Set()
     {
         // given
-        var entityReadService = new Mock<IEntityReadService<Guid, DeleteEntityTest>>();
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityReadService<Guid, DeleteEntityTest>))).Returns(entityReadService.Object);
 
-        var entityKeyParser = new Mock<IEntityKeyParser<Guid, DeleteEntityTest>>();
-        entityKeyParser.Setup(s => s.ParseKey(
-                It.IsAny<string>()
-            )).Returns(Guid.NewGuid());
-        _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<Guid, DeleteEntityTest>))).Returns(entityKeyParser.Object);
+        // when
+        var entityDeleteAuthorizationFilter =
+            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
 
-        var authorizationService = new Mock<IAuthorizationService>();
-        authorizationService.Setup(a => a.AuthorizeAsync(
+        // then
+        Assert.ThrowsAsync<ArgumentException>(() =>
+            entityDeleteAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+                _nextDelegate.Object));
+        _nextDelegate.Verify(x => x(), Times.Never);
+    }
+
+    [Test]
+    public async Task Should_Return_403_If_Id_Is_Not_Null_And_Authorization_Fails()
+    {
+        // given
+
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+            It.IsAny<string>(),
             It.IsAny<ClaimsPrincipal>(),
-            It.IsAny<object>(),
-            It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
-        _serviceProvider.Setup(s =>
-            s.GetService(typeof(IAuthorizationService))).Returns(authorizationService.Object);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()
+        )).ReturnsAsync(
+            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new DeleteAuthorizationRequirement() })));
 
         var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
-        actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
+        _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
         var entityDeleteAuthorizationFilter =
-            new EntityDeleteAuthorizationFilter<Guid, DeleteEntityTest>(_policy);
+            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
-        entityDeleteAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
+        await entityDeleteAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+            _nextDelegate.Object);
 
-        actionExecutingContext.Object.Result.Should().NotBeNull();
-        actionExecutingContext.Object.Result.Should().BeOfType<StatusCodeResult>();
-        actionExecutingContext.Object.Result.As<StatusCodeResult>().StatusCode.Should().Be(403);
+        _actionExecutingContext.Object.Result.Should().NotBeNull();
+        _actionExecutingContext.Object.Result.Should().BeOfType<ObjectResult>();
+        _actionExecutingContext.Object.Result.As<ObjectResult>().StatusCode.Should().Be(403);
 
-        entityReadService.Verify(v => v.GetByKeyAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
-        entityKeyParser.Verify(v => v.ParseKey(It.IsAny<string>()), Times.Once);
-        authorizationService.Verify(v => v.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
+        _entityAuthProvider.Verify(v =>
+            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+                It.IsAny<string>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()
+            ));
+        _nextDelegate.Verify(x => x(), Times.Never);
     }
 
-    private Task<ActionExecutedContext> Next()
+    [Test]
+    public async Task Should_Next_If_Authorized()
     {
+        // given
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+            It.IsAny<string>(),
+            It.IsAny<ClaimsPrincipal>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()
+        )).ReturnsAsync(
+            AuthorizationResult.Success());
+
+        var actionArguments = new Dictionary<string, object> { { "id", Guid.NewGuid().ToString() } };
+        _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
+
+        // when
+        var entityDeleteAuthorizationFilter =
+            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+        await entityDeleteAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+            _nextDelegate.Object);
+
         // then
-        Assert.Pass();
-        var ctx = new ActionExecutedContext(_actionContext.Object, Mock.Of<List<IFilterMetadata>>(), Mock.Of<Controller>());
-        return Task.FromResult(ctx);
+        _actionExecutingContext.Object.Result.Should().BeNull();
+
+        _entityAuthProvider.Verify(v =>
+            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+                It.IsAny<string>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()
+            ));
+        _nextDelegate.Verify(x => x(), Times.Once);
     }
-}
-
-
-public class DeleteEntityTest : IEntity<Guid>
-{
-    public string WhoAreYou { get; set; }
-    public bool AreYouHavingFun { get; set; }
-    public DateTime LastTimeYouHadFun { get; set; }
-    public Guid Id { get; set; }
 }
