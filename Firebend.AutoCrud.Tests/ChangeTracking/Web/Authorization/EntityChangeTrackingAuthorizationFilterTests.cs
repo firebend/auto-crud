@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
@@ -113,11 +112,10 @@ public class EntityChangeTrackingAuthorizationFilterTests
         // when
         var entityChangeTrackingAuthorizationFilter =
             new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
-
-        // then
         await entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
             _nextDelegate.Object);
 
+        // then
         _actionExecutingContext.Object.Result.Should().NotBeNull();
         _actionExecutingContext.Object.Result.Should().BeOfType<ObjectResult>();
         _actionExecutingContext.Object.Result.As<ObjectResult>().StatusCode.Should().Be(403);
@@ -150,11 +148,10 @@ public class EntityChangeTrackingAuthorizationFilterTests
         // when
         var entityChangeTrackingAuthorizationFilter =
             new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
-
-        // then
         await entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
             _nextDelegate.Object);
 
+        // then
         _actionExecutingContext.Object.Result.Should().BeNull();
 
         _entityAuthProvider.Verify(v =>
