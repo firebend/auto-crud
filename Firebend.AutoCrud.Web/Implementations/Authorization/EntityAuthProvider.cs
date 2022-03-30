@@ -12,18 +12,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization;
 
-public class EntityAuthProvider : IEntityAuthProvider
+public abstract class EntityAuthProvider : IEntityAuthProvider
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IServiceProvider _serviceProvider;
 
-    public EntityAuthProvider(IAuthorizationService authorizationService, IServiceProvider serviceProvider)
+    protected EntityAuthProvider(IAuthorizationService authorizationService, IServiceProvider serviceProvider)
     {
         _authorizationService = authorizationService;
         _serviceProvider = serviceProvider;
     }
 
-    public Task<TEntity> GetEntityAsync<TKey, TEntity>(string entityIdString, CancellationToken cancellationToken)
+    private TKey GetEntityKeyAsync<TKey, TEntity>(string entityIdString)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
@@ -39,10 +39,10 @@ public class EntityAuthProvider : IEntityAuthProvider
             throw new ArgumentException($"Failed to parse id for {nameof(TEntity)}");
         }
 
-        return GetEntityAsync<TKey, TEntity>(entityId.Value, cancellationToken);
+        return entityId.Value;
     }
 
-    public Task<TEntity> GetEntityAsync<TKey, TEntity>(TKey id, CancellationToken cancellationToken)
+    private Task<TEntity> GetEntityAsync<TKey, TEntity>(TKey id, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
@@ -55,16 +55,16 @@ public class EntityAuthProvider : IEntityAuthProvider
         return readService.GetByKeyAsync(id, cancellationToken);
     }
 
-    public async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity>(string entityIdString,
+    public virtual async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity>(string entityIdString,
         ClaimsPrincipal user, string policy, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        var entity = await GetEntityAsync<TKey, TEntity>(entityIdString, cancellationToken);
-        return await AuthorizeEntityAsync(user, entity, policy);
+        var entityId = GetEntityKeyAsync<TKey, TEntity>(entityIdString);
+        return await AuthorizeEntityAsync<TKey, TEntity>(entityId, user, policy, cancellationToken);
     }
 
-    public async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity>(TKey id, ClaimsPrincipal user,
+    public virtual async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity>(TKey id, ClaimsPrincipal user,
         string policy, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
@@ -73,15 +73,12 @@ public class EntityAuthProvider : IEntityAuthProvider
         return await AuthorizeEntityAsync(user, entity, policy);
     }
 
-    public async Task<AuthorizationResult> AuthorizeEntityReadAsync<TKey, TEntity>(TKey id, ClaimsPrincipal user,
+    public virtual Task<AuthorizationResult> AuthorizeEntityReadAsync<TKey, TEntity>(TKey id, ClaimsPrincipal user,
         CancellationToken cancellationToken)
         where TKey : struct
-        where TEntity : class, IEntity<TKey>
-    {
-        var entity = await GetEntityAsync<TKey, TEntity>(id, cancellationToken);
-        return await AuthorizeEntityAsync(user, entity, ReadAuthorizationRequirement.DefaultPolicy);
-    }
+        where TEntity : class, IEntity<TKey> =>
+        AuthorizeEntityAsync<TKey, TEntity>(id, user, ReadAuthorizationRequirement.DefaultPolicy, cancellationToken);
 
-    public async Task<AuthorizationResult> AuthorizeEntityAsync(ClaimsPrincipal user, object entity, string policy) =>
+    public virtual async Task<AuthorizationResult> AuthorizeEntityAsync(ClaimsPrincipal user, object entity, string policy) =>
         await _authorizationService.AuthorizeAsync(user, entity, policy);
 }
