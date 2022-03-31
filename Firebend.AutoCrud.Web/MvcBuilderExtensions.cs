@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Web
         public static IMvcBuilder
             AddFirebendAutoCrudWeb(this IMvcBuilder builder, IServiceCollection serviceCollection)
         {
-            serviceCollection.AddScoped<IEntityAuthProvider, EntityAuthProvider>();
+            serviceCollection.AddScoped<IEntityAuthProvider, DefaultEntityAuthProvider>();
             return builder.ConfigureApplicationPartManager(manager =>
             {
                 if (manager.FeatureProviders.Any(fp => fp is FirebendAutoCrudControllerConvention))

@@ -8,7 +8,6 @@ using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Implementations.Authorization;
-using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Moq;
@@ -55,7 +54,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new EntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
@@ -74,7 +73,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new EntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
@@ -93,7 +92,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new EntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
 
         // then
         Assert.ThrowsAsync<ArgumentException>(() =>
@@ -110,7 +109,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new EntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
 
         // then
         await entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
@@ -129,7 +128,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new EntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
 
         // then
         await entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(

@@ -8,14 +8,6 @@ namespace Firebend.AutoCrud.Web.Implementations.Authorization;
 
 public interface IEntityAuthProvider
 {
-    Task<TEntity> GetEntityAsync<TKey, TEntity>(string entityIdString, CancellationToken cancellationToken)
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>;
-
-    Task<TEntity> GetEntityAsync<TKey, TEntity>(TKey id, CancellationToken cancellationToken)
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>;
-
     Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity>(string entityIdString,
         ClaimsPrincipal user, string policy, CancellationToken cancellationToken)
         where TKey : struct
