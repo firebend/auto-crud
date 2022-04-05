@@ -91,7 +91,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
                 Data = tasks.Select(x => x.Result),
                 CurrentPage = changes.CurrentPage,
                 TotalRecords = changes.TotalRecords,
-                CurrentPageSize = changes.CurrentPageSize // I assume this is fine
+                CurrentPageSize = changes.CurrentPageSize
             });
         }
     }
