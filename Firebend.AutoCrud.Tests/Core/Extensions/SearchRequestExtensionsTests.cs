@@ -1,6 +1,4 @@
-﻿using System;
-using AutoFixture;
-using AutoFixture.AutoMoq;
+using System;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Models.Searching;
 using FluentAssertions;

@@ -1,4 +1,4 @@
-﻿using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Entities;
 
 namespace Firebend.AutoCrud.Core.Extensions;
