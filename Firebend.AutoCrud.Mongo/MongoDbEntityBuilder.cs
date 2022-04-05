@@ -14,6 +14,7 @@ using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.AutoCrud.Mongo.Models;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo
 {
@@ -47,6 +48,8 @@ namespace Firebend.AutoCrud.Mongo
         public override Type DeleteType { get; }
 
         public string CollectionName { get; set; }
+
+        public AggregateOptions AggregateOption { get; set; }
 
         public string Database { get; set; }
 
@@ -154,13 +157,13 @@ namespace Firebend.AutoCrud.Mongo
                 EnsureRegistered<IMongoAllShardsProvider>();
 
                 WithRegistrationInstance<IMongoEntityDefaultConfiguration<TKey, TEntity>>(
-                    new MongoEntityDefaultConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode));
+                    new MongoEntityDefaultConfiguration<TKey, TEntity>(CollectionName, Database, AggregateOption, ShardMode));
 
                 WithRegistration<IMongoEntityConfiguration<TKey, TEntity>, MongoTenantEntityConfiguration<TKey, TEntity>>(false, true);
             }
             else
             {
-                WithRegistrationInstance(iFaceType, new MongoEntityConfiguration<TKey, TEntity>(CollectionName, Database, ShardMode), false, true);
+                WithRegistrationInstance(iFaceType, new MongoEntityConfiguration<TKey, TEntity>(CollectionName, Database, AggregateOption, ShardMode), false, true);
             }
         }
 
@@ -192,7 +195,7 @@ namespace Firebend.AutoCrud.Mongo
         /// <summary>
         /// Defines the Mongo collection the entity should reside in
         /// </summary>
-        /// <param name="db">The name of the Mongo collection to use</param>
+        /// <param name="collection">The name of the Mongo collection to use</param>
         /// <example>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
@@ -212,6 +215,33 @@ namespace Firebend.AutoCrud.Mongo
         public MongoDbEntityBuilder<TKey, TEntity> WithCollection(string collection)
         {
             CollectionName = collection;
+            return this;
+        }
+
+        /// <summary>
+        /// Defines the Mongo Aggregate Options for the entity
+        /// </summary>
+        /// <param name="options">The aggregate options to use</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+        ///              forecast.WithDatabase("Samples")
+        ///                  .WithCollection("WeatherForecasts")
+        ///                  .WithAggregateOptions(new AggregateOptions { Collation = new Collation("en") })
+        ///                  // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
+        public MongoDbEntityBuilder<TKey, TEntity> WithAggregateOptions(AggregateOptions options)
+        {
+            AggregateOption = options;
             return this;
         }
 

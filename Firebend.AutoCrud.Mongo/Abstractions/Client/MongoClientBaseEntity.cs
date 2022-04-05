@@ -44,8 +44,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             var collection = GetCollection();
 
             var mongoQueryable = entityTransaction == null ?
-                collection.AsQueryable() :
-                collection.AsQueryable(UnwrapSession(entityTransaction));
+                collection.AsQueryable(EntityConfiguration.AggregateOption) :
+                collection.AsQueryable(UnwrapSession(entityTransaction), EntityConfiguration.AggregateOption);
 
             if (firstStageFilters != null)
             {
