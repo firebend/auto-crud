@@ -166,7 +166,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 Data = list,
                 CurrentPage = searchRequest?.PageNumber,
                 TotalRecords = count,
-                CurrentPageSize = searchRequest?.PageSize
+                CurrentPageSize = list.Count
             };
         }
 

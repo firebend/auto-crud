@@ -75,13 +75,13 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
                 }
 
                 var records = await fieldsQuery.ToListAsync(cancellationToken).ConfigureAwait(false);
-
+                var data = records.Select(x => ((TCustomFieldsEntity)x).ToCustomFields()).ToList();
                 return new EntityPagedResponse<CustomFieldsEntity<TKey>>
                 {
-                    Data = records.Select(x => ((TCustomFieldsEntity)x).ToCustomFields()).ToList(),
+                    Data = data,
                     CurrentPage = searchRequest.PageNumber,
                     TotalRecords = count,
-                    CurrentPageSize = searchRequest.PageSize
+                    CurrentPageSize = data.Count
                 };
             }
         }
