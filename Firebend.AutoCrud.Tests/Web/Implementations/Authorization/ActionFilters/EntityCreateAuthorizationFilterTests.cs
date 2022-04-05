@@ -4,6 +4,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
+using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using FluentAssertions;
@@ -28,19 +30,21 @@ public class EntityCreateAuthorizationFilterTests
     private Mock<ActionContext> _actionContext;
 
     private readonly string _policy = "ResourceCreate";
+    private Mock<ActionExecutionDelegate> _nextDelegate;
+    private Mock<IEntityAuthProvider> _entityAuthProvider;
+    private Mock<ActionExecutingContext> _actionExecutingContext;
 
     [SetUp]
     public void SetUpFixture()
     {
         _fixture = new Fixture();
         _fixture.Customize(new AutoMoqCustomization());
-
+        _nextDelegate = _fixture.Create<Mock<ActionExecutionDelegate>>();
+        _entityAuthProvider = _fixture.Create<Mock<IEntityAuthProvider>>();
         _httpContext = new Mock<HttpContext>();
         _serviceProvider = new Mock<IServiceProvider>();
-
         _httpContext.SetupProperty(s
             => s.RequestServices, _serviceProvider.Object);
-
         _actionContext = new Mock<ActionContext>(
             _httpContext.Object,
             Mock.Of<RouteData>(),
@@ -48,103 +52,105 @@ public class EntityCreateAuthorizationFilterTests
             Mock.Of<ModelStateDictionary>()
         );
         _fixture.Register(() => _actionContext.Object);
+        _actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
+        _serviceProvider.Setup(s
+                => s.GetService(typeof(IEntityAuthProvider)))
+            .Returns(_entityAuthProvider.Object);
     }
 
     [Test]
-    public void Should_Execute_Next_If_An_Authorization_Service_Not_Set()
+    public void Should_Throw_If_EntityAuthProvider_Not_Registered()
     {
         // given
         _serviceProvider.Setup(s
-            => s.GetService(typeof(IAuthorizationService))).Returns(default);
-
-        var actionExecutingContext = new ActionExecutingContext(
-            _actionContext.Object,
-            Mock.Of<List<IFilterMetadata>>(),
-            Mock.Of<IDictionary<string, object>>(),
-            Mock.Of<Controller>()
-        );
-
-        Task<ActionExecutedContext> Next()
-        {
-            // then
-            Assert.Pass();
-            var ctx = new ActionExecutedContext(_actionContext.Object, Mock.Of<List<IFilterMetadata>>(), Mock.Of<Controller>());
-            return Task.FromResult(ctx);
-        }
+            => s.GetService(typeof(IEntityAuthProvider))).Returns(default);
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter<CreateEntityTest>(_policy);
-        entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext, Next);
+        var entityCreateAuthorizationFilter =
+            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
+                ActionFilterTestHelper.TestEntity>(_policy);
+        Assert.ThrowsAsync<DependencyResolverException>(() =>
+            entityCreateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object, _nextDelegate.Object));
+        _nextDelegate.Verify(x => x(), Times.Never);
     }
 
     [Test]
-    public void Should_Return_Status_Forbidden_If_Authorization_Fails()
+    public async Task Should_Return_Status_Forbidden_If_Authorization_Fails()
     {
         // given
-        var authorizationService = new Mock<IAuthorizationService>();
-        authorizationService.Setup(a => a.AuthorizeAsync(
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync(
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CreateAuthorizationRequirement() })));
+        )).ReturnsAsync(
+            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CreateAuthorizationRequirement() })));
 
-        _serviceProvider.Setup(s
-                => s.GetService(typeof(IAuthorizationService)))
-            .Returns(authorizationService.Object);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
-
-        var postObject = _fixture.Create<CreateEntityTest>();
+        var postObject = _fixture.Create<ActionFilterTestHelper.TestEntity>();
         var actionArguments = new Dictionary<string, object> { { "body", postObject } };
-        actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
+        _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter<CreateEntityTest>(_policy);
-        entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, It.IsAny<ActionExecutionDelegate>());
+        var entityCreateAuthorizationFilter =
+            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
+                ActionFilterTestHelper.TestEntity>(_policy);
+
+        await entityCreateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+            _nextDelegate.Object);
 
         // then
-        actionExecutingContext.Object.Result.Should().NotBeNull();
-        actionExecutingContext.Object.Result.Should().BeOfType<StatusCodeResult>();
-        actionExecutingContext.Object.Result.As<StatusCodeResult>().StatusCode.Should().Be(403);
+        _actionExecutingContext.Object.Result.Should().NotBeNull();
+        _actionExecutingContext.Object.Result.Should().BeOfType<ObjectResult>();
+        _actionExecutingContext.Object.Result.As<ObjectResult>().StatusCode.Should().Be(403);
 
-        authorizationService.Verify(v => v.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
+        _entityAuthProvider.Verify(v =>
+            v.AuthorizeEntityAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
+        _nextDelegate.Verify(x => x(), Times.Never);
     }
 
     [Test]
-    public void Should_Next_If_Body_Is_Empty()
+    public async Task Should_Next_If_Authorized()
     {
         // given
-        var authorizationService = new Mock<IAuthorizationService>();
-        authorizationService.Setup(a => a.AuthorizeAsync(
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync(
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
             It.IsAny<string>()
-        )).ReturnsAsync(AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CreateAuthorizationRequirement() })));
+        )).ReturnsAsync(
+            AuthorizationResult.Success());
 
-        _serviceProvider.Setup(s
-                => s.GetService(typeof(IAuthorizationService)))
-            .Returns(authorizationService.Object);
-
-        var actionExecutingContext = _fixture.Create<Mock<ActionExecutingContext>>();
+        var postObject = _fixture.Create<ActionFilterTestHelper.TestEntity>();
+        var actionArguments = new Dictionary<string, object> { { "body", postObject } };
+        _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityCreateAuthorizationFilter = new EntityCreateAuthorizationFilter<CreateEntityTest>(_policy);
+        var entityCreateAuthorizationFilter =
+            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
+                ActionFilterTestHelper.TestEntity>(_policy);
+        await entityCreateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+            _nextDelegate.Object);
 
-        Task<ActionExecutedContext> Next()
-        {
-            // then
-            Assert.Pass();
-            var ctx = new ActionExecutedContext(_actionContext.Object, Mock.Of<List<IFilterMetadata>>(), Mock.Of<Controller>());
-            return Task.FromResult(ctx);
-        }
+        // then
+        _actionExecutingContext.Object.Result.Should().BeNull();
 
-        entityCreateAuthorizationFilter.OnActionExecutionAsync(actionExecutingContext.Object, Next);
+        _entityAuthProvider.Verify(v =>
+            v.AuthorizeEntityAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
+        _nextDelegate.Verify(x => x(), Times.Once);
     }
-}
 
-public class CreateEntityTest
-{
-    public string WhoAreYou { get; set; }
-    public bool AreYouHavingFun { get; set; }
-    public DateTime LastTimeYouHadFun { get; set; }
+    [Test]
+    public void Should_Throw_Exception_If_Cannot_Resolve_Body()
+    {
+        // given
+
+        // when
+        var entityCreateAuthorizationFilter =
+            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
+                ActionFilterTestHelper.TestEntity>(_policy);
+
+        Assert.ThrowsAsync<ArgumentException>(() =>
+            entityCreateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+                _nextDelegate.Object));
+
+        _nextDelegate.Verify(x => x(), Times.Never);
+    }
 }

@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Core.Exceptions;
-using Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Implementations.Authorization;
+using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
+using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,20 +20,20 @@ using Microsoft.AspNetCore.Routing;
 using Moq;
 using NUnit.Framework;
 
-namespace Firebend.AutoCrud.Tests.ChangeTracking.Web.Authorization;
+namespace Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
 
 [TestFixture]
-public class EntityChangeTrackingAuthorizationFilterTests
+public class AuthorizeByIdTests
 {
     private Fixture _fixture;
     private Mock<IServiceProvider> _serviceProvider;
     private Mock<ActionContext> _actionContext;
 
-    private readonly string _policy = "ResourceUpdate";
+    private readonly string _idArgument = "testId";
     private Mock<ActionExecutionDelegate> _nextDelegate;
-    private DefaultHttpContext _defaultHttpContext;
-    private Mock<ActionExecutingContext> _actionExecutingContext;
     private Mock<IEntityAuthProvider> _entityAuthProvider;
+    private Mock<HttpContext> _httpContext;
+    private Mock<ActionExecutingContext> _actionExecutingContext;
 
     [SetUp]
     public void SetUp()
@@ -41,11 +41,12 @@ public class EntityChangeTrackingAuthorizationFilterTests
         _fixture = new Fixture();
         _fixture.Customize(new AutoMoqCustomization());
         _nextDelegate = _fixture.Create<Mock<ActionExecutionDelegate>>();
-        _defaultHttpContext = new DefaultHttpContext();
+        _httpContext = new Mock<HttpContext>();
         _serviceProvider = new Mock<IServiceProvider>();
-        _defaultHttpContext.RequestServices = _serviceProvider.Object;
+        _httpContext.SetupProperty(s
+            => s.RequestServices, _serviceProvider.Object);
         _actionContext = new Mock<ActionContext>(
-            _defaultHttpContext,
+            _httpContext.Object,
             Mock.Of<RouteData>(),
             Mock.Of<ActionDescriptor>(),
             Mock.Of<ModelStateDictionary>()
@@ -60,69 +61,70 @@ public class EntityChangeTrackingAuthorizationFilterTests
     }
 
     [Test]
-    public void Should_Throw_If_Authorization_Service_Is_Not_Set()
+    public void Should_Throw_If_IEntityAuthProvider_Service_Is_Not_Set()
     {
         // given
         _serviceProvider.Setup(s =>
             s.GetService(typeof(IEntityAuthProvider))).Returns(default);
 
         // when
-        var entityChangeTrackingAuthorizationFilter =
-            new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+        var AuthorizeById =
+            new AuthorizeById<Guid, ActionFilterTestHelper.TestEntity>(_idArgument);
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
-            entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+            AuthorizeById.OnActionExecutionAsync(_actionExecutingContext.Object,
                 _nextDelegate.Object));
         _nextDelegate.Verify(x => x(), Times.Never);
     }
 
     [Test]
-    public void Should_Throw_If_Id_Is_Null()
+    public void Should_Throw_If_Id_Is_Not_Set()
     {
         // given
 
         // when
-        var entityChangeTrackingAuthorizationFilter =
-            new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+        var AuthorizeById =
+            new AuthorizeById<Guid, ActionFilterTestHelper.TestEntity>(_idArgument);
 
         // then
         Assert.ThrowsAsync<ArgumentException>(() =>
-            entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+            AuthorizeById.OnActionExecutionAsync(_actionExecutingContext.Object,
                 _nextDelegate.Object));
         _nextDelegate.Verify(x => x(), Times.Never);
     }
 
     [Test]
-    public async Task Should_Return_403_If_Id_Is_Not_Null_And_Authorization_Fail()
+    public async Task Should_Return_403_If_Id_Is_Not_Null_And_Authorization_Fails()
     {
         // given
+
         _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
-            It.IsAny<string>(),
+            It.IsAny<Guid>(),
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(
-                AuthorizationFailure.Failed(new[] { new ChangeTrackingAuthorizationRequirement() })));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new DeleteAuthorizationRequirement() })));
 
-        var actionArguments = new Dictionary<string, object> { { "entityId", Guid.NewGuid().ToString() } };
+        var actionArguments = new Dictionary<string, object> { { _idArgument, Guid.NewGuid() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityChangeTrackingAuthorizationFilter =
-            new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
-        await entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
-            _nextDelegate.Object);
+        var AuthorizeById =
+            new AuthorizeById<Guid, ActionFilterTestHelper.TestEntity>(_idArgument);
 
         // then
+        await AuthorizeById.OnActionExecutionAsync(_actionExecutingContext.Object,
+            _nextDelegate.Object);
+
         _actionExecutingContext.Object.Result.Should().NotBeNull();
         _actionExecutingContext.Object.Result.Should().BeOfType<ObjectResult>();
         _actionExecutingContext.Object.Result.As<ObjectResult>().StatusCode.Should().Be(403);
 
         _entityAuthProvider.Verify(v =>
             v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
-                It.IsAny<string>(),
+                It.IsAny<Guid>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()
@@ -131,24 +133,24 @@ public class EntityChangeTrackingAuthorizationFilterTests
     }
 
     [Test]
-    public async Task Should_Next_If_Id_Is_Not_Null_And_Authorization_Succeeds()
+    public async Task Should_Next_If_Authorized()
     {
         // given
         _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
-            It.IsAny<string>(),
+            It.IsAny<Guid>(),
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()
         )).ReturnsAsync(
             AuthorizationResult.Success());
 
-        var actionArguments = new Dictionary<string, object> { { "entityId", Guid.NewGuid().ToString() } };
+        var actionArguments = new Dictionary<string, object> { { _idArgument, Guid.NewGuid() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);
 
         // when
-        var entityChangeTrackingAuthorizationFilter =
-            new EntityChangeTrackingAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
-        await entityChangeTrackingAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
+        var AuthorizeById =
+            new AuthorizeById<Guid, ActionFilterTestHelper.TestEntity>(_idArgument);
+        await AuthorizeById.OnActionExecutionAsync(_actionExecutingContext.Object,
             _nextDelegate.Object);
 
         // then
@@ -156,7 +158,7 @@ public class EntityChangeTrackingAuthorizationFilterTests
 
         _entityAuthProvider.Verify(v =>
             v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
-                It.IsAny<string>(),
+                It.IsAny<Guid>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()
