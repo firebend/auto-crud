@@ -49,7 +49,7 @@ namespace Firebend.AutoCrud.Mongo
 
         public string CollectionName { get; set; }
 
-        public AggregateOptions AggregateOption { get; set; }
+        public AggregateOptions AggregateOption { get; set; } = new AggregateOptions { Collation = new Collation("en") };
 
         public string Database { get; set; }
 
