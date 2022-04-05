@@ -6,6 +6,7 @@ using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -53,26 +54,13 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
                 return BadRequest(ModelState);
             }
 
-            if (changeSearchRequest == null)
+            var validationResult = changeSearchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
+            if (!validationResult.WasSuccessful)
             {
-                ModelState.AddModelError(nameof(changeSearchRequest), "Search parameters are required.");
-
-                return GetInvalidModelStateResult();
-            }
-
-            if (!changeSearchRequest.PageNumber.HasValue)
-            {
-                ModelState.AddModelError(nameof(changeSearchRequest.PageNumber), "Page number must have a value");
-
-                return GetInvalidModelStateResult();
-            }
-
-            var maxPageSize = _maxPageSize?.MaxPageSize ?? 100;
-
-            if (!changeSearchRequest.PageSize.GetValueOrDefault().IsBetween(1, maxPageSize))
-            {
-                ModelState.AddModelError(nameof(changeSearchRequest.PageNumber), $"Page size must be between 1 and {maxPageSize}");
-
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyPath, error.Error);
+                }
                 return GetInvalidModelStateResult();
             }
 
@@ -103,7 +91,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
                 Data = tasks.Select(x => x.Result),
                 CurrentPage = changes.CurrentPage,
                 TotalRecords = changes.TotalRecords,
-                CurrentPageSize = changes.CurrentPageSize
+                CurrentPageSize = changes.CurrentPageSize // I assume this is fine
             });
         }
     }

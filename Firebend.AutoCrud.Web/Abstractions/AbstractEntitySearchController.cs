@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -43,60 +44,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
         {
             Response.RegisterForDispose(_searchService);
 
-            if (searchRequest == null)
+            var validationResult = searchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
+            if (!validationResult.WasSuccessful)
             {
-                ModelState.AddModelError(nameof(searchRequest), "Search parameters are required.");
-
-                return GetInvalidModelStateResult();
-            }
-
-            if (!searchRequest.PageNumber.HasValue)
-            {
-                ModelState.AddModelError(nameof(searchRequest.PageNumber), "Page number must have a value");
-
-                return GetInvalidModelStateResult();
-            }
-
-            var pageSize = _maxPageSize?.MaxPageSize ?? 100;
-
-            if (!searchRequest.PageSize.GetValueOrDefault().IsBetween(1, pageSize))
-            {
-                ModelState.AddModelError(nameof(searchRequest.PageNumber), $"Page size must be between 1 and {pageSize}");
-
-                return GetInvalidModelStateResult();
-            }
-
-            if (searchRequest is IModifiedEntitySearchRequest modifiedEntitySearchRequest)
-            {
-                if (modifiedEntitySearchRequest.CreatedStartDate.HasValue && modifiedEntitySearchRequest.ModifiedStartDate.HasValue)
+                foreach (var error in validationResult.Errors)
                 {
-                    if (modifiedEntitySearchRequest.CreatedStartDate.Value > modifiedEntitySearchRequest.ModifiedStartDate.Value)
-                    {
-                        ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.CreatedStartDate), "Created date cannot be after modified date.");
-
-                        return GetInvalidModelStateResult();
-                    }
+                    ModelState.AddModelError(error.PropertyPath, error.Error);
                 }
-
-                if (modifiedEntitySearchRequest.CreatedStartDate.HasValue && modifiedEntitySearchRequest.CreatedEndDate.HasValue)
-                {
-                    if (modifiedEntitySearchRequest.CreatedStartDate.Value > modifiedEntitySearchRequest.CreatedEndDate.Value)
-                    {
-                        ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.CreatedStartDate), "Created start date must be before end date.");
-
-                        return GetInvalidModelStateResult();
-                    }
-                }
-
-                if (modifiedEntitySearchRequest.ModifiedEndDate.HasValue && modifiedEntitySearchRequest.ModifiedStartDate.HasValue)
-                {
-                    if (modifiedEntitySearchRequest.ModifiedStartDate.Value > modifiedEntitySearchRequest.ModifiedEndDate.Value)
-                    {
-                        ModelState.AddModelError(nameof(IModifiedEntitySearchRequest.ModifiedStartDate), "Modified start date must be before end date.");
-
-                        return GetInvalidModelStateResult();
-                    }
-                }
+                return GetInvalidModelStateResult();
             }
 
             searchRequest.DoCount ??= true;
@@ -119,7 +74,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 Data = mapped,
                 CurrentPage = entities.CurrentPage,
                 TotalRecords = entities.TotalRecords,
-                CurrentPageSize = entities.CurrentPageSize
+                CurrentPageSize = mapped.Count()
             };
 
             return Ok(result);

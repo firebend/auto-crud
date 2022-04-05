@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Io.Models;
 using Firebend.AutoCrud.Io.Web.Interfaces;
@@ -55,27 +56,13 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            if (searchRequest.PageNumber is <= 0)
+            var validationResult = searchRequest.ValidateSearchRequest(_maxExportPageSize?.MaxPageSize);
+            if (!validationResult.WasSuccessful)
             {
-                ModelState.AddModelError(nameof(searchRequest.PageNumber), $"{nameof(searchRequest.PageNumber)} must be greater than zero.");
-                return GetInvalidModelStateResult();
-            }
-
-            if (searchRequest.PageSize is <= 0)
-            {
-                ModelState.AddModelError(nameof(searchRequest.PageSize), $"{nameof(searchRequest.PageSize)} must be greater than zero.");
-                return GetInvalidModelStateResult();
-            }
-
-            if ((searchRequest.PageSize ?? 0) > 0 && (searchRequest.PageNumber ?? 0) <= 0)
-            {
-                ModelState.AddModelError(nameof(searchRequest.PageNumber), $"{nameof(searchRequest.PageNumber)} must be greater than zero.");
-                return GetInvalidModelStateResult();
-            }
-
-            if ((_maxExportPageSize?.MaxPageSize ?? 0) > 0 && !searchRequest.PageSize.IsBetween(1, _maxExportPageSize.MaxPageSize))
-            {
-                ModelState.AddModelError(nameof(searchRequest.PageNumber), $"Page size must be between 1 and {_maxExportPageSize.MaxPageSize}");
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyPath, error.Error);
+                }
                 return GetInvalidModelStateResult();
             }
 
