@@ -33,6 +33,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
                 .Select(x => new MongoEntityConfiguration<TKey, TEntity>(
                     _transformService.GetCollection(_defaultConfiguration, x),
                     _transformService.GetDatabase(_defaultConfiguration, x),
+                    _defaultConfiguration.AggregateOption,
                     _defaultConfiguration.ShardMode))
                 .ToArray();
 

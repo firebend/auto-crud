@@ -73,7 +73,7 @@ namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
                 Data = records,
                 CurrentPage = searchRequest.PageNumber,
                 TotalRecords = count,
-                CurrentPageSize = searchRequest.PageSize
+                CurrentPageSize = records.Count
             };
         }
     }

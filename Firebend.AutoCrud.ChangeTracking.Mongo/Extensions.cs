@@ -104,6 +104,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
                 configurator.Builder.WithRegistrationInstance<IMongoEntityDefaultConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>(
                     new MongoEntityDefaultConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>(mongoDbEntityBuilder.CollectionName + "_ChangeTracking",
                         mongoDbEntityBuilder.Database,
+                        mongoDbEntityBuilder.AggregateOption,
                         mongoDbEntityBuilder.ShardMode));
 
                 configurator.Builder.WithRegistration<IMongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>,
@@ -120,6 +121,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
                 configurator.Builder.WithRegistrationInstance<IMongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>>(
                     new MongoEntityConfiguration<Guid, ChangeTrackingEntity<TKey, TEntity>>(mongoDbEntityBuilder.CollectionName + "_ChangeTracking",
                         mongoDbEntityBuilder.Database,
+                        mongoDbEntityBuilder.AggregateOption,
                         mongoDbEntityBuilder.ShardMode));
             }
 

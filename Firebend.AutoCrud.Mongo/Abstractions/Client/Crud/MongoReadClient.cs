@@ -136,7 +136,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             var data = await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken))
                 .ConfigureAwait(false);
 
-            return new EntityPagedResponse<TEntity> { TotalRecords = count, Data = data, CurrentPage = searchRequest?.PageNumber, CurrentPageSize = searchRequest?.PageSize };
+            return new EntityPagedResponse<TEntity>
+            {
+                TotalRecords = count,
+                Data = data,
+                CurrentPage = searchRequest?.PageNumber,
+                CurrentPageSize = data.Count
+            };
         }
 
     }
