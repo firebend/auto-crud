@@ -1,15 +1,21 @@
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Io.Implementations;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
+using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Abstractions
 {
@@ -54,6 +60,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 excelWriter.SaveWorkbook();
             }
 
+
             _stream.Seek(0, SeekOrigin.Begin);
 
             return _stream;
@@ -64,17 +71,64 @@ namespace Firebend.AutoCrud.Io.Abstractions
         {
             await _writer.NextRecordAsync().ConfigureAwait(false);
 
+            var childLists = typeof(T).GetProperties()
+                .Where(propInfo => propInfo.PropertyType.IsCollection())
+                .ToList();
+            var hasAddedSubRows = false;
+
             using var recordEnumerator = records.GetEnumerator();
 
             while (recordEnumerator.MoveNext())
             {
+                if (hasAddedSubRows)
+                {
+                    await _writer.NextRecordAsync().ConfigureAwait(false);
+                    WriteHeader(fields);
+                    await _writer.NextRecordAsync().ConfigureAwait(false);
+                    hasAddedSubRows = false;
+                }
+
                 foreach (var fileFieldWrite in fields)
                 {
                     _writer.WriteField(fileFieldWrite.Writer(recordEnumerator.Current));
                 }
 
                 await _writer.NextRecordAsync().ConfigureAwait(false);
+
+                foreach (var propertyInfo in childLists)
+                {
+                    var itemType = propertyInfo.PropertyType.GetGenericArguments()[0];
+                    var listProperty = recordEnumerator.Current
+                        .GetType()
+                        .GetProperty(propertyInfo.Name)
+                        .GetValue(recordEnumerator.Current);
+
+                    if (listProperty != null)
+                    {
+                        var method = typeof(AbstractCsvHelperFileWriter)
+                            .GetMethod(nameof(WriteSubRow), BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        dynamic dynamicResult = method.MakeGenericMethod(itemType).Invoke(this, new[]{ listProperty });
+                        await dynamicResult;
+                        hasAddedSubRows = dynamicResult.GetAwaiter().GetResult() || hasAddedSubRows;
+                    }
+                }
             }
+        }
+
+        private async Task<bool> WriteSubRow<T>(object listProperty)
+            where T : class
+        {
+            var fields = FileFieldAutoMapper.MapOutput<T>();
+            var records = listProperty as IEnumerable<T>;
+            if (!records.IsEmpty())
+            {
+                await _writer.NextRecordAsync().ConfigureAwait(false);
+                WriteHeader(fields);
+                await WriteRows(fields, records);
+                return true;
+            }
+            return false;
         }
 
         private void WriteHeader<T>(IFileFieldWrite<T>[] fields)

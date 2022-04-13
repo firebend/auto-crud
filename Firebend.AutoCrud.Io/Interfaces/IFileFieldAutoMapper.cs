@@ -7,4 +7,10 @@ namespace Firebend.AutoCrud.Io.Interfaces
     {
         IFileFieldWrite<T>[] MapOutput();
     }
+
+    public interface IDefaultFileFieldAutoMapper
+    {
+        IFileFieldWrite<T>[] MapOutput<T>()
+            where T : class;
+    }
 }
