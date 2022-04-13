@@ -25,7 +25,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string policy = CreateAuthorizationRequirement.DefaultPolicy)
         => this.AddResourceAuthorization(typeof(AbstractEntityCreateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType),
-            typeof(EntityCreateAuthorizationFilter<>).MakeGenericType(CreateViewModelType), policy);
+            typeof(EntityCreateAuthorizationFilter<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType,
+                CreateViewModelType), policy);
 
     /// <summary>
     /// Adds resource authorization to Create requests using the abstract create controller
@@ -47,7 +48,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         => this.AddResourceAuthorization(typeof(AbstractEntityCreateMultipleController<,,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType,
                     CreateMultipleViewModelType, ReadViewModelType),
-            typeof(EntityCreateMultipleAuthorizationFilter<>).MakeGenericType(CreateMultipleViewModelWrapperType), policy);
+            typeof(EntityCreateAuthorizationFilter<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType),
+            policy);
 
     /// <summary>
     /// Adds resource authorization to DELETE requests using the abstract delete controller
@@ -89,7 +91,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string policy = ReadAuthorizationRequirement.DefaultPolicy)
         => this.AddResourceAuthorization(typeof(AbstractEntityReadController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(EntityReadAuthorizationFilter), policy);
+            typeof(EntityReadAuthorizationFilter<TKey, TEntity>), policy);
 
     /// <summary>
     /// Adds resource authorization to GET `/all` requests using the abstract read all controller
@@ -110,7 +112,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string policy = ReadAllAuthorizationRequirement.DefaultPolicy)
         => this.AddResourceAuthorization(typeof(AbstractEntityReadAllController<,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
-            typeof(EntityReadAllAuthorizationFilter), policy);
+            typeof(EntityReadAuthorizationFilter<TKey, TEntity>), policy);
 
     /// <summary>
     /// Adds resource authorization to PUT requests using the abstract update controller
@@ -131,7 +133,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string policy = UpdateAuthorizationRequirement.DefaultPolicy) =>
         this.AddResourceAuthorization(typeof(AbstractEntityUpdateController<,,,>)
                 .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType),
-            typeof(EntityUpdateAuthorizationFilter<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType), policy);
+            typeof(EntityUpdateAuthorizationFilter<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType,
+                UpdateViewModelType), policy);
 
     /// <summary>
     /// Adds resource authorization to all requests that modify an entity (Create, Update, and Delete) and use the abstract controllers

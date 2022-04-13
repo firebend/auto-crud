@@ -106,10 +106,10 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             try
             {
-                await Url.WithHeader("Authorization",
+                var response = await Url.WithHeader("Authorization",
                         $"Bearer {_token}")
                     .PostJsonAsync(model);
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -140,9 +140,9 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             try
             {
-                await $"{Url}/{key}".WithHeader("Authorization",
+                var response = await $"{Url}/{key}".WithHeader("Authorization",
                     $"Bearer {_token}").GetAsync();
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -180,9 +180,9 @@ namespace Firebend.AutoCrud.IntegrationTests
 
             try
             {
-                await $"{Url}/{key}".WithHeader("Authorization",
+                var response = await $"{Url}/{key}".WithHeader("Authorization",
                     $"Bearer {_token}").PutJsonAsync(entity);
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -341,9 +341,9 @@ namespace Firebend.AutoCrud.IntegrationTests
 
             try
             {
-                await $"{Url}/{id}".WithHeader("Authorization",
+                var response = await $"{Url}/{id}".WithHeader("Authorization",
                     $"Bearer {_token}").DeleteAsync();
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -381,9 +381,9 @@ namespace Firebend.AutoCrud.IntegrationTests
 
             try
             {
-                await $"{Url}/{id}".WithHeader("Authorization",
+                var response = await $"{Url}/{id}".WithHeader("Authorization",
                     $"Bearer {_token}").PatchJsonAsync(patchDocument);
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -497,13 +497,13 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             try
             {
-                await $"{Url}/{key}/changes".WithHeader("Authorization",
+                var response = await $"{Url}/{key}/changes".WithHeader("Authorization",
                         $"Bearer {_token}")
                     .SetQueryParam("pagenumber", 1)
                     .SetQueryParam("pageSize", 10)
                     .SetQueryParam("doCount", true)
                     .GetAsync();
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -545,9 +545,9 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             try
             {
-                await $"{Url}/multiple".WithHeader("Authorization",
+                var response = await $"{Url}/multiple".WithHeader("Authorization",
                     $"Bearer {_token}").PostJsonAsync(models);
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -595,9 +595,9 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var faked = CustomFieldFaker.Faker.Generate();
-                await $"{Url}/{entityId}/custom-fields".WithHeader("Authorization",
+                var response = await $"{Url}/{entityId}/custom-fields".WithHeader("Authorization",
                     $"Bearer {_token}").PostJsonAsync(faked);
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -643,9 +643,9 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var faked = CustomFieldFaker.Faker.Generate();
-                await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
+                var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
                     $"Bearer {_token}").PutJsonAsync(faked);
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -697,9 +697,9 @@ namespace Firebend.AutoCrud.IntegrationTests
                 var color = new Faker().Commerce.Color();
                 var patch = PatchFaker.MakeReplacePatch<CustomFieldViewModel, string>(x => x.Value, color);
 
-                await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
+                var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
                     $"Bearer {_token}").PatchJsonAsync(patch);
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {
@@ -811,9 +811,9 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             try
             {
-                await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
+                var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
                     $"Bearer {_token}").DeleteAsync();
-                Assert.Fail("Request should have return a 403 forbidden result");
+                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
             {

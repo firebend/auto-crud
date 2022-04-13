@@ -106,7 +106,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 var filter = Builders<TEntity>.Filter.In(x => x.Id, ids);
 
                 var updatedEntities = await RetryErrorAsync(() => collection
-                        .AsQueryable()
+                        .AsQueryable(EntityConfiguration.AggregateOption)
                         .Where(_ => filter.Inject())
                         .ToListAsync(cancellationToken))
                     .ConfigureAwait(false);
@@ -137,7 +137,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 var filter = Builders<TEntity>.Filter.In(x => x.Id, ids);
 
                 var updatedEntities = await RetryErrorAsync(() => collection
-                        .AsQueryable()
+                        .AsQueryable(EntityConfiguration.AggregateOption)
                         .Where(_ => filter.Inject())
                         .Select(projection)
                         .ToListAsync(cancellationToken))
@@ -285,7 +285,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 session = UnwrapSession(entityTransaction);
             }
 
-            var queryable = session == null ? mongoCollection.AsQueryable() : mongoCollection.AsQueryable(session);
+            var queryable = session == null
+                ? mongoCollection.AsQueryable(EntityConfiguration.AggregateOption)
+                : mongoCollection.AsQueryable(session, EntityConfiguration.AggregateOption);
 
             foreach (var entityUpdate in entities)
             {

@@ -22,13 +22,14 @@ namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
         private readonly IEntitySearchHandler<TKey, TEntity, CustomFieldsSearchRequest> _searchHandler;
 
         protected AbstractMongoCustomFieldsSearchService(IMongoReadClient<TKey, TEntity> readClient,
-            IEntitySearchHandler<TKey, TEntity, CustomFieldsSearchRequest> searchHandler)
+            IEntitySearchHandler<TKey, TEntity, CustomFieldsSearchRequest> searchHandler = null)
         {
             _readClient = readClient;
             _searchHandler = searchHandler;
         }
 
-        public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(CustomFieldsSearchRequest searchRequest,
+        public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(
+            CustomFieldsSearchRequest searchRequest,
             CancellationToken cancellationToken = default)
         {
             Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilter = null;
@@ -72,7 +73,7 @@ namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions
                 Data = records,
                 CurrentPage = searchRequest.PageNumber,
                 TotalRecords = count,
-                CurrentPageSize = searchRequest.PageSize
+                CurrentPageSize = records.Count
             };
         }
     }

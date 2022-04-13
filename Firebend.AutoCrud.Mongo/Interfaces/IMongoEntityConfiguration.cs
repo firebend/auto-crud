@@ -1,5 +1,6 @@
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Models;
+using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
@@ -11,6 +12,8 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
 
         public string DatabaseName { get; }
 
+        public AggregateOptions AggregateOption { get; set; }
+
         public MongoTenantShardMode ShardMode { get; }
     }
 
@@ -21,6 +24,8 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         public string CollectionName { get; }
 
         public string DatabaseName { get; }
+
+        public AggregateOptions AggregateOption { get; set; }
 
         public MongoTenantShardMode ShardMode { get; }
     }

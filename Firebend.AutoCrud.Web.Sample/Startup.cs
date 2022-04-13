@@ -80,6 +80,7 @@ namespace Firebend.AutoCrud.Web.Sample
                 .AddControllers()
                 .AddNewtonsoftJson()
                 .AddFirebendAutoCrudWeb(services)
+                .Services
                 .AddDefaultResourceAuthorizationRequirements()
                 .AddDefaultChangeTrackingResourceAuthorizationRequirement()
                 .AddDefaultCustomFieldsResourceAuthorizationRequirement()
