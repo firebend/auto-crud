@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -19,6 +20,10 @@ using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Abstractions
 {
+    public static class ChildListsCaches
+    {
+        public static readonly ConcurrentDictionary<Type, List<PropertyInfo>> Caches = new();
+    }
     public abstract class AbstractCsvHelperFileWriter : BaseDisposable, IEntityFileWriter
     {
         private bool _disposed;
@@ -28,6 +33,13 @@ namespace Firebend.AutoCrud.Io.Abstractions
         private IWriter _writer;
         private TextWriter _textWriter;
         private Stream _stream;
+
+        private readonly IFileFieldAutoMapper _autoMapper;
+
+        protected AbstractCsvHelperFileWriter(IFileFieldAutoMapper autoMapper)
+        {
+            _autoMapper = autoMapper;
+        }
 
         public async Task<Stream> WriteRecordsAsync<T>(IFileFieldWrite<T>[] fields,
             IEnumerable<T> records,
@@ -47,7 +59,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
 
             WriteHeader(fields);
 
-            await WriteRows(fields, records);
+            await WriteRows(fields, records, true);
 
             if (_textWriter != null)
             {
@@ -66,14 +78,20 @@ namespace Firebend.AutoCrud.Io.Abstractions
             return _stream;
         }
 
-        private async Task WriteRows<T>(IFileFieldWrite<T>[] fields, IEnumerable<T> records)
+        private async Task WriteRows<T>(IFileFieldWrite<T>[] fields, IEnumerable<T> records, bool isMainRow)
             where T : class
         {
             await _writer.NextRecordAsync().ConfigureAwait(false);
 
-            var childLists = typeof(T).GetProperties()
-                .Where(propInfo => propInfo.PropertyType.IsCollection())
-                .ToList();
+            var childLists = ChildListsCaches
+                .Caches
+                .GetOrAdd(typeof(T), static (_, _) =>
+                    typeof(T).GetProperties()
+                        .Where(propInfo => propInfo.PropertyType.IsCollection())
+                        .ToList(), this);
+
+            var writeSubRowMethod = typeof(AbstractCsvHelperFileWriter)
+                .GetMethod(nameof(WriteSubRow), BindingFlags.NonPublic | BindingFlags.Instance);
             var hasAddedSubRows = false;
 
             using var recordEnumerator = records.GetEnumerator();
@@ -82,6 +100,10 @@ namespace Firebend.AutoCrud.Io.Abstractions
             {
                 if (hasAddedSubRows)
                 {
+                    if (isMainRow)
+                    {
+                        await _writer.NextRecordAsync().ConfigureAwait(false);
+                    }
                     await _writer.NextRecordAsync().ConfigureAwait(false);
                     WriteHeader(fields);
                     await _writer.NextRecordAsync().ConfigureAwait(false);
@@ -105,12 +127,8 @@ namespace Firebend.AutoCrud.Io.Abstractions
 
                     if (listProperty != null)
                     {
-                        var method = typeof(AbstractCsvHelperFileWriter)
-                            .GetMethod(nameof(WriteSubRow), BindingFlags.NonPublic | BindingFlags.Instance);
-
-                        dynamic dynamicResult = method.MakeGenericMethod(itemType).Invoke(this, new[]{ listProperty });
-                        await dynamicResult;
-                        hasAddedSubRows = dynamicResult.GetAwaiter().GetResult() || hasAddedSubRows;
+                        var wasSubRowAdded = await (Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this, new[]{ listProperty });
+                        hasAddedSubRows = wasSubRowAdded || hasAddedSubRows;
                     }
                 }
             }
@@ -119,13 +137,13 @@ namespace Firebend.AutoCrud.Io.Abstractions
         private async Task<bool> WriteSubRow<T>(object listProperty)
             where T : class
         {
-            var fields = FileFieldAutoMapper.MapOutput<T>();
+            var fields = _autoMapper.MapOutput<T>();
             var records = listProperty as IEnumerable<T>;
             if (!records.IsEmpty())
             {
                 await _writer.NextRecordAsync().ConfigureAwait(false);
                 WriteHeader(fields);
-                await WriteRows(fields, records);
+                await WriteRows(fields, records, false);
                 return true;
             }
             return false;

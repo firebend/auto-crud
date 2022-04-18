@@ -12,11 +12,11 @@ namespace Firebend.AutoCrud.Io.Implementations
     public class EntityExportService<T> : BaseDisposable, IEntityExportService<T>
         where T : class
     {
-        private readonly IFileFieldAutoMapper<T> _autoMapper;
+        private readonly IFileFieldAutoMapper _autoMapper;
         private readonly IEntityFileWriterFactory _fileWriterFactory;
 
         public EntityExportService(IEntityFileWriterFactory fileWriterFactory,
-            IFileFieldAutoMapper<T> autoMapper)
+            IFileFieldAutoMapper autoMapper)
         {
             _fileWriterFactory = fileWriterFactory;
             _autoMapper = autoMapper;
@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.Io.Implementations
 
             using (writer)
             {
-                var fields = _autoMapper.MapOutput();
+                var fields = _autoMapper.MapOutput<T>();
 
                 return writer.WriteRecordsAsync(fields, records, cancellationToken);
             }

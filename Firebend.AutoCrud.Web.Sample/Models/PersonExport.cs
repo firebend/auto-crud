@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Firebend.AutoCrud.Core.Extensions;
 using MassTransit.Futures.Contracts;
 
@@ -14,15 +15,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public PersonExport(EfPerson person)
         {
             person.CopyPropertiesTo(this);
-            if (FirstName == "George" || FirstName == "Bob")
-            {
-                Pets = new List<PetExport>
-                {
-                    new() { Id = Guid.NewGuid(), PetName = "ted" },
-                    new() { Id = Guid.NewGuid(), PetName = "derp" }
-                };
-
-            }
+            Pets = person.Pets.Select(x => new PetExport(x)).ToList();
         }
 
         public PersonExport(MongoPerson person)
@@ -36,8 +29,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         public string FullName => $"{FirstName} {LastName}";
 
-        public ICollection<PetExport> Pets { get; set; }
-        public ICollection<EfPet> Pets1 { get; set; }
+        public List<PetExport> Pets { get; set; }
 
         public Guid Id { get; set; }
         public DateTimeOffset CreatedDate { get; set; }
