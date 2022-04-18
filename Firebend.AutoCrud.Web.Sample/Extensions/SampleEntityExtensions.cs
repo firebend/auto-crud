@@ -94,7 +94,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             generator.AddEntity<Guid, EfPerson>(person =>
                 person.WithDbContext<PersonDbContext>()
                     .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPerson>>()
-                    .WithIncludes(x => x.Include(y => y.CustomFields))
+                    .WithIncludes(x => x.Include(y => y.CustomFields)
+                        .Include(y => y.Pets)
+                        .ThenInclude(y => y.CustomFields))
                     .AddElasticPool(manager =>
                         {
                             manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -162,7 +164,18 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
                             .WithShardDbNameProvider<SampleDbNameProvider>()
                     )
-                    .AddCustomFields()
+                    .AddCustomFields(cf =>
+                        cf.WithSearchHandler<EntitySearchAuthorizationHandler<Guid,
+                                EfPet, CustomFieldsSearchRequest>>()
+                            .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
+                            {
+                                de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
+                                    .WithMassTransit();
+                            }).AddControllers(controllers => controllers
+                                .WithChangeTrackingControllers()
+                                .WithRoute("/api/v1/ef-person/{personId}/pets/{petId}/custom-fields")
+                                .WithOpenApiGroupName("The Beautiful Sql Fur Babies Custom Fields")
+                                .WithOpenApiEntityName("Fur Babies Custom Field", "Fur Babies Custom Fields"))))
                     .AddCrud(crud => crud.WithSearchHandler<PetSearch>((pets, parameters) =>
                     {
                         if (!string.IsNullOrWhiteSpace(parameters.Search))

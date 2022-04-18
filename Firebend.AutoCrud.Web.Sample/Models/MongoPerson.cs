@@ -19,11 +19,14 @@ namespace Firebend.AutoCrud.Web.Sample.Models
             viewModel?.Body.CopyPropertiesTo(this);
         }
 
-        [Required] public string FirstName { get; set; }
+        [Required]
+        public string FirstName { get; set; }
 
-        [Required] public string LastName { get; set; }
+        [Required]
+        public string LastName { get; set; }
 
-        [AutoCrudIgnoreUpdate] public string IgnoreMe { get; set; }
+        [AutoCrudIgnoreUpdate]
+        public string IgnoreMe { get; set; }
 
         public bool IsDeleted { get; set; }
         public Guid Id { get; set; }

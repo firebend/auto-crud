@@ -78,7 +78,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             throw new Exception();
         }
 
-        private async Task<TReadResponse> PostAsync(TCreateRequest model)
+        public async Task<TReadResponse> PostAsync(TCreateRequest model)
         {
             var response = await Url.WithHeader("Authorization",
                     $"Bearer {_token}")
@@ -828,9 +828,9 @@ namespace Firebend.AutoCrud.IntegrationTests
 
         private string AuthenticationUrl => $"{BaseUrl}/token";
         protected abstract Task<UserInfoPostDto> GenerateAuthenticateRequestAsync();
-        private string _token;
+        protected string _token;
 
-        private async Task Authenticate(UserInfoPostDto userInfo = null)
+        public async Task Authenticate(UserInfoPostDto userInfo = null)
         {
             var authenticateRequest = userInfo ?? await GenerateAuthenticateRequestAsync();
             var response = await AuthenticationUrl.PostJsonAsync(authenticateRequest);
@@ -846,7 +846,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             _token = responseModel.Token;
         }
 
-        protected async Task EndToEndAsync(Func<TReadResponse, string> searchSelector)
+        protected async Task EndToEndAsync(Func<TReadResponse, string> searchSelector, bool doExport = true)
         {
             await Authenticate();
             var createRequest = await GenerateCreateRequestAsync();
@@ -864,7 +864,10 @@ namespace Firebend.AutoCrud.IntegrationTests
             await GetAsync(result.Id);
             await PageAsync();
             await SearchAsync(search);
-            await ExportToCsvAsync();
+            if (doExport)
+            {
+                await ExportToCsvAsync();
+            }
 
             var changes = await GetChangeTrackingAsync(result.Id, 3);
 
