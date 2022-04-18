@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Firebend.AutoCrud.Io.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
