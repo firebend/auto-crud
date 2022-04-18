@@ -81,7 +81,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         public async Task<TReadResponse> PostAsync(TCreateRequest model)
         {
             var response = await Url.WithHeader("Authorization",
-                    $"Bearer {_token}")
+                    $"Bearer {Token}")
                 .PostJsonAsync(model);
 
             response.Should().NotBeNull();
@@ -107,7 +107,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var response = await Url.WithHeader("Authorization",
-                        $"Bearer {_token}")
+                        $"Bearer {Token}")
                     .PostJsonAsync(model);
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
@@ -122,7 +122,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         private async Task<TReadResponse> GetAsync(TKey key)
         {
             var response = await $"{Url}/{key}".WithHeader("Authorization",
-                $"Bearer {_token}").GetAsync();
+                $"Bearer {Token}").GetAsync();
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
 
@@ -141,7 +141,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var response = await $"{Url}/{key}".WithHeader("Authorization",
-                    $"Bearer {_token}").GetAsync();
+                    $"Bearer {Token}").GetAsync();
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -159,7 +159,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             key.Should().NotBeSameAs(default(TKey));
 
             var response = await $"{Url}/{key}".WithHeader("Authorization",
-                $"Bearer {_token}").PutJsonAsync(entity);
+                $"Bearer {Token}").PutJsonAsync(entity);
 
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
@@ -181,7 +181,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var response = await $"{Url}/{key}".WithHeader("Authorization",
-                    $"Bearer {_token}").PutJsonAsync(entity);
+                    $"Bearer {Token}").PutJsonAsync(entity);
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -196,7 +196,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             //act
             var response = await Url.WithHeader("Authorization",
-                    $"Bearer {_token}")
+                    $"Bearer {Token}")
                 .SetQueryParam("pagenumber", 1)
                 .SetQueryParam("pageSize", 10)
                 .SetQueryParam("doCount", true)
@@ -221,7 +221,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             //act
             var response = await Url.WithHeader("Authorization",
-                    $"Bearer {_token}")
+                    $"Bearer {Token}")
                 .SetQueryParam("pagenumber", 1)
                 .SetQueryParam("pageSize", 10)
                 .SetQueryParam("doCount", true)
@@ -252,7 +252,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             async Task<(IFlurlResponse response, EntityPagedResponse<TReadResponse> responseModel)> DoSearch()
             {
                 var searchResponse = await Url.WithHeader("Authorization",
-                        $"Bearer {_token}")
+                        $"Bearer {Token}")
                     .SetQueryParam("pagenumber", 1)
                     .SetQueryParam("pageSize", 10)
                     .SetQueryParam("search", search)
@@ -283,7 +283,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             async Task<(IFlurlResponse response, EntityPagedResponse<TReadResponse> responseModel)> DoSearch()
             {
                 var searchResponse = await Url.WithHeader("Authorization",
-                        $"Bearer {_token}")
+                        $"Bearer {Token}")
                     .SetQueryParam("pagenumber", 1)
                     .SetQueryParam("pageSize", 10)
                     .SetQueryParam("search", search)
@@ -321,7 +321,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             id.Should().NotBe(default(TKey));
 
             var deleteResponse = await $"{Url}/{id}".WithHeader("Authorization",
-                $"Bearer {_token}").DeleteAsync();
+                $"Bearer {Token}").DeleteAsync();
 
             deleteResponse.Should().NotBeNull();
             deleteResponse.StatusCode.Should().Be(200);
@@ -342,7 +342,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var response = await $"{Url}/{id}".WithHeader("Authorization",
-                    $"Bearer {_token}").DeleteAsync();
+                    $"Bearer {Token}").DeleteAsync();
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -359,7 +359,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             id.Should().NotBe(default(TKey));
 
             var patchJsonResponse = await $"{Url}/{id}".WithHeader("Authorization",
-                $"Bearer {_token}").PatchJsonAsync(patchDocument);
+                $"Bearer {Token}").PatchJsonAsync(patchDocument);
             patchJsonResponse.Should().NotBeNull();
             patchJsonResponse.StatusCode.Should().Be(200);
 
@@ -382,7 +382,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var response = await $"{Url}/{id}".WithHeader("Authorization",
-                    $"Bearer {_token}").PatchJsonAsync(patchDocument);
+                    $"Bearer {Token}").PatchJsonAsync(patchDocument);
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -396,7 +396,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         private async Task ExportToCsvAsync()
         {
             var response = await $"{Url}/export/csv".WithHeader("Authorization",
-                    $"Bearer {_token}")
+                    $"Bearer {Token}")
                 .SetQueryParam("pagenumber", 1.ToString())
                 .SetQueryParam("pageSize", 10.ToString())
                 .SetQueryParam("doCount", true.ToString())
@@ -435,7 +435,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         private async Task ExportToCsvUnauthorizedAsync(TKey unauthorizedId)
         {
             var response = await $"{Url}/export/csv".WithHeader("Authorization",
-                    $"Bearer {_token}")
+                    $"Bearer {Token}")
                 .SetQueryParam("pagenumber", 1.ToString())
                 .SetQueryParam("pageSize", 10.ToString())
                 .SetQueryParam("doCount", true.ToString())
@@ -462,7 +462,7 @@ namespace Firebend.AutoCrud.IntegrationTests
                 responseModel)> DoSearch()
             {
                 var httpResponse = await $"{Url}/{key}/changes".WithHeader("Authorization",
-                        $"Bearer {_token}")
+                        $"Bearer {Token}")
                     .SetQueryParam("pagenumber", 1)
                     .SetQueryParam("pageSize", 10)
                     .SetQueryParam("doCount", true)
@@ -498,7 +498,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var response = await $"{Url}/{key}/changes".WithHeader("Authorization",
-                        $"Bearer {_token}")
+                        $"Bearer {Token}")
                     .SetQueryParam("pagenumber", 1)
                     .SetQueryParam("pageSize", 10)
                     .SetQueryParam("doCount", true)
@@ -519,7 +519,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         private async Task<MultiResult<TReadResponse>> PostMultipleAsync(IEnumerable<TCreateRequest> models)
         {
             var response = await $"{Url}/multiple".WithHeader("Authorization",
-                $"Bearer {_token}").PostJsonAsync(models);
+                $"Bearer {Token}").PostJsonAsync(models);
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
 
@@ -546,7 +546,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var response = await $"{Url}/multiple".WithHeader("Authorization",
-                    $"Bearer {_token}").PostJsonAsync(models);
+                    $"Bearer {Token}").PostJsonAsync(models);
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -564,7 +564,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             var faked = CustomFieldFaker.Faker.Generate();
             var response = await $"{Url}/{entityId}/custom-fields".WithHeader("Authorization",
-                $"Bearer {_token}").PostJsonAsync(faked);
+                $"Bearer {Token}").PostJsonAsync(faked);
 
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
@@ -596,7 +596,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             {
                 var faked = CustomFieldFaker.Faker.Generate();
                 var response = await $"{Url}/{entityId}/custom-fields".WithHeader("Authorization",
-                    $"Bearer {_token}").PostJsonAsync(faked);
+                    $"Bearer {Token}").PostJsonAsync(faked);
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -614,7 +614,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             var faked = CustomFieldFaker.Faker.Generate();
             var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                $"Bearer {_token}").PutJsonAsync(faked);
+                $"Bearer {Token}").PutJsonAsync(faked);
 
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
@@ -644,7 +644,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             {
                 var faked = CustomFieldFaker.Faker.Generate();
                 var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                    $"Bearer {_token}").PutJsonAsync(faked);
+                    $"Bearer {Token}").PutJsonAsync(faked);
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -664,7 +664,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             var patch = PatchFaker.MakeReplacePatch<CustomFieldViewModel, string>(x => x.Value, color);
 
             var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                $"Bearer {_token}").PatchJsonAsync(patch);
+                $"Bearer {Token}").PatchJsonAsync(patch);
 
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
@@ -698,7 +698,7 @@ namespace Firebend.AutoCrud.IntegrationTests
                 var patch = PatchFaker.MakeReplacePatch<CustomFieldViewModel, string>(x => x.Value, color);
 
                 var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                    $"Bearer {_token}").PatchJsonAsync(patch);
+                    $"Bearer {Token}").PatchJsonAsync(patch);
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -718,7 +718,7 @@ namespace Firebend.AutoCrud.IntegrationTests
                 DoSearch()
             {
                 var httpResponse = await $"{Url}/custom-fields/".WithHeader("Authorization",
-                        $"Bearer {_token}")
+                        $"Bearer {Token}")
                     .SetQueryParam("pageNumber", "1")
                     .SetQueryParam("pageSize", "10")
                     .SetQueryParam("key", key)
@@ -757,7 +757,7 @@ namespace Firebend.AutoCrud.IntegrationTests
                 DoSearch()
             {
                 var httpResponse = await $"{Url}/custom-fields/".WithHeader("Authorization",
-                        $"Bearer {_token}")
+                        $"Bearer {Token}")
                     .SetQueryParam("pageNumber", "1")
                     .SetQueryParam("pageSize", "10")
                     .SetQueryParam("key", key)
@@ -786,7 +786,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         private async Task DeleteCustomFieldsAsync(TKey entityId, Guid id)
         {
             var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                $"Bearer {_token}").DeleteAsync();
+                $"Bearer {Token}").DeleteAsync();
 
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
@@ -812,7 +812,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             try
             {
                 var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                    $"Bearer {_token}").DeleteAsync();
+                    $"Bearer {Token}").DeleteAsync();
                 Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
             }
             catch (FlurlHttpException e)
@@ -828,7 +828,7 @@ namespace Firebend.AutoCrud.IntegrationTests
 
         private string AuthenticationUrl => $"{BaseUrl}/token";
         protected abstract Task<UserInfoPostDto> GenerateAuthenticateRequestAsync();
-        protected string _token;
+        protected string Token { get; set; }
 
         protected async Task Authenticate(UserInfoPostDto userInfo = null)
         {
@@ -843,7 +843,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             responseModel.Should().NotBeNull();
             responseModel.Token.Should().NotBeNull();
 
-            _token = responseModel.Token;
+            Token = responseModel.Token;
         }
 
         protected async Task EndToEndAsync(Func<TReadResponse, string> searchSelector, bool doExport = true)

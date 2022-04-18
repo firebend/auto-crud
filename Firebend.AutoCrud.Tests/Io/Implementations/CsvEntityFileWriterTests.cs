@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,12 +6,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using DocumentFormat.OpenXml.Bibliography;
 using Firebend.AutoCrud.Io.Implementations;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.ObjectModel;
 using Moq;
 using NUnit.Framework;
 
@@ -103,7 +101,7 @@ public class CsvEntityFileWriterTests
 
         var fields = fileFieldAutoMapper.MapOutput<Parent>();
         var parents = Fixture.CreateMany<Parent>(3).ToList();
-        parents[0].Children = new List<Child>{ parents[0].Children[0] };
+        parents[0].Children = new List<Child> { parents[0].Children[0] };
         parents[1].Children = null;
         parents[2].Children = new List<Child>();
 

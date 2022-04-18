@@ -82,7 +82,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         private async Task<string> GetExportAsync(string nickName)
         {
             var response = await $"{Url}/export/csv".WithHeader("Authorization",
-                    $"Bearer {_token}")
+                    $"Bearer {Token}")
                 .SetQueryParam("pagenumber", 1.ToString())
                 .SetQueryParam("pageSize", 10.ToString())
                 .SetQueryParam("doCount", true.ToString())
@@ -106,7 +106,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             faked.Email = null;
             faked.OtherEmail = null;
             var response = await Url.WithHeader("Authorization",
-                    $"Bearer {_token}")
+                    $"Bearer {Token}")
                 .PostJsonAsync(faked);
 
             var responseModel = await response.GetJsonAsync<GetPersonViewModel>();
@@ -118,7 +118,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             var faked = PetFaker.Faker.Generate();
             faked.DataAuth.UserEmails = new[] { "developer@test.com" };
             var response = await $"{Url}/{personId}/pets".WithHeader("Authorization",
-                    $"Bearer {_token}")
+                    $"Bearer {Token}")
                 .PostJsonAsync(faked);
 
             var responseModel = await response.GetJsonAsync<GetPetViewModel>();
@@ -129,7 +129,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         {
             var faked = CustomFieldFaker.Faker.Generate();
             var response = await $"{Url}/{personId}/pets/{petId}/custom-fields".WithHeader("Authorization",
-                $"Bearer {_token}").PostJsonAsync(faked);
+                $"Bearer {Token}").PostJsonAsync(faked);
 
             var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
             return responseModel;

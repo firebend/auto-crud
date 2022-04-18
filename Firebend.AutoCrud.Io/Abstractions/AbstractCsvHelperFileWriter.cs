@@ -1,6 +1,4 @@
-
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -127,7 +125,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
 
                     if (listProperty != null)
                     {
-                        var wasSubRowAdded = await (Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this, new[]{ listProperty });
+                        var wasSubRowAdded = await (Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this, new[] { listProperty });
                         hasAddedSubRows = wasSubRowAdded || hasAddedSubRows;
                     }
                 }
