@@ -79,7 +79,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             Regex.Matches(exportResult, $"\r\n\r\n{customFieldHeader}").Count.Should().Be(1);
         }
 
-        public async Task<string> GetExportAsync(string nickName)
+        private async Task<string> GetExportAsync(string nickName)
         {
             var response = await $"{Url}/export/csv".WithHeader("Authorization",
                     $"Bearer {_token}")
@@ -99,7 +99,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             return responseString;
         }
 
-        public async Task<GetPersonViewModel> CreatePersonAsync(string nickName)
+        private async Task<GetPersonViewModel> CreatePersonAsync(string nickName)
         {
             var faked = await GenerateCreateRequestAsync();
             faked.NickName = nickName;
@@ -113,7 +113,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             return responseModel;
         }
 
-        public async Task<GetPetViewModel> CreatePetAsync(Guid personId)
+        private async Task<GetPetViewModel> CreatePetAsync(Guid personId)
         {
             var faked = PetFaker.Faker.Generate();
             faked.DataAuth.UserEmails = new[] { "developer@test.com" };
@@ -125,7 +125,7 @@ namespace Firebend.AutoCrud.IntegrationTests
             return responseModel;
         }
 
-        public async Task<CustomFieldViewModelRead> CreatePetCustomFieldAsync(Guid personId, Guid petId)
+        private async Task<CustomFieldViewModelRead> CreatePetCustomFieldAsync(Guid personId, Guid petId)
         {
             var faked = CustomFieldFaker.Faker.Generate();
             var response = await $"{Url}/{personId}/pets/{petId}/custom-fields".WithHeader("Authorization",

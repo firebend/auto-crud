@@ -830,7 +830,7 @@ namespace Firebend.AutoCrud.IntegrationTests
         protected abstract Task<UserInfoPostDto> GenerateAuthenticateRequestAsync();
         protected string _token;
 
-        public async Task Authenticate(UserInfoPostDto userInfo = null)
+        protected async Task Authenticate(UserInfoPostDto userInfo = null)
         {
             var authenticateRequest = userInfo ?? await GenerateAuthenticateRequestAsync();
             var response = await AuthenticationUrl.PostJsonAsync(authenticateRequest);
