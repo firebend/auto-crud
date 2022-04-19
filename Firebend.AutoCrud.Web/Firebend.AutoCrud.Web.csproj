@@ -24,8 +24,8 @@
 
     <ItemGroup>
       <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-      <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="6.0.2" />
-      <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.2.3" />
+      <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="6.0.4" />
+      <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.3.0" />
       <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
     </ItemGroup>
 
