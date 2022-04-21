@@ -2,9 +2,9 @@ using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Interfaces
 {
-    public interface IFileFieldAutoMapper<T>
-        where T : class
+    public interface IFileFieldAutoMapper
     {
-        IFileFieldWrite<T>[] MapOutput();
+        IFileFieldWrite<T>[] MapOutput<T>()
+            where T : class;
     }
 }

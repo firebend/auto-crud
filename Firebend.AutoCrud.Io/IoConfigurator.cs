@@ -30,17 +30,19 @@ namespace Firebend.AutoCrud.Io
         {
             Builder.ExportType = typeof(TOut);
             Builder.WithRegistration<IEntityExportService<TOut>, EntityExportService<TOut>>();
-            Builder.WithRegistration<IFileFieldAutoMapper<TOut>, FileFieldAutoMapper<TOut>>();
+            Builder.WithRegistration<IFileFieldAutoMapper, FileFieldAutoMapper>();
             Builder.WithRegistration<IFileFieldWriteFilter<TOut>, AbstractDefaultFileFileWriteFilter<TOut>>();
+            Builder.WithRegistration<IFileFieldWriteFilterFactory, FileFieldWriteFilterFactory>();
         }
 
         private void RemoveExportEntityRegistrations<TOut>()
             where TOut : class
         {
             Builder.Registrations.Remove(typeof(IEntityExportService<TOut>));
-            Builder.Registrations.Remove(typeof(IFileFieldAutoMapper<TOut>));
+            Builder.Registrations.Remove(typeof(IFileFieldAutoMapper));
             Builder.Registrations.Remove(typeof(IFileFieldWriteFilter<TOut>));
             Builder.Registrations.Remove(typeof(IEntityExportMapper<TOut, TOut>));
+            Builder.Registrations.Remove(typeof(IFileFieldWriteFilterFactory));
         }
 
         public IoConfigurator<TBuilder, TKey, TEntity> WithMapper<TOut, TMapper>()

@@ -5,10 +5,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Io.Attributes;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
+using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {
@@ -16,22 +16,22 @@ namespace Firebend.AutoCrud.Io.Implementations
     {
         public static readonly ConcurrentDictionary<string, IFileFieldWrite<T>[]> Caches = new();
     }
-    public class FileFieldAutoMapper<T> : IFileFieldAutoMapper<T>
-        where T : class
+    public class FileFieldAutoMapper : IFileFieldAutoMapper
     {
-        private readonly IFileFieldWriteFilter<T> _filter;
+        private readonly IFileFieldWriteFilterFactory _filterFactory;
 
-        public FileFieldAutoMapper(IFileFieldWriteFilter<T> filter)
+        public FileFieldAutoMapper(IFileFieldWriteFilterFactory filterFactory)
         {
-            _filter = filter;
+            _filterFactory = filterFactory;
         }
 
-        private IEnumerable<IFileFieldWrite<T>> MapOutputImpl()
+        private IEnumerable<IFileFieldWrite<T>> MapOutputImpl<T>()
         {
             var properties = typeof(T).GetProperties();
 
             var hasAnyExportAttributes = properties.Any(x => x.GetCustomAttribute<ExportAttribute>() != null);
 
+            var filter = _filterFactory.GetFilter<T>();
             var index = 0;
 
             foreach (var propertyInfo in properties)
@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.Io.Implementations
                                 ?? propertyInfo.Name
                 };
 
-                if (!_filter.ShouldExport(field))
+                if (!(filter?.ShouldExport(field) ?? true) || propertyInfo.PropertyType.IsCollection())
                 {
                     continue;
                 }
@@ -67,9 +67,10 @@ namespace Firebend.AutoCrud.Io.Implementations
             }
         }
 
-        public IFileFieldWrite<T>[] MapOutput() => FileFieldAutoMapperCaches<T>
+        public IFileFieldWrite<T>[] MapOutput<T>()
+            where T : class => FileFieldAutoMapperCaches<T>
             .Caches
             .GetOrAdd(typeof(T).FullName, static (_, arg) =>
-                arg.MapOutputImpl().OrderBy(x => x.FieldIndex).ToArray(), this);
+                arg.MapOutputImpl<T>().OrderBy(x => x.FieldIndex).ToArray(), this);
     }
 }

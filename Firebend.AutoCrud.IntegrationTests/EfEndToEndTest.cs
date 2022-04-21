@@ -1,9 +1,13 @@
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bogus;
 using Firebend.AutoCrud.IntegrationTests.Fakers;
+using Firebend.AutoCrud.IntegrationTests.Models;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Firebend.JsonPatch.Extensions;
+using FluentAssertions;
+using Flurl.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -20,7 +24,117 @@ namespace Firebend.AutoCrud.IntegrationTests
         protected override string Url => $"{BaseUrl}/v1/ef-person";
 
         [TestMethod]
-        public async Task Ef_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
+        public async Task Ef_Api_Should_Work() => await EndToEndAsync(x => x.FirstName, false);
+
+        [TestMethod]
+        public async Task Export_Should_Work()
+        {
+
+            await Authenticate(await GenerateAuthenticateRequestAsync());
+            var nickName = Guid.NewGuid().ToString();
+
+            var personHeader = "FirstName,LastName,FullName,Id,CreatedDate,ModifiedDate";
+            var petHeader = "Id,EfPersonId,PetName,PetType,CreatedDate,ModifiedDate";
+            var customFieldHeader = "EntityId,Key,Value,Id,CreatedDate,ModifiedDate";
+
+            var exportResult = await GetExportAsync(nickName);
+            exportResult.Should().NotContain(nickName);
+
+            var person1 = await CreatePersonAsync(nickName);
+            exportResult = await GetExportAsync(nickName);
+            exportResult.Should().Contain(person1.Id.ToString());
+            Regex.Matches(exportResult, personHeader).Count.Should().Be(1);
+            Regex.Matches(exportResult, $"\r\n\r\n\r\n{personHeader}").Count.Should().Be(0);
+            Regex.Matches(exportResult, petHeader).Count.Should().Be(0);
+            Regex.Matches(exportResult, customFieldHeader).Count.Should().Be(0);
+
+            // get export check for two people and one with pet
+            var person2 = await CreatePersonAsync(nickName);
+            var pet1 = await CreatePetAsync(person2.Id);
+            exportResult = await GetExportAsync(nickName);
+            exportResult.Should().Contain(person1.Id.ToString());
+            exportResult.Should().Contain(person2.Id.ToString());
+            exportResult.Should().Contain(pet1.Id.ToString());
+            Regex.Matches(exportResult, personHeader).Count.Should().Be(2);
+            Regex.Matches(exportResult, $"\r\n\r\n\r\n{personHeader}").Count.Should().Be(1);
+            Regex.Matches(exportResult, $"\r\n\r\n{petHeader}").Count.Should().Be(1);
+            Regex.Matches(exportResult, customFieldHeader).Count.Should().Be(0);
+
+            // get export check for three, one with two pets, and one with pet plus custom fields
+            var pet3 = await CreatePetAsync(person2.Id);
+            var person3 = await CreatePersonAsync(nickName);
+            var pet2 = await CreatePetAsync(person3.Id);
+            var customField = await CreatePetCustomFieldAsync(person3.Id, pet2.Id);
+            exportResult = await GetExportAsync(nickName);
+            exportResult.Should().Contain(person1.Id.ToString());
+            exportResult.Should().Contain(person2.Id.ToString());
+            exportResult.Should().Contain(person3.Id.ToString());
+            exportResult.Should().Contain(pet1.Id.ToString());
+            exportResult.Should().Contain(pet2.Id.ToString());
+            exportResult.Should().Contain(pet3.Id.ToString());
+            exportResult.Should().Contain(customField.Id.ToString());
+            Regex.Matches(exportResult, personHeader).Count.Should().Be(3);
+            Regex.Matches(exportResult, $"\r\n\r\n\r\n{personHeader}").Count.Should().Be(2);
+            Regex.Matches(exportResult, $"\r\n\r\n{petHeader}").Count.Should().Be(2);
+            Regex.Matches(exportResult, $"\r\n\r\n{customFieldHeader}").Count.Should().Be(1);
+        }
+
+        private async Task<string> GetExportAsync(string nickName)
+        {
+            var response = await $"{Url}/export/csv".WithHeader("Authorization",
+                    $"Bearer {Token}")
+                .SetQueryParam("pagenumber", 1.ToString())
+                .SetQueryParam("pageSize", 10.ToString())
+                .SetQueryParam("doCount", true.ToString())
+                .SetQueryParam("fileName", "temp")
+                .SetQueryParam("nickName", nickName)
+                .GetAsync();
+
+            //assert
+            response.Should().NotBeNull();
+            response.StatusCode.Should().Be(200);
+
+            var responseString = await response.GetStringAsync();
+            responseString.Should().NotBeNullOrWhiteSpace();
+            return responseString;
+        }
+
+        private async Task<GetPersonViewModel> CreatePersonAsync(string nickName)
+        {
+            var faked = await GenerateCreateRequestAsync();
+            faked.NickName = nickName;
+            faked.Email = null;
+            faked.OtherEmail = null;
+            var response = await Url.WithHeader("Authorization",
+                    $"Bearer {Token}")
+                .PostJsonAsync(faked);
+
+            var responseModel = await response.GetJsonAsync<GetPersonViewModel>();
+            return responseModel;
+        }
+
+        private async Task<GetPetViewModel> CreatePetAsync(Guid personId)
+        {
+            var faked = PetFaker.Faker.Generate();
+            faked.DataAuth.UserEmails = new[] { "developer@test.com" };
+            var response = await $"{Url}/{personId}/pets".WithHeader("Authorization",
+                    $"Bearer {Token}")
+                .PostJsonAsync(faked);
+
+            var responseModel = await response.GetJsonAsync<GetPetViewModel>();
+            return responseModel;
+        }
+
+        private async Task<CustomFieldViewModelRead> CreatePetCustomFieldAsync(Guid personId, Guid petId)
+        {
+            var faked = CustomFieldFaker.Faker.Generate();
+            var response = await $"{Url}/{personId}/pets/{petId}/custom-fields".WithHeader("Authorization",
+                $"Bearer {Token}").PostJsonAsync(faked);
+
+            var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+            return responseModel;
+        }
+
 
         protected override Task<UserInfoPostDto> GenerateAuthenticateRequestAsync()
             => Task.FromResult(new UserInfoPostDto { Email = "developer@test.com", Password = "password" });
