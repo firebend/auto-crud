@@ -125,4 +125,6 @@ jobs:
           branch: main
           unprotect_reviews: true
           tags: true
+          force: true
+          sleep: 10
 
