@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          token: ${{ secrets.PUSH_TO_PROTECTED_BRANCH }}
           fetch-depth: '0'
 
       - name: Install Versionize
@@ -123,8 +124,8 @@ jobs:
         with:
           token: ${{ secrets.PUSH_TO_PROTECTED_BRANCH }}
           branch: main
-          unprotect_reviews: true
           tags: true
           force: true
+          unprotect_reviews: true
           sleep: 10
 
