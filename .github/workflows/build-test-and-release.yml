@@ -127,5 +127,5 @@ jobs:
           tags: true
           force: true
           unprotect_reviews: true
-          sleep: 10
+          sleep: 5
 
