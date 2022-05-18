@@ -35,7 +35,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
             foreach (var entityType in entityTypes)
             {
                 var entityKey = entityType.GetInterfaces()
-                    .Where(x => x.IsGenericType)
+                    .Where(x => x.IsGenericType && x.GetInterfaces().Length == 0)
                     .FirstOrDefault(x => x.IsAssignableToGenericType(typeof(IEntity<>)))
                     ?.GetGenericArguments()
                     .FirstOrDefault();
@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
                 if (isTenantEntity)
                 {
                     tenantKeyType = entityType.GetInterfaces()
-                        .Where(x => x.IsGenericType)
+                        .Where(x => x.IsGenericType && x.GetInterfaces().Length == 0)
                         .FirstOrDefault(x => x.IsAssignableToGenericType(typeof(ITenantEntity<>)))
                         ?.GetGenericArguments()
                         .FirstOrDefault();
