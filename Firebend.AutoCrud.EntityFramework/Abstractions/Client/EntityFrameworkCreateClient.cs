@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _exceptionHandler = exceptionHandler;
         }
 
-        protected virtual Task<TEntity> OnBeforeAddAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken) 
+        protected virtual Task<TEntity> OnBeforeAddAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
             => Task.FromResult(entity);
 
         protected virtual async Task<TEntity> AddInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
