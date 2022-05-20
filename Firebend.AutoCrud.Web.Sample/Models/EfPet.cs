@@ -31,9 +31,9 @@ namespace Firebend.AutoCrud.Web.Sample.Models
 
         public EfPerson Person { get; set; }
 
-        [Required][MaxLength(205)] public string PetName { get; set; }
+        [Required] [MaxLength(205)] public string PetName { get; set; }
 
-        [Required][MaxLength(250)] public string PetType { get; set; }
+        [Required] [MaxLength(250)] public string PetType { get; set; }
 
         public DateTimeOffset CreatedDate { get; set; }
         public DateTimeOffset ModifiedDate { get; set; }
