@@ -60,6 +60,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
+        protected virtual Task<TEntity> OnBeforeAddAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
+            => Task.FromResult(entity);
+
         protected virtual async Task<TEntity> UpdateInternalAsync(TKey key,
             JsonPatchDocument<TEntity> jsonPatchDocument,
             IEntityTransaction entityTransaction,
@@ -136,6 +139,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 }
 
                 var set = GetDbSet(context);
+
+                entity = await OnBeforeAddAsync(context, entity, transaction, cancellationToken);
 
                 var entry = await set
                     .AddAsync(entity, cancellationToken)
