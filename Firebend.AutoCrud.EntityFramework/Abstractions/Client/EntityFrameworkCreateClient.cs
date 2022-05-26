@@ -28,6 +28,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _exceptionHandler = exceptionHandler;
         }
 
+        protected virtual Task<TEntity> OnBeforeAddAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
+            => Task.FromResult(entity);
+
         protected virtual async Task<TEntity> AddInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
         {
             await using var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
@@ -41,6 +44,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 modified.CreatedDate = now;
                 modified.ModifiedDate = now;
             }
+
+            entity = await OnBeforeAddAsync(context, entity, transaction, cancellationToken);
 
             var entry = await set
                 .AddAsync(entity, cancellationToken)
@@ -73,7 +78,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public virtual Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
             => AddInternalAsync(entity, transaction, cancellationToken);
 
-        private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+        protected Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher is null or DefaultEntityDomainEventPublisher)
             {
@@ -83,7 +88,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
 
             return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, transaction, cancellationToken);
-
         }
     }
 }

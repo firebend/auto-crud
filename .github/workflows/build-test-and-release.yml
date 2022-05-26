@@ -10,8 +10,9 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
+          token: ${{ secrets.PUSH_TO_PROTECTED_BRANCH }}
           fetch-depth: '0'
 
       - name: Install Versionize
@@ -32,17 +33,21 @@ jobs:
         run: echo "Skipping publishing. No release required."
 
       - name: Setup .NET Core
+        if: steps.versionize.outcome == 'success'
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.100
 
       - name: Install dependencies
+        if: steps.versionize.outcome == 'success'
         run: dotnet restore Firebend.AutoCrud.sln
 
       - name: Build
+        if: steps.versionize.outcome == 'success'
         run: dotnet build Firebend.AutoCrud.sln --configuration Release --no-restore
 
       - name: Test
+        if: steps.versionize.outcome == 'success'
         run: dotnet test Firebend.AutoCrud.sln --logger GitHubActions --no-restore --verbosity normal --filter FullyQualifiedName\!~IntegrationTests
 
       - name: Pack Core
@@ -113,10 +118,14 @@ jobs:
         if: steps.versionize.outcome == 'success'
         run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
-      - name: Push changes to GitHub
+      - name: Push version changes
         if: steps.versionize.outcome == 'success'
-        uses: ad-m/github-push-action@master
+        uses: CasperWA/push-protected@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          token: ${{ secrets.PUSH_TO_PROTECTED_BRANCH }}
+          branch: main
           tags: true
+          force: true
+          unprotect_reviews: true
+          sleep: 5
+

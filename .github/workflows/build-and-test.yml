@@ -3,7 +3,7 @@ name: Build and test
 on:
   push:
     branches:
-      - '!main'
+      - 'push-action/**'
   pull_request:
 
 jobs:
