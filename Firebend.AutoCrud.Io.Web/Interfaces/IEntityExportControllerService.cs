@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Firebend.AutoCrud.Io.Web.Interfaces
 {
     public interface IEntityExportControllerService<TKey, TEntity, TSearch, TMapped> : IDisposable
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest
         where TKey : struct
         where TEntity : IEntity<TKey>
         where TMapped : class

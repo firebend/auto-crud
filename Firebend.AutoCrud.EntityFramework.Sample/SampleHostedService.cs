@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
         private readonly IEntityCreateService<Guid, Person> _createService;
         private readonly ILogger<SampleHostedService> _logger;
         private readonly IPersonReadRepository _readService;
-        private readonly IEntitySearchService<Guid, Person, EntitySearchRequest> _searchService;
+        private readonly IEntitySearchService<Guid, Person, EntityRequest> _searchService;
         private readonly JsonSerializer _serializer;
         private readonly IEntityUpdateService<Guid, Person> _updateService;
 
@@ -34,7 +34,7 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
                 _createService = scope.ServiceProvider.GetService<IEntityCreateService<Guid, Person>>();
                 _updateService = scope.ServiceProvider.GetService<IEntityUpdateService<Guid, Person>>();
                 _readService = scope.ServiceProvider.GetService<IPersonReadRepository>();
-                _searchService = scope.ServiceProvider.GetService<IEntitySearchService<Guid, Person, EntitySearchRequest>>();
+                _searchService = scope.ServiceProvider.GetService<IEntitySearchService<Guid, Person, EntityRequest>>();
 
                 var context = scope.ServiceProvider.GetService<AppDbContext>();
 

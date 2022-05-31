@@ -15,7 +15,7 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Error_When_PageNumber(int? pageNumber)
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntitySearchRequest { PageNumber = pageNumber };
+        var searchRequest = new ActiveModifiedEntityRequest { PageNumber = pageNumber };
 
         //act
         var searchResult = searchRequest.ValidateSearchRequest(10);
@@ -33,7 +33,7 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Error_When_PageSize_Is_Less_Then_Or_Equal_0(int? pageSize)
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntitySearchRequest { PageNumber = 1, PageSize = pageSize };
+        var searchRequest = new ActiveModifiedEntityRequest { PageNumber = 1, PageSize = pageSize };
 
         //act
         var searchResult = searchRequest.ValidateSearchRequest(10);
@@ -48,7 +48,7 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Error_When_CreateStartDate_Is_After_ModifiedStartDate()
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntitySearchRequest { PageNumber = 1, PageSize = 3 };
+        var searchRequest = new ActiveModifiedEntityRequest { PageNumber = 1, PageSize = 3 };
         searchRequest.CreatedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00");
         searchRequest.ModifiedStartDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00");
 
@@ -65,7 +65,7 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Error_When_CreatedStartDate_Is_After_CreatedEndDate()
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntitySearchRequest { PageNumber = 1, PageSize = 3 };
+        var searchRequest = new ActiveModifiedEntityRequest { PageNumber = 1, PageSize = 3 };
         searchRequest.CreatedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00");
         searchRequest.CreatedEndDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00");
 
@@ -82,7 +82,7 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Error_When_ModifiedStartDate_Is_After_ModifiedEndDate()
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntitySearchRequest { PageNumber = 1, PageSize = 3 };
+        var searchRequest = new ActiveModifiedEntityRequest { PageNumber = 1, PageSize = 3 };
         searchRequest.ModifiedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00");
         searchRequest.ModifiedEndDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00");
 
@@ -101,7 +101,7 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Succeed(int? pageSize, int? pageNumber, int maxPageSize)
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntitySearchRequest { PageSize = pageSize, PageNumber = pageNumber };
+        var searchRequest = new ActiveModifiedEntityRequest { PageSize = pageSize, PageNumber = pageNumber };
 
         //act
         var searchResult = searchRequest.ValidateSearchRequest(maxPageSize);

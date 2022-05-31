@@ -2,11 +2,15 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Models.Searching
 {
-    public class ActiveEntitySearchRequest : EntitySearchRequest, IActiveEntitySearchRequest
+    public class ActiveEntityRequest : EntityRequest, IActiveEntitySearchRequest
     {
-        /// <summary>
-        /// True if including for deleted entities. False for including active entities. Null for including all entities.
-        /// </summary>
+        /// <inheritdoc />
         public bool? IsDeleted { get; set; }
+    }
+
+    public class ActiveEntitySearchRequest : ActiveEntityRequest, IFullTextSearchRequest
+    {
+        /// <inheritdoc />
+        public string Search { get; set; }
     }
 }

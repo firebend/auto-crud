@@ -3,31 +3,25 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Models.Searching
 {
-    public class EntitySearchRequest : IEntitySearchRequest
+    public class EntityRequest : IOrderableSearchRequest
     {
-        /// <summary>
-        /// The starting page number for this search request.
-        /// </summary>
+        /// <inheritdoc />
         public int? PageNumber { get; set; }
 
-        /// <summary>
-        /// The total number of records per page
-        /// </summary>
+        /// <inheritdoc />
         public int? PageSize { get; set; }
 
-        /// <summary>
-        /// A list of strings representing an order by clause. example ?orderBy=lastName:desc&orderBy=firstName:desc.
-        /// </summary>
+        /// <inheritdoc />
         public string[] OrderBy { get; set; }
 
-        /// <summary>
-        /// The text string to search by
-        /// </summary>
-        public string Search { get; set; }
-
-        /// <summary>
-        /// True if a count of total records should be returned; otherwise, false.
-        /// </summary>
+        /// <inheritdoc />
         public bool? DoCount { get; set; } = true;
+    }
+
+    /// <inheritdoc />
+    public class EntitySearchRequest : EntityRequest, IFullTextSearchRequest
+    {
+        /// <inheritdoc />
+        public string Search { get; set; }
     }
 }

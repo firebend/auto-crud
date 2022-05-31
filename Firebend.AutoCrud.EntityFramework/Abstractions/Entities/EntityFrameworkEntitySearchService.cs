@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Entities
         IEntitySearchService<TKey, TEntity, TSearch>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest
     {
         private readonly IEntityFrameworkQueryClient<TKey, TEntity> _searchClient;
         private readonly IEntitySearchHandler<TKey, TEntity, TSearch> _searchHandler;

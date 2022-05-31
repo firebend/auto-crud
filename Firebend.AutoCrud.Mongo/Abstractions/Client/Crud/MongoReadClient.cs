@@ -112,7 +112,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,
             TSearchRequest searchRequest,
             CancellationToken cancellationToken = default)
-            where TSearchRequest : EntitySearchRequest
+            where TSearchRequest : IEntitySearchRequest
         {
             long? count = null;
 
@@ -122,7 +122,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 count = await RetryErrorAsync(() => queryable1.LongCountAsync(cancellationToken)).ConfigureAwait(false);
             }
 
-            queryable = _orderByHandler.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
+            if (searchRequest is IOrderableSearchRequest orderableSearchRequest)
+            {
+                queryable = _orderByHandler.OrderBy(queryable, orderableSearchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
+            }
 
             if (searchRequest?.PageNumber != null
                 && searchRequest.PageSize != null

@@ -10,7 +10,7 @@ using Firebend.AutoCrud.Core.Models.Searching;
 namespace Firebend.AutoCrud.Core.Abstractions.Services
 {
     public abstract class AbstractEntitySearchService<TEntity, TSearch> : BaseDisposable
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest
     {
         protected Expression<Func<TEntity, bool>> GetSearchExpression(TSearch search, Expression<Func<TEntity, bool>> customFilter = null)
         {

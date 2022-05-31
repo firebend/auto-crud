@@ -133,7 +133,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             TSearchRequest searchRequest,
             bool asNoTracking,
             CancellationToken cancellationToken = default)
-            where TSearchRequest : EntitySearchRequest
+            where TSearchRequest : IEntitySearchRequest
         {
             if (asNoTracking)
             {
@@ -147,9 +147,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 count = await queryable.CountAsync(cancellationToken);
             }
 
-            if (_orderByHandler != null)
+            if (_orderByHandler != null && searchRequest is IOrderableSearchRequest orderableSearchRequest)
             {
-                queryable = _orderByHandler.OrderBy(queryable, searchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
+                queryable = _orderByHandler.OrderBy(queryable, orderableSearchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
             }
 
             if (searchRequest?.PageNumber != null && searchRequest.PageSize != null && searchRequest.PageNumber > 0 && searchRequest.PageSize > 0)

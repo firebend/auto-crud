@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
     public abstract class AbstractEntityExportControllerService<TKey, TEntity, TSearch, TMapped> :
         BaseDisposable,
         IEntityExportControllerService<TKey, TEntity, TSearch, TMapped>
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest
         where TMapped : class
         where TEntity : class, IEntity<TKey>
         where TKey : struct

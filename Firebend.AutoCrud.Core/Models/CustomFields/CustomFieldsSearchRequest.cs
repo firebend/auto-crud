@@ -24,5 +24,8 @@ namespace Firebend.AutoCrud.Core.Models.CustomFields
         /// Value to search by
         /// </summary>
         public string Value { get; set; }
+
+        /// <inheritdoc />
+        public bool? DoCount { get; set; }
     }
 }

@@ -50,6 +50,6 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,
             TSearchRequest searchRequest,
             CancellationToken cancellationToken = default)
-            where TSearchRequest : EntitySearchRequest;
+            where TSearchRequest : IEntitySearchRequest;
     }
 }

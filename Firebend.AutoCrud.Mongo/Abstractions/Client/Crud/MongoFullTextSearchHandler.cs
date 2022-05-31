@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     public class MongoFullTextSearchHandler<TKey, TEntity, TSearch> : DefaultEntitySearchHandler<TKey, TEntity, TSearch>
         where TKey : struct
         where TEntity : IEntity<TKey>
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest, IFullTextSearchRequest
     {
         public MongoFullTextSearchHandler() : base((queryable, search) =>
         {
