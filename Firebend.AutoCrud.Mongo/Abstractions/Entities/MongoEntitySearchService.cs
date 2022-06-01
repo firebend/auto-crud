@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
         IEntitySearchService<TKey, TEntity, TSearch>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest
     {
         private readonly IMongoReadClient<TKey, TEntity> _readClient;
         private readonly IEntitySearchHandler<TKey, TEntity, TSearch> _searchHandler;

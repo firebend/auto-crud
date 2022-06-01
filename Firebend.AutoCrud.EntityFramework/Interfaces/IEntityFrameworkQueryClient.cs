@@ -56,6 +56,6 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces
             TSearchRequest searchRequest,
             bool asNoTracking,
             CancellationToken cancellationToken = default)
-            where TSearchRequest : EntitySearchRequest;
+            where TSearchRequest : IEntitySearchRequest;
     }
 }

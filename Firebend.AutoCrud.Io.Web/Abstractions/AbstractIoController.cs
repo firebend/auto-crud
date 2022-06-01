@@ -16,7 +16,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Io.Web.Abstractions
 {
     public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : AbstractEntityControllerBase
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest
         where TKey : struct
         where TEntity : IEntity<TKey>
         where TMapped : class

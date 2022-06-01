@@ -11,4 +11,9 @@ public interface IEntitySearchRequest
     /// The total number of records per page
     /// </summary>
     public int? PageSize { get; set; }
+
+    /// <summary>
+    /// True if a count of total records should be returned; otherwise, false.
+    /// </summary>
+    public bool? DoCount { get; set; }
 }

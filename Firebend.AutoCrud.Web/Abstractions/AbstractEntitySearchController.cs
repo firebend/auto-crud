@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
     public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch, TViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest
         where TViewModel : class
     {
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;

@@ -3,31 +3,27 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Models.Searching
 {
-    public class ActiveModifiedEntitySearchRequest : EntitySearchRequest, IActiveEntitySearchRequest, IModifiedEntitySearchRequest
+    public class ActiveModifiedEntityRequest : EntityRequest, IActiveEntitySearchRequest, IModifiedEntitySearchRequest
     {
-        /// <summary>
-        /// True if including for deleted entities. False for including active entities. Null for including all entities.
-        /// </summary>
+        /// <inheritdoc />
         public bool? IsDeleted { get; set; }
 
-        /// <summary>
-        /// The earliest time an entity was created.
-        /// </summary>
+        /// <inheritdoc />
         public DateTimeOffset? CreatedStartDate { get; set; }
 
-        /// <summary>
-        /// The latest time an entity was created.
-        /// </summary>
+        /// <inheritdoc />
         public DateTimeOffset? CreatedEndDate { get; set; }
 
-        /// <summary>
-        /// The earliest time an entity was modified.
-        /// </summary>
+        /// <inheritdoc />
         public DateTimeOffset? ModifiedStartDate { get; set; }
 
-        /// <summary>
-        /// The latest time an entity was modified.
-        /// </summary>
+        /// <inheritdoc />
         public DateTimeOffset? ModifiedEndDate { get; set; }
+    }
+
+    public class ActiveModifiedEntitySearchRequest : ActiveModifiedEntityRequest, IFullTextSearchRequest
+    {
+        /// <inheritdoc />
+        public string Search { get; set; }
     }
 }

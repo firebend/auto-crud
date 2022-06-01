@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         }
 
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithCrud<TSearch>()
-            where TSearch : EntitySearchRequest
+            where TSearch : IEntitySearchRequest
         {
             WithCreate();
             WithRead();
@@ -340,7 +340,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing a custom service and custom search fields
         /// </summary>
         /// <param name="serviceType">The type of the service to use</param>
-        /// <param name="searchType">The type to use for search, must extend <code>EntitySearchRequest</code></param>
+        /// <param name="searchType">The type to use for search, must implement <code>IEntitySearchRequest</code></param>
         /// <example>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
@@ -363,7 +363,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         ///  // ...
         /// </code>
         /// </example>
-        /// See <see cref="EntitySearchRequest" /> for building custom search fields
+        /// See <see cref="EntityRequest" /> for building custom search fields
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch(Type serviceType, Type searchType)
         {
             Builder.SearchRequestType = searchType;
@@ -381,7 +381,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing a custom service and custom search fields
         /// </summary>
         /// <typeparam name="TService">The type of the service to use</typeparam>
-        /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
+        /// <typeparam name="TSearch">The type to use for search, must implement <code>IEntitySearchRequest</code></typeparam>
         /// <example>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
@@ -404,14 +404,14 @@ namespace Firebend.AutoCrud.Core.Configurators
         ///  // ...
         /// </code>
         /// </example>
-        /// See <see cref="EntitySearchRequest" /> for building custom search fields
+        /// See <see cref="EntityRequest" /> for building custom search fields
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TService, TSearch>()
-            where TSearch : EntitySearchRequest => WithSearch(typeof(TService), typeof(TSearch));
+            where TSearch : IEntitySearchRequest => WithSearch(typeof(TService), typeof(TSearch));
 
         /// <summary>
         /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing custom search fields
         /// </summary>
-        /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
+        /// <typeparam name="TSearch">The type to use for search, must implement <code>IEntitySearchRequest</code></typeparam>
         /// <example>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
@@ -434,7 +434,7 @@ namespace Firebend.AutoCrud.Core.Configurators
         ///  // ...
         /// </code>
         /// </example>
-        /// See <see cref="EntitySearchRequest" /> for building custom search fields
+        /// See <see cref="EntityRequest" /> for building custom search fields
         public EntityCrudConfigurator<TBuilder, TKey, TEntity> WithSearch<TSearch>()
             where TSearch : IEntitySearchRequest
         {
@@ -448,8 +448,6 @@ namespace Firebend.AutoCrud.Core.Configurators
         /// <summary>
         /// Enables search for an entity via the <code>GET /{entity}</code> and <code>GET /{entity}/all</code> endpoints by providing a callback function
         /// </summary>
-        /// <typeparam name="TSearch">The type to use for search, must extend <code>EntitySearchRequest</code></typeparam>
-        /// <param name="expression">A callback function for performing a search, return a callback for filtering matching objects</param>
         /// <example>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
@@ -573,8 +571,8 @@ namespace Firebend.AutoCrud.Core.Configurators
         /// Enables ordering of lists of results
         /// </summary>
         /// <remarks>
-        /// The <see cref="IDefaultEntityOrderByProvider{TKey,TEntity}"/> is only called if the <see cref="EntitySearchRequest"/> passed to <see cref="IEntitySearchService{TKey,TEntity,TSearch}"/>
-        /// does not have any <see cref="EntitySearchRequest.OrderBy"/> provided.
+        /// The <see cref="IDefaultEntityOrderByProvider{TKey,TEntity}"/> is only called if the <see cref="EntityRequest"/> passed to <see cref="IEntitySearchService{TKey,TEntity,TSearch}"/>
+        /// does not have any <see cref="EntityRequest.OrderBy"/> provided.
         /// </remarks>
         /// <example>
         /// <code>
@@ -606,8 +604,8 @@ namespace Firebend.AutoCrud.Core.Configurators
         /// <summary>
         /// Enables ordering of lists of results. This function registers a given type that implements  <see cref="DefaultDefaultEntityOrderByProvider{TKey,TEntity}"/>.
         /// </summary>
-        /// The <see cref="IDefaultEntityOrderByProvider{TKey,TEntity}"/> is only called if the <see cref="EntitySearchRequest"/> passed to <see cref="IEntitySearchService{TKey,TEntity,TSearch}"/>
-        /// does not have any <see cref="EntitySearchRequest.OrderBy"/> provided.
+        /// The <see cref="IDefaultEntityOrderByProvider{TKey,TEntity}"/> is only called if the <see cref="EntityRequest"/> passed to <see cref="IEntitySearchService{TKey,TEntity,TSearch}"/>
+        /// does not have any <see cref="EntityRequest.OrderBy"/> provided.
         /// </remarks>
         /// <example>
         /// <code>
@@ -639,8 +637,8 @@ namespace Firebend.AutoCrud.Core.Configurators
         /// <param name="isAscending">Optional, default = true; whether results should be sorted in ascending order</param>
         /// <example>
         /// <remarks>
-        /// The <see cref="IDefaultEntityOrderByProvider{TKey,TEntity}"/> is only called if the <see cref="EntitySearchRequest"/> passed to <see cref="IEntitySearchService{TKey,TEntity,TSearch}"/>
-        /// does not have any <see cref="EntitySearchRequest.OrderBy"/> provided.
+        /// The <see cref="IDefaultEntityOrderByProvider{TKey,TEntity}"/> is only called if the <see cref="EntityRequest"/> passed to <see cref="IEntitySearchService{TKey,TEntity,TSearch}"/>
+        /// does not have any <see cref="EntityRequest.OrderBy"/> provided.
         /// </remarks>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)

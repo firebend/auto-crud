@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
     public interface IEntitySearchService<TKey, TEntity, in TSearch> : IDisposable
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TSearch : EntitySearchRequest
+        where TSearch : IEntitySearchRequest
     {
         Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default);
 

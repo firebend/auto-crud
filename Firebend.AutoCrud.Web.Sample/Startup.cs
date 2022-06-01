@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Web.Sample
         private const string AuthorizationHeaderKey = "Authorization";
 
         private const string AuthorizationHeaderValue =
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY0NTgwMDQwMSwiaWF0IjoxNjQ1ODAwNDAxfQ.XGjDqgMLK-D_X5EZmpeFqslflX6QxEfhCibPLwALP2I";
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRvQ3J1ZEpXVFNlcnZpY2VBY2Nlc3NUb2tlbiIsImp0aSI6ImY3ZDI4MmE1LTRhOTItNDBjYS05MzE4LWY0MWFiOTA2YzY0ZSIsImlhdCI6MTY1NDA0MDQzNiwiVXNlcklkIjoiYmVmZDk2MDUtNjk3Yi00Y2M3LWJhN2EtNDBkNDRiYjliZjZjIiwiZW1haWwiOiJ0bnNjaG5laWRlckBnbWFpbC5jb20iLCJuYmYiOjE2NTQwNDA0MzYsImV4cCI6MTY1NDA0NDAzNiwiaXNzIjoiQXV0b0NydWQiLCJhdWQiOiJBdXRvQ3J1ZENsaWVudCJ9.fvFV3WmIAxMOqDA1ToE-WGrTr6BL-_hydS9HOrf89_4";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
