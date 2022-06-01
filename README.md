@@ -104,7 +104,7 @@ and hit the api at `http://localhost:5000/weatherforecast` to see a list of fore
 You can follow one or both of the following sections to set up AutoCrud for your choice of storage backend
 ### Entity Framework
 
-Install `Firebend.AutoCrud.Mongo` by adding the following to `AutoCrudSampleApi.csproj`
+Install `Firebend.AutoCrud.Entity` by adding the following to `AutoCrudSampleApi.csproj`
 ```xml
 <ItemGroup>
   <ProjectReference Include="Firebend.AutoCrud.Core" />
@@ -128,17 +128,16 @@ Create a new folder called `DbContexts` in your project and add a file called `A
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace AutoCrudSampleApi.DbContexts
-{
-    public class AppDbContext : DbContext, IDbContext
-    {
-        public AppDbContext(DbContextOptions options) : base(options)
-        {
-        }
+namespace AutoCrudSampleApi.DbContexts;
 
-        // define a DbSet for each of your models
-        public DbSet<WeatherForecast> WeatherForecasts { get; set; }
+public class AppDbContext : DbContext, IDbContext
+{
+    public AppDbContext(DbContextOptions options) : base(options)
+    {
     }
+
+    // define a DbSet for each of your models
+    public DbSet<WeatherForecast> WeatherForecasts { get; set; }
 }
 ```
 
@@ -149,22 +148,21 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+[Table("WeatherForecasts")] // define a table
+public class WeatherForecast : IEntity<Guid> // implement the `IEntity` interface
 {
-    [Table("WeatherForecasts")] // define a table
-    public class WeatherForecast : IEntity<Guid> // implement the `IEntity` interface
-    {
-        [Key] // define a Guid with the `Key` annotation to complete the IEntity implementation
-        public Guid Id { get; set; }
+    [Key] // define a Guid with the `Key` annotation to complete the IEntity implementation
+    public Guid Id { get; set; }
 
-        public DateTime Date { get; set; }
+    public DateTime Date { get; set; }
 
-        [Required]
-        public int TemperatureC { get; set; }
+    [Required]
+    public int TemperatureC { get; set; }
 
-        [StringLength(250)]
-        public string Summary { get; set; }
-    }
+    [StringLength(250)]
+    public string Summary { get; set; }
 }
 ```
 
@@ -198,15 +196,16 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Web;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 ```
 
 And add the DB context object to the IOC container
 ```csharp
 
 builder.Services.AddDbContext<AppDbContext>(
-    options => { options.UseSqlServer(builder.Configuration.GetConnectionString("AppSettingsSqlConnection")); },
+    options => { options.UseSqlServer(builder.Configuration.GetConnectionString("AppSettingsSqlConnection") ?? throw new InvalidOperationException()); },
     ServiceLifetime.Singleton);
-
 ```
 
 Register the AutoCrud configuration for the WeatherForecast entity
@@ -236,6 +235,10 @@ builder.Services.UsingEfCrud(ef =>
         );
     }
 );
+
+// this prevents having to wrap POST bodies with `entity`
+// like `{ "entity": { "key": "value" } }`
+builder.Services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
 ```
 
 An example of `DB Context Options Provider`
@@ -255,6 +258,16 @@ public class AppDbContextOptionsProvider<TKey, TEntity> : IDbContextOptionsProvi
 In the `Program.cs` file, we need to register the AutoCrud controllers as below;
 ```csharp
 builder.Services.AddControllers().AddFirebendAutoCrudWeb(builder.Services);
+```
+
+We need to define a connection secret in `appsettings.json` or we need to create a `secret.json` file. In this example, we will continue with the `appsettings.json` definition. 
+
+```json
+{
+  "ConnectionStrings": {
+      "AppSettingsSqlConnection": "Data Source=localhost;Initial Catalog=auto-crud-api;Persist Security Info=False;User ID=sa;Password=Password0#@!;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;MultipleActiveResultSets=True;Max Pool Size=200;"
+  }
+}
 ```
 
 Now, we need to create and apply some migrations. From the command line, run
@@ -280,23 +293,26 @@ Here, we've configured Entity Framework by adding AutoCrud to the `WeatherForeca
   * `GET` `/api/v1/weather-forecast/all`
   * `GET` `/api/v1/weather-forecast/multiple`
 
-To enable searching objects in `GET` requests, include the following in `CreateHostBuilder` in the `WithDbContext` callback; return a function returning a boolean value for whether to include the item in the search results
+To enable searching objects in `GET` requests, include the following in the `program.cs` in the `WithDbContext` callback; return a function returning a boolean value for whether to include the item in the search results
 ```csharp
 // ... previous setup
-ef.AddEntity<Guid, WeatherForecast>(forecast =>
-    forecast.WithDbContext<AppDbContext>()
-        .WithConnectionString(hostContext.Configuration.GetConnectionString("zatch"))
-        .WithDbOptionsProvider(
-            (s => new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(s).Options),
-            connection =>
-                new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connection).Options)
-        .AddCrud(crud =>
-            crud
-                .WithCrud()
-                .WithSearchHandler<EntitySearchRequest>((forecasts, request) =>
-                forecasts.Where(x => 
-                    x.Summary.ToLowerInvariant().Contains(request.Search.ToLowerInvariant()))))
-        .AddControllers(c => c
+ ef.AddEntity<Guid, WeatherForecast>(forecast =>
+            forecast.WithDbContext<AppDbContext>()
+                .WithConnectionString(builder.Configuration.GetConnectionString("AppSettingsSqlConnection"))
+                .WithDbOptionsProvider<AppDbContextOptionsProvider<Guid, WeatherForecast>>()
+                .AddCrud(crud =>
+                    crud.WithCrud()
+                        .WithSearchHandler<EntitySearchRequest>((forecasts, request) =>
+                            {
+                                if (!string.IsNullOrWhiteSpace(request?.Search))
+                                    forecasts = forecasts.Where(wf =>
+                                        wf.Summary!.ToUpper()
+                                            .Contains(request.Search.ToUpper()));
+
+                                return forecasts;
+                            }
+                        ))
+                .AddControllers(c => c
 
 // ... rest of your setup
 ```
@@ -321,23 +337,36 @@ dotnet add package Firebend.AutoCrud.Mongo
 dotnet add package Firebend.AutoCrud.Web
 ```
 
-Open `Program.cs`; you should see some code resembling the following
+Finally, open `Program.cs`; you should see some code resembling the following
 ```csharp
-public static IHostBuilder CreateHostBuilder(string[] args) =>
-   Host.CreateDefaultBuilder(args)
-       .ConfigureWebHostDefaults(webBuilder =>
-       {
-           webBuilder.UseStartup<Startup>();
-       });
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
 ```
 
 Add the following `using` directives
 ```csharp
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
-using Firebend.AutoCrud.Web;
+using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo;
+using Firebend.AutoCrud.Web;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 ```
 
 In `WeatherForecast.cs`, modify the model to extend `IEntity`
@@ -345,62 +374,67 @@ In `WeatherForecast.cs`, modify the model to extend `IEntity`
 using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+public class WeatherForecast : IEntity<Guid> // use the `IEntity` interface
 {
-    public class WeatherForecast : IEntity<Guid> // use the `IEntity` interface
-    {
-        public Guid Id { get; set; } // complete the interface implementation
-        
-        public DateTime Date { get; set; }
+    public Guid Id { get; set; } // complete the interface implementation
+    
+    public DateTime Date { get; set; }
 
-        public int TemperatureC { get; set; }
+    public int TemperatureC { get; set; }
 
-        public string Summary { get; set; }
-    }
+    public string Summary { get; set; }
 }
 ```
 
-Finally, modify `CreateHostBuilder` in Program to match this
+We need to define a connection secret in `appsettings.json` or we need to create a `secret.json` file. In this example, we will continue with the `appsettings.json` definition.
+
+```json
+{
+  "ConnectionStrings": {
+      "AppSettingsMongoConnection": "mongodb://localhost:27017/autocrudapi"
+  }
+}
+```
+
+Register the AutoCrud configuration for the WeatherForecast entity
 ```csharp
-public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
-    .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
-    .ConfigureServices((hostContext, services) =>
+
+builder.Services.UsingMongoCrud(builder.Configuration.GetConnectionString("AppSettingsMongoConnection"),
+    true, mongo =>
     {
-        services
-            .UsingMongoCrud(hostContext.Configuration.GetConnectionString("AppSettingsMongoConnection"),
-                true, mongo =>
-                {
-                    mongo.AddEntity<Guid, WeatherForecast>(forecast =>
-                        forecast.WithDefaultDatabase("Samples")
-                            .WithCollection("WeatherForecasts")
-                            .AddCrud(crud => 
-                                crud.WithCrud()
-                                    .WithSearchHandler<EntitySearchRequest>((forecasts, request) =>
-                                        {
-                                            if (!string.IsNullOrWhiteSpace(request?.Search))
-                                                forecasts = forecasts.Where(wf =>
-                                                    wf.Summary.ToUpper()
-                                                        .Contains(request.Search.ToUpper()));
-
-                                            return forecasts;
-                                        }
-                                    )
-                            .AddControllers(c =>
+        mongo.AddEntity<Guid, WeatherForecast>(forecast =>
+            forecast.WithDefaultDatabase("Samples")
+                .WithCollection("WeatherForecasts")
+                .AddCrud(crud =>
+                    crud.WithCrud()
+                        .WithSearchHandler<EntitySearchRequest>((forecasts, request) =>
                             {
-                                c
-                                    .WithAllControllers(true) // `true` activates the `/all` endpoint
-                                    .WithOpenApiGroupName("WeatherForecasts");
-                            }));
-                })
-            .AddRouting()
-            .AddSwaggerGen()
-            .AddControllers()
-            .AddFirebendAutoCrudWeb(services);
+                                if (!string.IsNullOrWhiteSpace(request?.Search))
+                                    forecasts = forecasts.Where(wf =>
+                                        wf.Summary != null && wf.Summary.ToUpper()
+                                            .Contains(request.Search.ToUpper()));
 
-        // this prevents having to wrap POST bodies with `entity`
-        // like `{ "entity": { "key": "value" } }`
-        services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
+                                return forecasts;
+                            }
+                        ))
+                .AddControllers(c =>
+                {
+                    c.WithAllControllers(true) // `true` activates the `/all` endpoint
+                        .WithOpenApiGroupName("WeatherForecasts");
+                }));
     });
+    
+
+// this prevents having to wrap POST bodies with `entity`
+// like `{ "entity": { "key": "value" } }`
+builder.Services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
+```
+
+In the `Program.cs` file, we need to register the AutoCrud controllers as below;
+```csharp
+builder.Services.AddControllers().AddFirebendAutoCrudWeb(builder.Services);
 ```
 
 You can delete `Controllers/WeatherForecastController.cs`.
@@ -417,7 +451,7 @@ Here, we've configured Mongo by adding AutoCrud to the `WeatherForecast` model t
   * `GET` `/api/v1/weather-forecast/all`
   * `GET` `/api/v1/weather-forecast/multiple`
 
-To enable searching via `GET` endpoints, add `.WithFullTextSearch()` after `WithCollection` in the `CreateHostBuilder` `AddEntity` callback
+To enable searching via `GET` endpoints, add `.WithFullTextSearch()` after `WithCollection` in the `program.cs` `AddEntity` callback
 ```csharp
 // ... previous setup
 mongo.AddEntity<Guid, WeatherForecast>(forecast =>
@@ -437,28 +471,29 @@ Now, when appending the query param `Search={your search}` to your url, you'll o
 
 ## Custom Ordering and Search
 
-To enable ordering of results, include the following in `CreateHostBuilder` in the `AddEntity` callback
+To enable ordering of results, include the following in the `program.cs` in the `AddEntity` callback
 ```csharp
 // ... previous setup
 forecast.WithDbContext<AppDbContext>()
     .AddCrud(crud => 
-        crud.WithSearchHandler<EntitySearchRequest>((query, parameters) =>
-        {
-            if (!string.IsNullOrWhiteSpace(parameters?.Summary))
+        crud
+            .WithCrud()
+            .WithOrderBy(f => f.TemperatureC)
+            .WithSearchHandler<EntitySearchRequest>((query, parameters) =>
             {
-                query = query.Where(x => x.Summary.Contains(parameters.Summary));
-            }
-
-            return query;
-        })
-        .WithCrud()
-        .WithOrderBy(f => f.TemperatureC)
+                if (!string.IsNullOrWhiteSpace(parameters?.Summary))
+                {
+                    query = query.Where(x => x.Summary.Contains(parameters.Summary));
+                }
+    
+                return query;
+            })
 // ... rest of your setup
 ```
 
 This will sort results by the `TemperatureC` member, in ascending order. To sort in descending order, pass `false` as the second parameter to `WithOrderby`: `.WithOrderBy(f => f.TemperatureC, false)`
 
-To include custom search parameters for an entity, include the following in `CreateHostBuilder` in the `AddEntity` callback; return a function returning a boolean value for whether to include the item in the search results, or `null` to skip the search.
+To include custom search parameters for an entity, include the following in the `program.cs` in the `AddEntity` callback; return a function returning a boolean value for whether to include the item in the search results, or `null` to skip the search.
 ```csharp
 // ... previous setup
 ef.AddEntity<Guid, WeatherForecast>(forecast => 
@@ -481,12 +516,11 @@ Create a new class `CustomSearchParameters` that extends `EntitySearchRequest` a
 ```csharp
 using Firebend.AutoCrud.Core.Models.Searching;
 
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+public class CustomSearchParameters : EntitySearchRequest
 {
-    public class CustomSearchParameters : EntitySearchRequest
-    {
-        public string CustomField { get; set; }
-    }
+    public string CustomField { get; set; }
 }
 ```
 
@@ -513,31 +547,29 @@ dotnet add package Firebend.AutoCrud.Io.Web
 
 Create a new class `WeatherForecastExport` like the following
 ```csharp
-using System;
 using Firebend.AutoCrud.Core.Extensions;
 
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+public class WeatherForecastExport
 {
-    public class WeatherForecastExport
+    public WeatherForecastExport()
     {
-        public WeatherForecastExport()
-        {
-        }
-
-        public WeatherForecastExport(WeatherForecast forecast)
-        {
-            forecast.CopyPropertiesTo(this);
-        }
-
-        public Guid Id { get; set; }
-        public DateTime Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string Summary { get; set; }
     }
+
+    public WeatherForecastExport(WeatherForecast forecast)
+    {
+        forecast.CopyPropertiesTo(this);
+    }
+
+    public Guid Id { get; set; }
+    public DateTime Date { get; set; }
+    public int TemperatureC { get; set; }
+    public string Summary { get; set; }
 }
 ```
 
-Then, add the `AddIo()` before `AddControllers` in the `CreateHostBuilder` `AddEntity` callback and `WithIoControllers()` to the `AddControllers`
+Then, add the `AddIo()` before `AddControllers` in the the `program.cs` `AddEntity` callback and `WithIoControllers()` to the `AddControllers`
 ```csharp
 // ... previous setup
 ef.AddEntity<Guid, WeatherForecast>(forecast => 
@@ -587,22 +619,21 @@ Create a `DomainEventContextProvider` class like below
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 
-namespace AutoCrudSampleApi
-{
-    public class CatchPhraseModel
-    {
-        public string CatchPhrase { get; set; }
-    }
+namespace AutoCrudSampleApi;
 
-    public class DomainEventContextProvider : IDomainEventContextProvider
+public class CatchPhraseModel
+{
+    public string CatchPhrase { get; set; }
+}
+
+public class DomainEventContextProvider : IDomainEventContextProvider
+{
+    public DomainEventContext GetContext() => new DomainEventContext
     {
-        public DomainEventContext GetContext() => new DomainEventContext
-        {
-            Source = "My Sample",
-            UserEmail = "sample@firebend.com",
-            CustomContext = new CatchPhraseModel { CatchPhrase = "I Like Turtles" }
-        };
-    }
+        Source = "My Sample",
+        UserEmail = "sample@firebend.com",
+        CustomContext = new CatchPhraseModel { CatchPhrase = "I Like Turtles" }
+    };
 }
 ```
 
@@ -615,62 +646,57 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+public static class MassTransitExtensions
 {
-    public static class MassTransitExtensions
+    private static readonly Regex ConStringParser = new Regex(
+        "^rabbitmq://([^:]+):(.+)@([^@]+)$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    public static IServiceCollection AddMassTransit(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
-        private static readonly Regex ConStringParser = new Regex(
-            "^rabbitmq://([^:]+):(.+)@([^@]+)$",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        var connString = "rabbitmq://guest:guest@localhost/"; // replace with your connection string
 
-        public static IServiceCollection AddMassTransit(this IServiceCollection serviceCollection, IConfiguration configuration)
+        if (string.IsNullOrWhiteSpace(connString))
         {
-            var connString = "rabbitmq://guest:guest@localhost/"; // replace with your connection string
-
-            if (string.IsNullOrWhiteSpace(connString))
-            {
-                throw new Exception("Please configure a service bus connection string for Rabbit MQ");
-            }
-
-            return serviceCollection.AddMassTransit(bus =>
-                {
-                    bus.RegisterFirebendAutoCrudDomainEventHandlers(serviceCollection);
-
-                    bus.UsingRabbitMq((context, configurator) =>
-                    {
-                        var match = ConStringParser.Match(connString);
-
-                        var domain = match.Groups[3].Value;
-                        var uri = $"rabbitmq://{domain}";
-
-                        configurator.Host(new Uri(uri), h =>
-                        {
-                            h.PublisherConfirmation = true;
-                            h.Username(match.Groups[1].Value);
-                            h.Password(match.Groups[2].Value);
-                        });
-
-                        configurator.Lazy = true;
-                        configurator.AutoDelete = true;
-                        configurator.PurgeOnStartup = true;
-
-                        context.RegisterFirebendAutoCrudDomainEventHandlerEndPoints(configurator, serviceCollection);
-                    });
-                })
-                .AddMassTransitHostedService();
+            throw new Exception("Please configure a service bus connection string for Rabbit MQ");
         }
+
+        return serviceCollection.AddMassTransit(bus =>
+            {
+                bus.RegisterFirebendAutoCrudDomainEventHandlers(serviceCollection);
+
+                bus.UsingRabbitMq((context, configurator) =>
+                {
+                    var match = ConStringParser.Match(connString);
+
+                    var domain = match.Groups[3].Value;
+                    var uri = $"rabbitmq://{domain}";
+
+                    configurator.Host(new Uri(uri), h =>
+                    {
+                        h.PublisherConfirmation = true;
+                        h.Username(match.Groups[1].Value);
+                        h.Password(match.Groups[2].Value);
+                    });
+
+                    configurator.Lazy = true;
+                    configurator.AutoDelete = true;
+                    configurator.PurgeOnStartup = true;
+
+                    context.RegisterFirebendAutoCrudDomainEventHandlerEndPoints(configurator, serviceCollection, AutoCrudMassTransitQueueMode.OneQueue);
+                });
+            })
+            .AddMassTransitHostedService();
     }
 }
 ```
 
 
-Finally, modify the `ConfigureServices` callback in `CreateHostBuilder` like so
+Finally, modify the `ConfigureServices` callback in the `program.cs` like so
 ```csharp
-services
-    .AddDbContext<AppDbContext>(options => { options.UseSqlServer("connString"); },
-        // make sure `Persist Security Info=True;` in your connection string
-        ServiceLifetime.Singleton
-    )
+builder.services
     .UsingEfCrud(ef =>
     {
         ef.AddEntity<Guid, WeatherForecast>(forecast => 
@@ -688,7 +714,7 @@ services
         )
         .WithDomainEventContextProvider<DomainEventContextProvider>(); // and this
     })
-    .AddMassTransit(hostContext.Configuration) // and this
+    .AddMassTransit(builder.Configuration) // and this
     .AddRouting()
     .AddSwaggerGen()
     .AddControllers()
@@ -716,12 +742,11 @@ Create a class `KeyProvider` that implements `IShardKeyProvider` (or `IMongoShar
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.Mongo.Interfaces;
 
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+public class KeyProvider : IShardKeyProvider // or IMongoShardKeyProvider
 {
-    public class KeyProvider : IShardKeyProvider // or IMongoShardKeyProvider
-    {
-        public string GetShardKey() => "Firebend";
-    }
+    public string GetShardKey() => "Firebend";
 }
 ```
 
@@ -729,16 +754,15 @@ Create a class `DbNameProvider` that implements `IShardNameProvider`
 ```csharp
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+public class DbNameProvider : IShardNameProvider
 {
-    public class DbNameProvider : IShardNameProvider
-    {
-        public string GetShardName(string key) => $"{key}_CrudSample";
-    }
+    public string GetShardName(string key) => $"{key}_CrudSample";
 }
 ```
 
-Modify `ConfigureServices` in `CreateHostBuilder` by removing the `services.AddDbContext` call (leaving `WithDbContext` on the entity) and adding `AddElasticPool` to the entity, like so
+Modify `ConfigureServices` in the `program.cs` by removing the `services.AddDbContext` call (leaving `WithDbContext` on the entity) and adding `AddElasticPool` to the entity, like so
 ```csharp
 using Firebend.AutoCrud.EntityFramework.Elastic.Extensions;
 
@@ -772,16 +796,15 @@ Create a class `KeyProvider` that implements `IMongoShardKeyProvider`
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.Mongo.Interfaces;
 
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+public class KeyProvider : IShardKeyProvider // or IMongoShardKeyProvider
 {
-    public class KeyProvider : IShardKeyProvider // or IMongoShardKeyProvider
-    {
-        public string GetShardKey() => "Firebend";
-    }
+    public string GetShardKey() => "Firebend";
 }
 ```
 
-Modify `ConfigureServices` in `CreateHostBuilder` by adding  `WithShardKeyProvider` and `WithShardMode` for each configured entity
+Modify `ConfigureServices` in the `program.cs` by adding  `WithShardKeyProvider` and `WithShardMode` for each configured entity
 ```csharp
 using Firebend.AutoCrud.Mongo.Models;
 
@@ -815,24 +838,23 @@ dotnet add package Firebend.AutoCrud.CustomFields.Web
 
 Implement `ICustomFieldsEntity<Guid>` to the model you are wanting to add Custom Fields to and add the `CustomFields` list of entities to store the custom fields. In this example, we'll be editing the `WeatherForecast.cs` file to be like below:
 ```csharp
-namespace AutoCrudSampleApi
+namespace AutoCrudSampleApi;
+
+[Table("WeatherForecasts")] // define a table
+public class WeatherForecast : IEntity<Guid>, ICustomFieldsEntity<Guid> // implement the `IEntity` interface
 {
-    [Table("WeatherForecasts")] // define a table
-    public class WeatherForecast : IEntity<Guid>, ICustomFieldsEntity<Guid> // implement the `IEntity` interface
-    {
-        [Key] // define a Guid with the `Key` annotation to complete the IEntity implementation
-        public Guid Id { get; set; }
+    [Key] // define a Guid with the `Key` annotation to complete the IEntity implementation
+    public Guid Id { get; set; }
 
-        public DateTime Date { get; set; }
+    public DateTime Date { get; set; }
 
-        [Required]
-        public int TemperatureC { get; set; }
+    [Required]
+    public int TemperatureC { get; set; }
 
-        [StringLength(250)]
-        public string Summary { get; set; }
+    [StringLength(250)]
+    public string Summary { get; set; }
 
-        public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
-    }
+    public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
 }
 ```
 
