@@ -1,5 +1,9 @@
+using System;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.Web.Abstractions;
 using Firebend.AutoCrud.CustomFields.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web;
@@ -18,13 +22,17 @@ public static class Extensions
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
+        configurator.Builder
+            .WithRegistration<IEntityValidationService<Guid, CustomFieldsEntity<TKey>>,
+                DefaultEntityValidationService<Guid, CustomFieldsEntity<TKey>>>(false);
+
         var createController = typeof(AbstractCustomFieldsCreateController<,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType);
 
         configurator.WithController(createController, createController, entityName, entityNamePlural, openApiName);
 
-        var updateController = typeof(AbstractCustomAttributeUpdateController<,>)
+        var updateController = typeof(AbstractCustomFieldsUpdateController<,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType);
 
@@ -77,7 +85,7 @@ public static class Extensions
         configurator.AddResourceAuthorization(createController,
             typeof(CustomFieldsAuthorizationFilter<TKey, TEntity>), policy);
 
-        var updateController = typeof(AbstractCustomAttributeUpdateController<,>)
+        var updateController = typeof(AbstractCustomFieldsUpdateController<,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType);
 
@@ -94,7 +102,8 @@ public static class Extensions
         return configurator;
     }
 
-    public static IServiceCollection AddDefaultCustomFieldsResourceAuthorizationRequirement(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddDefaultCustomFieldsResourceAuthorizationRequirement(
+        this IServiceCollection serviceCollection)
     {
         serviceCollection.AddAuthorization(options =>
         {

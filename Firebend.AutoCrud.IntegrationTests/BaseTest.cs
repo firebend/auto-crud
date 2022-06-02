@@ -21,925 +21,894 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable VirtualMemberNeverOverridden.Global
 
-namespace Firebend.AutoCrud.IntegrationTests
+namespace Firebend.AutoCrud.IntegrationTests;
+
+public abstract class BaseTest<
+    TKey,
+    TCreateRequest,
+    TUpdateRequest,
+    TReadResponse,
+    TExport>
+    where TKey : struct
+    where TCreateRequest : class, IEntityViewModelBase
+    where TUpdateRequest : class, IEntityViewModelBase
+    where TReadResponse : class, IEntityViewModelBase, IEntity<TKey>, ICustomFieldsEntity<TKey>
+    where TExport : class, IEntityViewModelExport
 {
-    public abstract class BaseTest<
-        TKey,
-        TCreateRequest,
-        TUpdateRequest,
-        TReadResponse,
-        TExport>
-        where TKey : struct
-        where TCreateRequest : class, IEntityViewModelBase
-        where TUpdateRequest : class, IEntityViewModelBase
-        where TReadResponse : class, IEntityViewModelBase, IEntity<TKey>, ICustomFieldsEntity<TKey>
-        where TExport : class, IEntityViewModelExport
+    protected abstract string Url { get; }
+
+    protected List<IFlurlResponse> Responses { get; } = new();
+
+    private TKey CreatedKey { get; set; }
+
+    protected abstract Task<TCreateRequest> GenerateCreateRequestAsync();
+
+    protected abstract Task<TUpdateRequest> GenerateUpdateRequestAsync(TCreateRequest createRequest);
+
+    protected abstract Task<JsonPatchDocument> GeneratePatchAsync();
+
+    private static void Log(string message) => Trace.WriteLine(message);
+
+    private void SaveResponse(IFlurlResponse response) => Responses.Add(response);
+
+    private static async Task<T> RetryAsync<T>(Func<Task<T>> func, int times = 10)
     {
-        protected string BaseUrl => "http://localhost:5020/api";
-        protected abstract string Url { get; }
+        var i = 0;
 
-        protected List<IFlurlResponse> Responses { get; } = new();
-
-        private TKey CreatedKey { get; set; }
-
-        protected abstract Task<TCreateRequest> GenerateCreateRequestAsync();
-
-        protected abstract Task<TUpdateRequest> GenerateUpdateRequestAsync(TCreateRequest createRequest);
-
-        protected abstract Task<JsonPatchDocument> GeneratePatchAsync();
-
-        private static void Log(string message) => Trace.WriteLine(message);
-
-        private void SaveResponse(IFlurlResponse response) => Responses.Add(response);
-
-        private static async Task<T> RetryAsync<T>(Func<Task<T>> func, int times = 10)
+        while (i < times)
         {
-            var i = 0;
-
-            while (i < times)
+            try
             {
-                try
-                {
-                    return await func();
-                }
-                catch
-                {
-                    i++;
-                    Log($"-------------- Attempt #{i} ----------------");
-                    await Task.Delay(TimeSpan.FromMilliseconds(500 * i));
+                return await func();
+            }
+            catch
+            {
+                i++;
+                Log($"-------------- Attempt #{i} ----------------");
+                await Task.Delay(TimeSpan.FromMilliseconds(500 * i));
 
-                    if (i >= times)
-                    {
-                        throw;
-                    }
+                if (i >= times)
+                {
+                    throw;
                 }
             }
-
-            throw new Exception();
         }
 
-        public async Task<TReadResponse> PostAsync(TCreateRequest model)
+        throw new Exception();
+    }
+
+    public async Task<TReadResponse> PostAsync(TCreateRequest model)
+    {
+        var response = await Url.WithAuth()
+            .PostJsonAsync(model);
+
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(201);
+
+        var responseModel = await response.GetJsonAsync<TReadResponse>();
+
+        responseModel.Should().NotBeNull();
+        responseModel.Id.Should().NotBeNull();
+        responseModel.Id.ToString().Should().NotBeEmpty();
+
+        PostAssertions(response, responseModel);
+
+        SaveResponse(response);
+
+        CreatedKey = responseModel.Id;
+
+        return responseModel;
+    }
+
+    private async Task PostUnauthorizedAsync(TCreateRequest model)
+    {
+        try
         {
-            var response = await Url.WithHeader("Authorization",
-                    $"Bearer {Token}")
+            var response = await Url.WithAuth()
                 .PostJsonAsync(model);
-
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(201);
-
-            var responseModel = await response.GetJsonAsync<TReadResponse>();
-
-            responseModel.Should().NotBeNull();
-            responseModel.Id.Should().NotBeNull();
-            responseModel.Id.ToString().Should().NotBeEmpty();
-
-            PostAssertions(response, responseModel);
-
-            SaveResponse(response);
-
-            CreatedKey = responseModel.Id;
-
-            return responseModel;
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
         }
-
-        private async Task PostUnauthorizedAsync(TCreateRequest model)
+        catch (FlurlHttpException e)
         {
-            try
+            e.StatusCode.Should().Be(403);
+        }
+    }
+
+    protected virtual void PostAssertions(IFlurlResponse response, TReadResponse model) { }
+
+    private async Task<TReadResponse> GetAsync(TKey key)
+    {
+        var response = await $"{Url}/{key}".WithAuth().GetAsync();
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<TReadResponse>();
+        responseModel.Should().NotBeNull();
+
+        GetAssertions(response, responseModel);
+
+        SaveResponse(response);
+
+        return responseModel;
+    }
+
+    private async Task GetUnauthorizedAsync(TKey key)
+    {
+        try
+        {
+            var response = await $"{Url}/{key}".WithAuth().GetAsync();
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
+        }
+        catch (FlurlHttpException e)
+        {
+            e.StatusCode.Should().Be(403);
+        }
+    }
+
+    protected virtual void GetAssertions(IFlurlResponse response, TReadResponse model) { }
+
+    private async Task PutAsync(TKey key, TUpdateRequest entity)
+    {
+        entity.Should().NotBeNull();
+        key.Should().NotBeNull();
+        key.Should().NotBeSameAs(default(TKey));
+
+        var response = await $"{Url}/{key}".WithAuth().PutJsonAsync(entity);
+
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<TReadResponse>();
+        responseModel.Should().NotBeNull();
+
+        PutAssertions(response, responseModel);
+
+        SaveResponse(response);
+    }
+
+    private async Task PutUnauthorizedAsync(TKey key, TUpdateRequest entity)
+    {
+        entity.Should().NotBeNull();
+        key.Should().NotBeNull();
+        key.Should().NotBeSameAs(default(TKey));
+
+        try
+        {
+            var response = await $"{Url}/{key}".WithAuth().PutJsonAsync(entity);
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
+        }
+        catch (FlurlHttpException e)
+        {
+            e.StatusCode.Should().Be(403);
+        }
+    }
+
+    protected virtual void PutAssertions(IFlurlResponse response, TReadResponse model) { }
+
+    private async Task PageAsync()
+    {
+        //act
+        var response = await Url.WithAuth()
+            .SetQueryParam("pagenumber", 1)
+            .SetQueryParam("pageSize", 10)
+            .SetQueryParam("doCount", true)
+            .GetAsync();
+
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
+
+        responseModel.Should().NotBeNull();
+        responseModel.Data.Should().NotBeNullOrEmpty();
+        responseModel.TotalRecords.Should().HaveValue();
+        responseModel.TotalRecords.Should().BeGreaterOrEqualTo(1);
+
+        PageAssertions(response, responseModel);
+
+        SaveResponse(response);
+    }
+
+    private async Task PageUnauthorizedAsync(string email)
+    {
+        //act
+        var response = await Url.WithAuth()
+            .SetQueryParam("pagenumber", 1)
+            .SetQueryParam("pageSize", 10)
+            .SetQueryParam("doCount", true)
+            .GetAsync();
+
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
+
+        responseModel.Should().NotBeNull();
+        foreach (var person in responseModel.Data)
+        {
+            if (person.DataAuth is not null && person.DataAuth.UserEmails.Any())
             {
-                var response = await Url.WithHeader("Authorization",
-                        $"Bearer {Token}")
-                    .PostJsonAsync(model);
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
+                person.DataAuth.UserEmails.Should().Contain(email);
             }
         }
+    }
 
-        protected virtual void PostAssertions(IFlurlResponse response, TReadResponse model) { }
+    protected virtual void PageAssertions(IFlurlResponse response,
+        EntityPagedResponse<TReadResponse> responseModel)
+    {
+    }
 
-        private async Task<TReadResponse> GetAsync(TKey key)
+    private async Task SearchAsync(string search)
+    {
+        async Task<(IFlurlResponse response, EntityPagedResponse<TReadResponse> responseModel)> DoSearch()
         {
-            var response = await $"{Url}/{key}".WithHeader("Authorization",
-                $"Bearer {Token}").GetAsync();
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseModel = await response.GetJsonAsync<TReadResponse>();
-            responseModel.Should().NotBeNull();
-
-            GetAssertions(response, responseModel);
-
-            SaveResponse(response);
-
-            return responseModel;
-        }
-
-        private async Task GetUnauthorizedAsync(TKey key)
-        {
-            try
-            {
-                var response = await $"{Url}/{key}".WithHeader("Authorization",
-                    $"Bearer {Token}").GetAsync();
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
-        }
-
-        protected virtual void GetAssertions(IFlurlResponse response, TReadResponse model) { }
-
-        private async Task PutAsync(TKey key, TUpdateRequest entity)
-        {
-            entity.Should().NotBeNull();
-            key.Should().NotBeNull();
-            key.Should().NotBeSameAs(default(TKey));
-
-            var response = await $"{Url}/{key}".WithHeader("Authorization",
-                $"Bearer {Token}").PutJsonAsync(entity);
-
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseModel = await response.GetJsonAsync<TReadResponse>();
-            responseModel.Should().NotBeNull();
-
-            PutAssertions(response, responseModel);
-
-            SaveResponse(response);
-        }
-
-        private async Task PutUnauthorizedAsync(TKey key, TUpdateRequest entity)
-        {
-            entity.Should().NotBeNull();
-            key.Should().NotBeNull();
-            key.Should().NotBeSameAs(default(TKey));
-
-            try
-            {
-                var response = await $"{Url}/{key}".WithHeader("Authorization",
-                    $"Bearer {Token}").PutJsonAsync(entity);
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
-        }
-
-        protected virtual void PutAssertions(IFlurlResponse response, TReadResponse model) { }
-
-        private async Task PageAsync()
-        {
-            //act
-            var response = await Url.WithHeader("Authorization",
-                    $"Bearer {Token}")
+            var searchResponse = await Url.WithAuth()
                 .SetQueryParam("pagenumber", 1)
                 .SetQueryParam("pageSize", 10)
-                .SetQueryParam("doCount", true)
+                .SetQueryParam("search", search)
                 .GetAsync();
 
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
+            searchResponse.Should().NotBeNull();
+            searchResponse.StatusCode.Should().Be(200);
 
-            var responseModel = await response.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
+            var searchResponseModel = await searchResponse.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
+            searchResponseModel.Should().NotBeNull();
+            searchResponseModel.Data.Should().NotBeNullOrEmpty();
+            searchResponseModel.TotalRecords.Should().BeGreaterOrEqualTo(1);
 
-            responseModel.Should().NotBeNull();
-            responseModel.Data.Should().NotBeNullOrEmpty();
-            responseModel.TotalRecords.Should().HaveValue();
-            responseModel.TotalRecords.Should().BeGreaterOrEqualTo(1);
-
-            PageAssertions(response, responseModel);
-
-            SaveResponse(response);
+            return (searchResponse, searchResponseModel);
         }
 
-        private async Task PageUnauthorizedAsync(string email)
+        search.Should().NotBeNullOrEmpty();
+
+        var (response, responseModel) = await RetryAsync(DoSearch);
+
+        SearchAssertions(response, responseModel);
+
+        SaveResponse(response);
+    }
+
+    private async Task SearchUnauthorizedAsync(string search, string email)
+    {
+        async Task<(IFlurlResponse response, EntityPagedResponse<TReadResponse> responseModel)> DoSearch()
         {
-            //act
-            var response = await Url.WithHeader("Authorization",
-                    $"Bearer {Token}")
+            var searchResponse = await Url.WithAuth()
                 .SetQueryParam("pagenumber", 1)
                 .SetQueryParam("pageSize", 10)
-                .SetQueryParam("doCount", true)
+                .SetQueryParam("search", search)
                 .GetAsync();
 
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
+            searchResponse.Should().NotBeNull();
+            searchResponse.StatusCode.Should().Be(200);
 
-            var responseModel = await response.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
-
-            responseModel.Should().NotBeNull();
-            foreach (var person in responseModel.Data)
+            var searchResponseModel = await searchResponse.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
+            searchResponseModel.Should().NotBeNull();
+            foreach (var person in searchResponseModel.Data)
             {
                 if (person.DataAuth is not null && person.DataAuth.UserEmails.Any())
                 {
                     person.DataAuth.UserEmails.Should().Contain(email);
                 }
             }
+
+            return (searchResponse, searchResponseModel);
         }
 
-        protected virtual void PageAssertions(IFlurlResponse response,
-            EntityPagedResponse<TReadResponse> responseModel)
-        {
-        }
+        search.Should().NotBeNullOrEmpty();
 
-        private async Task SearchAsync(string search)
+        await RetryAsync(DoSearch);
+    }
+
+    protected virtual void SearchAssertions(IFlurlResponse response,
+        EntityPagedResponse<TReadResponse> responseModel)
+    {
+    }
+
+    private async Task DeleteAsync(TKey id)
+    {
+        id.Should().NotBeNull();
+        id.Should().NotBe(default(TKey));
+
+        var deleteResponse = await $"{Url}/{id}".WithAuth().DeleteAsync();
+
+        deleteResponse.Should().NotBeNull();
+        deleteResponse.StatusCode.Should().Be(200);
+
+        var deleteResponseModel = await deleteResponse.GetJsonAsync<TReadResponse>();
+        deleteResponseModel.Should().NotBeNull();
+
+        DeleteAssertions(deleteResponse, deleteResponseModel);
+
+        SaveResponse(deleteResponse);
+    }
+
+    private async Task DeleteUnauthorizedAsync(TKey id)
+    {
+        id.Should().NotBeNull();
+        id.Should().NotBe(default(TKey));
+
+        try
         {
-            async Task<(IFlurlResponse response, EntityPagedResponse<TReadResponse> responseModel)> DoSearch()
+            var response = await $"{Url}/{id}".WithAuth().DeleteAsync();
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
+        }
+        catch (FlurlHttpException e)
+        {
+            e.StatusCode.Should().Be(403);
+        }
+    }
+
+    protected virtual void DeleteAssertions(IFlurlResponse response, TReadResponse responseModel) { }
+
+    private async Task<TReadResponse> PatchAsync(TKey id, JsonPatchDocument patchDocument)
+    {
+        id.Should().NotBeNull();
+        id.Should().NotBe(default(TKey));
+
+        var patchJsonResponse = await $"{Url}/{id}".WithAuth().PatchJsonAsync(patchDocument);
+        patchJsonResponse.Should().NotBeNull();
+        patchJsonResponse.StatusCode.Should().Be(200);
+
+        var patchJsonResponseModel = await patchJsonResponse.GetJsonAsync<TReadResponse>();
+        patchJsonResponseModel.Should().NotBeNull();
+
+        PatchAssertions(patchJsonResponse, patchJsonResponseModel);
+
+        SaveResponse(patchJsonResponse);
+
+        return patchJsonResponseModel;
+    }
+
+
+    private async Task PatchUnauthorizedAsync(TKey id, JsonPatchDocument patchDocument)
+    {
+        id.Should().NotBeNull();
+        id.Should().NotBe(default(TKey));
+
+        try
+        {
+            var response = await $"{Url}/{id}".WithAuth().PatchJsonAsync(patchDocument);
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
+        }
+        catch (FlurlHttpException e)
+        {
+            e.StatusCode.Should().Be(403);
+        }
+    }
+
+    protected virtual void PatchAssertions(IFlurlResponse response, TReadResponse responseModel) { }
+
+    private async Task ExportToCsvAsync()
+    {
+        var response = await $"{Url}/export/csv".WithAuth()
+            .SetQueryParam("pagenumber", 1.ToString())
+            .SetQueryParam("pageSize", 10.ToString())
+            .SetQueryParam("doCount", true.ToString())
+            .SetQueryParam("fileName", "temp")
+            .GetAsync();
+
+        //assert
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseString = await response.GetStringAsync();
+        responseString.Should().NotBeNullOrWhiteSpace();
+
+        using (var stringReader = new StringReader(responseString))
+        {
+            using (var csv = new CsvReader(stringReader,
+                       new CsvConfiguration(CultureInfo.InvariantCulture)
+                       {
+                           HeaderValidated = null, MissingFieldFound = null
+                       }))
             {
-                var searchResponse = await Url.WithHeader("Authorization",
-                        $"Bearer {Token}")
-                    .SetQueryParam("pagenumber", 1)
-                    .SetQueryParam("pageSize", 10)
-                    .SetQueryParam("search", search)
-                    .GetAsync();
+                var records = csv.GetRecords<TExport>().ToList();
+                records.Should().NotBeEmpty();
+                records.FirstOrDefault().Should().NotBeNull();
 
-                searchResponse.Should().NotBeNull();
-                searchResponse.StatusCode.Should().Be(200);
-
-                var searchResponseModel = await searchResponse.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
-                searchResponseModel.Should().NotBeNull();
-                searchResponseModel.Data.Should().NotBeNullOrEmpty();
-                searchResponseModel.TotalRecords.Should().BeGreaterOrEqualTo(1);
-
-                return (searchResponse, searchResponseModel);
-            }
-
-            search.Should().NotBeNullOrEmpty();
-
-            var (response, responseModel) = await RetryAsync(DoSearch);
-
-            SearchAssertions(response, responseModel);
-
-            SaveResponse(response);
-        }
-
-        private async Task SearchUnauthorizedAsync(string search, string email)
-        {
-            async Task<(IFlurlResponse response, EntityPagedResponse<TReadResponse> responseModel)> DoSearch()
-            {
-                var searchResponse = await Url.WithHeader("Authorization",
-                        $"Bearer {Token}")
-                    .SetQueryParam("pagenumber", 1)
-                    .SetQueryParam("pageSize", 10)
-                    .SetQueryParam("search", search)
-                    .GetAsync();
-
-                searchResponse.Should().NotBeNull();
-                searchResponse.StatusCode.Should().Be(200);
-
-                var searchResponseModel = await searchResponse.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
-                searchResponseModel.Should().NotBeNull();
-                foreach (var person in searchResponseModel.Data)
-                {
-                    if (person.DataAuth is not null && person.DataAuth.UserEmails.Any())
-                    {
-                        person.DataAuth.UserEmails.Should().Contain(email);
-                    }
-                }
-
-                return (searchResponse, searchResponseModel);
-            }
-
-            search.Should().NotBeNullOrEmpty();
-
-            await RetryAsync(DoSearch);
-        }
-
-        protected virtual void SearchAssertions(IFlurlResponse response,
-            EntityPagedResponse<TReadResponse> responseModel)
-        {
-        }
-
-        private async Task DeleteAsync(TKey id)
-        {
-            id.Should().NotBeNull();
-            id.Should().NotBe(default(TKey));
-
-            var deleteResponse = await $"{Url}/{id}".WithHeader("Authorization",
-                $"Bearer {Token}").DeleteAsync();
-
-            deleteResponse.Should().NotBeNull();
-            deleteResponse.StatusCode.Should().Be(200);
-
-            var deleteResponseModel = await deleteResponse.GetJsonAsync<TReadResponse>();
-            deleteResponseModel.Should().NotBeNull();
-
-            DeleteAssertions(deleteResponse, deleteResponseModel);
-
-            SaveResponse(deleteResponse);
-        }
-
-        private async Task DeleteUnauthorizedAsync(TKey id)
-        {
-            id.Should().NotBeNull();
-            id.Should().NotBe(default(TKey));
-
-            try
-            {
-                var response = await $"{Url}/{id}".WithHeader("Authorization",
-                    $"Bearer {Token}").DeleteAsync();
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
-        }
-
-        protected virtual void DeleteAssertions(IFlurlResponse response, TReadResponse responseModel) { }
-
-        private async Task<TReadResponse> PatchAsync(TKey id, JsonPatchDocument patchDocument)
-        {
-            id.Should().NotBeNull();
-            id.Should().NotBe(default(TKey));
-
-            var patchJsonResponse = await $"{Url}/{id}".WithHeader("Authorization",
-                $"Bearer {Token}").PatchJsonAsync(patchDocument);
-            patchJsonResponse.Should().NotBeNull();
-            patchJsonResponse.StatusCode.Should().Be(200);
-
-            var patchJsonResponseModel = await patchJsonResponse.GetJsonAsync<TReadResponse>();
-            patchJsonResponseModel.Should().NotBeNull();
-
-            PatchAssertions(patchJsonResponse, patchJsonResponseModel);
-
-            SaveResponse(patchJsonResponse);
-
-            return patchJsonResponseModel;
-        }
-
-
-        private async Task PatchUnauthorizedAsync(TKey id, JsonPatchDocument patchDocument)
-        {
-            id.Should().NotBeNull();
-            id.Should().NotBe(default(TKey));
-
-            try
-            {
-                var response = await $"{Url}/{id}".WithHeader("Authorization",
-                    $"Bearer {Token}").PatchJsonAsync(patchDocument);
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
+                CsvRecordsAssertions(records);
             }
         }
 
-        protected virtual void PatchAssertions(IFlurlResponse response, TReadResponse responseModel) { }
+        CsvResponseAssertions(response);
 
-        private async Task ExportToCsvAsync()
+        SaveResponse(response);
+    }
+
+    private async Task ExportToCsvUnauthorizedAsync(TKey unauthorizedId)
+    {
+        var response = await $"{Url}/export/csv".WithAuth()
+            .SetQueryParam("pagenumber", 1.ToString())
+            .SetQueryParam("pageSize", 10.ToString())
+            .SetQueryParam("doCount", true.ToString())
+            .SetQueryParam("fileName", "temp")
+            .GetAsync();
+
+        //assert
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseString = await response.GetStringAsync();
+        responseString.Should().NotContain(unauthorizedId.ToString());
+    }
+
+    protected virtual void CsvResponseAssertions(IFlurlResponse response) { }
+
+    protected virtual void CsvRecordsAssertions(List<TExport> records) { }
+
+    private async Task<EntityPagedResponse<ChangeTrackingResponseModel<TKey, TReadResponse>>>
+        GetChangeTrackingAsync(
+            TKey key, int operationCount)
+    {
+        async Task<(IFlurlResponse response, EntityPagedResponse<ChangeTrackingResponseModel<TKey, TReadResponse>>
+            responseModel)> DoSearch()
         {
-            var response = await $"{Url}/export/csv".WithHeader("Authorization",
-                    $"Bearer {Token}")
-                .SetQueryParam("pagenumber", 1.ToString())
-                .SetQueryParam("pageSize", 10.ToString())
-                .SetQueryParam("doCount", true.ToString())
-                .SetQueryParam("fileName", "temp")
+            var httpResponse = await $"{Url}/{key}/changes".WithAuth()
+                .SetQueryParam("pagenumber", 1)
+                .SetQueryParam("pageSize", 10)
+                .SetQueryParam("doCount", true)
                 .GetAsync();
 
-            //assert
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
+            httpResponse.Should().NotBeNull();
+            httpResponse.StatusCode.Should().Be(200);
 
-            var responseString = await response.GetStringAsync();
-            responseString.Should().NotBeNullOrWhiteSpace();
+            var httpResponseModel = await httpResponse
+                .GetJsonAsync<EntityPagedResponse<ChangeTrackingResponseModel<TKey, TReadResponse>>>();
 
-            using (var stringReader = new StringReader(responseString))
-            {
-                using (var csv = new CsvReader(stringReader,
-                           new CsvConfiguration(CultureInfo.InvariantCulture)
-                           {
-                               HeaderValidated = null,
-                               MissingFieldFound = null
-                           }))
-                {
-                    var records = csv.GetRecords<TExport>().ToList();
-                    records.Should().NotBeEmpty();
-                    records.FirstOrDefault().Should().NotBeNull();
+            httpResponseModel.Should().NotBeNull();
+            httpResponseModel.Data.Should().NotBeNullOrEmpty();
+            httpResponseModel.Data.Should().HaveCountGreaterOrEqualTo(operationCount);
+            httpResponseModel.Data.Select(x => x.UserEmail).Should().NotContainNulls();
+            httpResponseModel.Data.Select(x => x.Source).Should().NotContainNulls();
 
-                    CsvRecordsAssertions(records);
-                }
-            }
-
-            CsvResponseAssertions(response);
-
-            SaveResponse(response);
+            return (httpResponse, httpResponseModel);
         }
 
-        private async Task ExportToCsvUnauthorizedAsync(TKey unauthorizedId)
+        var (response, responseModel) = await RetryAsync(DoSearch, 30);
+
+        ChangeTrackingAssertions(response, responseModel);
+
+        SaveResponse(response);
+
+        return responseModel;
+    }
+
+    private async Task GetChangeTrackingUnauthorizedAsync(
+        TKey key)
+    {
+        try
         {
-            var response = await $"{Url}/export/csv".WithHeader("Authorization",
-                    $"Bearer {Token}")
-                .SetQueryParam("pagenumber", 1.ToString())
-                .SetQueryParam("pageSize", 10.ToString())
-                .SetQueryParam("doCount", true.ToString())
-                .SetQueryParam("fileName", "temp")
+            var response = await $"{Url}/{key}/changes".WithAuth()
+                .SetQueryParam("pagenumber", 1)
+                .SetQueryParam("pageSize", 10)
+                .SetQueryParam("doCount", true)
                 .GetAsync();
-
-            //assert
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseString = await response.GetStringAsync();
-            responseString.Should().NotContain(unauthorizedId.ToString());
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
         }
-
-        protected virtual void CsvResponseAssertions(IFlurlResponse response) { }
-
-        protected virtual void CsvRecordsAssertions(List<TExport> records) { }
-
-        private async Task<EntityPagedResponse<ChangeTrackingResponseModel<TKey, TReadResponse>>>
-            GetChangeTrackingAsync(
-                TKey key, int operationCount)
+        catch (FlurlHttpException e)
         {
-            async Task<(IFlurlResponse response, EntityPagedResponse<ChangeTrackingResponseModel<TKey, TReadResponse>>
-                responseModel)> DoSearch()
-            {
-                var httpResponse = await $"{Url}/{key}/changes".WithHeader("Authorization",
-                        $"Bearer {Token}")
-                    .SetQueryParam("pagenumber", 1)
-                    .SetQueryParam("pageSize", 10)
-                    .SetQueryParam("doCount", true)
-                    .GetAsync();
-
-                httpResponse.Should().NotBeNull();
-                httpResponse.StatusCode.Should().Be(200);
-
-                var httpResponseModel = await httpResponse
-                    .GetJsonAsync<EntityPagedResponse<ChangeTrackingResponseModel<TKey, TReadResponse>>>();
-
-                httpResponseModel.Should().NotBeNull();
-                httpResponseModel.Data.Should().NotBeNullOrEmpty();
-                httpResponseModel.Data.Should().HaveCountGreaterOrEqualTo(operationCount);
-                httpResponseModel.Data.Select(x => x.UserEmail).Should().NotContainNulls();
-                httpResponseModel.Data.Select(x => x.Source).Should().NotContainNulls();
-
-                return (httpResponse, httpResponseModel);
-            }
-
-            var (response, responseModel) = await RetryAsync(DoSearch, 30);
-
-            ChangeTrackingAssertions(response, responseModel);
-
-            SaveResponse(response);
-
-            return responseModel;
+            e.StatusCode.Should().Be(403);
         }
+    }
 
-        private async Task GetChangeTrackingUnauthorizedAsync(
-            TKey key)
+    protected virtual void ChangeTrackingAssertions(IFlurlResponse response,
+        EntityPagedResponse<ChangeTrackingResponseModel<TKey, TReadResponse>> responseModel)
+    {
+    }
+
+    private async Task<MultiResult<TReadResponse>> PostMultipleAsync(IEnumerable<TCreateRequest> models)
+    {
+        var response = await $"{Url}/multiple".WithAuth().PostJsonAsync(models);
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<MultiResult<TReadResponse>>();
+        responseModel.Created.Should().NotBeNullOrEmpty();
+        responseModel.Created.Count().Should().Be(models.Count());
+        (responseModel.Errors?.Count() ?? 0).Should().BeLessOrEqualTo(0);
+
+        foreach (var entity in responseModel.Created)
         {
-            try
-            {
-                var response = await $"{Url}/{key}/changes".WithHeader("Authorization",
-                        $"Bearer {Token}")
-                    .SetQueryParam("pagenumber", 1)
-                    .SetQueryParam("pageSize", 10)
-                    .SetQueryParam("doCount", true)
-                    .GetAsync();
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
+            entity.Id.Should().NotBeNull();
+            entity.Id.ToString().Should().NotBeEmpty();
         }
 
-        protected virtual void ChangeTrackingAssertions(IFlurlResponse response,
-            EntityPagedResponse<ChangeTrackingResponseModel<TKey, TReadResponse>> responseModel)
+        PostMultipleAssertions(response, responseModel);
+
+        SaveResponse(response);
+
+        return responseModel;
+    }
+
+    private async Task PostMultipleUnauthorizedAsync(IEnumerable<TCreateRequest> models)
+    {
+        try
         {
+            var response = await $"{Url}/multiple".WithAuth().PostJsonAsync(models);
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
         }
-
-        private async Task<MultiResult<TReadResponse>> PostMultipleAsync(IEnumerable<TCreateRequest> models)
+        catch (FlurlHttpException e)
         {
-            var response = await $"{Url}/multiple".WithHeader("Authorization",
-                $"Bearer {Token}").PostJsonAsync(models);
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseModel = await response.GetJsonAsync<MultiResult<TReadResponse>>();
-            responseModel.Created.Should().NotBeNullOrEmpty();
-            responseModel.Created.Count().Should().Be(models.Count());
-            (responseModel.Errors?.Count() ?? 0).Should().BeLessOrEqualTo(0);
-
-            foreach (var entity in responseModel.Created)
-            {
-                entity.Id.Should().NotBeNull();
-                entity.Id.ToString().Should().NotBeEmpty();
-            }
-
-            PostMultipleAssertions(response, responseModel);
-
-            SaveResponse(response);
-
-            return responseModel;
+            e.StatusCode.Should().Be(403);
         }
+    }
 
-        private async Task PostMultipleUnauthorizedAsync(IEnumerable<TCreateRequest> models)
-        {
-            try
-            {
-                var response = await $"{Url}/multiple".WithHeader("Authorization",
-                    $"Bearer {Token}").PostJsonAsync(models);
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
-        }
+    protected virtual void PostMultipleAssertions(IFlurlResponse response,
+        MultiResult<TReadResponse> responseModel)
+    {
+    }
 
-        protected virtual void PostMultipleAssertions(IFlurlResponse response,
-            MultiResult<TReadResponse> responseModel)
-        {
-        }
+    private async Task<CustomFieldViewModelRead> PostCustomFieldsAsync(TKey entityId)
+    {
+        var faked = CustomFieldFaker.Faker.Generate();
+        var response = await $"{Url}/{entityId}/custom-fields".WithAuth().PostJsonAsync(faked);
 
-        private async Task<CustomFieldViewModelRead> PostCustomFieldsAsync(TKey entityId)
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+        responseModel.Should().NotBeNull();
+        responseModel.Id.Should().NotBeEmpty();
+        responseModel.EntityId.Should().NotBeEmpty();
+        responseModel.Key.Should().NotBeNullOrWhiteSpace();
+        responseModel.Value.Should().NotBeNullOrWhiteSpace();
+        responseModel.CreatedDate.Should().BeAfter(DateTimeOffset.MinValue);
+        responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
+
+        PostCustomFieldsAssertions(response, responseModel);
+
+        var entity = await GetAsync(entityId);
+        var customField = entity.CustomFields.First(x => x.Id == responseModel.Id);
+        customField.Value.Should().BeEquivalentTo(faked.Value);
+        customField.Key.Should().BeEquivalentTo(faked.Key);
+
+        SaveResponse(response);
+
+        return responseModel;
+    }
+
+    private async Task PostCustomFieldsUnauthorizedAsync(TKey entityId)
+    {
+        try
         {
             var faked = CustomFieldFaker.Faker.Generate();
-            var response = await $"{Url}/{entityId}/custom-fields".WithHeader("Authorization",
-                $"Bearer {Token}").PostJsonAsync(faked);
-
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
-            responseModel.Should().NotBeNull();
-            responseModel.Id.Should().NotBeEmpty();
-            responseModel.EntityId.Should().NotBeEmpty();
-            responseModel.Key.Should().NotBeNullOrWhiteSpace();
-            responseModel.Value.Should().NotBeNullOrWhiteSpace();
-            responseModel.CreatedDate.Should().BeAfter(DateTimeOffset.MinValue);
-            responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
-
-            PostCustomFieldsAssertions(response, responseModel);
-
-            var entity = await GetAsync(entityId);
-            var customField = entity.CustomFields.First(x => x.Id == responseModel.Id);
-            customField.Value.Should().BeEquivalentTo(faked.Value);
-            customField.Key.Should().BeEquivalentTo(faked.Key);
-
-            SaveResponse(response);
-
-            return responseModel;
+            var response = await $"{Url}/{entityId}/custom-fields".WithAuth().PostJsonAsync(faked);
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
         }
-
-        private async Task PostCustomFieldsUnauthorizedAsync(TKey entityId)
+        catch (FlurlHttpException e)
         {
-            try
-            {
-                var faked = CustomFieldFaker.Faker.Generate();
-                var response = await $"{Url}/{entityId}/custom-fields".WithHeader("Authorization",
-                    $"Bearer {Token}").PostJsonAsync(faked);
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
+            e.StatusCode.Should().Be(403);
         }
+    }
 
-        protected virtual void PostCustomFieldsAssertions(IFlurlResponse response,
-            CustomFieldViewModelRead responseModel)
-        {
-        }
+    protected virtual void PostCustomFieldsAssertions(IFlurlResponse response,
+        CustomFieldViewModelRead responseModel)
+    {
+    }
 
-        private async Task PutCustomFieldsAsync(TKey entityId, Guid id)
+    private async Task<CustomFieldViewModelRead> PutCustomFieldsAsync(TKey entityId, Guid id)
+    {
+        var faked = CustomFieldFaker.Faker.Generate();
+        var response = await $"{Url}/{entityId}/custom-fields/{id}".WithAuth().PutJsonAsync(faked);
+
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+
+        responseModel.Should().NotBeNull();
+        responseModel.Id.Should().NotBeEmpty();
+        responseModel.EntityId.Should().NotBeEmpty();
+        responseModel.Key.Should().NotBeNullOrWhiteSpace();
+        responseModel.Value.Should().NotBeNullOrWhiteSpace();
+        responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
+
+        PutCustomFieldsAssertions(response, responseModel);
+
+        var entity = await GetAsync(entityId);
+        var customField = entity.CustomFields.First(x => x.Id == id);
+        customField.Value.Should().BeEquivalentTo(faked.Value);
+        customField.Key.Should().BeEquivalentTo(faked.Key);
+
+        SaveResponse(response);
+        return responseModel;
+    }
+
+    private async Task PutCustomFieldsUnauthorizedAsync(TKey entityId, Guid id)
+    {
+        try
         {
             var faked = CustomFieldFaker.Faker.Generate();
-            var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                $"Bearer {Token}").PutJsonAsync(faked);
-
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
-
-            responseModel.Should().NotBeNull();
-            responseModel.Id.Should().NotBeEmpty();
-            responseModel.EntityId.Should().NotBeEmpty();
-            responseModel.Key.Should().NotBeNullOrWhiteSpace();
-            responseModel.Value.Should().NotBeNullOrWhiteSpace();
-            responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
-
-            PutCustomFieldsAssertions(response, responseModel);
-
-            var entity = await GetAsync(entityId);
-            var customField = entity.CustomFields.First(x => x.Id == id);
-            customField.Value.Should().BeEquivalentTo(faked.Value);
-            customField.Key.Should().BeEquivalentTo(faked.Key);
-
-            SaveResponse(response);
+            var response = await $"{Url}/{entityId}/custom-fields/{id}".WithAuth().PutJsonAsync(faked);
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
         }
-
-        private async Task PutCustomFieldsUnauthorizedAsync(TKey entityId, Guid id)
+        catch (FlurlHttpException e)
         {
-            try
-            {
-                var faked = CustomFieldFaker.Faker.Generate();
-                var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                    $"Bearer {Token}").PutJsonAsync(faked);
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
+            e.StatusCode.Should().Be(403);
         }
+    }
 
-        protected virtual void PutCustomFieldsAssertions(IFlurlResponse response,
-            CustomFieldViewModelRead responseModel)
-        {
-        }
+    protected virtual void PutCustomFieldsAssertions(IFlurlResponse response,
+        CustomFieldViewModelRead responseModel)
+    {
+    }
 
-        private async Task<CustomFieldViewModelRead> PatchCustomFieldsAsync(TKey entityId, Guid id)
+    private async Task<CustomFieldViewModelRead> PatchCustomFieldsAsync(TKey entityId, Guid id)
+    {
+        var color = new Faker().Commerce.Color();
+        var patch = PatchFaker.MakeReplacePatch<CustomFieldViewModel, string>(x => x.Value, color);
+
+        var response = await $"{Url}/{entityId}/custom-fields/{id}".WithAuth().PatchJsonAsync(patch);
+
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+        responseModel.Should().NotBeNull();
+        responseModel.Id.Should().NotBeEmpty();
+        responseModel.EntityId.Should().NotBeEmpty();
+        responseModel.Key.Should().NotBeNullOrWhiteSpace();
+        responseModel.Value.Should().NotBeNullOrWhiteSpace();
+        responseModel.Value.Should().BeEquivalentTo(color);
+        responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
+
+        var entity = await GetAsync(entityId);
+        var customField = entity.CustomFields.First(x => x.Id == id);
+        customField.Value.Should().BeEquivalentTo(color);
+
+
+        PatchCustomFieldsAssertions(response, responseModel);
+
+        SaveResponse(response);
+
+        return responseModel;
+    }
+
+    private async Task PatchCustomFieldsUnauthorizedAsync(TKey entityId, Guid id)
+    {
+        try
         {
             var color = new Faker().Commerce.Color();
             var patch = PatchFaker.MakeReplacePatch<CustomFieldViewModel, string>(x => x.Value, color);
 
-            var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                $"Bearer {Token}").PatchJsonAsync(patch);
-
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
-            responseModel.Should().NotBeNull();
-            responseModel.Id.Should().NotBeEmpty();
-            responseModel.EntityId.Should().NotBeEmpty();
-            responseModel.Key.Should().NotBeNullOrWhiteSpace();
-            responseModel.Value.Should().NotBeNullOrWhiteSpace();
-            responseModel.Value.Should().BeEquivalentTo(color);
-            responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
-
-            var entity = await GetAsync(entityId);
-            var customField = entity.CustomFields.First(x => x.Id == id);
-            customField.Value.Should().BeEquivalentTo(color);
-
-
-            PatchCustomFieldsAssertions(response, responseModel);
-
-            SaveResponse(response);
-
-            return responseModel;
+            var response = await $"{Url}/{entityId}/custom-fields/{id}".WithAuth().PatchJsonAsync(patch);
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
         }
-
-        private async Task PatchCustomFieldsUnauthorizedAsync(TKey entityId, Guid id)
+        catch (FlurlHttpException e)
         {
-            try
-            {
-                var color = new Faker().Commerce.Color();
-                var patch = PatchFaker.MakeReplacePatch<CustomFieldViewModel, string>(x => x.Value, color);
-
-                var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                    $"Bearer {Token}").PatchJsonAsync(patch);
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
+            e.StatusCode.Should().Be(403);
         }
+    }
 
-        protected virtual void PatchCustomFieldsAssertions(IFlurlResponse response,
-            CustomFieldViewModelRead responseModel)
+    protected virtual void PatchCustomFieldsAssertions(IFlurlResponse response,
+        CustomFieldViewModelRead responseModel)
+    {
+    }
+
+    private async Task SearchCustomFieldsAsync(string key)
+    {
+        async Task<(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModelRead> responseModel)>
+            DoSearch()
         {
+            var httpResponse = await $"{Url}/custom-fields/".WithAuth()
+                .SetQueryParam("pageNumber", "1")
+                .SetQueryParam("pageSize", "10")
+                .SetQueryParam("key", key)
+                .GetAsync();
+
+            httpResponse.Should().NotBeNull();
+            httpResponse.StatusCode.Should().Be(200);
+
+            var httpResponseModel =
+                await httpResponse.GetJsonAsync<EntityPagedResponse<CustomFieldViewModelRead>>();
+
+            httpResponseModel.Should().NotBeNull();
+            httpResponseModel.Data.Should().NotBeNullOrEmpty();
+
+            var customField = httpResponseModel.Data.First();
+            customField.Should().NotBeNull();
+            customField.Id.Should().NotBeEmpty();
+            customField.EntityId.Should().NotBeEmpty();
+            customField.Key.Should().NotBeNullOrWhiteSpace();
+            customField.Value.Should().NotBeNullOrWhiteSpace();
+            customField.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
+
+            return (httpResponse, httpResponseModel);
         }
 
-        private async Task SearchCustomFieldsAsync(string key)
+        var (searchResponse, searchResponseModel) = await RetryAsync(DoSearch);
+
+        SearchCustomFieldsAssertions(searchResponse, searchResponseModel);
+
+        SaveResponse(searchResponse);
+    }
+
+    private async Task SearchCustomFieldsUnauthorizedAsync(string key)
+    {
+        async Task<(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModelRead> responseModel)>
+            DoSearch()
         {
-            async Task<(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModelRead> responseModel)>
-                DoSearch()
-            {
-                var httpResponse = await $"{Url}/custom-fields/".WithHeader("Authorization",
-                        $"Bearer {Token}")
-                    .SetQueryParam("pageNumber", "1")
-                    .SetQueryParam("pageSize", "10")
-                    .SetQueryParam("key", key)
-                    .GetAsync();
+            var httpResponse = await $"{Url}/custom-fields/".WithAuth()
+                .SetQueryParam("pageNumber", "1")
+                .SetQueryParam("pageSize", "10")
+                .SetQueryParam("key", key)
+                .GetAsync();
 
-                httpResponse.Should().NotBeNull();
-                httpResponse.StatusCode.Should().Be(200);
+            httpResponse.Should().NotBeNull();
+            httpResponse.StatusCode.Should().Be(200);
 
-                var httpResponseModel =
-                    await httpResponse.GetJsonAsync<EntityPagedResponse<CustomFieldViewModelRead>>();
+            var httpResponseModel =
+                await httpResponse.GetJsonAsync<EntityPagedResponse<CustomFieldViewModelRead>>();
 
-                httpResponseModel.Should().NotBeNull();
-                httpResponseModel.Data.Should().NotBeNullOrEmpty();
+            httpResponseModel.Should().NotBeNull();
+            httpResponseModel.Data.Should().BeEmpty();
 
-                var customField = httpResponseModel.Data.First();
-                customField.Should().NotBeNull();
-                customField.Id.Should().NotBeEmpty();
-                customField.EntityId.Should().NotBeEmpty();
-                customField.Key.Should().NotBeNullOrWhiteSpace();
-                customField.Value.Should().NotBeNullOrWhiteSpace();
-                customField.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
-
-                return (httpResponse, httpResponseModel);
-            }
-
-            var (searchResponse, searchResponseModel) = await RetryAsync(DoSearch);
-
-            SearchCustomFieldsAssertions(searchResponse, searchResponseModel);
-
-            SaveResponse(searchResponse);
+            return (httpResponse, httpResponseModel);
         }
 
-        private async Task SearchCustomFieldsUnauthorizedAsync(string key)
+        await RetryAsync(DoSearch);
+    }
+
+    protected virtual void SearchCustomFieldsAssertions(IFlurlResponse response,
+        EntityPagedResponse<CustomFieldViewModelRead> responseModel)
+    {
+    }
+
+    private async Task DeleteCustomFieldsAsync(TKey entityId, Guid id)
+    {
+        var response = await $"{Url}/{entityId}/custom-fields/{id}".WithAuth().DeleteAsync();
+
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+        responseModel.Should().NotBeNull();
+        responseModel.Id.Should().NotBeEmpty();
+        responseModel.EntityId.Should().NotBeEmpty();
+        responseModel.Key.Should().NotBeNullOrWhiteSpace();
+        responseModel.Value.Should().NotBeNullOrWhiteSpace();
+        responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
+
+        var entity = await GetAsync(entityId);
+        entity.CustomFields.Should().NotContain(x => x.Id == id);
+
+        DeleteCustomFieldsAssertions(response, responseModel);
+
+        SaveResponse(response);
+    }
+
+    private async Task DeleteCustomFieldsUnauthorizedAsync(TKey entityId, Guid id)
+    {
+        try
         {
-            async Task<(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModelRead> responseModel)>
-                DoSearch()
-            {
-                var httpResponse = await $"{Url}/custom-fields/".WithHeader("Authorization",
-                        $"Bearer {Token}")
-                    .SetQueryParam("pageNumber", "1")
-                    .SetQueryParam("pageSize", "10")
-                    .SetQueryParam("key", key)
-                    .GetAsync();
-
-                httpResponse.Should().NotBeNull();
-                httpResponse.StatusCode.Should().Be(200);
-
-                var httpResponseModel =
-                    await httpResponse.GetJsonAsync<EntityPagedResponse<CustomFieldViewModelRead>>();
-
-                httpResponseModel.Should().NotBeNull();
-                httpResponseModel.Data.Should().BeEmpty();
-
-                return (httpResponse, httpResponseModel);
-            }
-
-            await RetryAsync(DoSearch);
+            var response = await $"{Url}/{entityId}/custom-fields/{id}".WithAuth().DeleteAsync();
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
         }
-
-        protected virtual void SearchCustomFieldsAssertions(IFlurlResponse response,
-            EntityPagedResponse<CustomFieldViewModelRead> responseModel)
+        catch (FlurlHttpException e)
         {
+            e.StatusCode.Should().Be(403);
         }
+    }
 
-        private async Task DeleteCustomFieldsAsync(TKey entityId, Guid id)
+    protected virtual void DeleteCustomFieldsAssertions(IFlurlResponse response,
+        CustomFieldViewModelRead responseModelRead)
+    {
+    }
+
+    protected async Task EndToEndAsync(Func<TReadResponse, string> searchSelector, bool doExport = true)
+    {
+        await TestRunner.Authenticate();
+        var createRequest = await GenerateCreateRequestAsync();
+
+        var result = await PostAsync(createRequest);
+
+        var updateRequest = await GenerateUpdateRequestAsync(createRequest);
+        await PutAsync(result.Id, updateRequest);
+
+        var pathRequest = await GeneratePatchAsync();
+        var patched = await PatchAsync(result.Id, pathRequest);
+
+        var search = searchSelector(patched);
+
+        await GetAsync(result.Id);
+        await PageAsync();
+        await SearchAsync(search);
+        if (doExport)
         {
-            var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                $"Bearer {Token}").DeleteAsync();
-
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
-
-            var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
-            responseModel.Should().NotBeNull();
-            responseModel.Id.Should().NotBeEmpty();
-            responseModel.EntityId.Should().NotBeEmpty();
-            responseModel.Key.Should().NotBeNullOrWhiteSpace();
-            responseModel.Value.Should().NotBeNullOrWhiteSpace();
-            responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
-
-            var entity = await GetAsync(entityId);
-            entity.CustomFields.Should().NotContain(x => x.Id == id);
-
-            DeleteCustomFieldsAssertions(response, responseModel);
-
-            SaveResponse(response);
+            await ExportToCsvAsync();
         }
 
-        private async Task DeleteCustomFieldsUnauthorizedAsync(TKey entityId, Guid id)
+        var changes = await GetChangeTrackingAsync(result.Id, 3);
+
+        var added = changes
+            .Data
+            .FirstOrDefault(x => x.Action.EqualsIgnoreCaseAndWhitespace("added"));
+
+        added.Should().NotBeNull();
+        added?.EntityId.Should().BeEquivalentTo(result.Id);
+
+        var ids = new List<TKey> {result.Id};
+
+        var tasks = Enumerable
+            .Range(0, 5)
+            .Select(async _ => await GenerateCreateRequestAsync())
+            .ToArray();
+
+        var entities = await Task.WhenAll(tasks);
+
+        var multiResult = await PostMultipleAsync(entities);
+
+        ids.AddRange(multiResult.Created.Select(x => x.Id));
+
+        var addedCustomField = await PostCustomFieldsAsync(CreatedKey);
+        await AssertCustomFieldOnEntity(CreatedKey, addedCustomField);
+
+        var updatedCustomField = await PutCustomFieldsAsync(CreatedKey, addedCustomField.Id);
+        await AssertCustomFieldOnEntity(CreatedKey, updatedCustomField);
+
+        var patchedCustomField = await PatchCustomFieldsAsync(CreatedKey, addedCustomField.Id);
+        await AssertCustomFieldOnEntity(CreatedKey, patchedCustomField);
+
+        await SearchCustomFieldsAsync(patchedCustomField.Key);
+
+        await DeleteCustomFieldsAsync(CreatedKey, addedCustomField.Id);
+        await AssertCustomFieldNotOnEntity(CreatedKey, addedCustomField.Id);
+
+        await CheckResourceAuthorizationAsync(result, search, addedCustomField);
+        await TestRunner.Authenticate();
+        foreach (var id in ids)
         {
-            try
-            {
-                var response = await $"{Url}/{entityId}/custom-fields/{id}".WithHeader("Authorization",
-                    $"Bearer {Token}").DeleteAsync();
-                Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
-            }
-            catch (FlurlHttpException e)
-            {
-                e.StatusCode.Should().Be(403);
-            }
+            await DeleteAsync(id);
         }
+    }
 
-        protected virtual void DeleteCustomFieldsAssertions(IFlurlResponse response,
-            CustomFieldViewModelRead responseModelRead)
-        {
-        }
+    private async Task AssertCustomFieldOnEntity(TKey entityId, CustomFieldViewModelRead customField)
+    {
+        var entity = await GetAsync(entityId);
+        entity.CustomFields.Should().Contain(x =>
+            x.Id == customField.Id && x.Key == customField.Key && x.Value == customField.Value);
+    }
 
-        private string AuthenticationUrl => $"{BaseUrl}/token";
-        protected abstract Task<UserInfoPostDto> GenerateAuthenticateRequestAsync();
-        protected string Token { get; set; }
+    private async Task AssertCustomFieldNotOnEntity(TKey entityId, Guid customFieldId)
+    {
+        var entity = await GetAsync(entityId);
+        entity.CustomFields.Should().NotContain(x =>
+            x.Id == customFieldId);
+    }
 
-        protected async Task Authenticate(UserInfoPostDto userInfo = null)
-        {
-            var authenticateRequest = userInfo ?? await GenerateAuthenticateRequestAsync();
-            var response = await AuthenticationUrl.PostJsonAsync(authenticateRequest);
+    private async Task CheckResourceAuthorizationAsync(TReadResponse result, string search,
+        CustomFieldViewModelRead customField)
+    {
+        await TestRunner.Authenticate(TestConstants.UnauthorizedTestUser);
 
-            response.Should().NotBeNull();
-            response.StatusCode.Should().Be(200);
+        var createRequest = await GenerateCreateRequestAsync();
+        await PostUnauthorizedAsync(createRequest);
 
-            var responseModel = await response.GetJsonAsync<TokenResponseModel>();
+        var updateRequest = await GenerateUpdateRequestAsync(createRequest);
+        await PutUnauthorizedAsync(result.Id, updateRequest);
 
-            responseModel.Should().NotBeNull();
-            responseModel.Token.Should().NotBeNull();
+        var patchRequest = await GeneratePatchAsync();
+        await PatchUnauthorizedAsync(result.Id, patchRequest);
+        await DeleteUnauthorizedAsync(result.Id);
 
-            Token = responseModel.Token;
-        }
+        await GetUnauthorizedAsync(result.Id);
+        await PageUnauthorizedAsync(TestConstants.UnauthorizedTestUser.Email);
+        await SearchUnauthorizedAsync(search, TestConstants.UnauthorizedTestUser.Email);
+        await ExportToCsvUnauthorizedAsync(result.Id);
+        await GetChangeTrackingUnauthorizedAsync(result.Id);
 
-        protected async Task EndToEndAsync(Func<TReadResponse, string> searchSelector, bool doExport = true)
-        {
-            await Authenticate();
-            var createRequest = await GenerateCreateRequestAsync();
+        var tasks = Enumerable
+            .Range(0, 5)
+            .Select(async _ => await GenerateCreateRequestAsync())
+            .ToArray();
 
-            var result = await PostAsync(createRequest);
+        var entities = await Task.WhenAll(tasks);
+        await PostMultipleUnauthorizedAsync(entities);
 
-            var updateRequest = await GenerateUpdateRequestAsync(createRequest);
-            await PutAsync(result.Id, updateRequest);
-
-            var pathRequest = await GeneratePatchAsync();
-            var patched = await PatchAsync(result.Id, pathRequest);
-
-            var search = searchSelector(patched);
-
-            await GetAsync(result.Id);
-            await PageAsync();
-            await SearchAsync(search);
-            if (doExport)
-            {
-                await ExportToCsvAsync();
-            }
-
-            var changes = await GetChangeTrackingAsync(result.Id, 3);
-
-            var added = changes
-                .Data
-                .FirstOrDefault(x => x.Action.EqualsIgnoreCaseAndWhitespace("added"));
-
-            added.Should().NotBeNull();
-            added?.EntityId.Should().BeEquivalentTo(result.Id);
-
-            var ids = new List<TKey> { result.Id };
-
-            var tasks = Enumerable
-                .Range(0, 5)
-                .Select(async _ => await GenerateCreateRequestAsync())
-                .ToArray();
-
-            var entities = await Task.WhenAll(tasks);
-
-            var multiResult = await PostMultipleAsync(entities);
-
-            ids.AddRange(multiResult.Created.Select(x => x.Id));
-
-            var addedCustomField = await PostCustomFieldsAsync(CreatedKey);
-            await PutCustomFieldsAsync(CreatedKey, addedCustomField.Id);
-            var patchedCustomField = await PatchCustomFieldsAsync(CreatedKey, addedCustomField.Id);
-            await SearchCustomFieldsAsync(patchedCustomField.Key);
-            await DeleteCustomFieldsAsync(CreatedKey, addedCustomField.Id);
-
-            await CheckResourceAuthorizationAsync(result, search, addedCustomField);
-            await Authenticate();
-            foreach (var id in ids)
-            {
-                await DeleteAsync(id);
-            }
-        }
-
-        private async Task CheckResourceAuthorizationAsync(TReadResponse result, string search,
-            CustomFieldViewModelRead customField)
-        {
-            var userEmail = "NotAuthorized@test.com";
-            await Authenticate(new UserInfoPostDto { Email = userEmail, Password = "password" });
-
-            var createRequest = await GenerateCreateRequestAsync();
-            await PostUnauthorizedAsync(createRequest);
-
-            var updateRequest = await GenerateUpdateRequestAsync(createRequest);
-            await PutUnauthorizedAsync(result.Id, updateRequest);
-
-            var patchRequest = await GeneratePatchAsync();
-            await PatchUnauthorizedAsync(result.Id, patchRequest);
-            await DeleteUnauthorizedAsync(result.Id);
-
-            await GetUnauthorizedAsync(result.Id);
-            await PageUnauthorizedAsync(userEmail);
-            await SearchUnauthorizedAsync(search, userEmail);
-            await ExportToCsvUnauthorizedAsync(result.Id);
-            await GetChangeTrackingUnauthorizedAsync(result.Id);
-
-            var tasks = Enumerable
-                .Range(0, 5)
-                .Select(async _ => await GenerateCreateRequestAsync())
-                .ToArray();
-
-            var entities = await Task.WhenAll(tasks);
-            await PostMultipleUnauthorizedAsync(entities);
-
-            await PostCustomFieldsUnauthorizedAsync(CreatedKey);
-            await PutCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
-            await PatchCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
-            await DeleteCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
-            await SearchCustomFieldsUnauthorizedAsync(customField.Key);
-        }
+        await PostCustomFieldsUnauthorizedAsync(CreatedKey);
+        await PutCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
+        await PatchCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
+        await DeleteCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
+        await SearchCustomFieldsUnauthorizedAsync(customField.Key);
     }
 }
