@@ -25,7 +25,7 @@ public class CustomFieldValidationService<TKey, TEntity> : ICustomFieldsValidati
     public async Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> customField,
         CancellationToken cancellationToken)
     {
-        var modelState = new ModelStateResult<CustomFieldsEntity<TKey>> {WasSuccessful = true, Model = customField};
+        var modelState = new ModelStateResult<CustomFieldsEntity<TKey>> { WasSuccessful = true, Model = customField };
         if (customField.Id != Guid.Empty)
         {
             return modelState;
@@ -47,7 +47,7 @@ public class CustomFieldValidationService<TKey, TEntity> : ICustomFieldsValidati
     {
 
         var modelState =
-            new ModelStateResult<JsonPatchDocument<CustomFieldsEntity<TKey>>> {WasSuccessful = true, Model = patch};
+            new ModelStateResult<JsonPatchDocument<CustomFieldsEntity<TKey>>> { WasSuccessful = true, Model = patch };
 
         var badTranslations = patch.Operations.Where(x =>
             x.path.EndsWith(nameof(CustomFieldsEntity<TKey>.Value)) && x.value is string valString &&
