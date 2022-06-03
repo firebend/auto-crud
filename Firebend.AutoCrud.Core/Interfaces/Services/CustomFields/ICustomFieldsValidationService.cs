@@ -11,10 +11,9 @@ public interface ICustomFieldsValidationService<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
-    Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> customField, CancellationToken cancellationToken);
+    Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> customField,
+        CancellationToken cancellationToken);
 
-    Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> original,
-        CustomFieldsEntity<TKey> entity,
-        JsonPatchDocument<CustomFieldsEntity<TKey>> patch,
+    Task<ModelStateResult<JsonPatchDocument<CustomFieldsEntity<TKey>>>> ValidateAsync(JsonPatchDocument<CustomFieldsEntity<TKey>> patch,
         CancellationToken cancellationToken);
 }

@@ -20,14 +20,17 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
     public abstract class
         AbstractCustomFieldsUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
+        private readonly ICustomFieldsValidationService<TKey, TEntity> _customFieldsValidationService;
         private readonly ICustomFieldsUpdateService<TKey, TEntity> _updateService;
 
         protected AbstractCustomFieldsUpdateController(IEntityKeyParser<TKey, TEntity> keyParser,
+            ICustomFieldsValidationService<TKey, TEntity> customFieldsValidationService,
             ICustomFieldsUpdateService<TKey, TEntity> updateService,
             IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
         {
+            _customFieldsValidationService = customFieldsValidationService;
             _updateService = updateService;
         }
 
@@ -67,6 +70,25 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {
                 return GetInvalidModelStateResult();
+            }
+
+            var isValid = await _customFieldsValidationService
+                .ValidateAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!isValid.WasSuccessful)
+            {
+                foreach (var modelError in isValid.Errors)
+                {
+                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+                }
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (isValid.Model != null)
+            {
+                entity = isValid.Model;
             }
 
             var result = await _updateService
@@ -122,6 +144,25 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 ModelState.AddModelError(nameof(JsonPatchDocument<CustomFieldViewModelCreate>),
                     $"Unable to make patch for {nameof(CustomFieldsEntity<TKey>)} using {nameof(CustomFieldViewModelCreate)}. {patchError}");
                 return GetInvalidModelStateResult();
+            }
+
+            var isValid = await _customFieldsValidationService
+                .ValidateAsync(entityPatchDocument, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!isValid.WasSuccessful)
+            {
+                foreach (var modelError in isValid.Errors)
+                {
+                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+                }
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (isValid.Model != null)
+            {
+                entityPatchDocument = isValid.Model;
             }
 
             var result = await _updateService

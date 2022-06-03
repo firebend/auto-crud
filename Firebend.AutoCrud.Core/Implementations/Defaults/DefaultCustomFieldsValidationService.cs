@@ -17,9 +17,8 @@ public abstract class
         CancellationToken cancellationToken)
         => Task.FromResult(ModelStateResult.Success(customField));
 
-    public Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> original,
-        CustomFieldsEntity<TKey> entity,
+    public Task<ModelStateResult<JsonPatchDocument<CustomFieldsEntity<TKey>>>> ValidateAsync(
         JsonPatchDocument<CustomFieldsEntity<TKey>> patch,
         CancellationToken cancellationToken)
-        => Task.FromResult(ModelStateResult.Success(entity));
+        => Task.FromResult(ModelStateResult.Success(patch));
 }

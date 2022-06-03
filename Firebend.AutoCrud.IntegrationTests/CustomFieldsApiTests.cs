@@ -69,7 +69,7 @@ public class CustomFieldsApiTests
     }
 
     [TestMethod]
-    public async Task CustomFieldsPutValidation()
+    public async Task CustomFieldsPutMinMaxValidation()
     {
         var faker = new Faker();
         var customFieldCreate = new CustomFieldViewModelCreate { Key = "Valid", Value = faker.Random.String2(100) };
@@ -91,7 +91,7 @@ public class CustomFieldsApiTests
     }
 
     [TestMethod]
-    public async Task CustomFieldsPatchValidation()
+    public async Task CustomFieldsPatchMinMaxValidation()
     {
         var faker = new Faker();
         var customFieldCreate = new CustomFieldViewModelCreate { Key = "Valid", Value = faker.Random.String2(100) };
@@ -130,5 +130,24 @@ public class CustomFieldsApiTests
 
         oneTooManyResponse.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
         (await oneTooManyResponse.GetStringAsync()).Should().Contain("Only 10 custom fields allowed per EfPerson");
+    }
+
+    [TestMethod]
+    public async Task CustomFieldsPatchValidation()
+    {
+        var person = await CreatePersonAsync();
+
+        var customField = CustomFieldFaker.Faker.Generate();
+        var customFieldResponse = await PostCustomFieldAsync(person.Id, customField);
+        customFieldResponse.StatusCode.Should().Be((int)HttpStatusCode.OK);
+        var customFieldResult = await customFieldResponse.GetJsonAsync<CustomFieldViewModelRead>();
+
+        var patch = PatchFaker.MakeReplacePatch<CustomFieldViewModelCreate, string>(x =>
+            x.Value, "All your base are belong to us!");
+        var patchResponse = await PatchCustomFieldAsync(person.Id, customFieldResult.Id, patch);
+        patchResponse.StatusCode.Should().Be((int)HttpStatusCode.OK);
+        var patchResult = await patchResponse.GetJsonAsync<CustomFieldViewModelRead>();
+        patchResult.Value.Should()
+            .Be("With the help of Federation government forces, CATS has taken all of your bases.");
     }
 }
