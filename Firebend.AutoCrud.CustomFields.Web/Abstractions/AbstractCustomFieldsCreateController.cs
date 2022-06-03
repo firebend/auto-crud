@@ -1,9 +1,7 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.Web.Models;
 using Firebend.AutoCrud.Web.Abstractions;
@@ -18,15 +16,15 @@ public abstract class AbstractCustomFieldsCreateController<TKey, TEntity> : Abst
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
-    private readonly IEntityValidationService<Guid, CustomFieldsEntity<TKey>> _entityValidationService;
+    private readonly ICustomFieldsValidationService<TKey, TEntity> _customFieldsValidationService;
     private readonly ICustomFieldsCreateService<TKey, TEntity> _createService;
 
     protected AbstractCustomFieldsCreateController(IEntityKeyParser<TKey, TEntity> keyParser,
-        IEntityValidationService<Guid, CustomFieldsEntity<TKey>> entityValidationService,
+        ICustomFieldsValidationService<TKey, TEntity> customFieldsValidationService,
         ICustomFieldsCreateService<TKey, TEntity> createService,
         IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
     {
-        _entityValidationService = entityValidationService;
+        _customFieldsValidationService = customFieldsValidationService;
         _createService = createService;
     }
 
@@ -61,7 +59,7 @@ public abstract class AbstractCustomFieldsCreateController<TKey, TEntity> : Abst
             return GetInvalidModelStateResult();
         }
 
-        var isValid = await _entityValidationService
+        var isValid = await _customFieldsValidationService
             .ValidateAsync(entity, cancellationToken)
             .ConfigureAwait(false);
 

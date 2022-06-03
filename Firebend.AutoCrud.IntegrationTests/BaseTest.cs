@@ -399,7 +399,8 @@ public abstract class BaseTest<
             using (var csv = new CsvReader(stringReader,
                        new CsvConfiguration(CultureInfo.InvariantCulture)
                        {
-                           HeaderValidated = null, MissingFieldFound = null
+                           HeaderValidated = null,
+                           MissingFieldFound = null
                        }))
             {
                 var records = csv.GetRecords<TExport>().ToList();
@@ -827,7 +828,7 @@ public abstract class BaseTest<
         added.Should().NotBeNull();
         added?.EntityId.Should().BeEquivalentTo(result.Id);
 
-        var ids = new List<TKey> {result.Id};
+        var ids = new List<TKey> { result.Id };
 
         var tasks = Enumerable
             .Range(0, 5)

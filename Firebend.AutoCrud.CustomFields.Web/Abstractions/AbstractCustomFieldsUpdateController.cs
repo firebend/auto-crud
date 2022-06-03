@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.CustomFields.Web.Models;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -37,8 +37,8 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePutAsync(
-            [Required] [FromRoute] string entityId,
-            [Required] [FromRoute] Guid id,
+            [Required][FromRoute] string entityId,
+            [Required][FromRoute] Guid id,
             [FromBody] CustomFieldViewModelCreate viewModel,
             CancellationToken cancellationToken)
         {
@@ -58,7 +58,10 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             var entity = new CustomFieldsEntity<TKey>
             {
-                Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value, Id = id
+                Key = viewModel.Key,
+                Value = viewModel.Value,
+                EntityId = rootKey.Value,
+                Id = id
             };
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
@@ -72,7 +75,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key = entityId, id});
+                return NotFound(new { key = entityId, id });
             }
 
             return Ok(result);
@@ -84,8 +87,8 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePatchAsync(
-            [Required] [FromRoute] string entityId,
-            [Required] [FromRoute] Guid id,
+            [Required][FromRoute] string entityId,
+            [Required][FromRoute] Guid id,
             [FromBody] JsonPatchDocument<CustomFieldViewModelCreate> patchDocument,
             CancellationToken cancellationToken)
         {
@@ -127,7 +130,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 
             if (result == null)
             {
-                return NotFound(new {key = entityId, id});
+                return NotFound(new { key = entityId, id });
             }
 
             return Ok(result);

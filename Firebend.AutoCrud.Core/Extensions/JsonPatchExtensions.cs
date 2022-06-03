@@ -41,10 +41,7 @@ public static class JsonPatchExtensions
         {
             var testEntity = new TTo();
             jsonPatchDocument.ApplyTo(testEntity,
-                _ =>
-                {
-                    result.WasSuccessful = false;
-                });
+                _ => result.WasSuccessful = false);
         }
 
         toPatch.Operations.AddRange(

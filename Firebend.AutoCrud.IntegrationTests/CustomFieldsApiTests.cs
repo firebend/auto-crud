@@ -60,7 +60,7 @@ public class CustomFieldsApiTests
     public async Task CustomFieldsValueMinMaxCharacters(int valueLength, HttpStatusCode expectedStatusCode)
     {
         var customField =
-            new CustomFieldViewModelCreate {Key = "TestLength", Value = new Faker().Random.String2(valueLength)};
+            new CustomFieldViewModelCreate { Key = "TestLength", Value = new Faker().Random.String2(valueLength) };
 
         customField.Value.Length.Should().Be(valueLength);
 
@@ -72,7 +72,7 @@ public class CustomFieldsApiTests
     public async Task CustomFieldsPutValidation()
     {
         var faker = new Faker();
-        var customFieldCreate = new CustomFieldViewModelCreate {Key = "Valid", Value = faker.Random.String2(100)};
+        var customFieldCreate = new CustomFieldViewModelCreate { Key = "Valid", Value = faker.Random.String2(100) };
         var customFieldRequest =
             await PostCustomFieldAsync(_person.Id, customFieldCreate);
         var customField = await customFieldRequest.GetJsonAsync<CustomFieldViewModelRead>();
@@ -81,11 +81,11 @@ public class CustomFieldsApiTests
         customField.Key.Should().Be(customFieldCreate.Key);
         customField.Value.Should().Be(customFieldCreate.Value);
 
-        var validPutBody = new CustomFieldViewModelCreate {Key = customField.Key, Value = faker.Random.String2(50)};
+        var validPutBody = new CustomFieldViewModelCreate { Key = customField.Key, Value = faker.Random.String2(50) };
         var validPutResponse = await PutCustomFieldAsync(_person.Id, customField.Id, validPutBody);
         validPutResponse.StatusCode.Should().Be((int)HttpStatusCode.OK);
 
-        var invalidPutBody = new CustomFieldViewModelCreate {Key = customField.Key, Value = faker.Random.String2(1001)};
+        var invalidPutBody = new CustomFieldViewModelCreate { Key = customField.Key, Value = faker.Random.String2(1001) };
         var invalidPutResponse = await PutCustomFieldAsync(_person.Id, customField.Id, invalidPutBody);
         invalidPutResponse.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
     }
@@ -94,7 +94,7 @@ public class CustomFieldsApiTests
     public async Task CustomFieldsPatchValidation()
     {
         var faker = new Faker();
-        var customFieldCreate = new CustomFieldViewModelCreate {Key = "Valid", Value = faker.Random.String2(100)};
+        var customFieldCreate = new CustomFieldViewModelCreate { Key = "Valid", Value = faker.Random.String2(100) };
         var customFieldRequest =
             await PostCustomFieldAsync(_person.Id, customFieldCreate);
         var customField = await customFieldRequest.GetJsonAsync<CustomFieldViewModelRead>();
@@ -112,5 +112,23 @@ public class CustomFieldsApiTests
             PatchFaker.MakeReplacePatch<CustomFieldViewModelCreate, string>(x => x.Value, faker.Random.String2(1001));
         var invalidPatchResponse = await PatchCustomFieldAsync(_person.Id, customField.Id, invalidPatchBody);
         invalidPatchResponse.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
+    }
+
+    [TestMethod]
+    public async Task CustomFieldsPerEntityLimit()
+    {
+        var person = await CreatePersonAsync();
+        var customFields = CustomFieldFaker.Faker.Generate(10);
+        foreach (var customField in customFields)
+        {
+            var added = await PostCustomFieldAsync(person.Id, customField);
+            added.StatusCode.Should().Be((int)HttpStatusCode.OK);
+        }
+
+        var oneTooMany = CustomFieldFaker.Faker.Generate();
+        var oneTooManyResponse = await PostCustomFieldAsync(person.Id, oneTooMany);
+
+        oneTooManyResponse.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
+        (await oneTooManyResponse.GetStringAsync()).Should().Contain("Only 10 custom fields allowed per EfPerson");
     }
 }

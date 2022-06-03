@@ -1,9 +1,7 @@
-using System;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Models.CustomFields;
+using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.CustomFields.Web.Abstractions;
 using Firebend.AutoCrud.CustomFields.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web;
@@ -20,11 +18,11 @@ public static class Extensions
         string openApiName = null)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
-        where TEntity : class, IEntity<TKey>
+        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
         configurator.Builder
-            .WithRegistration<IEntityValidationService<Guid, CustomFieldsEntity<TKey>>,
-                DefaultEntityValidationService<Guid, CustomFieldsEntity<TKey>>>(false);
+            .WithRegistration<ICustomFieldsValidationService<TKey, TEntity>,
+                DefaultCustomFieldsValidationService<TKey, TEntity>>(false);
 
         var createController = typeof(AbstractCustomFieldsCreateController<,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,

@@ -9,6 +9,7 @@ using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
+using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.EntityFramework;
 using Firebend.AutoCrud.CustomFields.Mongo;
@@ -147,6 +148,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)
                         .WithValidationService<PersonValidationService>()
+                        .Builder
+                        .WithRegistration<ICustomFieldsValidationService<Guid, EfPerson>,
+                            CustomFieldValidationService<Guid, EfPerson>>()
                     ));
 
         public static EntityFrameworkEntityCrudGenerator AddEfPets(this EntityFrameworkEntityCrudGenerator generator,
