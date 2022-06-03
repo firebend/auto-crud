@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -90,8 +91,18 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         {
             Response.RegisterForDispose(_updateService);
 
-            if (!ModelState.IsValid || !TryValidateModel(patchDocument))
+            if (!ModelState.IsValid)
             {
+                return GetInvalidModelStateResult();
+            }
+
+            if (!patchDocument.ValidatePatchModel(out var patchValidationResults))
+            {
+                foreach (var validationResult in patchValidationResults)
+                {
+                    ModelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage!);
+                }
+
                 return GetInvalidModelStateResult();
             }
 

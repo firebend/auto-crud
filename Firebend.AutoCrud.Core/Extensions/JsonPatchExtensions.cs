@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Microsoft.AspNetCore.JsonPatch;
@@ -7,16 +10,38 @@ namespace Firebend.AutoCrud.Core.Extensions;
 
 public static class JsonPatchExtensions
 {
-    public static bool TryCopyTo<TFrom, TTo>(this JsonPatchDocument<TFrom> fromPatch, JsonPatchDocument<TTo> toPatch, out string errorMessage)
+    public static bool ValidatePatchModel<T>(this JsonPatchDocument<T> patchDocument,
+        out List<ValidationResult> results) where T : class, new()
+    {
+        var testType = new T();
+        patchDocument.ApplyTo(testType);
+        var context = new ValidationContext(testType, null, null);
+        var allResults = new List<ValidationResult>();
+
+        Validator.TryValidateObject(testType, context, allResults, true);
+        results =
+            allResults.Where(x =>
+                {
+                    var errorPath = string.Join('/', x.MemberNames);
+                    return patchDocument.Operations.Any(o =>
+                        o.path.TrimStart('/').Equals(errorPath, StringComparison.InvariantCultureIgnoreCase));
+                })
+                .ToList();
+        return results.IsEmpty();
+    }
+
+    public static bool TryCopyTo<TFrom, TTo>(this JsonPatchDocument<TFrom> fromPatch, JsonPatchDocument<TTo> toPatch,
+        out string errorMessage)
         where TFrom : class
         where TTo : class, new()
     {
         var result = Result.Success();
+
         void TestPatch(JsonPatchDocument<TTo> jsonPatchDocument)
         {
             var testEntity = new TTo();
             jsonPatchDocument.ApplyTo(testEntity,
-                error =>
+                _ =>
                 {
                     result.WasSuccessful = false;
                 });
