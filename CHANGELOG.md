@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="4.5.0"></a>
+## [4.5.0](https://www.github.com/firebend/auto-crud/releases/tag/v4.5.0) (2022-6-4)
+
+### Features
+
+* custom fields validation (#119) ([acd1163](https://www.github.com/firebend/auto-crud/commit/acd116385738471311996565a86cbbfca9caf077))
+
+### Other
+
+* Bump ansi-regex in /Firebend.AutoCrud.Web.Sample.LoadTest (#116) ([687701b](https://www.github.com/firebend/auto-crud/commit/687701bf70ce21824bb3903052eb35e818464034))
+* Bump moment in /Firebend.AutoCrud.Web.Sample.LoadTest (#118) ([d2fe85b](https://www.github.com/firebend/auto-crud/commit/d2fe85b6da650a66bb4416d3bf23c9b8dc9487ea))
+
 <a name="4.4.0"></a>
 ## [4.4.0](https://www.github.com/firebend/auto-crud/releases/tag/v4.4.0) (2022-6-1)
 
