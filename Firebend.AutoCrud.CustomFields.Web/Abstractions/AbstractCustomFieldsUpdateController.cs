@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -15,16 +17,20 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
-    public abstract class AbstractCustomAttributeUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class
+        AbstractCustomFieldsUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     {
+        private readonly ICustomFieldsValidationService<TKey, TEntity> _customFieldsValidationService;
         private readonly ICustomFieldsUpdateService<TKey, TEntity> _updateService;
 
-        protected AbstractCustomAttributeUpdateController(IEntityKeyParser<TKey, TEntity> keyParser,
+        protected AbstractCustomFieldsUpdateController(IEntityKeyParser<TKey, TEntity> keyParser,
+            ICustomFieldsValidationService<TKey, TEntity> customFieldsValidationService,
             ICustomFieldsUpdateService<TKey, TEntity> updateService,
             IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
         {
+            _customFieldsValidationService = customFieldsValidationService;
             _updateService = updateService;
         }
 
@@ -36,7 +42,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePutAsync(
             [Required][FromRoute] string entityId,
             [Required][FromRoute] Guid id,
-            [FromBody] CustomAttributeViewModelCreate viewModel,
+            [FromBody] CustomFieldViewModelCreate viewModel,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_updateService);
@@ -53,11 +59,36 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var entity = new CustomFieldsEntity<TKey> { Key = viewModel.Key, Value = viewModel.Value, EntityId = rootKey.Value, Id = id };
+            var entity = new CustomFieldsEntity<TKey>
+            {
+                Key = viewModel.Key,
+                Value = viewModel.Value,
+                EntityId = rootKey.Value,
+                Id = id
+            };
 
             if (!ModelState.IsValid || !TryValidateModel(entity))
             {
                 return GetInvalidModelStateResult();
+            }
+
+            var isValid = await _customFieldsValidationService
+                .ValidateAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!isValid.WasSuccessful)
+            {
+                foreach (var modelError in isValid.Errors)
+                {
+                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+                }
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (isValid.Model != null)
+            {
+                entity = isValid.Model;
             }
 
             var result = await _updateService
@@ -80,13 +111,23 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePatchAsync(
             [Required][FromRoute] string entityId,
             [Required][FromRoute] Guid id,
-            [FromBody] JsonPatchDocument<CustomFieldsEntity<TKey>> patchDocument,
+            [FromBody] JsonPatchDocument<CustomFieldViewModelCreate> patchDocument,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_updateService);
 
-            if (!ModelState.IsValid || !TryValidateModel(patchDocument))
+            if (!ModelState.IsValid)
             {
+                return GetInvalidModelStateResult();
+            }
+
+            if (!patchDocument.ValidatePatchModel(out var patchValidationResults))
+            {
+                foreach (var validationResult in patchValidationResults)
+                {
+                    ModelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage!);
+                }
+
                 return GetInvalidModelStateResult();
             }
 
@@ -97,8 +138,35 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
+            var entityPatchDocument = new JsonPatchDocument<CustomFieldsEntity<TKey>>();
+            if (!patchDocument.TryCopyTo(entityPatchDocument, out var patchError))
+            {
+                ModelState.AddModelError(nameof(JsonPatchDocument<CustomFieldViewModelCreate>),
+                    $"Unable to make patch for {nameof(CustomFieldsEntity<TKey>)} using {nameof(CustomFieldViewModelCreate)}. {patchError}");
+                return GetInvalidModelStateResult();
+            }
+
+            var isValid = await _customFieldsValidationService
+                .ValidateAsync(entityPatchDocument, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!isValid.WasSuccessful)
+            {
+                foreach (var modelError in isValid.Errors)
+                {
+                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+                }
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (isValid.Model != null)
+            {
+                entityPatchDocument = isValid.Model;
+            }
+
             var result = await _updateService
-                .PatchAsync(rootKey.Value, id, patchDocument, cancellationToken)
+                .PatchAsync(rootKey.Value, id, entityPatchDocument, cancellationToken)
                 .ConfigureAwait(false);
 
             if (result == null)
