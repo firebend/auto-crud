@@ -114,7 +114,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         public virtual Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
             => DeleteInternalAsync(key, null, cancellationToken);
 
-        private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+        protected virtual Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
             if (_domainEventPublisher is null or DefaultEntityDomainEventPublisher)
             {
