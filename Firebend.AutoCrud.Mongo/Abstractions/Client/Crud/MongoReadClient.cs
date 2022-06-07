@@ -29,7 +29,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _orderByHandler = orderByHandler;
         }
 
-        private async Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+        protected virtual async Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
             IEntityTransaction entityTransaction,
             Expression<Func<TEntity, bool>> additionalFilter,
             CancellationToken cancellationToken)

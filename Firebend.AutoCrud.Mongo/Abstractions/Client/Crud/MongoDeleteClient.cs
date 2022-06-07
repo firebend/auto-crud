@@ -71,9 +71,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             CancellationToken cancellationToken = default)
             => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
 
-        private Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+        protected virtual Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
-            if (_entityDomainEventPublisher == null || _entityDomainEventPublisher is DefaultEntityDomainEventPublisher)
+            if (_entityDomainEventPublisher is null or DefaultEntityDomainEventPublisher)
             {
                 return Task.CompletedTask;
             }
