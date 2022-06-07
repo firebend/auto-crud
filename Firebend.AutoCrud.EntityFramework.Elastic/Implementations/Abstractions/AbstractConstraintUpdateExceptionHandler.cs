@@ -9,6 +9,7 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions;
@@ -58,7 +59,11 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
 
         var constraint = constraintSplit[1][..constraintSplit[1].IndexOf("'", StringComparison.Ordinal)];
 
-        var tableIndex = GetConstraint<TableIndex>(dbContext, constraint, x => x.Name);
+        var tableIndex = GetConstraint<TableIndex, IIndex>(
+            dbContext,
+            constraint,
+            x => x.GetIndexes(),
+            x => x.Name);
 
         if (tableIndex == null)
         {
@@ -96,7 +101,11 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
 
         var constraint = constraintSplit[1][..constraintSplit[1].IndexOf("\"", StringComparison.Ordinal)];
 
-        var foreignKey = GetConstraint<ForeignKeyConstraint>(dbContext, constraint, x => x.Name);
+        var foreignKey = GetConstraint<ForeignKeyConstraint, IForeignKey>(
+            dbContext,
+            constraint,
+            x => x.GetForeignKeys(),
+            x => x.Name);
 
         if (foreignKey == null)
         {
@@ -117,9 +126,12 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
         );
     }
 
-    private static T GetConstraint<T>(DbContext dbContext,
+    private static TConstraint GetConstraint<TConstraint, TConstrainList>(DbContext dbContext,
         string constraintName,
-        Func<T, string> nameSelector) where T : IAnnotatable
+        Func<IEntityType, IEnumerable<TConstrainList>> constraintListSelector,
+        Func<TConstraint, string> nameSelector)
+        where TConstraint : IAnnotatable
+        where TConstrainList : IAnnotatable
     {
         var modelType = dbContext.Model.FindEntityType(typeof(TEntity));
 
@@ -128,12 +140,11 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
             return default;
         }
 
-        var constraint = modelType
-            .GetIndexes()
+        var constraint = constraintListSelector(modelType)
             .SelectMany(x => x.GetAnnotations().Concat(x.GetRuntimeAnnotations()))
             .Where(x => x?.Value != null)
-            .Where(x => x.Value is IEnumerable<T>)
-            .SelectMany(x => x.Value as IEnumerable<T>)
+            .Where(x => x.Value is IEnumerable<TConstraint>)
+            .SelectMany(x => x.Value as IEnumerable<TConstraint>)
             .Where(x => x is not null)
             .FirstOrDefault(x => nameSelector(x).EqualsIgnoreCaseAndWhitespace(constraintName));
 
