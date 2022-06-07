@@ -36,7 +36,7 @@ public abstract class
         if (queryable is EntityQueryable<TEntity>)
         {
             return queryable.Where(x => x.DataAuth == null ||
-                                        EfJsonFunctions.JsonArrayIsEmpty(nameof(x.DataAuth), "$.UserEmails") ||
+                                        //EfJsonFunctions.JsonArrayIsEmpty(nameof(x.DataAuth), "$.UserEmails") ||
                                         EfJsonFunctions.JsonValue(nameof(x.DataAuth), "$.UserEmails")
                                             .Contains(email));
         }
