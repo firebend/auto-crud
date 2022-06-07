@@ -43,7 +43,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
     {
         private readonly IDomainEventContextProvider _domainEventContextProvider;
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
-        private readonly bool _isDefaultPublisher;
         private readonly IJsonPatchGenerator _jsonPatchDocumentGenerator;
         private readonly IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> _exceptionHandler;
 
@@ -57,8 +56,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _domainEventContextProvider = domainEventContextProvider;
             _jsonPatchDocumentGenerator = jsonPatchDocumentGenerator;
             _exceptionHandler = exceptionHandler;
-            _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
+
+        protected virtual bool IsDefaultEventPublisher() => _domainEventPublisher is null or DefaultEntityDomainEventPublisher;
 
         /// <summary>
         /// Occurs when an entity is being PUT into the database and did not previously exist. Occurs before the entity is added.
@@ -238,7 +238,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             JsonPatchDocument<TEntity> jsonPatchDocument = null;
 
-            if (!_isDefaultPublisher)
+            if (!IsDefaultEventPublisher())
             {
                 jsonPatchDocument = _jsonPatchDocumentGenerator.Generate(original, model);
             }
@@ -273,7 +273,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher == null || _isDefaultPublisher)
+            if (IsDefaultEventPublisher())
             {
                 return Task.CompletedTask;
             }
@@ -293,7 +293,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher == null || _isDefaultPublisher)
+            if (IsDefaultEventPublisher())
             {
                 return Task.CompletedTask;
             }
