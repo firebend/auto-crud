@@ -46,7 +46,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         private readonly IDomainEventContextProvider _domainEventContextProvider;
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
-        private readonly bool _isDefaultPublisher;
         private readonly IJsonPatchGenerator _jsonPatchDocumentGenerator;
         private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
 
@@ -63,7 +62,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _domainEventContextProvider = domainEventContextProvider;
             _jsonPatchDocumentGenerator = jsonPatchDocumentGenerator;
             _domainEventPublisher = domainEventPublisher;
-            _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
         public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
@@ -298,6 +296,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     .ConfigureAwait(false);
 
                 var isCreating = false;
+
                 if (id.Equals(default))
                 {
                     id = await _keyGenerator.GenerateKeyAsync(cancellationToken).ConfigureAwait(false);
@@ -344,31 +343,32 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return ids;
         }
 
-        private Task PublishUpdatedDomainEventAsync(TEntity previous,
+        protected virtual Task PublishUpdatedDomainEventAsync(TEntity previous,
             JsonPatchDocument<TEntity> patch,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher != null && !_isDefaultPublisher)
+            if (_domainEventPublisher is null or DefaultEntityDomainEventPublisher)
             {
-                var domainEvent = new EntityUpdatedDomainEvent<TEntity>
-                {
-                    Previous = previous,
-                    OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
-                    EventContext = _domainEventContextProvider?.GetContext()
-                };
-
-                return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
+                return Task.CompletedTask;
             }
 
-            return Task.CompletedTask;
+            var domainEvent = new EntityUpdatedDomainEvent<TEntity>
+            {
+                Previous = previous,
+                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
+                EventContext = _domainEventContextProvider?.GetContext()
+            };
+
+            return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
+
         }
 
-        private Task PublishAddedDomainEventAsync(TEntity entity,
+        protected virtual Task PublishAddedDomainEventAsync(TEntity entity,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher == null || _isDefaultPublisher)
+            if (_domainEventPublisher is null or DefaultEntityDomainEventPublisher)
             {
                 return Task.CompletedTask;
             }

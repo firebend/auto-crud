@@ -57,7 +57,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             }
         }
 
-        private async Task MergeIndexesAsync<TEntity>(IMongoCollection<TEntity> dbCollection,
+        protected virtual async Task MergeIndexesAsync<TEntity>(IMongoCollection<TEntity> dbCollection,
             IEnumerable<CreateIndexModel<TEntity>> indexesToAdd,
             IReadOnlyCollection<BsonDocument> indexes,
             CancellationToken cancellationToken)

@@ -10,7 +10,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
         {
             var tries = 0;
             double delay = 100;
-            TimeSpan delayTimeSpan;
 
             while (true)
             {
@@ -32,8 +31,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
                         delay = Math.Ceiling(Math.Pow(delay, 1.1));
                     }
 
-                    delayTimeSpan = TimeSpan.FromMilliseconds(delay);
-                    await Task.Delay(delayTimeSpan);
+                    await Task.Delay(TimeSpan.FromMilliseconds(delay));
                 }
             }
         }

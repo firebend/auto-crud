@@ -45,14 +45,14 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return new[] { tenantFilter };
         }
 
-        private static JsonPatchDocument<TEntity> RemoveTenantId(JsonPatchDocument<TEntity> jsonPatchDocument)
+        protected virtual JsonPatchDocument<TEntity> RemoveTenantId(JsonPatchDocument<TEntity> jsonPatchDocument)
         {
             jsonPatchDocument?.Operations.RemoveAll(x => x.path == "/tenantId");
 
             return jsonPatchDocument;
         }
 
-        private async Task<TEntity> SetTenantAsync(TEntity entity, CancellationToken cancellationToken)
+        protected virtual async Task<TEntity> SetTenantAsync(TEntity entity, CancellationToken cancellationToken)
         {
             var tenant = await _tenantEntityProvider
                 .GetTenantAsync(cancellationToken)

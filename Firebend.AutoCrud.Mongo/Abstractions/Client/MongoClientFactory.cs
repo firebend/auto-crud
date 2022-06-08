@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             return new MongoClient(mongoClientSettings);
         }
 
-        private void Configurator(ClusterBuilder cb)
+        protected virtual void Configurator(ClusterBuilder cb)
         {
             cb.Subscribe<CommandStartedEvent>(e => MongoClientFactoryLogger.Started(_logger, e.CommandName, e.Command));
 

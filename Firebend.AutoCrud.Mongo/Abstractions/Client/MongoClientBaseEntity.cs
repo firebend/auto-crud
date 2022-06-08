@@ -28,16 +28,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
 
-        protected IMongoCollection<TEntity> GetCollection(IMongoEntityConfiguration<TKey, TEntity> configuration)
+        protected virtual IMongoCollection<TEntity> GetCollection(IMongoEntityConfiguration<TKey, TEntity> configuration)
         {
             var database = Client.GetDatabase(configuration.DatabaseName);
 
             return database.GetCollection<TEntity>(configuration.CollectionName);
         }
 
-        protected IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
+        protected virtual IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
 
-        protected async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+        protected virtual async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
@@ -57,7 +57,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             return filters == null ? mongoQueryable : mongoQueryable.Where(filters);
         }
 
-        protected async Task<Expression<Func<TEntity, bool>>> BuildFiltersAsync(Expression<Func<TEntity, bool>> additionalFilter = null,
+        protected virtual async Task<Expression<Func<TEntity, bool>>> BuildFiltersAsync(Expression<Func<TEntity, bool>> additionalFilter = null,
             CancellationToken cancellationToken = default)
         {
             var securityFilters = await GetSecurityFiltersAsync(cancellationToken).ConfigureAwait(false)

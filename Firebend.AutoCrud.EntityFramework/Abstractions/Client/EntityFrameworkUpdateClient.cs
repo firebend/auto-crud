@@ -43,7 +43,6 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
     {
         private readonly IDomainEventContextProvider _domainEventContextProvider;
         private readonly IEntityDomainEventPublisher _domainEventPublisher;
-        private readonly bool _isDefaultPublisher;
         private readonly IJsonPatchGenerator _jsonPatchDocumentGenerator;
         private readonly IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> _exceptionHandler;
 
@@ -57,12 +56,73 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _domainEventContextProvider = domainEventContextProvider;
             _jsonPatchDocumentGenerator = jsonPatchDocumentGenerator;
             _exceptionHandler = exceptionHandler;
-            _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
         }
 
+        protected virtual bool IsDefaultEventPublisher() => _domainEventPublisher is null or DefaultEntityDomainEventPublisher;
+
+        /// <summary>
+        /// Occurs when an entity is being PUT into the database and did not previously exist. Occurs before the entity is added.
+        /// </summary>
+        /// <param name="context">
+        /// The db context
+        /// </param>
+        /// <param name="entity">
+        /// The entity being updated
+        /// </param>
+        /// <param name="transaction">
+        /// The transaction if any being used during the operation
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The cancellation token
+        /// </param>
+        /// <returns>
+        /// The entity
+        /// </returns>
+        /// <returns></returns>
         protected virtual Task<TEntity> OnBeforeReplaceAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
             => Task.FromResult(entity);
 
+        /// <summary>
+        /// Occurs when an entity is being PUT into the database and  previously exist. Occurs before the entity is updated.
+        /// </summary>
+        /// <param name="context">
+        /// The db context
+        /// </param>
+        /// <param name="entity">
+        /// The entity being updated
+        /// </param>
+        /// <param name="transaction">
+        /// The transaction if any being used during the operation
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The cancellation token
+        /// </param>
+        /// <returns>
+        /// The entity
+        /// </returns>
+        /// <returns></returns>
+        protected virtual Task<TEntity> OnBeforeUpdateAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
+            => Task.FromResult(entity);
+
+
+        /// <summary>
+        /// Occurs during a PATCH update after the patch is applied but before saving.
+        /// </summary>
+        /// <param name="context">
+        /// The db context
+        /// </param>
+        /// <param name="entity">
+        /// The entity being updated
+        /// </param>
+        /// <param name="transaction">
+        /// The transaction if any being used during the operation
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The cancellation token
+        /// </param>
+        /// <returns>
+        /// The entity
+        /// </returns>
         protected virtual Task<TEntity> OnBeforePatchAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
             => Task.FromResult(entity);
 
@@ -133,6 +193,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 {
                     modified.ModifiedDate = DateTimeOffset.Now;
                 }
+
+                model = await OnBeforeUpdateAsync(context, model, transaction, cancellationToken);
             }
             else
             {
@@ -176,7 +238,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             JsonPatchDocument<TEntity> jsonPatchDocument = null;
 
-            if (!_isDefaultPublisher)
+            if (!IsDefaultEventPublisher())
             {
                 jsonPatchDocument = _jsonPatchDocumentGenerator.Generate(original, model);
             }
@@ -206,12 +268,12 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
             => UpdateInternalAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
 
-        private Task PublishDomainEventAsync(TEntity previous,
+        protected virtual Task PublishDomainEventAsync(TEntity previous,
             JsonPatchDocument<TEntity> patch,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher == null || _isDefaultPublisher)
+            if (IsDefaultEventPublisher())
             {
                 return Task.CompletedTask;
             }
@@ -227,11 +289,11 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         }
 
-        private Task PublishAddedDomainEventAsync(TEntity entity,
+        protected virtual Task PublishAddedDomainEventAsync(TEntity entity,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            if (_domainEventPublisher == null || _isDefaultPublisher)
+            if (IsDefaultEventPublisher())
             {
                 return Task.CompletedTask;
             }

@@ -24,13 +24,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected IMongoRetryService MongoRetryService { get; }
 
-        protected Task RetryErrorAsync(Func<Task> method) => RetryErrorAsync(async () =>
+        protected virtual Task RetryErrorAsync(Func<Task> method) => RetryErrorAsync(async () =>
         {
             await method();
             return true;
         });
 
-        protected async Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int maxTries = 7)
+        protected virtual async Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int maxTries = 7)
         {
             try
             {

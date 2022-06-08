@@ -25,7 +25,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             _provider = provider;
         }
 
-        protected async Task<IDbContext> GetDbContextAsync(IEntityTransaction entityTransaction, CancellationToken cancellationToken)
+        protected virtual async Task<IDbContext> GetDbContextAsync(IEntityTransaction entityTransaction, CancellationToken cancellationToken)
         {
             IDbContext context;
 
@@ -55,9 +55,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             return context;
         }
 
-        protected DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
+        protected virtual DbSet<TEntity> GetDbSet(IDbContext context) => context.Set<TEntity>();
 
-        protected async Task<TEntity> GetByEntityKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
+        protected virtual async Task<TEntity> GetByEntityKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
         {
             var queryable = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken)
                 .ConfigureAwait(false);
@@ -67,7 +67,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             return first;
         }
 
-        protected async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
+        protected virtual async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
             IDbContext context,
             bool asNoTracking,
             CancellationToken cancellationToken = default)
@@ -89,7 +89,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
             return filters == null ? queryable : queryable.Where(filters);
         }
 
-        protected async Task<Expression<Func<TEntity, bool>>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null,
+        protected virtual async Task<Expression<Func<TEntity, bool>>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null,
             CancellationToken cancellationToken = default)
         {
             var securityFilters = await GetSecurityFiltersAsync(cancellationToken).ConfigureAwait(false)

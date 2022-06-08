@@ -39,7 +39,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             _logger = loggerFactory.CreateLogger<AbstractDbContextProvider<TKey, TEntity, TContext>>();
         }
 
-        private async Task<IDbContext> CreateContextAsync(DbContextOptions<TContext> options, CancellationToken cancellationToken)
+        protected virtual async Task<IDbContext> CreateContextAsync(DbContextOptions<TContext> options, CancellationToken cancellationToken)
         {
             var dbContextType = typeof(TContext);
             var factory = DbContextProviderCaches<TContext>.Factories
@@ -62,7 +62,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             return context;
         }
 
-        private async Task<bool> InitContextAsync(DbContext dbContext, CancellationToken cancellationToken)
+        protected virtual async Task<bool> InitContextAsync(DbContext dbContext, CancellationToken cancellationToken)
         {
             try
             {

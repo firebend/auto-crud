@@ -18,9 +18,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Entities
             _updateService = updateService;
         }
 
-        private Task<TEntity> DeleteInternalAsync(TKey key,
-            IEntityTransaction entityTransaction = null,
-            CancellationToken cancellationToken = default)
+        protected virtual Task<TEntity> DeleteInternalAsync(TKey key,
+           IEntityTransaction entityTransaction = null,
+           CancellationToken cancellationToken = default)
         {
             var patch = new JsonPatchDocument<TEntity>();
 
