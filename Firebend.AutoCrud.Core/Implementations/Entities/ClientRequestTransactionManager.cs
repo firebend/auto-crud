@@ -9,11 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Implementations.Entities;
 
-public class ClientRequestTransactionManager : ISessionTransactionManager, IAsyncDisposable
+public class ClientRequestTransactionManager : ISessionTransactionManager, IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
 
-    private readonly ConcurrentDictionary<Type, Task<IEntityTransaction>> _transactions = new();
+    private readonly ConcurrentDictionary<Type, Task<IEntityTransaction>> _sharedTransactions = new();
+    private readonly ConcurrentBag<IEntityTransaction> _transactions = new();
     public bool TransactionStarted { get; private set; }
 
     public ClientRequestTransactionManager(IServiceProvider serviceProvider)
@@ -23,16 +24,16 @@ public class ClientRequestTransactionManager : ISessionTransactionManager, IAsyn
 
     public void Start() => TransactionStarted = true;
 
-    public async Task Commit(CancellationToken cancellationToken)
+    public async Task CompleteAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(_transactions.Values.Select(async x => (await x).CompleteAsync(cancellationToken)));
-        await ClearTransactions();
+        await Task.WhenAll(_transactions.Select(x => x.CompleteAsync(cancellationToken)));
+        ClearTransactions();
     }
 
-    public async Task Rollback(CancellationToken cancellationToken)
+    public async Task RollbackAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(_transactions.Values.Select(async x => (await x).RollbackAsync(cancellationToken)));
-        await ClearTransactions();
+        await Task.WhenAll(_transactions.Select(x => x.RollbackAsync(cancellationToken)));
+        ClearTransactions();
     }
 
     public async Task<IEntityTransaction> GetTransaction<TKey, TEntity>(CancellationToken cancellationToken)
@@ -45,16 +46,32 @@ public class ClientRequestTransactionManager : ISessionTransactionManager, IAsyn
         }
 
         var transactionFactory = _serviceProvider.GetRequiredService<IEntityTransactionFactory<TKey, TEntity>>();
-        return await _transactions.GetOrAdd(transactionFactory.GetType(),
-            Task(_) => transactionFactory.StartTransactionAsync(cancellationToken));
+        return await _sharedTransactions.GetOrAdd(transactionFactory.GetType(),
+            async (_) =>
+            {
+                var transaction = await transactionFactory.StartTransactionAsync(cancellationToken);
+                _transactions.Add(transaction);
+                return transaction;
+            });
     }
 
-    private async Task ClearTransactions()
+    public void AddTransaction(IEntityTransaction transaction)
     {
-        await Task.WhenAll(_transactions.Values.Select(async x => (await x).Dispose()));
+        var existingTransaction = _transactions.Any(t => t.Id == transaction.Id);
+        if (existingTransaction)
+        {
+            return;
+        }
+        _transactions.Add(transaction);
+    }
+
+    private void ClearTransactions()
+    {
+        _transactions.ToList().ForEach(x => x.Dispose());
+        _sharedTransactions.Clear();
         _transactions.Clear();
         TransactionStarted = false;
     }
 
-    public async ValueTask DisposeAsync() => await ClearTransactions();
+    public void Dispose() => ClearTransactions();
 }

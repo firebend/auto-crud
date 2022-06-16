@@ -8,9 +8,10 @@ public interface ISessionTransactionManager
 {
     bool TransactionStarted { get; }
     void Start();
-    Task Commit(CancellationToken cancellationToken);
-    Task Rollback(CancellationToken cancellationToken);
+    Task CompleteAsync(CancellationToken cancellationToken);
+    Task RollbackAsync(CancellationToken cancellationToken);
     Task<IEntityTransaction> GetTransaction<TKey, TEntity>(CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : IEntity<TKey>;
+    void AddTransaction(IEntityTransaction transaction);
 }
