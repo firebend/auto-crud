@@ -57,6 +57,11 @@ public class ClientRequestTransactionManager : ISessionTransactionManager, IDisp
 
     public void AddTransaction(IEntityTransaction transaction)
     {
+        if (transaction is null || transaction.Id == Guid.Empty)
+        {
+            return;
+        }
+
         var existingTransaction = _transactions.Any(t => t.Id == transaction.Id);
         if (existingTransaction)
         {
