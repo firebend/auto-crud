@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -14,6 +16,10 @@ public interface ISessionTransactionManager
     /// </summary>
     bool TransactionStarted { get; }
 
+    /// <summary>
+    /// List of transaction ids associated to session transaction
+    /// </summary>
+    ImmutableList<Guid> TransactionIds { get; }
     /// <summary>
     /// Call to start tracking db requests in a transaction for the current session
     /// </summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager, IDisp
     private readonly ConcurrentDictionary<Type, Task<IEntityTransaction>> _sharedTransactions = new();
     private readonly ConcurrentBag<IEntityTransaction> _transactions = new();
     public bool TransactionStarted { get; private set; }
+    public ImmutableList<Guid> TransactionIds => _transactions.Select(x => x.Id).ToImmutableList();
 
     public ClientRequestTransactionManager(IServiceProvider serviceProvider)
     {
@@ -57,7 +59,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager, IDisp
 
     public void AddTransaction(IEntityTransaction transaction)
     {
-        if (transaction is null || transaction.Id == Guid.Empty)
+        if (!TransactionStarted || transaction is null || transaction.Id == Guid.Empty)
         {
             return;
         }
