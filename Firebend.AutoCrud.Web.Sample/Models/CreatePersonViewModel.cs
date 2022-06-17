@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -71,6 +72,7 @@ public class PersonViewModelBase : IEntityViewModelBase
 
 public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<Guid>, ICustomFieldsEntity<Guid>
 {
+    private static readonly string[] Ignores = { nameof(CustomFields) };
     public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
 
     public GetPersonViewModel()
@@ -80,7 +82,14 @@ public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<Guid
 
     public GetPersonViewModel(EfPerson entity)
     {
-        entity?.CopyPropertiesTo(this);
+        if (entity == null)
+        {
+            return;
+        }
+
+        entity.CopyPropertiesTo(this, Ignores);
+
+        CustomFields = entity.CustomFields?.Select(x => new CustomFieldsEntity<Guid>(x)).ToList();
     }
 
     public GetPersonViewModel(MongoTenantPerson entity)
