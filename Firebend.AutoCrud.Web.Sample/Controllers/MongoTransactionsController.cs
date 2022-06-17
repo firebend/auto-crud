@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Firebend.JsonPatch.Extensions;
@@ -10,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Firebend.AutoCrud.Web.Sample.Controllers
 {
     [ApiController]
-    [Route("/api/v1/mongo/transactions/commit")]
     public class MongoTransactionsController : ControllerBase
     {
         private readonly IEntityTransactionFactory<Guid, MongoTenantPerson> _personTransactionFactory;
@@ -30,12 +30,24 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<EfPerson>> PostAsync(CancellationToken cancellationToken)
+        [Route("/api/v1/mongo/transactions/commit")]
+        public async Task<ActionResult> CommitAsync(CancellationToken cancellationToken)
+        {
+            using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);
+            return await TestCrudOperationsAsync(transaction.CompleteAsync, transaction, cancellationToken);
+        }
+
+        [HttpPost]
+        [Route("/api/v1/mongo/transactions/rollback")]
+        public async Task<ActionResult> RollbackAsync(CancellationToken cancellationToken)
+        {
+            using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);
+            return await TestCrudOperationsAsync(transaction.RollbackAsync, transaction, cancellationToken);
+        }
+
+        private async Task<ActionResult> TestCrudOperationsAsync(Func<CancellationToken, Task> transactionAction, IEntityTransaction transaction, CancellationToken cancellationToken)
         {
             var person = new MongoTenantPerson { FirstName = "Transaction", LastName = "Test", IgnoreMe = "Mr T." };
-
-            using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);
-            Response.RegisterForDispose(transaction);
 
             MongoTenantPerson read;
             MongoTenantPerson createdRead;
@@ -54,7 +66,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
                 var temp = patched.Clone();
                 temp.LastName = "Test - Updated";
                 updated = await _personUpdate.UpdateAsync(temp, transaction, cancellationToken);
-                await transaction.CompleteAsync(cancellationToken);
+                await transactionAction.Invoke(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -62,16 +74,18 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
                 return BadRequest(ex.ToString());
             }
 
-            var readAgain = await _personRead.GetByKeyAsync(created.Id, cancellationToken);
+            var readAgain = await _personRead.GetByKeyAsync(read.Id, cancellationToken);
+            var readCreatedAgain = await _personRead.GetByKeyAsync(created.Id, cancellationToken);
 
             return Ok(new
             {
-                ReadRandom = read,
-                Created = created,
-                CreatedRead = createdRead,
-                patched,
-                updated,
-                readAgain,
+                ReadRandom = read.ToViewModel(),
+                Created = created.ToViewModel(),
+                CreatedRead = createdRead.ToViewModel(),
+                Patched = patched.ToViewModel(),
+                Updated = updated.ToViewModel(),
+                ReadAgain = readAgain.ToViewModel(),
+                ReadCreatedAgain = readCreatedAgain.ToViewModel(),
             });
         }
     }

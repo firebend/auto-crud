@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
     [Table("EfPeople")]
     [Index(nameof(Email), IsUnique = true)]
     [Index(nameof(OtherEmail), IsUnique = true)]
-    public class EfPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity, ITenantEntity<int>,
+    public class EfPerson : IPerson, ITenantEntity<int>,
         ICustomFieldsEntity<Guid>, IEntityDataAuth
     {
         public EfPerson()

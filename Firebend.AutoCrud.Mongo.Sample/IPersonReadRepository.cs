@@ -12,7 +12,8 @@ namespace Firebend.AutoCrud.Mongo.Sample
 
     public class PersonReadRepository : MongoEntityReadService<Guid, Person>, IPersonReadRepository
     {
-        public PersonReadRepository(IMongoReadClient<Guid, Person> readClient) : base(readClient)
+        public PersonReadRepository(IMongoReadClient<Guid, Person> readClient,
+            ISessionTransactionManager transactionManager) : base(readClient, transactionManager)
         {
         }
     }

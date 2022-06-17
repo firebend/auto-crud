@@ -12,7 +12,8 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
 
     public class PersonReadRepository : EntityFrameworkEntityReadService<Guid, Person>, IPersonReadRepository
     {
-        public PersonReadRepository(IEntityFrameworkQueryClient<Guid, Person> readClient) : base(readClient)
+        public PersonReadRepository(IEntityFrameworkQueryClient<Guid, Person> readClient,
+            ISessionTransactionManager transactionManager) : base(readClient, transactionManager)
         {
         }
     }

@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Implementations.Entities;
 
-public class ClientRequestTransactionManager : ISessionTransactionManager, IDisposable
+public class ClientRequestTransactionManager : ISessionTransactionManager
 {
     private readonly IServiceProvider _serviceProvider;
 

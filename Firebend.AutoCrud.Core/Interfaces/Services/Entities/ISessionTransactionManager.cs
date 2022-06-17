@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 /// <summary>
 /// Used for associating all db requests in a transaction for a given session
 /// </summary>
-public interface ISessionTransactionManager
+public interface ISessionTransactionManager : IDisposable
 {
     /// <summary>
     /// True if session transaction has started
