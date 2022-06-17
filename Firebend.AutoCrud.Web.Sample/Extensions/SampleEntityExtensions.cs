@@ -87,6 +87,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .AddResourceAuthorization()
                         .WithOpenApiGroupName("The Beautiful Mongo People")
                         .WithRoute("api/v1/mongo-person")
+                        .Builder
+                        .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson>,
+                            CustomFieldValidationService<Guid, MongoTenantPerson>>()
                     )
             );
 

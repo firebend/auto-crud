@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
@@ -25,7 +24,7 @@ public abstract class AbstractEfCustomFieldsReadService<TKey, TEntity, TCustomFi
     private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
     private readonly ISessionTransactionManager _transactionManager;
 
-    private Expression<Func<TCustomFieldsEntity, bool>> _filterByEntityId(TKey entityId) =>
+    private static Expression<Func<TCustomFieldsEntity, bool>> FilterByEntityId(TKey entityId) =>
         entity => entity.EntityId.Equals(entityId);
 
     protected AbstractEfCustomFieldsReadService(IEntityFrameworkQueryClient<Guid, TCustomFieldsEntity> readClient,
@@ -84,11 +83,10 @@ public abstract class AbstractEfCustomFieldsReadService<TKey, TEntity, TCustomFi
     {
         await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
         _transactionManager.AddTransaction(entityTransaction);
-        var result = filter == null
-            ? await _readClient.GetAllAsync(_filterByEntityId(entityId), true, entityTransaction, cancellationToken)
-            : await _readClient.GetAllAsync(_filterByEntityId(entityId).AndAlso(filter as Expression<Func<TCustomFieldsEntity, bool>>), true, entityTransaction,
-                cancellationToken);
-        return result.Select(x => x?.ToCustomFields()).ToList();
+        var result =
+            await _readClient.GetAllAsync(FilterByEntityId(entityId), true, entityTransaction, cancellationToken);
+        var asCustomFields = result.Select(x => x?.ToCustomFields());
+        return filter == null ? asCustomFields.ToList() : asCustomFields.AsQueryable().Where(filter).ToList();
     }
 
     public async Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
@@ -104,8 +102,8 @@ public abstract class AbstractEfCustomFieldsReadService<TKey, TEntity, TCustomFi
     {
         await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
         _transactionManager.AddTransaction(transaction);
-        return await _readClient.ExistsAsync(_filterByEntityId(entityId).AndAlso(filter as Expression<Func<TCustomFieldsEntity, bool>>), transaction,
-            cancellationToken);
+        var result = await _readClient.GetAllAsync(FilterByEntityId(entityId), true, transaction, cancellationToken);
+        return result.Select(x => x?.ToCustomFields()).AsQueryable().Any(filter);
     }
 
     public async Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
@@ -123,10 +121,9 @@ public abstract class AbstractEfCustomFieldsReadService<TKey, TEntity, TCustomFi
     {
         await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
         _transactionManager.AddTransaction(entityTransaction);
-        var result = await _readClient.GetFirstOrDefaultAsync(
-            _filterByEntityId(entityId).AndAlso(filter as Expression<Func<TCustomFieldsEntity, bool>>), true,
-            entityTransaction, cancellationToken);
-        return result?.ToCustomFields();
+        var result =
+            await _readClient.GetAllAsync(FilterByEntityId(entityId), true, entityTransaction, cancellationToken);
+        return result.Select(x => x?.ToCustomFields()).AsQueryable().FirstOrDefault(filter);
     }
 
     protected override void DisposeManagedObjects() => _readClient?.Dispose();

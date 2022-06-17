@@ -21,7 +21,7 @@ public class AbstractMongoCustomFieldsReadService<TKey, TEntity> : BaseDisposabl
     private readonly IMongoReadClient<TKey, TEntity> _readClient;
     private readonly ISessionTransactionManager _transactionManager;
 
-    private Expression<Func<TEntity, bool>> _filterByEntityId(TKey entityId) =>
+    private static Expression<Func<TEntity, bool>> FilterByEntityId(TKey entityId) =>
         entity => entity.Id.Equals(entityId);
 
     protected AbstractMongoCustomFieldsReadService(IMongoReadClient<TKey, TEntity> readClient,
@@ -76,7 +76,7 @@ public class AbstractMongoCustomFieldsReadService<TKey, TEntity> : BaseDisposabl
     {
         _transactionManager.AddTransaction(entityTransaction);
         var result =
-            await _readClient.GetFirstOrDefaultAsync(_filterByEntityId(entityId), entityTransaction, cancellationToken);
+            await _readClient.GetFirstOrDefaultAsync(FilterByEntityId(entityId), entityTransaction, cancellationToken);
         if (result?.CustomFields is null)
         {
             return null;
@@ -99,7 +99,7 @@ public class AbstractMongoCustomFieldsReadService<TKey, TEntity> : BaseDisposabl
         CancellationToken cancellationToken = default)
     {
         _transactionManager.AddTransaction(entityTransaction);
-        var result = await _readClient.GetFirstOrDefaultAsync(_filterByEntityId(entityId), entityTransaction, cancellationToken);
+        var result = await _readClient.GetFirstOrDefaultAsync(FilterByEntityId(entityId), entityTransaction, cancellationToken);
         if (result?.CustomFields is null)
         {
             return false;
@@ -122,7 +122,7 @@ public class AbstractMongoCustomFieldsReadService<TKey, TEntity> : BaseDisposabl
     {
         _transactionManager.AddTransaction(entityTransaction);
         var result =
-            await _readClient.GetFirstOrDefaultAsync(_filterByEntityId(entityId), entityTransaction, cancellationToken);
+            await _readClient.GetFirstOrDefaultAsync(FilterByEntityId(entityId), entityTransaction, cancellationToken);
         if (result?.CustomFields is null)
         {
             return null;

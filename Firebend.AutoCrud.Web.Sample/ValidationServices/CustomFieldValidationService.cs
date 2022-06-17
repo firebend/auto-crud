@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -25,12 +26,13 @@ public class CustomFieldValidationService<TKey, TEntity> : ICustomFieldsValidati
         CancellationToken cancellationToken)
     {
         var modelState = new ModelStateResult<CustomFieldsEntity<TKey>> { WasSuccessful = true, Model = customField };
+
         if (customField.Id != Guid.Empty)
         {
             return modelState;
         }
         var customFields = await _customFieldsReadService.GetAllAsync(customField.EntityId, cancellationToken);
-        if (customFields.Count >= 10)
+        if (customFields.HasValues() && customFields.Count >= 10)
         {
             modelState.AddError(nameof(customFields),
                 $"Only 10 custom fields allowed per {typeof(TEntity).Name}");
