@@ -39,6 +39,9 @@ public class MongoCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityBuil
         Builder
             .WithRegistration<ICustomFieldsSearchService<TKey, TEntity>,
                 AbstractMongoCustomFieldsSearchService<TKey, TEntity>>();
+        Builder
+            .WithRegistration<ICustomFieldsReadService<TKey, TEntity>,
+                AbstractMongoCustomFieldsReadService<TKey, TEntity>>();
         return this;
     }
 }
