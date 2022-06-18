@@ -30,8 +30,12 @@ public class ClientRequestTransactionManagerTests
 
         _efTransactionFactory = _fixture.Create<Mock<IEntityTransactionFactory<Guid, TestClassEf>>>();
         _mongoTransactionFactory = _fixture.Create<Mock<IEntityTransactionFactory<Guid, TestClassMongo>>>();
+        _efTransactionFactory.Setup(x => x.GetDbContextHashCode())
+            .ReturnsAsync(1);
         _efTransactionFactory.Setup(x => x.StartTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => CreateMockTransaction().Object);
+        _mongoTransactionFactory.Setup(x => x.GetDbContextHashCode())
+            .ReturnsAsync(2);
         _mongoTransactionFactory.Setup(x => x.StartTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => CreateMockTransaction().Object);
 
@@ -50,15 +54,20 @@ public class ClientRequestTransactionManagerTests
     }
 
     [Test]
-    public async Task GetTransaction_Should_OnlyCreateOneInstancePerTransactionFactoryType()
+    public async Task GetTransaction_Should_OnlyCreateOneInstancePerUniqueDbContext()
     {
         // arrange
+        _efTransactionFactory.SetupSequence(x => x.GetDbContextHashCode())
+            .ReturnsAsync(1)
+            .ReturnsAsync(3)
+            .ReturnsAsync(1);
         var sut = _fixture.Create<ClientRequestTransactionManager>();
         sut.Start();
 
         // act
         var efCall1 = await sut.GetTransaction<Guid, TestClassEf>(default);
         var efCall2 = await sut.GetTransaction<Guid, TestClassEf>(default);
+        var efCall3 = await sut.GetTransaction<Guid, TestClassEf>(default);
         var mongoCall1 = await sut.GetTransaction<Guid, TestClassMongo>(default);
         var mongoCall2 = await sut.GetTransaction<Guid, TestClassMongo>(default);
 
@@ -66,12 +75,13 @@ public class ClientRequestTransactionManagerTests
         sut.TransactionStarted.Should().BeTrue();
         efCall1.Should().NotBeNull();
         efCall2.Should().NotBeNull();
-        efCall1.Should().BeSameAs(efCall2);
+        efCall1.Should().NotBeSameAs(efCall2);
+        efCall1.Should().BeSameAs(efCall3);
 
         mongoCall1.Should().NotBeNull();
         mongoCall2.Should().NotBeNull();
         mongoCall1.Should().BeSameAs(mongoCall2);
-        _transactions.Should().HaveCount(2);
+        _transactions.Should().HaveCount(3);
     }
 
     [Test]

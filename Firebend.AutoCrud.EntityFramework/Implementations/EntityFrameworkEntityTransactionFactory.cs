@@ -21,6 +21,13 @@ namespace Firebend.AutoCrud.EntityFramework.Implementations
             _outbox = outbox;
         }
 
+        public async Task<int> GetDbContextHashCode()
+        {
+            var context = await _dbContextProvider.GetDbContextAsync();
+            var hashCode = context.Database.GetDbConnection().ConnectionString.GetHashCode();
+            return hashCode;
+        }
+
         public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
         {
             var context = await _dbContextProvider.GetDbContextAsync(cancellationToken);

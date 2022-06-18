@@ -14,7 +14,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 {
     private readonly IServiceProvider _serviceProvider;
 
-    private readonly ConcurrentDictionary<Type, Task<IEntityTransaction>> _sharedTransactions = new();
+    private readonly ConcurrentDictionary<int, Task<IEntityTransaction>> _sharedTransactions = new();
     private readonly ConcurrentBag<IEntityTransaction> _transactions = new();
     public bool TransactionStarted { get; private set; }
     public ImmutableList<Guid> TransactionIds => _transactions.Select(x => x.Id).ToImmutableList();
@@ -48,7 +48,8 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         }
 
         var transactionFactory = _serviceProvider.GetRequiredService<IEntityTransactionFactory<TKey, TEntity>>();
-        return await _sharedTransactions.GetOrAdd(transactionFactory.GetType(),
+        var key = await transactionFactory.GetDbContextHashCode();
+        return await _sharedTransactions.GetOrAdd(key,
             async (_) =>
             {
                 var transaction = await transactionFactory.StartTransactionAsync(cancellationToken);
