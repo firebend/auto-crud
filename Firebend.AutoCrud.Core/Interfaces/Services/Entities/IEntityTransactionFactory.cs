@@ -10,5 +10,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
     {
         Task<int> GetDbContextHashCode();
         Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken);
+        bool ValidateTransaction(IEntityTransaction transaction);
     }
 }

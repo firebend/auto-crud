@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -26,17 +27,11 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
     public void Start() => TransactionStarted = true;
 
-    public async Task CompleteAsync(CancellationToken cancellationToken)
-    {
+    public async Task CompleteAsync(CancellationToken cancellationToken) =>
         await Task.WhenAll(_transactions.Select(x => x.CompleteAsync(cancellationToken)));
-        ClearTransactions();
-    }
 
-    public async Task RollbackAsync(CancellationToken cancellationToken)
-    {
+    public async Task RollbackAsync(CancellationToken cancellationToken) =>
         await Task.WhenAll(_transactions.Select(x => x.RollbackAsync(cancellationToken)));
-        ClearTransactions();
-    }
 
     public async Task<IEntityTransaction> GetTransaction<TKey, TEntity>(CancellationToken cancellationToken)
         where TKey : struct
@@ -49,13 +44,31 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
         var transactionFactory = _serviceProvider.GetRequiredService<IEntityTransactionFactory<TKey, TEntity>>();
         var key = await transactionFactory.GetDbContextHashCode();
-        return await _sharedTransactions.GetOrAdd(key,
+
+        var transaction = await GetOrAddSharedTransaction(key, transactionFactory, cancellationToken);
+
+        if (transactionFactory.ValidateTransaction(transaction))
+        {
+            return transaction;
+        }
+
+        transaction.Dispose();
+        _sharedTransactions.Remove(key, out _);
+        return await GetOrAddSharedTransaction(key, transactionFactory, cancellationToken);
+    }
+
+    private async Task<IEntityTransaction> GetOrAddSharedTransaction<TKey, TEntity>(int key,
+        IEntityTransactionFactory<TKey, TEntity> transactionFactory, CancellationToken cancellationToken)
+        where TKey : struct where TEntity : IEntity<TKey>
+    {
+        var transaction = await _sharedTransactions.GetOrAdd(key,
             async (_) =>
             {
                 var transaction = await transactionFactory.StartTransactionAsync(cancellationToken);
-                _transactions.Add(transaction);
+                AddTransaction(transaction);
                 return transaction;
             });
+        return transaction;
     }
 
     public void AddTransaction(IEntityTransaction transaction)
@@ -70,6 +83,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         {
             return;
         }
+
         _transactions.Add(transaction);
     }
 

@@ -8,7 +8,8 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Implementations
 {
-    public class MongoEntityTransactionFactory<TKey, TEntity> : Firebend.AutoCrud.Mongo.Abstractions.Client.MongoClientBase, IEntityTransactionFactory<TKey, TEntity>
+    public class MongoEntityTransactionFactory<TKey, TEntity> :
+        Firebend.AutoCrud.Mongo.Abstractions.Client.MongoClientBase, IEntityTransactionFactory<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
@@ -36,6 +37,16 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             var session = await Client.StartSessionAsync(sessionOptions, cancellationToken);
             session.StartTransaction(transactionOptions);
             return new MongoEntityTransaction(session, _outbox);
+        }
+
+        public bool ValidateTransaction(IEntityTransaction transaction)
+        {
+            if (transaction is not MongoEntityTransaction mongoTransaction)
+            {
+                return false;
+            }
+
+            return mongoTransaction.ClientSessionHandle.IsInTransaction;
         }
     }
 }
