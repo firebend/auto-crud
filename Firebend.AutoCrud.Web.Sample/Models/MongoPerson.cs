@@ -8,7 +8,8 @@ using Firebend.AutoCrud.Core.Models.CustomFields;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class MongoPerson : IEntity<Guid>, IActiveEntity, IModifiedEntity, IEntityDataAuth
+
+    public class MongoPerson : IPerson, IEntityDataAuth
     {
         public MongoPerson()
         {

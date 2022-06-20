@@ -38,7 +38,10 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
             using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);
 
-            var callbacks = _enrollments[transactionId];
+            if (!_enrollments.TryGetValue(transactionId, out var callbacks))
+            {
+                return;
+            }
 
             if (callbacks.IsEmpty())
             {

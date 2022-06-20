@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.Configuration;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Firebend.JsonPatch;
-using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -29,6 +27,7 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
 {
     private readonly IDomainEventContextProvider _domainEventContextProvider;
     private readonly IEntityDomainEventPublisher _domainEventPublisher;
+    private readonly ISessionTransactionManager _transactionManager;
     private readonly bool _isDefaultPublisher;
 
     public AbstractMongoCustomFieldsCreateService(IMongoClient client,
@@ -36,22 +35,29 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
-        IEntityDomainEventPublisher domainEventPublisher) : base(client, logger, entityConfiguration, mongoRetryService)
+        IEntityDomainEventPublisher domainEventPublisher,
+        ISessionTransactionManager transactionManager) : base(client, logger, entityConfiguration, mongoRetryService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;
+        _transactionManager = transactionManager;
         _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
     }
 
-    public Task<CustomFieldsEntity<TKey>>
-        CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField, CancellationToken cancellationToken = default) =>
-        CreateAsync(rootEntityKey, customField, null, cancellationToken);
+    public async Task<CustomFieldsEntity<TKey>>
+        CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField,
+            CancellationToken cancellationToken = default)
+    {
+        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
+        return await CreateAsync(rootEntityKey, customField, transaction, cancellationToken);
+    }
 
     public async Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
+        _transactionManager.AddTransaction(entityTransaction);
         if (customField.Id == default)
         {
             customField.Id = MongoIdGeneratorComb.NewCombGuid(Guid.NewGuid(), DateTime.UtcNow);
@@ -68,7 +74,7 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))
         {
             updateDefinition = Builders<TEntity>.Update.Combine(updateDefinition,
-                    Builders<TEntity>.Update.Set(nameof(IModifiedEntity.ModifiedDate), DateTimeOffset.UtcNow));
+                Builders<TEntity>.Update.Set(nameof(IModifiedEntity.ModifiedDate), DateTimeOffset.UtcNow));
         }
 
         var session = UnwrapSession(entityTransaction);
@@ -125,11 +131,12 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
         var domainEvent = new EntityUpdatedDomainEvent<TEntity>
         {
             Previous = previous,
-            OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
+            OperationsJson =
+                JsonConvert.SerializeObject(patch?.Operations, Formatting.None,
+                    new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
             EventContext = _domainEventContextProvider?.GetContext()
         };
 
         return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
-
     }
 }

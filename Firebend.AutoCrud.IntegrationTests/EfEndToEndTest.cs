@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bogus;
 using Firebend.AutoCrud.IntegrationTests.Fakers;
-using Firebend.AutoCrud.IntegrationTests.Models;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Firebend.JsonPatch.Extensions;
 using FluentAssertions;
@@ -121,12 +120,12 @@ public class EfEndToEndTest : BaseTest<
         return responseModel;
     }
 
-    private async Task<CustomFieldViewModelRead> CreatePetCustomFieldAsync(Guid personId, Guid petId)
+    private async Task<CustomFieldViewModel> CreatePetCustomFieldAsync(Guid personId, Guid petId)
     {
         var faked = CustomFieldFaker.Faker.Generate();
         var response = await $"{Url}/{personId}/pets/{petId}/custom-fields".WithAuth().PostJsonAsync(faked);
 
-        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModel>();
         return responseModel;
     }
 
