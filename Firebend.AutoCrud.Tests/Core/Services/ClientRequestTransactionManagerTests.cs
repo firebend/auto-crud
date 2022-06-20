@@ -34,10 +34,14 @@ public class ClientRequestTransactionManagerTests
             .ReturnsAsync(1);
         _efTransactionFactory.Setup(x => x.StartTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => CreateMockTransaction().Object);
+        _efTransactionFactory.Setup(x => x.ValidateTransaction(It.IsAny<IEntityTransaction>()))
+            .Returns(true);
         _mongoTransactionFactory.Setup(x => x.GetDbContextHashCode())
             .ReturnsAsync(2);
         _mongoTransactionFactory.Setup(x => x.StartTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => CreateMockTransaction().Object);
+        _mongoTransactionFactory.Setup(x => x.ValidateTransaction(It.IsAny<IEntityTransaction>()))
+            .Returns(true);
 
         _serviceProvider = _fixture.Freeze<Mock<IServiceProvider>>();
         _serviceProvider.Setup(x => x.GetService(typeof(IEntityTransactionFactory<Guid, TestClassEf>)))
@@ -118,6 +122,28 @@ public class ClientRequestTransactionManagerTests
         efTransaction.Should().BeNull();
         mongoTransaction.Should().BeNull();
         sut.TransactionIds.Should().HaveCount(0);
+    }
+
+    [Test]
+    public async Task GetTransaction_Should_ClearCachedTransactionAndCreateNewTransaction_When_TransactionIsInvalid()
+    {
+        // arrange
+        _efTransactionFactory.SetupSequence(x => x.ValidateTransaction(It.IsAny<IEntityTransaction>()))
+            .Returns(true)
+            .Returns(false);
+        var sut = _fixture.Create<ClientRequestTransactionManager>();
+        sut.Start();
+
+        // act
+        var transaction1 = await sut.GetTransaction<Guid, TestClassEf>(default);
+        var transaction2 = await sut.GetTransaction<Guid, TestClassEf>(default);
+
+        // assert
+        sut.TransactionStarted.Should().BeTrue();
+        transaction1.Should().NotBeNull();
+        transaction2.Should().NotBeNull();
+        transaction1.Should().NotBeSameAs(transaction2);
+        sut.TransactionIds.Should().HaveCount(2);
     }
 
     [Test]

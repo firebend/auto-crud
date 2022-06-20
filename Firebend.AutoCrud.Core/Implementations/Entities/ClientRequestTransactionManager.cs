@@ -27,11 +27,17 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
     public void Start() => TransactionStarted = true;
 
-    public async Task CompleteAsync(CancellationToken cancellationToken) =>
+    public async Task CompleteAsync(CancellationToken cancellationToken)
+    {
         await Task.WhenAll(_transactions.Select(x => x.CompleteAsync(cancellationToken)));
+        ClearTransactions();
+    }
 
-    public async Task RollbackAsync(CancellationToken cancellationToken) =>
+    public async Task RollbackAsync(CancellationToken cancellationToken)
+    {
         await Task.WhenAll(_transactions.Select(x => x.RollbackAsync(cancellationToken)));
+        ClearTransactions();
+    }
 
     public async Task<IEntityTransaction> GetTransaction<TKey, TEntity>(CancellationToken cancellationToken)
         where TKey : struct
