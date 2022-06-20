@@ -196,6 +196,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
                     : typeof(EntityFrameworkQueryClient<,>).MakeGenericType(guidType, efModelType),
                 false);
 
+            builder.WithRegistration<ICustomFieldsReadService<TKey, TEntity>>(
+                typeof(AbstractEfCustomFieldsReadService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+                false);
+
             builder.WithRegistration(
                 typeof(IEntityQueryOrderByHandler<,>).MakeGenericType(guidType, efModelType),
                 typeof(DefaultEntityQueryOrderByHandler<,>).MakeGenericType(guidType, efModelType),

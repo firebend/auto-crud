@@ -1,5 +1,7 @@
 using System.Reflection;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations.Entities;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Implementations.ApiBehaviors;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Microsoft.AspNetCore.Authorization;
@@ -22,6 +24,10 @@ namespace Firebend.AutoCrud.Web
                 o.InvalidModelStateResponseFactory = ValidationProblemDetailsModelStateResponseFactory.InvalidModelStateResponseFactory;
             }
         });
+
+        public static IServiceCollection AddClientRequestTransactionManager(
+            this IServiceCollection serviceCollection) =>
+            serviceCollection.AddScoped<ISessionTransactionManager, ClientRequestTransactionManager>();
 
         public static IServiceCollection AddDefaultResourceAuthorizationRequirements(this IServiceCollection serviceCollection)
         {

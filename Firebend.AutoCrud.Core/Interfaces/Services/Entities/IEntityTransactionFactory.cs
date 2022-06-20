@@ -8,6 +8,8 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        Task<string> GetDbContextHashCode();
         Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken);
+        bool ValidateTransaction(IEntityTransaction transaction);
     }
 }

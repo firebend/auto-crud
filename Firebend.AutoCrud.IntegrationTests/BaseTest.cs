@@ -539,7 +539,7 @@ public abstract class BaseTest<
     {
     }
 
-    private async Task<CustomFieldViewModelRead> PostCustomFieldsAsync(TKey entityId)
+    private async Task<CustomFieldViewModel> PostCustomFieldsAsync(TKey entityId)
     {
         var faked = CustomFieldFaker.Faker.Generate();
         var response = await $"{Url}/{entityId}/custom-fields".WithAuth().PostJsonAsync(faked);
@@ -547,14 +547,11 @@ public abstract class BaseTest<
         response.Should().NotBeNull();
         response.StatusCode.Should().Be(200);
 
-        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModel>();
         responseModel.Should().NotBeNull();
         responseModel.Id.Should().NotBeEmpty();
-        responseModel.EntityId.Should().NotBeEmpty();
         responseModel.Key.Should().NotBeNullOrWhiteSpace();
         responseModel.Value.Should().NotBeNullOrWhiteSpace();
-        responseModel.CreatedDate.Should().BeAfter(DateTimeOffset.MinValue);
-        responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
 
         PostCustomFieldsAssertions(response, responseModel);
 
@@ -583,11 +580,11 @@ public abstract class BaseTest<
     }
 
     protected virtual void PostCustomFieldsAssertions(IFlurlResponse response,
-        CustomFieldViewModelRead responseModel)
+        CustomFieldViewModel responseModel)
     {
     }
 
-    private async Task<CustomFieldViewModelRead> PutCustomFieldsAsync(TKey entityId, Guid id)
+    private async Task<CustomFieldViewModel> PutCustomFieldsAsync(TKey entityId, Guid id)
     {
         var faked = CustomFieldFaker.Faker.Generate();
         var response = await $"{Url}/{entityId}/custom-fields/{id}".WithAuth().PutJsonAsync(faked);
@@ -595,14 +592,12 @@ public abstract class BaseTest<
         response.Should().NotBeNull();
         response.StatusCode.Should().Be(200);
 
-        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModel>();
 
         responseModel.Should().NotBeNull();
         responseModel.Id.Should().NotBeEmpty();
-        responseModel.EntityId.Should().NotBeEmpty();
         responseModel.Key.Should().NotBeNullOrWhiteSpace();
         responseModel.Value.Should().NotBeNullOrWhiteSpace();
-        responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
 
         PutCustomFieldsAssertions(response, responseModel);
 
@@ -630,11 +625,11 @@ public abstract class BaseTest<
     }
 
     protected virtual void PutCustomFieldsAssertions(IFlurlResponse response,
-        CustomFieldViewModelRead responseModel)
+        CustomFieldViewModel responseModel)
     {
     }
 
-    private async Task<CustomFieldViewModelRead> PatchCustomFieldsAsync(TKey entityId, Guid id)
+    private async Task<CustomFieldViewModel> PatchCustomFieldsAsync(TKey entityId, Guid id)
     {
         var color = new Faker().Commerce.Color();
         var patch = PatchFaker.MakeReplacePatch<CustomFieldViewModel, string>(x => x.Value, color);
@@ -644,14 +639,12 @@ public abstract class BaseTest<
         response.Should().NotBeNull();
         response.StatusCode.Should().Be(200);
 
-        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModel>();
         responseModel.Should().NotBeNull();
         responseModel.Id.Should().NotBeEmpty();
-        responseModel.EntityId.Should().NotBeEmpty();
         responseModel.Key.Should().NotBeNullOrWhiteSpace();
         responseModel.Value.Should().NotBeNullOrWhiteSpace();
         responseModel.Value.Should().BeEquivalentTo(color);
-        responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
 
         var entity = await GetAsync(entityId);
         var customField = entity.CustomFields.First(x => x.Id == id);
@@ -682,26 +675,27 @@ public abstract class BaseTest<
     }
 
     protected virtual void PatchCustomFieldsAssertions(IFlurlResponse response,
-        CustomFieldViewModelRead responseModel)
+        CustomFieldViewModel responseModel)
     {
     }
 
     private async Task SearchCustomFieldsAsync(string key)
     {
-        async Task<(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModelRead> responseModel)>
+        async Task<(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModel> responseModel)>
             DoSearch()
         {
             var httpResponse = await $"{Url}/custom-fields/".WithAuth()
                 .SetQueryParam("pageNumber", "1")
                 .SetQueryParam("pageSize", "10")
                 .SetQueryParam("key", key)
+                .SetQueryParam("orderBy", "createdDate:desc")
                 .GetAsync();
 
             httpResponse.Should().NotBeNull();
             httpResponse.StatusCode.Should().Be(200);
 
             var httpResponseModel =
-                await httpResponse.GetJsonAsync<EntityPagedResponse<CustomFieldViewModelRead>>();
+                await httpResponse.GetJsonAsync<EntityPagedResponse<CustomFieldViewModel>>();
 
             httpResponseModel.Should().NotBeNull();
             httpResponseModel.Data.Should().NotBeNullOrEmpty();
@@ -709,10 +703,8 @@ public abstract class BaseTest<
             var customField = httpResponseModel.Data.First();
             customField.Should().NotBeNull();
             customField.Id.Should().NotBeEmpty();
-            customField.EntityId.Should().NotBeEmpty();
             customField.Key.Should().NotBeNullOrWhiteSpace();
             customField.Value.Should().NotBeNullOrWhiteSpace();
-            customField.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
 
             return (httpResponse, httpResponseModel);
         }
@@ -724,25 +716,26 @@ public abstract class BaseTest<
         SaveResponse(searchResponse);
     }
 
-    private async Task SearchCustomFieldsUnauthorizedAsync(string key)
+    private async Task SearchCustomFieldsUnauthorizedAsync(string key, Guid shouldNotReturn)
     {
-        async Task<(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModelRead> responseModel)>
+        async Task<(IFlurlResponse response, EntityPagedResponse<CustomFieldViewModel> responseModel)>
             DoSearch()
         {
             var httpResponse = await $"{Url}/custom-fields/".WithAuth()
                 .SetQueryParam("pageNumber", "1")
                 .SetQueryParam("pageSize", "10")
                 .SetQueryParam("key", key)
+                .SetQueryParam("orderBy", "createdDate:desc")
                 .GetAsync();
 
             httpResponse.Should().NotBeNull();
             httpResponse.StatusCode.Should().Be(200);
 
             var httpResponseModel =
-                await httpResponse.GetJsonAsync<EntityPagedResponse<CustomFieldViewModelRead>>();
+                await httpResponse.GetJsonAsync<EntityPagedResponse<CustomFieldViewModel>>();
 
             httpResponseModel.Should().NotBeNull();
-            httpResponseModel.Data.Should().BeEmpty();
+            httpResponseModel.Data.Should().NotContain(x => x.Id == shouldNotReturn);
 
             return (httpResponse, httpResponseModel);
         }
@@ -751,7 +744,7 @@ public abstract class BaseTest<
     }
 
     protected virtual void SearchCustomFieldsAssertions(IFlurlResponse response,
-        EntityPagedResponse<CustomFieldViewModelRead> responseModel)
+        EntityPagedResponse<CustomFieldViewModel> responseModel)
     {
     }
 
@@ -762,13 +755,11 @@ public abstract class BaseTest<
         response.Should().NotBeNull();
         response.StatusCode.Should().Be(200);
 
-        var responseModel = await response.GetJsonAsync<CustomFieldViewModelRead>();
+        var responseModel = await response.GetJsonAsync<CustomFieldViewModel>();
         responseModel.Should().NotBeNull();
         responseModel.Id.Should().NotBeEmpty();
-        responseModel.EntityId.Should().NotBeEmpty();
         responseModel.Key.Should().NotBeNullOrWhiteSpace();
         responseModel.Value.Should().NotBeNullOrWhiteSpace();
-        responseModel.ModifiedDate.Should().BeAfter(DateTimeOffset.MinValue);
 
         var entity = await GetAsync(entityId);
         entity.CustomFields.Should().NotContain(x => x.Id == id);
@@ -792,7 +783,7 @@ public abstract class BaseTest<
     }
 
     protected virtual void DeleteCustomFieldsAssertions(IFlurlResponse response,
-        CustomFieldViewModelRead responseModelRead)
+        CustomFieldViewModel responseModelRead)
     {
     }
 
@@ -863,7 +854,7 @@ public abstract class BaseTest<
         }
     }
 
-    private async Task AssertCustomFieldOnEntity(TKey entityId, CustomFieldViewModelRead customField)
+    private async Task AssertCustomFieldOnEntity(TKey entityId, CustomFieldViewModel customField)
     {
         var entity = await GetAsync(entityId);
         entity.CustomFields.Should().Contain(x =>
@@ -878,7 +869,7 @@ public abstract class BaseTest<
     }
 
     private async Task CheckResourceAuthorizationAsync(TReadResponse result, string search,
-        CustomFieldViewModelRead customField)
+        CustomFieldViewModel customField)
     {
         await TestRunner.Authenticate(TestConstants.UnauthorizedTestUser);
 
@@ -910,6 +901,6 @@ public abstract class BaseTest<
         await PutCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
         await PatchCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
         await DeleteCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
-        await SearchCustomFieldsUnauthorizedAsync(customField.Key);
+        await SearchCustomFieldsUnauthorizedAsync(customField.Key, customField.Id);
     }
 }

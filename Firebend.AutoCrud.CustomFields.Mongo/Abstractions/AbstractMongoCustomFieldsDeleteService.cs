@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Abstractions.Client;
@@ -26,6 +27,7 @@ public class AbstractMongoCustomFieldsDeleteService<TKey, TEntity> :
 
     private readonly IDomainEventContextProvider _domainEventContextProvider;
     private readonly IEntityDomainEventPublisher _domainEventPublisher;
+    private readonly ISessionTransactionManager _transactionManager;
     private readonly bool _isDefaultPublisher;
 
     public AbstractMongoCustomFieldsDeleteService(IMongoClient client,
@@ -33,21 +35,27 @@ public class AbstractMongoCustomFieldsDeleteService<TKey, TEntity> :
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
-        IEntityDomainEventPublisher domainEventPublisher) : base(client, logger, entityConfiguration, mongoRetryService)
+        IEntityDomainEventPublisher domainEventPublisher,
+        ISessionTransactionManager transactionManager) : base(client, logger, entityConfiguration, mongoRetryService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;
+        _transactionManager = transactionManager;
         _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
     }
 
-    public Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken = default)
-        => DeleteAsync(rootEntityKey, key, null, cancellationToken);
+    public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken = default)
+    {
+        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
+        return await DeleteAsync(rootEntityKey, key, transaction, cancellationToken);
+    }
 
     public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
         Guid key,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
+        _transactionManager.AddTransaction(entityTransaction);
         var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken).ConfigureAwait(false);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
@@ -81,8 +89,6 @@ public class AbstractMongoCustomFieldsDeleteService<TKey, TEntity> :
                 new FindOneAndUpdateOptions<TEntity> { ReturnDocument = ReturnDocument.Before },
                 cancellationToken);
         }
-
-        //todo: pub domain event
 
         var patch = new JsonPatchDocument<TEntity>();
         patch.Remove(x => x.CustomFields, result.CustomFields.FindIndex(x => x.Id == key));
