@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="4.6.0"></a>
+## [4.6.0](https://www.github.com/firebend/auto-crud/releases/tag/v4.6.0) (2022-6-20)
+
+### Features
+
+* support for session-based transactions and custom fields read service (#123) ([39601cd](https://www.github.com/firebend/auto-crud/commit/39601cd093e1527bfec85d2da8a8196b998402f9))
+
+### Other
+
+* BREAKING CHANGE: support for session-based transactions and custom fields read service (#123) ([94ee597](https://www.github.com/firebend/auto-crud/commit/94ee5973986626bc632e5a948b51538d4adf26fd))
+* Merge branch 'main' of https://github.com/firebend/auto-crud ([fa39b2e](https://www.github.com/firebend/auto-crud/commit/fa39b2e05847524518ee85bbe7d44f2acbaece32))
+
 <a name="4.5.1"></a>
 ## [4.5.1](https://www.github.com/firebend/auto-crud/releases/tag/v4.5.1) (2022-6-8)
 
