@@ -31,13 +31,13 @@ public class ClientRequestTransactionManagerTests
         _efTransactionFactory = _fixture.Create<Mock<IEntityTransactionFactory<Guid, TestClassEf>>>();
         _mongoTransactionFactory = _fixture.Create<Mock<IEntityTransactionFactory<Guid, TestClassMongo>>>();
         _efTransactionFactory.Setup(x => x.GetDbContextHashCode())
-            .ReturnsAsync(1);
+            .ReturnsAsync("ef_1");
         _efTransactionFactory.Setup(x => x.StartTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => CreateMockTransaction().Object);
         _efTransactionFactory.Setup(x => x.ValidateTransaction(It.IsAny<IEntityTransaction>()))
             .Returns(true);
         _mongoTransactionFactory.Setup(x => x.GetDbContextHashCode())
-            .ReturnsAsync(2);
+            .ReturnsAsync("mongo_1");
         _mongoTransactionFactory.Setup(x => x.StartTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => CreateMockTransaction().Object);
         _mongoTransactionFactory.Setup(x => x.ValidateTransaction(It.IsAny<IEntityTransaction>()))
@@ -62,9 +62,9 @@ public class ClientRequestTransactionManagerTests
     {
         // arrange
         _efTransactionFactory.SetupSequence(x => x.GetDbContextHashCode())
-            .ReturnsAsync(1)
-            .ReturnsAsync(3)
-            .ReturnsAsync(1);
+            .ReturnsAsync("ef_1")
+            .ReturnsAsync("ef_2")
+            .ReturnsAsync("ef_1");
         var sut = _fixture.Create<ClientRequestTransactionManager>();
         sut.Start();
 

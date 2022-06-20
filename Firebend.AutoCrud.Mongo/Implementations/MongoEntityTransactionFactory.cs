@@ -24,10 +24,10 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             _outbox = outbox;
         }
 
-        public Task<int> GetDbContextHashCode()
+        public Task<string> GetDbContextHashCode()
         {
             var hashCode = Client.Settings.GetHashCode();
-            return Task.FromResult(hashCode);
+            return Task.FromResult($"mongo_{hashCode}");
         }
 
         public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
