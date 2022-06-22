@@ -33,7 +33,7 @@ public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : Ab
 
     [HttpGet("export/{exportType}")]
     [SwaggerOperation("Exports {entityNamePlural} to a file.")]
-    [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.")]
+    [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.", typeof(FileResult))]
     [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
     [Produces("text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "application/vnd.ms-excel")]

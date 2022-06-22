@@ -119,7 +119,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                     .WithMassTransit();
                             }).AddControllers(controllers => controllers
                                 .WithChangeTrackingControllers()
-                                .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
+                                .WithRoute("/api/v1/ef-person/{personId:guid}/custom-fields")
                                 .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
                                 .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
@@ -180,7 +180,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                     .WithMassTransit();
                             }).AddControllers(controllers => controllers
                                 .WithChangeTrackingControllers()
-                                .WithRoute("/api/v1/ef-person/{personId}/pets/{petId}/custom-fields")
+                                .WithRoute("/api/v1/ef-person/{personId:guid}/pets/{petId:guid}/custom-fields")
                                 .WithOpenApiGroupName("The Beautiful Sql Fur Babies Custom Fields")
                                 .WithOpenApiEntityName("Fur Babies Custom Field", "Fur Babies Custom Fields"))))
                     .AddCrud(crud => crud.WithSearchHandler<PetSearch>((pets, parameters) =>

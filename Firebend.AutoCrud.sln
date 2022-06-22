@@ -51,6 +51,7 @@ ProjectSection(SolutionItems) = preProject
 	.github\workflows\build-test-and-release.yml = .github\workflows\build-test-and-release.yml
 	.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
 	.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
+	generate-client.sh = generate-client.sh
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firebend.AutoCrud.IntegrationTests", "Firebend.AutoCrud.IntegrationTests\Firebend.AutoCrud.IntegrationTests.csproj", "{3DF591D8-FFD9-4BC1-A23F-E9EA70D2CAAB}"
