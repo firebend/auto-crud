@@ -38,8 +38,8 @@ public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : Ab
     [Produces("text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "application/vnd.ms-excel")]
     public virtual async Task<IActionResult> ExportAsync(
-        [Required] [FromRoute] string exportType,
-        [Required] [FromQuery] string filename,
+        [Required][FromRoute] string exportType,
+        [Required][FromQuery] string filename,
         [FromQuery] TSearch searchRequest,
         CancellationToken cancellationToken)
     {
