@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "6.0.0",
+    "generators": {
+      "v3.0": {
+        "generatorName": "csharp-netcore",
+        "output": "./generated-client",
+        "inputSpec": "http://localhost:5020/open-api/v1/open-api.json",
+        "skipValidateSpec": true,
+        "additionalProperties": {
+          "targetFramework": "net6.0",
+          "useDateTimeOffset": true,
+          "packageName": "Firebend.AutoCrud.Sample.Client",
+          "caseInsensitiveResponseHeaders": true
+        }
+      }
+    }
+  }
+}

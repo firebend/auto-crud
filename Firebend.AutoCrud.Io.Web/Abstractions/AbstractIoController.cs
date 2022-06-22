@@ -33,9 +33,10 @@ public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : Ab
 
     [HttpGet("export/{exportType}")]
     [SwaggerOperation("Exports {entityNamePlural} to a file.")]
-    [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.")]
+    [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.", typeof(FileResult))]
     [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
-    [Produces("application/octet-stream")]
+    [Produces("text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel")]
     public virtual async Task<IActionResult> ExportAsync(
         [Required][FromRoute] string exportType,
         [Required][FromQuery] string filename,
@@ -63,6 +64,7 @@ public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : Ab
             {
                 ModelState.AddModelError(error.PropertyPath, error.Error);
             }
+
             return GetInvalidModelStateResult();
         }
 
