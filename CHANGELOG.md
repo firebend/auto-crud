@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="4.6.1"></a>
+## [4.6.1](https://www.github.com/firebend/auto-crud/releases/tag/v4.6.1) (2022-6-22)
+
+### Bug Fixes
+
+* Use correct content-types for IO controller openapi (#124) ([25c6ad1](https://www.github.com/firebend/auto-crud/commit/25c6ad1531b09cefd0e31f76f210e32e2e662bf0))
+
 <a name="4.6.0"></a>
 ## [4.6.0](https://www.github.com/firebend/auto-crud/releases/tag/v4.6.0) (2022-6-20)
 
