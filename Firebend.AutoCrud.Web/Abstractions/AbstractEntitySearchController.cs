@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -38,6 +37,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Searches for {entityNamePlural}")]
         [SwaggerResponse(200, "All the {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+        [SwaggerResponse(403, "Forbidden")]
         public virtual async Task<ActionResult<EntityPagedResponse<TViewModel>>> SearchAsync(
             [FromQuery] TSearch searchRequest,
             CancellationToken cancellationToken)

@@ -32,6 +32,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerOperation("Searches for custom fields assigned to a given {entityName}")]
         [SwaggerResponse(200, "All the custom fields for {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+        [SwaggerResponse(403, "Forbidden")]
         public async Task<ActionResult<EntityPagedResponse<CustomFieldsEntity<TKey>>>> SearchCustomFieldsAsync(
             [FromQuery] CustomFieldsSearchRequest searchRequest,
             CancellationToken cancellationToken)

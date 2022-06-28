@@ -35,8 +35,9 @@ public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : Ab
     [SwaggerOperation("Exports {entityNamePlural} to a file.")]
     [SwaggerResponse(200, "A file with all the matched {entityNamePlural}.", typeof(FileResult))]
     [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(403, "Forbidden")]
     [Produces("text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "application/vnd.ms-excel")]
+        "application/vnd.ms-excel", "application/json")]
     public virtual async Task<IActionResult> ExportAsync(
         [Required][FromRoute] string exportType,
         [Required][FromQuery] string filename,

@@ -30,6 +30,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerOperation("Gets all {entityNamePlural}")]
         [SwaggerResponse(200, "All the {entityNamePlural}.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+        [SwaggerResponse(403, "Forbidden")]
         public virtual async Task<ActionResult<IEnumerable<TViewModel>>> GetAllAsync(CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_readService);

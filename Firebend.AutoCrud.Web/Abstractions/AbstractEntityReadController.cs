@@ -31,6 +31,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [HttpGet("{id}")]
         [SwaggerOperation("Gets a specific {entityName}.")]
         [SwaggerResponse(200, "The {entityName} with the given key.")]
+        [SwaggerResponse(403, "Forbidden", typeof(ForbidResult))]
         [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
         [Produces("application/json")]
         public virtual async Task<ActionResult<TViewModel>> ReadByIdAsync(
