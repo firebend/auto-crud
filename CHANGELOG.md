@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="4.6.2"></a>
+## [4.6.2](https://www.github.com/firebend/auto-crud/releases/tag/v4.6.2) (2022-6-29)
+
+### Bug Fixes
+
+* Add 403 response types to controllers (#125) ([9660836](https://www.github.com/firebend/auto-crud/commit/96608361707fdfa3919f91adae332e9b1cd2c921))
+
 <a name="4.6.1"></a>
 ## [4.6.1](https://www.github.com/firebend/auto-crud/releases/tag/v4.6.1) (2022-6-22)
 
