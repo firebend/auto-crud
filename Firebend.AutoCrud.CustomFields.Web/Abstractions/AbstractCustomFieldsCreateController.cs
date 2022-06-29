@@ -32,6 +32,7 @@ public abstract class AbstractCustomFieldsCreateController<TKey, TEntity> : Abst
     [SwaggerOperation("Creates a custom field for a given {entityName}")]
     [SwaggerResponse(200, "A custom field  was created successfully.")]
     [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(403, "Forbidden")]
     [Produces("application/json")]
     public async Task<ActionResult<CustomFieldsEntity<TKey>>> CreateCustomFieldAsync(
         [FromRoute] string entityId,

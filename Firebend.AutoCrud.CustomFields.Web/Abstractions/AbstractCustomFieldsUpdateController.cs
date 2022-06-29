@@ -38,6 +38,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerOperation("Updates a custom field for a given {entityName}")]
         [SwaggerResponse(200, "A custom field  was updated successfully.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+        [SwaggerResponse(403, "Forbidden")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePutAsync(
             [Required][FromRoute] string entityId,
@@ -107,6 +108,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
         [SwaggerOperation("Patches a custom field for a given {entityName}")]
         [SwaggerResponse(201, "A custom field was patched successfully.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+        [SwaggerResponse(403, "Forbidden")]
         [Produces("application/json")]
         public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePatchAsync(
             [Required][FromRoute] string entityId,

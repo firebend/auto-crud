@@ -6,7 +6,6 @@ using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -39,6 +38,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
         [HttpGet("{entityId}/changes")]
         [SwaggerOperation("Gets change tracking history for a specific {entityName}")]
         [SwaggerResponse(200, "Change tracking history for the given entity key")]
+        [SwaggerResponse(403, "Forbidden")]
         [Produces("application/json")]
         public virtual async Task<ActionResult<EntityPagedResponse<ChangeTrackingViewModel<TKey, TEntity, TViewModel>>>> GetChangesAsync(
             [Required][FromRoute] string entityId,
