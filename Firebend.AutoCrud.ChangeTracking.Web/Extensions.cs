@@ -1,3 +1,4 @@
+using System;
 using Firebend.AutoCrud.ChangeTracking.Web.Abstractions;
 using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
@@ -9,6 +10,16 @@ namespace Firebend.AutoCrud.ChangeTracking.Web;
 
 public static class Extensions
 {
+    public static Type ChangeTrackingControllerType<TBuilder, TKey, TEntity>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+        => typeof(AbstractChangeTrackingReadController<,,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType,
+                configurator.Builder.EntityType,
+                configurator.ReadViewModelType);
+
     public static ControllerConfigurator<TBuilder, TKey, TEntity> WithChangeTrackingControllers<TBuilder, TKey,
         TEntity>(
         this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
@@ -19,11 +30,7 @@ public static class Extensions
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        var controller = typeof(AbstractChangeTrackingReadController<,,>)
-            .MakeGenericType(configurator.Builder.EntityKeyType,
-                configurator.Builder.EntityType,
-                configurator.ReadViewModelType);
-
+        var controller = configurator.ChangeTrackingControllerType();
         return configurator.WithController(controller, controller, entityName, entityNamePlural, openApiName);
     }
 
@@ -51,10 +58,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        => configurator.AddResourceAuthorization(typeof(AbstractChangeTrackingReadController<,,>)
-                .MakeGenericType(configurator.Builder.EntityKeyType,
-                    configurator.Builder.EntityType,
-                    configurator.ReadViewModelType),
+        => configurator.AddResourceAuthorization(configurator.ChangeTrackingControllerType(),
             typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity>), policy);
 
     public static IServiceCollection AddDefaultChangeTrackingResourceAuthorizationRequirement(this IServiceCollection serviceCollection)
@@ -67,4 +71,12 @@ public static class Extensions
 
         return serviceCollection;
     }
+
+    public static ControllerConfigurator<TBuilder, TKey, TEntity> AddChangeTrackingAuthorizationPolicy<TBuilder, TKey, TEntity>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator, string policy)
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+        => configurator.AddAuthorizationPolicy(configurator.ChangeTrackingControllerType(),
+            policy);
 }
