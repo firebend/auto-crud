@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="4.6.3"></a>
+## [4.6.3](https://www.github.com/firebend/auto-crud/releases/tag/v4.6.3) (2022-7-20)
+
+### Bug Fixes
+
+* Add missing authorization extensions and fix search authorization policy (#126) ([f332432](https://www.github.com/firebend/auto-crud/commit/f332432dca06c9fcf6141989ee9cbe249c4b1da5))
+
 <a name="4.6.2"></a>
 ## [4.6.2](https://www.github.com/firebend/auto-crud/releases/tag/v4.6.2) (2022-6-29)
 
