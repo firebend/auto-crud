@@ -1,6 +1,5 @@
 using System;
 using System.Reflection.Emit;
-using Firebend.AutoCrud.Web.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web;
@@ -77,9 +76,25 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateAuthorizationPolicy(string policy)
-        => AddAuthorizationPolicy(typeof(AbstractEntityCreateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType),
-            policy);
+        => AddAuthorizationPolicy(CreateControllerType(), policy);
+
+    /// <summary>
+    /// Adds an authorization policy to Create (multiple) requests using the abstract create multiple controller
+    /// </summary>
+    /// <param name="policy">The authorization policy name</param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .AddCreateMultipleAuthorizationPolicy("Policy")
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateMultipleAuthorizationPolicy(string policy)
+        => AddAuthorizationPolicy(CreateMultipleControllerType(), policy);
 
     /// <summary>
     /// Adds an authorization policy to DELETE requests using the abstract delete controller
@@ -97,8 +112,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteAuthorizationPolicy(string policy)
-        => AddAuthorizationPolicy(typeof(AbstractEntityDeleteController<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
+        => AddAuthorizationPolicy(DeleteControllerType(), policy);
 
     /// <summary>
     /// Adds an authorization policy to GET requests using the abstract read controller
@@ -116,8 +130,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAuthorizationPolicy(string policy)
-        => AddAuthorizationPolicy(typeof(AbstractEntityReadController<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
+        => AddAuthorizationPolicy(ReadControllerType(), policy);
 
     /// <summary>
     /// Adds an authorization policy to GET `/all` requests using the abstract read all controller
@@ -135,8 +148,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllAuthorizationPolicy(string policy)
-        => AddAuthorizationPolicy(typeof(AbstractEntityReadAllController<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType), policy);
+        => AddAuthorizationPolicy(ReadAllControllerType(), policy);
 
     /// <summary>
     /// Adds an authorization policy to search requests using the abstract search controller
@@ -153,13 +165,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddSearchAuthorizationPolicy("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddSearchAuthorizationPolicy(string policy)
-    {
-        var type = typeof(AbstractEntitySearchController<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchType, ReadViewModelType);
-
-        return AddAuthorizationPolicy(type, policy);
-    }
+    public ControllerConfigurator<TBuilder, TKey, TEntity> AddSearchAuthorizationPolicy(string policy) =>
+        AddAuthorizationPolicy(SearchControllerType(), policy);
 
     /// <summary>
     /// Adds an authorization policy to PUT requests using the abstract update controller
@@ -177,9 +184,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
-        => AddAuthorizationPolicy(typeof(AbstractEntityUpdateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType),
-            policy);
+        => AddAuthorizationPolicy(UpdateControllerType(), policy);
 
     /// <summary>
     /// Adds an authorization policies to all requests that modify an entity (Create, Update, and Delete) and use the abstract controllers

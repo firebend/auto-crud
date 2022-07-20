@@ -1,4 +1,3 @@
-using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 
@@ -23,8 +22,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateResourceAuthorization(
         string policy = CreateAuthorizationRequirement.DefaultPolicy)
-        => this.AddResourceAuthorization(typeof(AbstractEntityCreateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType),
+        => this.AddResourceAuthorization(CreateControllerType(),
             typeof(EntityCreateAuthorizationFilter<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType,
                 CreateViewModelType), policy);
 
@@ -45,9 +43,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateMultipleResourceAuthorization(
         string policy = CreateMultipleAuthorizationRequirement.DefaultPolicy)
-        => this.AddResourceAuthorization(typeof(AbstractEntityCreateMultipleController<,,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType,
-                    CreateMultipleViewModelType, ReadViewModelType),
+        => this.AddResourceAuthorization(CreateMultipleControllerType(),
             typeof(EntityCreateAuthorizationFilter<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType),
             policy);
 
@@ -68,8 +64,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteResourceAuthorization(
         string policy = DeleteAuthorizationRequirement.DefaultPolicy)
-        => this.AddResourceAuthorization(typeof(AbstractEntityDeleteController<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
+        => this.AddResourceAuthorization(DeleteControllerType(),
             typeof(EntityDeleteAuthorizationFilter<TKey, TEntity>), policy);
 
     /// <summary>
@@ -89,8 +84,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadResourceAuthorization(
         string policy = ReadAuthorizationRequirement.DefaultPolicy)
-        => this.AddResourceAuthorization(typeof(AbstractEntityReadController<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
+        => this.AddResourceAuthorization(ReadControllerType(),
             typeof(EntityReadAuthorizationFilter<TKey, TEntity>), policy);
 
     /// <summary>
@@ -110,8 +104,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllResourceAuthorization(
         string policy = ReadAllAuthorizationRequirement.DefaultPolicy)
-        => this.AddResourceAuthorization(typeof(AbstractEntityReadAllController<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType),
+        => this.AddResourceAuthorization(ReadAllControllerType(),
             typeof(EntityReadAuthorizationFilter<TKey, TEntity>), policy);
 
     /// <summary>
@@ -131,8 +124,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateResourceAuthorization(
         string policy = UpdateAuthorizationRequirement.DefaultPolicy) =>
-        this.AddResourceAuthorization(typeof(AbstractEntityUpdateController<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType),
+        this.AddResourceAuthorization(UpdateControllerType(),
             typeof(EntityUpdateAuthorizationFilter<,,>).MakeGenericType(Builder.EntityKeyType, Builder.EntityType,
                 UpdateViewModelType), policy);
 
