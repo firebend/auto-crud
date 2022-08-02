@@ -37,7 +37,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         string authorizePolicy = "")
     {
         var (attributeType, attributeBuilder) = GetAuthorizationAttributeInfo(authorizePolicy);
-        Builder.WithAttribute(type, attributeType, attributeBuilder);
+        Builder.WithAttribute(type, attributeType, attributeBuilder, true);
         return this;
     }
 
