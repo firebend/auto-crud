@@ -135,7 +135,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             return this;
         }
 
-        public BaseBuilder WithAttribute(Type registrationType, Type attributeType, CustomAttributeBuilder attribute)
+        public BaseBuilder WithAttribute(Type registrationType, Type attributeType, CustomAttributeBuilder attribute,
+            bool allowMultiple = false)
         {
             Attributes ??= new Dictionary<Type, List<CrudBuilderAttributeModel>>();
 
@@ -144,7 +145,10 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             if (Attributes.ContainsKey(registrationType))
             {
                 Attributes[registrationType] ??= new List<CrudBuilderAttributeModel>();
-                Attributes[registrationType].RemoveAll(x => x.AttributeType == attributeType);
+                if (!allowMultiple)
+                {
+                    Attributes[registrationType].RemoveAll(x => x.AttributeType == attributeType);
+                }
                 Attributes[registrationType].Add(model);
             }
             else
