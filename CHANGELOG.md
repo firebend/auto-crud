@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="4.7.0"></a>
+## [4.7.0](https://www.github.com/firebend/auto-crud/releases/tag/v4.7.0) (2022-8-2)
+
+### Features
+
+* Allow configuring multiple of the same attribute for a controller (#127) ([69dc76d](https://www.github.com/firebend/auto-crud/commit/69dc76d1774383d80d8147835cd3c86c2d139359))
+
 <a name="4.6.3"></a>
 ## [4.6.3](https://www.github.com/firebend/auto-crud/releases/tag/v4.6.3) (2022-7-20)
 
