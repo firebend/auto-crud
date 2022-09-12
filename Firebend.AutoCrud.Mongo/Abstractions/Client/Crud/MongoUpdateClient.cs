@@ -158,7 +158,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             CancellationToken cancellationToken = default)
         {
             var queryable = await GetFilteredCollectionAsync(
-                entities => entities.Where(x => x.Id.Equals(id)),
+                entities => Task.FromResult(entities.Where(x => x.Id.Equals(id))),
                         transaction,
                         cancellationToken)
                 .ConfigureAwait(false);
@@ -206,7 +206,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             if (original == null)
             {
                 var query = await GetFilteredCollectionAsync(
-                    entities => entities.Where(x => x.Id.Equals(entity.Id)),
+                    entities => Task.FromResult(entities.Where(x => x.Id.Equals(entity.Id))),
                     transaction,
                     cancellationToken);
 

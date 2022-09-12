@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
@@ -8,6 +9,8 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
         where TEntity : IEntity<TKey>
         where TSearch : IEntitySearchRequest
     {
-        IQueryable<TEntity> HandleSearch(IQueryable<TEntity> queryable, TSearch searchRequest);
+        IQueryable<TEntity> HandleSearch(IQueryable<TEntity> queryable, TSearch searchRequest) => queryable;
+
+        Task<IQueryable<TEntity>> HandleSearchAsync(IQueryable<TEntity> queryable, TSearch searchRequest) => Task.FromResult(queryable);
     }
 }

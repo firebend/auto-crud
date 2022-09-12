@@ -55,11 +55,13 @@ public abstract class MongoEntitySearchService<TKey, TEntity, TSearch> : Abstrac
         CancellationToken cancellationToken = default)
     {
         _transactionManager.AddTransaction(entityTransaction);
-        Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilter = null;
+        Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilter = null;
 
         if (_searchHandler != null)
         {
-            firstStageFilter = x => (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, request);
+            firstStageFilter = x => Task.FromResult((IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, request));
+
+            firstStageFilter = async x => (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, request);
         }
 
         var query = await _readClient

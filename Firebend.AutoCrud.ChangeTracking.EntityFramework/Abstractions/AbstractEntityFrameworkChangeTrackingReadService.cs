@@ -55,6 +55,8 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 if (_searchHandler != null)
                 {
                     query = _searchHandler.HandleSearch(query, searchRequest);
+
+                    query = await _searchHandler.HandleSearchAsync(query, searchRequest);
                 }
 
                 var paged = await _queryClient

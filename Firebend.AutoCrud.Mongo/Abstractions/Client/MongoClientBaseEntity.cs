@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected virtual IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
 
-        protected virtual async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+        protected virtual async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
@@ -49,7 +49,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
             if (firstStageFilters != null)
             {
-                mongoQueryable = firstStageFilters(mongoQueryable);
+                mongoQueryable = await firstStageFilters(mongoQueryable);
             }
 
             var filters = await BuildFiltersAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
