@@ -36,9 +36,11 @@ public abstract class AbstractMongoCustomFieldsSearchService<TKey, TEntity> : Ba
 
         if (_searchHandler != null)
         {
-            firstStageFilter = x => Task.FromResult((IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, searchRequest));
-
-            firstStageFilter = async x => (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, searchRequest);
+            firstStageFilter = async x =>
+            {
+                x = (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, searchRequest);
+                return (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, searchRequest);
+            };
         }
 
         var query = await _readClient
