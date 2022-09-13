@@ -37,6 +37,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected virtual IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
 
+        protected virtual Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => GetFilteredCollectionAsync(x => Task.FromResult(firstStageFilters(x)),
+                entityTransaction, cancellationToken);
+
         protected virtual async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)

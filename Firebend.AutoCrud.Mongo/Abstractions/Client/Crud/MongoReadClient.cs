@@ -29,6 +29,17 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             _orderByHandler = orderByHandler;
         }
 
+        protected virtual Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(IEntityTransaction entityTransaction,
+            Expression<Func<TEntity, bool>> additionalFilter,
+            CancellationToken cancellationToken)
+            => GetQueryableInternalAsync((Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>>)null, entityTransaction, additionalFilter, cancellationToken);
+
+        protected virtual Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            IEntityTransaction entityTransaction,
+            Expression<Func<TEntity, bool>> additionalFilter,
+            CancellationToken cancellationToken)
+            => GetQueryableInternalAsync(x => Task.FromResult(firstStageFilters(x)), entityTransaction, additionalFilter, cancellationToken);
+
         protected virtual async Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
             IEntityTransaction entityTransaction,
             Expression<Func<TEntity, bool>> additionalFilter,
@@ -52,16 +63,25 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken)
         {
-            var query = await GetQueryableInternalAsync(null, entityTransaction, filter, cancellationToken)
+            var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken)
                 .ConfigureAwait(false);
 
             var entity = await RetryErrorAsync(() => query.FirstOrDefaultAsync(cancellationToken)).ConfigureAwait(false);
             return entity;
         }
 
+        public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            CancellationToken cancellationToken = default)
+            => GetQueryableAsync(firstStageFilters, null, cancellationToken);
+
         public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
             CancellationToken cancellationToken = default)
             => GetQueryableAsync(firstStageFilters, null, cancellationToken);
+
+        public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+            IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => GetQueryableInternalAsync(firstStageFilters, entityTransaction, null, cancellationToken);
 
         public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
             IEntityTransaction entityTransaction,
@@ -75,7 +95,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken)
         {
-            var query = await GetQueryableInternalAsync(null, entityTransaction, filter, cancellationToken)
+            var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken)
                 .ConfigureAwait(false);
 
             var list = await RetryErrorAsync(() => query.ToListAsync(cancellationToken)).ConfigureAwait(false);
@@ -90,7 +110,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableInternalAsync(null, entityTransaction, filter, cancellationToken)
+            var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken)
                 .ConfigureAwait(false);
 
             var exists = await RetryErrorAsync(() => query.AnyAsync(cancellationToken)).ConfigureAwait(false);
@@ -102,7 +122,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
         public async Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
         {
-            var query = await GetQueryableInternalAsync(null, entityTransaction, filter, cancellationToken)
+            var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken)
                 .ConfigureAwait(false);
 
             var count = await RetryErrorAsync(() => query.LongCountAsync(cancellationToken)).ConfigureAwait(false);
