@@ -72,6 +72,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             return entity;
         }
 
+        public Task<IMongoQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default)
+            => GetQueryableAsync((Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>>)null, null, cancellationToken);
+
         public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
             CancellationToken cancellationToken = default)
             => GetQueryableAsync(firstStageFilters, null, cancellationToken);
@@ -79,6 +82,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
             CancellationToken cancellationToken = default)
             => GetQueryableAsync(firstStageFilters, null, cancellationToken);
+
+        public Task<IMongoQueryable<TEntity>> GetQueryableAsync(IEntityTransaction entityTransaction,
+            CancellationToken cancellationToken = default)
+            => GetQueryableAsync((Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>>)null, entityTransaction, cancellationToken);
 
         public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
             IEntityTransaction entityTransaction,
