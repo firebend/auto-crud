@@ -38,7 +38,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityTransaction entityTransaction,
             Expression<Func<TEntity, bool>> additionalFilter,
             CancellationToken cancellationToken)
-            => GetQueryableInternalAsync(x => Task.FromResult(firstStageFilters(x)), entityTransaction, additionalFilter, cancellationToken);
+            => GetQueryableInternalAsync(firstStageFilters is not null ?
+                x => Task.FromResult(firstStageFilters(x))
+                : Task.FromResult, entityTransaction, additionalFilter, cancellationToken);
 
         protected virtual async Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
             IEntityTransaction entityTransaction,

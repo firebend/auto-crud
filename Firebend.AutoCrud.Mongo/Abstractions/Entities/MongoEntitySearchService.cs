@@ -59,11 +59,8 @@ public abstract class MongoEntitySearchService<TKey, TEntity, TSearch> : Abstrac
 
         if (_searchHandler != null)
         {
-            firstStageFilter = async x =>
-            {
-                x = (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, request);
-                return (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, request);
-            };
+            firstStageFilter = async x => (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, request)
+                                          ?? (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, request);
         }
 
         var query = await _readClient

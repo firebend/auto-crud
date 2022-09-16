@@ -75,9 +75,8 @@ public abstract class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch>
 
             if (_searchHandler != null)
             {
-                query = _searchHandler.HandleSearch(query, request);
-
-                query = await _searchHandler.HandleSearchAsync(query, request);
+                query = _searchHandler.HandleSearch(query, request)
+                    ?? await _searchHandler.HandleSearchAsync(query, request);
             }
 
             var paged = await _searchClient

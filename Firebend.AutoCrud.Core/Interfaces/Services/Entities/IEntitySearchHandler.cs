@@ -9,8 +9,8 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
         where TEntity : IEntity<TKey>
         where TSearch : IEntitySearchRequest
     {
-        IQueryable<TEntity> HandleSearch(IQueryable<TEntity> queryable, TSearch searchRequest) => queryable;
+        IQueryable<TEntity> HandleSearch(IQueryable<TEntity> queryable, TSearch searchRequest) => null;
 
-        Task<IQueryable<TEntity>> HandleSearchAsync(IQueryable<TEntity> queryable, TSearch searchRequest) => Task.FromResult(queryable);
+        Task<IQueryable<TEntity>> HandleSearchAsync(IQueryable<TEntity> queryable, TSearch searchRequest) => Task.FromResult((IQueryable<TEntity>)null);
     }
 }
