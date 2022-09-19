@@ -32,11 +32,12 @@ public abstract class AbstractMongoCustomFieldsSearchService<TKey, TEntity> : Ba
         CustomFieldsSearchRequest searchRequest,
         CancellationToken cancellationToken = default)
     {
-        Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilter = null;
+        Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilter = null;
 
         if (_searchHandler != null)
         {
-            firstStageFilter = x => (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, searchRequest);
+            firstStageFilter = async x => (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, searchRequest)
+                                          ?? (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, searchRequest);
         }
 
         var query = await _readClient

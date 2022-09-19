@@ -37,11 +37,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
                 throw new ArgumentNullException(nameof(searchRequest));
             }
 
-            Func<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>, IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>> firstStageFilter = null;
+            Func<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>, Task<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>>> firstStageFilter = null;
 
             if (!string.IsNullOrWhiteSpace(searchRequest.Search))
             {
-                firstStageFilter = x => (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)_searchHandler.HandleSearch(x, searchRequest);
+                firstStageFilter = async x =>
+                    (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)_searchHandler.HandleSearch(x, searchRequest)
+                        ?? (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)await _searchHandler
+                            .HandleSearchAsync(x, searchRequest);
             }
 
             var query = await _queryClient.GetQueryableAsync(firstStageFilter, cancellationToken);

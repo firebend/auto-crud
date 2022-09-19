@@ -45,7 +45,8 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
 
             if (_searchHandler != null)
             {
-                query = _searchHandler.HandleSearch(query, searchRequest);
+                query = _searchHandler.HandleSearch(query, searchRequest)
+                    ?? await _searchHandler.HandleSearchAsync(query, searchRequest);
             }
 
             var fieldsQuery = query.SelectMany(x => x.CustomFields);
