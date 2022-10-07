@@ -365,7 +365,8 @@ public partial class
 
     /// <summary>
     /// Registers a CREATE controller for the entity using auto-generated types
-    /// </summary>=
+    /// </summary>
+    /// <param name="includeValidationController">Optional;  Whether to include the Validate controller</param>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
@@ -391,7 +392,7 @@ public partial class
     }
 
     /// <summary>
-    /// Registers a CREATE controller for the entity using a service type
+    /// Registers a Validate CREATE controller for the entity using a service type
     /// </summary>
     /// <typeparam name="TRegistrationType">The service type to use</typeparam>
     /// <example>
@@ -401,7 +402,7 @@ public partial class
     ///      .WithFullTextSearch()
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
-    ///          .WithCreateController<>()
+    ///          .WithValidateCreateController<>()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateCreateController<TRegistrationType>()
@@ -412,8 +413,8 @@ public partial class
             ValidateCreateControllerType);
 
     /// <summary>
-    /// Registers a CREATE controller for the entity using auto-generated types
-    /// </summary>=
+    /// Registers a Validate CREATE controller for the entity using auto-generated types
+    /// </summary>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
@@ -421,7 +422,7 @@ public partial class
     ///      .WithFullTextSearch()
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
-    ///          .WithCreateController<>()
+    ///          .WithValidateCreateController<>()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateCreateController()
@@ -761,6 +762,7 @@ public partial class
     /// <summary>
     /// Registers an UPDATE controller for the entity using auto-generated types
     /// </summary>
+    /// <param name="includeValidationController">Optional;  Whether to include the Validate controller</param>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
@@ -784,7 +786,7 @@ public partial class
     }
 
     /// <summary>
-    /// Registers an UPDATE controller for the entity using a registration type
+    /// Registers a Validate UPDATE controller for the entity using a registration type
     /// </summary>
     /// <typeparam name="TRegistrationType">The service type to use</typeparam>
     /// <example>
@@ -794,14 +796,14 @@ public partial class
     ///      .WithFullTextSearch()
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
-    ///          .WithUpdateController<>()
+    ///          .WithValidateUpdateController<>()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateUpdateController<TRegistrationType>()
         => WithUpdateController(typeof(TRegistrationType), ValidateUpdateControllerType);
 
     /// <summary>
-    /// Registers an UPDATE controller for the entity using auto-generated types
+    /// Registers a Validate UPDATE controller for the entity using auto-generated types
     /// </summary>
     /// <example>
     /// <code>
@@ -810,7 +812,7 @@ public partial class
     ///      .WithFullTextSearch()
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
-    ///          .WithUpdateController()
+    ///          .WithValidateUpdateController()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateUpdateController()
@@ -911,6 +913,7 @@ public partial class
     /// </summary>
     /// <param name="includeGetAll">Optional; Whether to include the Get All controller</param>
     /// <param name="includeMultipleCreate">Optional; Whether to include the Create Multiple controller</param>
+    /// <param name="includeValidationController">Optional;  Whether to include the Validate controllers</param>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
