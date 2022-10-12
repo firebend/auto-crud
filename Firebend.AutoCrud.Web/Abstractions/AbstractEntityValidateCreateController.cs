@@ -29,7 +29,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
         [HttpPost("validate")]
         [SwaggerOperation("Shallow Validation on {entityNamePlural}")]
-        [SwaggerResponse(201, "A {entityName} was validated successfully.")]
+        [SwaggerResponse(200, "A {entityName} was validated successfully.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [SwaggerResponse(403, "Forbidden")]
         [Produces("application/json")]
@@ -52,7 +52,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             _mapper = null;
             _readMapper = null;
 
-            return Created($"{Request.Path.Value}/{Guid.Empty}", createdViewModel);
+            return Ok(createdViewModel);
         }
     }
 }

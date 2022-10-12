@@ -98,7 +98,7 @@ public class MongoEndToEndTest : BaseTest<
             .WithAuth()
             .PutJsonAsync(person);
 
-        postResponse.StatusCode.Should().Be(201);
+        postResponse.StatusCode.Should().Be(200);
         putResponse.StatusCode.Should().Be(200);
     }
 
