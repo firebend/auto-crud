@@ -52,7 +52,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var entity = await _mapper.FromAsync(body, cancellationToken)
+            var entity = await _mapper
+                .FromAsync(body, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!TryValidateModel(entity))

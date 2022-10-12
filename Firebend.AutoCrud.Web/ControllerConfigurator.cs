@@ -256,10 +256,18 @@ public partial class
         => typeof(AbstractEntityCreateController<,,,>)
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType);
 
+    public Type ValidateCreateControllerType()
+        => typeof(AbstractEntityValidateCreateController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType);
+
     public Type CreateMultipleControllerType()
         => typeof(AbstractEntityCreateMultipleController<,,,,>)
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType,
                 CreateMultipleViewModelType, ReadViewModelType);
+
+    public Type ValidateUpdateControllerType()
+        => typeof(AbstractEntityValidateUpdateController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType);
 
     public Type UpdateControllerType()
         => typeof(AbstractEntityUpdateController<,,,>)
@@ -288,6 +296,7 @@ public partial class
     /// <param name="viewModelMapper"></param>
     /// <param name="resultModelTypeMapper"></param>
     /// <param name="makeServiceGeneric"></param>
+    /// <param name="createControllerType"></param>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
@@ -301,7 +310,8 @@ public partial class
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type serviceType,
         Type viewModelMapper,
         Type resultModelTypeMapper,
-        bool makeServiceGeneric)
+        bool makeServiceGeneric,
+        Func<Type> controllerType)
     {
         if (viewModelMapper != null)
         {
@@ -327,7 +337,7 @@ public partial class
                 ReadViewModelType);
         }
 
-        WithController(serviceType, CreateControllerType());
+        WithController(serviceType, controllerType());
 
         return this;
     }
@@ -350,11 +360,13 @@ public partial class
         => WithCreateController(typeof(TRegistrationType),
             null,
             null,
-            false);
+            false,
+            CreateControllerType);
 
     /// <summary>
     /// Registers a CREATE controller for the entity using auto-generated types
-    /// </summary>=
+    /// </summary>
+    /// <param name="includeValidationController">Optional;  Whether to include the Validate controller</param>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
@@ -365,12 +377,61 @@ public partial class
     ///          .WithCreateController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController()
-        => WithCreateController(
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(bool includeValidationController = true)
+    {
+        if (includeValidationController)
+        {
+            WithValidateCreateController();
+        }
+        return WithCreateController(
             typeof(AbstractEntityCreateController<,,,>),
             null,
             null,
-            true);
+            true,
+            CreateControllerType);
+    }
+
+    /// <summary>
+    /// Registers a Validate CREATE controller for the entity using a service type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithValidateCreateController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateCreateController<TRegistrationType>()
+        => WithCreateController(typeof(TRegistrationType),
+            null,
+            null,
+            false,
+            ValidateCreateControllerType);
+
+    /// <summary>
+    /// Registers a Validate CREATE controller for the entity using auto-generated types
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithValidateCreateController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateCreateController()
+        => WithCreateController(
+            typeof(AbstractEntityValidateCreateController<,,,>),
+            null,
+            null,
+            true,
+            ValidateCreateControllerType);
 
     /// <summary>
     /// Registers a DELETE controller for the entity
@@ -628,9 +689,13 @@ public partial class
     /// <summary>
     /// Registers an UPDATE controller for the entity
     /// </summary>
+    /// <param name="serviceType"></param>
+    /// <param name="updateControllerType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="resultModelTypeMapper"></param>
+    /// <param name="makeServiceTypeGeneric"></param>
     /// <param name="registrationType"></param>
     /// <param name="viewModelType"></param>
-    /// <param name="viewModelMapper"></param>
     /// <param name="makeRegistrationTypeGeneric"></param>
     /// <example>
     /// <code>
@@ -643,6 +708,7 @@ public partial class
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(Type serviceType,
+        Func<Type> updateControllerType,
         Type viewModelMapper = null,
         Type resultModelTypeMapper = null,
         bool makeServiceTypeGeneric = false)
@@ -671,7 +737,7 @@ public partial class
                 ReadViewModelType);
         }
 
-        WithController(serviceType, UpdateControllerType());
+        WithController(serviceType, updateControllerType());
 
         return this;
     }
@@ -691,11 +757,12 @@ public partial class
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController<TRegistrationType>()
-        => WithUpdateController(typeof(TRegistrationType));
+        => WithUpdateController(typeof(TRegistrationType), UpdateControllerType);
 
     /// <summary>
     /// Registers an UPDATE controller for the entity using auto-generated types
     /// </summary>
+    /// <param name="includeValidationController">Optional;  Whether to include the Validate controller</param>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
@@ -706,9 +773,52 @@ public partial class
     ///          .WithUpdateController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController()
-        => WithUpdateController(
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(bool includeValidationController = true)
+    {
+        if (includeValidationController)
+        {
+            WithValidateUpdateController();
+        }
+        return WithUpdateController(
             typeof(AbstractEntityUpdateController<,,,>),
+            UpdateControllerType,
+            makeServiceTypeGeneric: true);
+    }
+
+    /// <summary>
+    /// Registers a Validate UPDATE controller for the entity using a registration type
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithValidateUpdateController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateUpdateController<TRegistrationType>()
+        => WithUpdateController(typeof(TRegistrationType), ValidateUpdateControllerType);
+
+    /// <summary>
+    /// Registers a Validate UPDATE controller for the entity using auto-generated types
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithValidateUpdateController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateUpdateController()
+        => WithUpdateController(
+            typeof(AbstractEntityValidateUpdateController<,,,>),
+            ValidateUpdateControllerType,
             makeServiceTypeGeneric: true);
 
     /// <summary>
@@ -803,6 +913,7 @@ public partial class
     /// </summary>
     /// <param name="includeGetAll">Optional; Whether to include the Get All controller</param>
     /// <param name="includeMultipleCreate">Optional; Whether to include the Create Multiple controller</param>
+    /// <param name="includeValidationController">Optional;  Whether to include the Validate controllers</param>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
@@ -814,13 +925,13 @@ public partial class
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithAllControllers(bool includeGetAll = false,
-        bool includeMultipleCreate = true)
+        bool includeMultipleCreate = true, bool includeValidationController = true)
     {
         WithReadController();
-        WithCreateController();
+        WithCreateController(includeValidationController);
         WithDeleteController();
         WithSearchController();
-        WithUpdateController();
+        WithUpdateController(includeValidationController);
 
         if (includeGetAll)
         {

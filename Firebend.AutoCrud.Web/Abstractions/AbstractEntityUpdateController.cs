@@ -17,7 +17,9 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityUpdateController<TKey, TEntity, TUpdateViewModel, TReadViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class
+        AbstractEntityUpdateController<TKey, TEntity, TUpdateViewModel, TReadViewModel> :
+            AbstractControllerWithKeyParser<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
         where TReadViewModel : class
@@ -69,31 +71,18 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            if (body == null)
-            {
-                ModelState.AddModelError(nameof(body), "A body is required");
+            var entityUpdate = await this.ValidateModel(body, _updateViewModelMapper, cancellationToken);
 
+            if (!ModelState.IsValid)
+            {
                 return GetInvalidModelStateResult();
-            }
-
-            var entityUpdate = await _updateViewModelMapper
-                .FromAsync(body, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (entityUpdate == null)
-            {
-                throw new Exception("Update view model mapper did not map to entity.");
             }
 
             if (IsCustomFieldsEntity() && HasCustomFieldsPopulated(entityUpdate))
             {
-                ModelState.AddModelError(nameof(body), "Modifying an entity's custom fields is not allowed in this endpoint. Please use the entity's custom fields endpoints.");
+                ModelState.AddModelError(nameof(body),
+                    "Modifying an entity's custom fields is not allowed in this endpoint. Please use the entity's custom fields endpoints.");
 
-                return GetInvalidModelStateResult();
-            }
-
-            if (!ModelState.IsValid || !TryValidateModel(entityUpdate))
-            {
                 return GetInvalidModelStateResult();
             }
 
