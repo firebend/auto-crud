@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [SwaggerResponse(403, "Forbidden")]
         [Produces("application/json")]
-        public virtual async Task<ActionResult<TReadViewModel>> CreateAsync(
+        public virtual async Task<ActionResult<TReadViewModel>> ValidateCreateAsync(
             TCreateViewModel body,
             CancellationToken cancellationToken)
         {
