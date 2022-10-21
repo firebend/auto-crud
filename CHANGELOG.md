@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="5.1.1"></a>
+## [5.1.1](https://www.github.com/firebend/auto-crud/releases/tag/v5.1.1) (2022-10-21)
+
+### Bug Fixes
+
+* validation controllers (#133) ([fe29ed6](https://www.github.com/firebend/auto-crud/commit/fe29ed696dc848195882526008501ffa8ae0ebc6))
+
+### Other
+
+* Fixed controller name (#132) ([b00c3dc](https://www.github.com/firebend/auto-crud/commit/b00c3dcd80e69dcbffada234150ba8854c8d1f7d))
+
 <a name="5.1.0"></a>
 ## [5.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v5.1.0) (2022-10-12)
 
