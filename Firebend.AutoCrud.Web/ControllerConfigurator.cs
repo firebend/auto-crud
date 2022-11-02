@@ -950,7 +950,6 @@ public partial class
     /// Registers a validation service for an entity
     /// </summary>
     /// <typeparam name="TService">The validation service to use</typeparam>
-    /// <typeparam name="TPatchModel">The model used for the PATCH method.</typeparam>
     /// <param name="replace">Whether to replace the existing validation service; default=<code>true</code></param>
     /// <example>
     /// <code>
