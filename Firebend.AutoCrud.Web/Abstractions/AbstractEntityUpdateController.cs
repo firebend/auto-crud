@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         private const string IdPatchPath = $"/{nameof(IEntity<Guid>.Id)}";
         private const string CustomFieldsPatchPath = $"/{nameof(ICustomFieldsEntity<Guid>.CustomFields)}";
 
-        private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
+        private readonly IEntityValidationService<TKey, TEntity, TUpdateViewModel> _entityValidationService;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
         private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IEntityValidationService<TKey, TEntity> entityValidationService,
+            IEntityValidationService<TKey, TEntity, TUpdateViewModel> entityValidationService,
             IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
             IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
@@ -145,7 +145,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [Produces("application/json")]
         public virtual async Task<ActionResult<TReadViewModel>> UpdatePatchAsync(
             [Required][FromRoute] string id,
-            [Required][FromBody] JsonPatchDocument<TEntity> patch,
+            [Required][FromBody] JsonPatchDocument<TUpdateViewModel> patch,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_readService);
@@ -190,15 +190,19 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             var original = entity.Clone();
 
-            ApplyTo(patch, entity, ModelState, string.Empty);
+            var vm = await _updateViewModelMapper.ToAsync(entity, cancellationToken);
 
-            if (!ModelState.IsValid || !TryValidateModel(entity))
+            ApplyTo(patch, vm, ModelState, string.Empty);
+
+            if (!ModelState.IsValid || !TryValidateModel(vm))
             {
                 return GetInvalidModelStateResult();
             }
 
+            var modifiedEntity = await _updateViewModelMapper.FromAsync(vm, cancellationToken);
+
             var isValid = await _entityValidationService
-                .ValidateAsync(original, entity, patch, cancellationToken)
+                .ValidateAsync(original, modifiedEntity, patch, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!isValid.WasSuccessful)
@@ -213,7 +217,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             if (isValid.Model != null)
             {
-                entity = isValid.Model;
+                modifiedEntity = isValid.Model;
             }
 
             TEntity update;
@@ -221,7 +225,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             try
             {
                 update = await _updateService
-                    .UpdateAsync(entity, cancellationToken)
+                    .UpdateAsync(modifiedEntity, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (AutoCrudEntityException ex)

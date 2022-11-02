@@ -56,7 +56,7 @@ public partial class
         WithRoute($"/api/v1/{name.Kebaberize()}");
         WithOpenApiGroupName(name);
 
-        WithValidationService<DefaultEntityValidationService<TKey, TEntity>>(false);
+        WithValidationService<DefaultEntityValidationService<TKey, TEntity, DefaultCreateUpdateViewModel<TKey, TEntity>>>(false);
 
         Builder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
 
@@ -253,7 +253,7 @@ public partial class
     }
 
     public Type CreateControllerType()
-        => typeof(AbstractEntityCreateController<,,,>)
+        => typeof(AbstractEntityCreateController<,,,,>)
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType);
 
     public Type ValidateCreateControllerType()
@@ -261,7 +261,7 @@ public partial class
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType);
 
     public Type CreateMultipleControllerType()
-        => typeof(AbstractEntityCreateMultipleController<,,,,>)
+        => typeof(AbstractEntityCreateMultipleController<,,,,,>)
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType,
                 CreateMultipleViewModelType, ReadViewModelType);
 
@@ -384,7 +384,7 @@ public partial class
             WithValidateCreateController();
         }
         return WithCreateController(
-            typeof(AbstractEntityCreateController<,,,>),
+            typeof(AbstractEntityCreateController<,,,,>),
             null,
             null,
             true,
@@ -905,7 +905,7 @@ public partial class
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController()
-        => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,>),
+        => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,,>),
             makeRegistrationTypeGeneric: true);
 
     /// <summary>
@@ -950,6 +950,7 @@ public partial class
     /// Registers a validation service for an entity
     /// </summary>
     /// <typeparam name="TService">The validation service to use</typeparam>
+    /// <typeparam name="TPatchModel">The model used for the PATCH method.</typeparam>
     /// <param name="replace">Whether to replace the existing validation service; default=<code>true</code></param>
     /// <example>
     /// <code>
@@ -963,9 +964,17 @@ public partial class
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidationService<TService>(bool replace = true)
-        where TService : IEntityValidationService<TKey, TEntity>
     {
-        Builder.WithRegistration<IEntityValidationService<TKey, TEntity>, TService>(replace);
+        var type = typeof(IEntityValidationService<,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType);
+
+        if (!type.IsAssignableFrom(typeof(TService)))
+        {
+            throw new ArgumentException($"The service type {typeof(TService).Name} does not implement {type.Name}");
+        };
+
+        Builder.WithRegistration(type, typeof(TService), replace);
+
         return this;
     }
 

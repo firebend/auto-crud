@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Web.Sample.ValidationServices
 {
-    public class PersonValidationService : IEntityValidationService<Guid, EfPerson>
+    public class PersonValidationService : IEntityValidationService<Guid, EfPerson, EfPerson>
     {
         public Task<ModelStateResult<EfPerson>> ValidateAsync(EfPerson entity, CancellationToken cancellationToken)
         {

@@ -15,20 +15,21 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel> : AbstractEntityControllerBase
+    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel, TUpdateViewModel, TReadViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TMultipleViewModel : class
+        where TUpdateViewModel : class
         where TReadViewModel : class
         where TMultipleViewModelWrapper : IMultipleEntityViewModel<TMultipleViewModel>
     {
         private readonly IEntityCreateService<TKey, TEntity> _createService;
-        private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
+        private readonly IEntityValidationService<TKey, TEntity, TUpdateViewModel> _entityValidationService;
         private readonly ICreateMultipleViewModelMapper<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel> _multipleMapper;
         private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readMapper;
 
         protected AbstractEntityCreateMultipleController(IEntityCreateService<TKey, TEntity> createService,
-            IEntityValidationService<TKey, TEntity> entityValidationService,
+            IEntityValidationService<TKey, TEntity, TUpdateViewModel> entityValidationService,
             ICreateMultipleViewModelMapper<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel> multipleMapper,
             IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
