@@ -288,13 +288,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel, TViewModelBody>(
-        Func<TViewModel, TEntity> from)
+        Func<TViewModel, TEntity> from,
+        Func<TEntity, TViewModel> to)
         where TViewModel : class
         where TViewModelBody : class
     {
         ViewModelGuard("Please register a update view model before adding controllers");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel, TViewModelBody>(@from);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel, TViewModelBody>(@from, to);
 
         UpdateViewModelType = typeof(TViewModel);
         UpdateViewModelBodyType = typeof(TViewModelBody);
