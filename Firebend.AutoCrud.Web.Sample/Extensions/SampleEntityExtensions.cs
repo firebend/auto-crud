@@ -66,7 +66,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             x.Body.CopyPropertiesTo(mongoTenantPerson);
                             return mongoTenantPerson;
                         })
-                        .WithUpdateViewModel<CreatePersonViewModel>(x =>
+                        .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(x =>
                         {
                             var mongoTenantPerson = new MongoTenantPerson();
                             x.Body.CopyPropertiesTo(mongoTenantPerson);
@@ -135,7 +135,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
-                        .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
+                        .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(view => new EfPerson(view))
                         .WithReadViewModel<GetPersonViewModel, PersonViewModelMapper>()
                         //.WithReadViewModel(entity => new GetPersonViewModel(entity))
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>(
@@ -202,7 +202,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddControllers(controllers => controllers
                         .WithReadViewModel(pet => new GetPetViewModel(pet))
                         .WithCreateViewModel<CreatePetViewModel>(pet => new EfPet(pet))
-                        .WithUpdateViewModel<PutPetViewModel>(pet => new EfPet(pet))
+                        .WithUpdateViewModel<PutPetViewModel, PetBaseViewModel>(pet => new EfPet(pet))
                         .WithRoute("/api/v1/ef-person/{personId:guid}/pets")
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Fur Babies")

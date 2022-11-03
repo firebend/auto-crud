@@ -10,19 +10,20 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityValidateUpdateController<TKey, TEntity, TUpdateViewModel, TReadViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractEntityValidateUpdateController<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
         where TReadViewModel : class
         where TUpdateViewModel : class
+        where TUpdateViewModelBody : class
     {
 
-        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
+        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody> _updateViewModelMapper;
         private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readViewModelMapper;
 
         protected AbstractEntityValidateUpdateController(
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
+            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody> updateViewModelMapper,
             IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
         {

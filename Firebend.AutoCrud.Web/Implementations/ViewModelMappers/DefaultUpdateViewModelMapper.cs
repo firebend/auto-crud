@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
     public class DefaultUpdateViewModelMapper<TKey, TEntity> :
         AbstractDefaultCreateUpdateViewModelMapper<TKey, TEntity>,
-        IUpdateViewModelMapper<TKey, TEntity, DefaultCreateUpdateViewModel<TKey, TEntity>>
+        IUpdateViewModelMapper<TKey, TEntity, DefaultCreateUpdateViewModel<TKey, TEntity>, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {

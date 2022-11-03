@@ -62,7 +62,7 @@ public partial class
 
         WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity>>();
         WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
-        WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultUpdateViewModelMapper<TKey, TEntity>>();
+        WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, TEntity, DefaultUpdateViewModelMapper<TKey, TEntity>>();
         WithCreateMultipleViewModel<MultipleEntityViewModel<TEntity>, TEntity,
             DefaultCreateMultipleViewModelMapper<TKey, TEntity>>();
         WithMaxPageSize();
@@ -266,12 +266,12 @@ public partial class
                 CreateMultipleViewModelType, ReadViewModelType);
 
     public Type ValidateUpdateControllerType()
-        => typeof(AbstractEntityValidateUpdateController<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType);
+        => typeof(AbstractEntityValidateUpdateController<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, UpdateViewModelBodyType, ReadViewModelType);
 
     public Type UpdateControllerType()
-        => typeof(AbstractEntityUpdateController<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType);
+        => typeof(AbstractEntityUpdateController<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, UpdateViewModelBodyType, ReadViewModelType);
 
     public Type ReadControllerType()
         => typeof(AbstractEntityReadController<,,>)
@@ -715,8 +715,8 @@ public partial class
     {
         if (viewModelMapper != null)
         {
-            var updateMapperInterface = typeof(IUpdateViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, UpdateViewModelType);
+            var updateMapperInterface = typeof(IUpdateViewModelMapper<,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, UpdateViewModelType, UpdateViewModelBodyType);
 
             Builder.WithRegistration(updateMapperInterface, viewModelMapper, updateMapperInterface);
         }
@@ -780,7 +780,7 @@ public partial class
             WithValidateUpdateController();
         }
         return WithUpdateController(
-            typeof(AbstractEntityUpdateController<,,,>),
+            typeof(AbstractEntityUpdateController<,,,,>),
             UpdateControllerType,
             makeServiceTypeGeneric: true);
     }
@@ -817,7 +817,7 @@ public partial class
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateUpdateController()
         => WithUpdateController(
-            typeof(AbstractEntityValidateUpdateController<,,,>),
+            typeof(AbstractEntityValidateUpdateController<,,,,>),
             ValidateUpdateControllerType,
             makeServiceTypeGeneric: true);
 

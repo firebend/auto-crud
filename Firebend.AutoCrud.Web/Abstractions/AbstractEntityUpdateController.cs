@@ -18,27 +18,28 @@ namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
     public abstract class
-        AbstractEntityUpdateController<TKey, TEntity, TUpdateViewModel, TReadViewModel> :
+        AbstractEntityUpdateController<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel> :
             AbstractControllerWithKeyParser<TKey, TEntity>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
         where TReadViewModel : class
         where TUpdateViewModel : class
+        where TUpdateViewModelBody : class
     {
         private const string IdPatchPath = $"/{nameof(IEntity<Guid>.Id)}";
         private const string CustomFieldsPatchPath = $"/{nameof(ICustomFieldsEntity<Guid>.CustomFields)}";
 
-        private readonly IEntityValidationService<TKey, TEntity, TUpdateViewModel> _entityValidationService;
+        private readonly IEntityValidationService<TKey, TEntity, TUpdateViewModelBody> _entityValidationService;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
-        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
+        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody> _updateViewModelMapper;
         private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readViewModelMapper;
 
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IEntityValidationService<TKey, TEntity, TUpdateViewModel> entityValidationService,
-            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
+            IEntityValidationService<TKey, TEntity, TUpdateViewModelBody> entityValidationService,
+            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody> updateViewModelMapper,
             IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
         {
@@ -145,7 +146,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [Produces("application/json")]
         public virtual async Task<ActionResult<TReadViewModel>> UpdatePatchAsync(
             [Required][FromRoute] string id,
-            [Required][FromBody] JsonPatchDocument<TUpdateViewModel> patch,
+            [Required][FromBody] JsonPatchDocument<TUpdateViewModelBody> patch,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_readService);
@@ -192,7 +193,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             var vm = await _updateViewModelMapper.ToAsync(entity, cancellationToken);
 
-            ApplyTo(patch, vm, ModelState, string.Empty);
+            if (vm is IViewModelWithBody<TUpdateViewModelBody> vmWithBody)
+            {
+                ApplyTo(patch, vmWithBody.Body, ModelState, string.Empty);
+            }
+            else
+            {
+                ApplyTo(patch, vm as TUpdateViewModelBody, ModelState, string.Empty);
+            }
 
             if (!ModelState.IsValid || !TryValidateModel(vm))
             {

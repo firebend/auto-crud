@@ -8,10 +8,11 @@ using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
-    public class FunctionViewModelMapper<TKey, TEntity, TViewModel> : ICreateViewModelMapper<TKey, TEntity, TViewModel>,
-        IUpdateViewModelMapper<TKey, TEntity, TViewModel>,
+    public class FunctionViewModelMapper<TKey, TEntity, TViewModel, TViewModelBody> : ICreateViewModelMapper<TKey, TEntity, TViewModel>,
+        IUpdateViewModelMapper<TKey, TEntity, TViewModel, TViewModelBody>,
         IReadViewModelMapper<TKey, TEntity, TViewModel>
         where TViewModel : class
+        where TViewModelBody : class
         where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
