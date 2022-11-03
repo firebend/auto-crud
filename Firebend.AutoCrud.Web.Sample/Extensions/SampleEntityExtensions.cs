@@ -74,8 +74,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         },
                         entity =>
                         {
-                            //TODO TS: this
-                            return null;
+                            var vm = new CreatePersonViewModel { Body = new PersonViewModelBase() };
+                            entity.CopyPropertiesTo(vm.Body);
+                            return vm;
                         })
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
                         {
@@ -140,10 +141,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
-                        //TODO TS: this
                         .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(
                             view => new EfPerson(view),
-                            entity => null)
+                            entity => new CreatePersonViewModel { Body = new PersonViewModelBase(entity) })
                         .WithReadViewModel<GetPersonViewModel, PersonViewModelMapper>()
                         //.WithReadViewModel(entity => new GetPersonViewModel(entity))
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>(
@@ -210,10 +210,14 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddControllers(controllers => controllers
                         .WithReadViewModel(pet => new GetPetViewModel(pet))
                         .WithCreateViewModel<CreatePetViewModel>(pet => new EfPet(pet))
-                        //TODO TS: this
                         .WithUpdateViewModel<PutPetViewModel, PetBaseViewModel>(
                             pet => new EfPet(pet),
-                            entity => null)
+                            entity =>
+                            {
+                                var pet = new PutPetViewModel();
+                                entity.CopyPropertiesTo(pet);
+                                return pet;
+                            })
                         .WithRoute("/api/v1/ef-person/{personId:guid}/pets")
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
