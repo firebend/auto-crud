@@ -19,12 +19,12 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TReadViewModel : class
     {
         private IEntityCreateService<TKey, TEntity> _createService;
-        private IEntityValidationService<TKey, TEntity, TUpdateViewModel> _entityValidationService;
+        private IEntityValidationService<TKey, TEntity> _entityValidationService;
         private ICreateViewModelMapper<TKey, TEntity, TCreateViewModel> _mapper;
         private IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readMapper;
 
         public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
-            IEntityValidationService<TKey, TEntity, TUpdateViewModel> entityValidationService,
+            IEntityValidationService<TKey, TEntity> entityValidationService,
             ICreateViewModelMapper<TKey, TEntity, TCreateViewModel> mapper,
             IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
@@ -63,7 +63,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             }
 
             var isValid = await _entityValidationService
-                .ValidateAsync(entity, cancellationToken)
+                .ValidateAsync(null, entity, null, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!isValid.WasSuccessful)

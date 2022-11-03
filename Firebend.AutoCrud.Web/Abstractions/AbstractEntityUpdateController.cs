@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
+using Firebend.JsonPatch;
 using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -29,25 +30,28 @@ namespace Firebend.AutoCrud.Web.Abstractions
         private const string IdPatchPath = $"/{nameof(IEntity<Guid>.Id)}";
         private const string CustomFieldsPatchPath = $"/{nameof(ICustomFieldsEntity<Guid>.CustomFields)}";
 
-        private readonly IEntityValidationService<TKey, TEntity, TUpdateViewModelBody> _entityValidationService;
+        private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
-        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody> _updateViewModelMapper;
+        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
         private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readViewModelMapper;
+        private readonly IJsonPatchGenerator _jsonPatchGenerator;
 
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IEntityValidationService<TKey, TEntity, TUpdateViewModelBody> entityValidationService,
-            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody> updateViewModelMapper,
+            IEntityValidationService<TKey, TEntity> entityValidationService,
+            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
             IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
+            IOptions<ApiBehaviorOptions> apiOptions,
+            IJsonPatchGenerator jsonPatchGenerator) : base(entityKeyParser, apiOptions)
         {
             _updateService = updateService;
             _readService = readService;
             _entityValidationService = entityValidationService;
             _updateViewModelMapper = updateViewModelMapper;
             _readViewModelMapper = readViewModelMapper;
+            _jsonPatchGenerator = jsonPatchGenerator;
         }
 
         [HttpPut("{id}")]
@@ -89,8 +93,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             entityUpdate.Id = key.Value;
 
+            var original = await _readService.GetByKeyAsync(key.Value, cancellationToken);
+
+            var patch = original is null
+                ? null
+                : _jsonPatchGenerator.Generate(original, entityUpdate);
+
             var isValid = await _entityValidationService
-                .ValidateAsync(entityUpdate, cancellationToken)
+                .ValidateAsync(original, entityUpdate, patch, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!isValid.WasSuccessful)
@@ -209,8 +219,10 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             var modifiedEntity = await _updateViewModelMapper.FromAsync(vm, cancellationToken);
 
+            var entityPatch = _jsonPatchGenerator.Generate(original, modifiedEntity);
+
             var isValid = await _entityValidationService
-                .ValidateAsync(original, modifiedEntity, patch, cancellationToken)
+                .ValidateAsync(original, modifiedEntity, entityPatch, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!isValid.WasSuccessful)

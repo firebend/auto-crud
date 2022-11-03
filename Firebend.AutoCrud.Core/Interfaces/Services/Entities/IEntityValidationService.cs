@@ -6,16 +6,13 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
 {
-    public interface IEntityValidationService<TKey, TEntity, TPatchModel>
+    public interface IEntityValidationService<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TPatchModel : class
     {
-        Task<ModelStateResult<TEntity>> ValidateAsync(TEntity entity, CancellationToken cancellationToken);
-
         Task<ModelStateResult<TEntity>> ValidateAsync(TEntity original,
             TEntity entity,
-            JsonPatchDocument<TPatchModel> patch,
+            JsonPatchDocument<TEntity> patch,
             CancellationToken cancellationToken);
     }
 }

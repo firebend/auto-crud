@@ -27,11 +27,10 @@ namespace Firebend.AutoCrud.Web.Interfaces
 
     }
 
-    public interface IUpdateViewModelMapper<TKey, TEntity, TViewModel, TViewModelBody> : IViewModelMapper<TKey, TEntity, TViewModel>
+    public interface IUpdateViewModelMapper<TKey, TEntity, TViewModel> : IViewModelMapper<TKey, TEntity, TViewModel>
         where TEntity : IEntity<TKey>
         where TKey : struct
         where TViewModel : class
-        where TViewModelBody : class
     {
 
     }

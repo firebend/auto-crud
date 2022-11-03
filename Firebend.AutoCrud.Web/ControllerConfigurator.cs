@@ -56,7 +56,7 @@ public partial class
         WithRoute($"/api/v1/{name.Kebaberize()}");
         WithOpenApiGroupName(name);
 
-        WithValidationService<DefaultEntityValidationService<TKey, TEntity, DefaultCreateUpdateViewModel<TKey, TEntity>>>(false);
+        WithValidationService<DefaultEntityValidationService<TKey, TEntity>>(false);
 
         Builder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
 
@@ -715,8 +715,8 @@ public partial class
     {
         if (viewModelMapper != null)
         {
-            var updateMapperInterface = typeof(IUpdateViewModelMapper<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, UpdateViewModelType, UpdateViewModelBodyType);
+            var updateMapperInterface = typeof(IUpdateViewModelMapper<,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, UpdateViewModelType);
 
             Builder.WithRegistration(updateMapperInterface, viewModelMapper, updateMapperInterface);
         }
@@ -964,8 +964,8 @@ public partial class
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidationService<TService>(bool replace = true)
     {
-        var type = typeof(IEntityValidationService<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType);
+        var type = typeof(IEntityValidationService<,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
 
         if (!type.IsAssignableFrom(typeof(TService)))
         {

@@ -18,12 +18,12 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TUpdateViewModelBody : class
     {
 
-        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody> _updateViewModelMapper;
+        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
         private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readViewModelMapper;
 
         protected AbstractEntityValidateUpdateController(
             IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody> updateViewModelMapper,
+            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
             IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
         {
