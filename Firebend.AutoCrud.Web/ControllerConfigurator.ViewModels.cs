@@ -107,7 +107,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     {
         ViewModelGuard("Please register read view model before adding controllers.");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel, TViewModel>(@from);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(@from);
 
         CreateViewModelType = typeof(TViewModel);
 
@@ -196,7 +196,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     {
         ViewModelGuard("Please registered read view model before adding controllers");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel, TViewModel>(to);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(to);
 
         ReadViewModelType = typeof(TViewModel);
 
@@ -295,7 +295,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     {
         ViewModelGuard("Please register a update view model before adding controllers");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel, TViewModelBody>(@from, to);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(@from, to);
 
         UpdateViewModelType = typeof(TViewModel);
         UpdateViewModelBodyType = typeof(TViewModelBody);
@@ -484,15 +484,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          ))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel, TViewModelBody>(
+    public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel>(
         Func<TEntity, TViewModel> to,
         Func<TViewModel, TEntity> from)
         where TViewModel : class
-        where TViewModelBody : class
     {
         ViewModelGuard("Please register view model before adding controllers");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel, TViewModelBody>(@from, to);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(@from, to);
 
         CreateViewModelType = typeof(TViewModel);
         UpdateViewModelType = typeof(TViewModel);
