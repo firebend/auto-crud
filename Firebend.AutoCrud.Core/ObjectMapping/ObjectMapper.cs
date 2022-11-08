@@ -54,6 +54,18 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 il.Emit(OpCodes.Ldarg_1);
                 il.Emit(OpCodes.Ldarg_0);
                 il.EmitCall(OpCodes.Callvirt, map.SourceProperty.GetGetMethod() ?? throw new InvalidOperationException(), null);
+
+                var targetUnderlyingType = Nullable.GetUnderlyingType(map.TargetProperty.PropertyType);
+                var targetIsNullable = targetUnderlyingType != null;
+
+                if (targetIsNullable && targetUnderlyingType == map.SourceProperty.PropertyType)
+                {
+                    var constructor = typeof(Nullable<>).MakeGenericType(targetUnderlyingType)
+                        .GetConstructor(new[] { targetUnderlyingType }) ?? throw new Exception();
+
+                    il.Emit(OpCodes.Newobj, constructor);
+                }
+
                 il.EmitCall(OpCodes.Callvirt, map.TargetProperty.GetSetMethod() ?? throw new InvalidOperationException(), null);
             }
             il.Emit(OpCodes.Ret);

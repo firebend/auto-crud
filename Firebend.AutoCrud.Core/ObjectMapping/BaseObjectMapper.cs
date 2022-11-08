@@ -30,6 +30,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 (source, target) => new PropertyMap { SourceProperty = source, TargetProperty = target })
                 .Where(x => x.SourceProperty.CanRead)
                 .Where(x => x.TargetProperty.CanWrite)
+                .Where(x => x.SourceProperty.PropertyType.IsAssignableTo(x.TargetProperty.PropertyType))
                 .ToArray();
 
             return properties;
