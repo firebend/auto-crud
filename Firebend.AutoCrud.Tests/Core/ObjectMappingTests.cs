@@ -93,7 +93,10 @@ public class MapperTests
         // given
         var source = new SourceModelB
         {
-            IntValue = 1, DtoValue = DateTimeOffset.Now, GuidValue = Guid.NewGuid(), EnumValue = EntityFileType.Csv,
+            IntValue = 1,
+            DtoValue = DateTimeOffset.Now,
+            GuidValue = Guid.NewGuid(),
+            EnumValue = EntityFileType.Csv,
         };
         var target = new TargetModelB();
 
