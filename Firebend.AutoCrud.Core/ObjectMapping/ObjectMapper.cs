@@ -7,7 +7,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 {
     internal static class ObjectMapperCache
     {
-        public static readonly ConcurrentDictionary<(Type source, Type target, string[] ignores), DynamicMethod> MapperCache = new();
+        public static readonly ConcurrentDictionary<(Type source, Type target, string[] ignores, bool includeObjects), DynamicMethod> MapperCache = new();
     }
     /// <summary>
     /// This mapper class finds the matching properties and copies them from source object to target object. The copy function has IL codes to do this task.
@@ -30,19 +30,19 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <param name="target">The type of the target object</param>
         /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process</param>
         /// <exception cref="InvalidOperationException">The Invalid Operation Exception will be thrown if it can't find the given property in source/target objects.</exception>
-        protected override string MapTypes(Type source, Type target, params string[] propertiesToIgnore)
+        protected override string MapTypes(Type source, Type target, string[] propertiesToIgnore, bool includeObjects)
         {
-            var key = GetMapKey(source, target, propertiesToIgnore);
+            var key = GetMapKey(source, target, propertiesToIgnore, includeObjects);
             return key;
         }
 
-        private DynamicMethod DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore)
+        private DynamicMethod DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore, bool includeObjects)
         {
             var args = new[] { source, target };
 
             var dm = new DynamicMethod(key, null, args);
             var il = dm.GetILGenerator();
-            var maps = GetMatchingProperties(source, target);
+            var maps = GetMatchingProperties(source, target, includeObjects);
 
             foreach (var map in maps)
             {
@@ -82,17 +82,17 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// It is best practice to have this as a static variable at all possible. Doing so will reduce
         /// memory allocations.
         /// </param>
-        public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null)
+        public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, bool includeObjects = false)
         {
             var sourceType = typeof(TSource);
             var targetType = typeof(TTarget);
 
             var dynamicMethod = ObjectMapperCache.MapperCache.GetOrAdd(
-                (sourceType, targetType, propertiesToIgnore), static (dictKey, self) =>
+                (sourceType, targetType, propertiesToIgnore, includeObjects), static (dictKey, self) =>
             {
-                var (source, target, ignores) = dictKey;
-                var key = self.MapTypes(source, target, ignores);
-                return self.DynamicMethodFactory(key, source, target, ignores);
+                var (source, target, ignores, includeObjects) = dictKey;
+                var key = self.MapTypes(source, target, ignores, includeObjects);
+                return self.DynamicMethodFactory(key, source, target, ignores, includeObjects);
             }, this);
 
             var args = new object[] { source, target };

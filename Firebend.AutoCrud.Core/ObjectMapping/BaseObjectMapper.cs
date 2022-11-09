@@ -8,9 +8,9 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
     {
         private const string ObjectMapperConst = "ObjectMapper";
 
-        protected abstract string MapTypes(Type source, Type target, params string[] propertiesToIgnore);
+        protected abstract string MapTypes(Type source, Type target, string[] propertiesToIgnore, bool includeObjects);
 
-        public abstract void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null);
+        public abstract void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, bool includeObjects = false);
 
         /// <summary>
         ///     This virtual function finds matching properties between given objects. It depends on their names, readability, and writability.
@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <param name="sourceType">The source object's type</param>
         /// <param name="targetType">The target object's type</param>
         /// <returns>Returns a list of PropertyMap.</returns>
-        protected virtual IEnumerable<PropertyMap> GetMatchingProperties(Type sourceType, Type targetType)
+        protected virtual IEnumerable<PropertyMap> GetMatchingProperties(Type sourceType, Type targetType, bool includeObjects)
         {
             var sourceProperties = sourceType.GetProperties();
             var targetProperties = targetType.GetProperties();
@@ -30,6 +30,9 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 (source, target) => new PropertyMap { SourceProperty = source, TargetProperty = target })
                 .Where(x => x.SourceProperty.CanRead)
                 .Where(x => x.TargetProperty.CanWrite)
+                .Where(x => includeObjects
+                            || x.SourceProperty.PropertyType.IsValueType
+                            || x.SourceProperty.PropertyType == typeof(string))
                 .Where(x => x.SourceProperty.PropertyType.IsAssignableTo(x.TargetProperty.PropertyType))
                 .ToArray();
 
@@ -43,14 +46,14 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <param name="targetType">The target object type</param>
         /// <returns>Returns a key as string</returns>
         /// <exception cref="Exception">If there is no FullName property on sent objects, an exception will throw</exception>
-        protected virtual string GetMapKey(Type sourceType, Type targetType, params string[] propertiesToIgnore)
+        protected virtual string GetMapKey(Type sourceType, Type targetType, string[] propertiesToIgnore, bool includeObjects)
         {
             if (propertiesToIgnore is null || propertiesToIgnore.Length <= 0)
             {
                 return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}";
             }
 
-            return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}_{string.Join('_', propertiesToIgnore)}";
+            return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}_{string.Join('_', propertiesToIgnore)}_includeObjects{includeObjects}";
         }
     }
 }
