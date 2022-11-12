@@ -253,7 +253,7 @@ public partial class
     }
 
     public Type CreateControllerType()
-        => typeof(AbstractEntityCreateController<,,,,>)
+        => typeof(AbstractEntityCreateController<,,,>)
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType);
 
     public Type ValidateCreateControllerType()
@@ -261,7 +261,7 @@ public partial class
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType);
 
     public Type CreateMultipleControllerType()
-        => typeof(AbstractEntityCreateMultipleController<,,,,,>)
+        => typeof(AbstractEntityCreateMultipleController<,,,,>)
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType,
                 CreateMultipleViewModelType, ReadViewModelType);
 
@@ -384,7 +384,7 @@ public partial class
             WithValidateCreateController();
         }
         return WithCreateController(
-            typeof(AbstractEntityCreateController<,,,,>),
+            typeof(AbstractEntityCreateController<,,,>),
             null,
             null,
             true,
@@ -734,6 +734,7 @@ public partial class
             serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
                 Builder.EntityType,
                 UpdateViewModelType,
+                UpdateViewModelBodyType,
                 ReadViewModelType);
         }
 
@@ -905,7 +906,7 @@ public partial class
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController()
-        => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,,>),
+        => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,>),
             makeRegistrationTypeGeneric: true);
 
     /// <summary>
