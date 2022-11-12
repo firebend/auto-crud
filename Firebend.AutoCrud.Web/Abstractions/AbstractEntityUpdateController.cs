@@ -218,6 +218,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             }
 
             var modifiedEntity = await _updateViewModelMapper.FromAsync(vm, cancellationToken);
+            modifiedEntity.Id = key.Value;
 
             var entityPatch = _jsonPatchGenerator.Generate(original, modifiedEntity);
 
