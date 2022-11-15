@@ -48,7 +48,7 @@ public abstract class AbstractEfCustomFieldsCreateService<TKey, TEntity, TCustom
 
         var customFieldsEntity = new TCustomFieldsTEntity { EntityId = rootEntityKey };
 
-        customField.CopyPropertiesTo(customFieldsEntity);
+        customField.CopyPropertiesToWithObjects(customFieldsEntity);
 
         var added = await _createClient.AddAsync(customFieldsEntity, entityTransaction, cancellationToken)
             .ConfigureAwait(false);

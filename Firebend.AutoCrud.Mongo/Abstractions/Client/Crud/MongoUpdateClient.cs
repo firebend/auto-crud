@@ -215,7 +215,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var modified = original == null ? new TEntity() : original.Clone();
 
-            entity.CopyPropertiesTo(modified, MongoUpdateClientCaches<TEntity>.MapperIgnores);
+            entity.CopyPropertiesToWithObjects(modified, MongoUpdateClientCaches<TEntity>.MapperIgnores);
 
             if (original == null && modified is IModifiedEntity mod)
             {
