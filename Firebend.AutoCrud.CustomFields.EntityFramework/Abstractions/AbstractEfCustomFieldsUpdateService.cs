@@ -51,7 +51,7 @@ public abstract class AbstractEfCustomFieldsUpdateService<TKey, TEntity, TCustom
         _transactionManager.AddTransaction(entityTransaction);
         await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
         var efEntity = new TCustomFieldsEntity { EntityId = rootEntityKey };
-        customField.CopyPropertiesToWithObjects(efEntity);
+        customField.CopyPropertiesTo(efEntity);
 
         var updated = await _updateClient
             .UpdateAsync(efEntity, entityTransaction, cancellationToken)

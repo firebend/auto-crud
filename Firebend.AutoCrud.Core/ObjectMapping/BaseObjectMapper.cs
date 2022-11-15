@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 
         protected abstract string MapTypes(Type source, Type target, string[] propertiesToIgnore, bool includeObjects);
 
-        public abstract void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, bool includeObjects = false);
+        public abstract void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, bool includeObjects = true);
 
         /// <summary>
         ///     This virtual function finds matching properties between given objects. It depends on their names, readability, and writability.
@@ -33,7 +33,9 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 .Where(x => includeObjects
                             || x.SourceProperty.PropertyType.IsValueType
                             || x.SourceProperty.PropertyType == typeof(string))
-                .Where(x => x.SourceProperty.PropertyType.IsAssignableTo(x.TargetProperty.PropertyType))
+                .Where(x => (x.SourceProperty.PropertyType.IsValueType
+                            && x.SourceProperty.PropertyType.IsAssignableTo(x.TargetProperty.PropertyType))
+                            || x.SourceProperty.PropertyType == x.TargetProperty.PropertyType)
                 .ToArray();
 
             return properties;

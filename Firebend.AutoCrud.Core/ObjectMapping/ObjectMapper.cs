@@ -82,7 +82,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// It is best practice to have this as a static variable at all possible. Doing so will reduce
         /// memory allocations.
         /// </param>
-        public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, bool includeObjects = false)
+        public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, bool includeObjects = true)
         {
             var sourceType = typeof(TSource);
             var targetType = typeof(TTarget);

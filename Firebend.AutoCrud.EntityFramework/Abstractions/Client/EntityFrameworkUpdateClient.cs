@@ -187,7 +187,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (original != null)
             {
-                model = entity.CopyPropertiesToWithObjects(model, EntityFrameworkUpdateClientCaches<TEntity>.IgnoredProperties);
+                model = entity.CopyPropertiesTo(model, EntityFrameworkUpdateClientCaches<TEntity>.IgnoredProperties);
 
                 if (model is IModifiedEntity modified)
                 {
