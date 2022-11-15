@@ -8,7 +8,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;
 using MassTransit;
-using MassTransit.ExtensionsDependencyInjectionIntegration;
+using MassTransit.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             return listeners;
         }
 
-        public static void RegisterFirebendAutoCrudDomainEventHandlers(this IServiceCollectionBusConfigurator busConfigurator,
+        public static void RegisterFirebendAutoCrudDomainEventHandlers(this IBusRegistrationConfigurator busConfigurator,
             IServiceCollection serviceCollection)
         {
             var addConsumer = typeof(MassTransitExtensions).GetMethod(nameof(AddConsumer),
@@ -59,7 +59,6 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
         public static void RegisterFirebendAutoCrudDomainEventHandlerEndPoints(
             this IBusRegistrationContext busRegistrationContext,
             IBusFactoryConfigurator bus,
-            IServiceCollection serviceCollection,
             AutoCrudMassTransitQueueMode queueMode,
             string receiveEndpointPrefix = null,
             Action<IReceiveEndpointConfigurator> configureReceiveEndpoint = null)
@@ -164,12 +163,12 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
         }
 
         private static void ConfigureConsumer<TDomainEventHandler, TDomainEvent, TDomainEventConsumer>(
-            IRegistration context,
+            IRegistrationContext context,
             IReceiveEndpointConfigurator receiveEndpointConfigurator)
             where TDomainEvent : DomainEventBase
             where TDomainEventHandler : class, IDomainEventSubscriber
-            where TDomainEventConsumer : AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler> =>
-            context.ConfigureConsumer<TDomainEventConsumer>(receiveEndpointConfigurator);
+            where TDomainEventConsumer : AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler>
+            => context.ConfigureConsumer<TDomainEventConsumer>(receiveEndpointConfigurator);
 
         private static string GetQueueName(ICollection<string> queueNames,
             string receiveEndpointPrefix,

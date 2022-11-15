@@ -23,31 +23,32 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             }
 
             return serviceCollection.AddMassTransit(bus =>
+            {
+                bus.RegisterFirebendAutoCrudDomainEventHandlers(serviceCollection);
+
+                bus.UsingRabbitMq((context, configurator) =>
                 {
-                    bus.RegisterFirebendAutoCrudDomainEventHandlers(serviceCollection);
+                    configurator.UseNewtonsoftJsonSerializer();
 
-                    bus.UsingRabbitMq((context, configurator) =>
+                    var match = ConStringParser.Match(connString);
+
+                    var domain = match.Groups[3].Value;
+                    var uri = $"rabbitmq://{domain}";
+
+                    configurator.Host(new Uri(uri), h =>
                     {
-                        var match = ConStringParser.Match(connString);
-
-                        var domain = match.Groups[3].Value;
-                        var uri = $"rabbitmq://{domain}";
-
-                        configurator.Host(new Uri(uri), h =>
-                        {
-                            h.PublisherConfirmation = true;
-                            h.Username(match.Groups[1].Value);
-                            h.Password(match.Groups[2].Value);
-                        });
-
-                        configurator.Lazy = true;
-                        configurator.AutoDelete = true;
-                        configurator.PurgeOnStartup = true;
-
-                        context.RegisterFirebendAutoCrudDomainEventHandlerEndPoints(configurator, serviceCollection, AutoCrudMassTransitQueueMode.OneQueue);
+                        h.PublisherConfirmation = true;
+                        h.Username(match.Groups[1].Value);
+                        h.Password(match.Groups[2].Value);
                     });
-                })
-                .AddMassTransitHostedService();
+
+                    configurator.Lazy = true;
+                    configurator.AutoDelete = true;
+                    configurator.PurgeOnStartup = true;
+
+                    context.RegisterFirebendAutoCrudDomainEventHandlerEndPoints(configurator, AutoCrudMassTransitQueueMode.OneQueue);
+                });
+            });
         }
     }
 }

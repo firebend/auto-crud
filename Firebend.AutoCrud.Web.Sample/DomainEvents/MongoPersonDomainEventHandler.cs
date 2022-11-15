@@ -5,7 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Models;
 using MassTransit;
-using MassTransit.Scoping;
+using MassTransit.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
