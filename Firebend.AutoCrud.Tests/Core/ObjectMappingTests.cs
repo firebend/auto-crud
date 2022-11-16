@@ -233,7 +233,7 @@ public class MapperTests
     }
 
     [TestCase]
-    public void Mapper_Should_Only_Copy_Value_Types_And_Strings()
+    public void Mapper_Should_Only_Copy_Value_Types_And_Strings_When_Include_Objects_False()
     {
         // given
         var source = new SourceModelD
@@ -253,7 +253,7 @@ public class MapperTests
         var target = new TargetModelD();
 
         // when
-        ObjectMapper.Instance.Copy(source, target);
+        ObjectMapper.Instance.Copy(source, target, includeObjects: false);
 
         // then
         target.Should().NotBeNull();
