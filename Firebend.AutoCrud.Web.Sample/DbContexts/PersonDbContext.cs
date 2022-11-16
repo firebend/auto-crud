@@ -34,10 +34,10 @@ public class PersonDbContext : DbContext, IDbContext
         {
             if (entityType.ClrType.GetInterface(nameof(IEntityDataAuth)) != null)
             {
-                #pragma warning disable EF1001 // Internal EF Core API usage.
+#pragma warning disable EF1001 // Internal EF Core API usage.
                 var builder = new EntityTypeBuilder<IEntityDataAuth>(entityType);
                 ConfigureDataAuthEntity(builder);
-                #pragma warning restore EF1001
+#pragma warning restore EF1001
             }
         }
     }
