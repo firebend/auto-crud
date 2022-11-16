@@ -1,7 +1,7 @@
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
-using MassTransit.Scoping;
+using MassTransit.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 
 namespace Firebend.AutoCrud.Web.Sample.DomainEvents

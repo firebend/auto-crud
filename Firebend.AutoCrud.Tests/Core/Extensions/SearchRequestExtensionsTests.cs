@@ -48,9 +48,13 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Error_When_CreateStartDate_Is_After_ModifiedStartDate()
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntityRequest { PageNumber = 1, PageSize = 3 };
-        searchRequest.CreatedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00");
-        searchRequest.ModifiedStartDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00");
+        var searchRequest = new ActiveModifiedEntityRequest
+        {
+            PageNumber = 1,
+            PageSize = 3,
+            CreatedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00"),
+            ModifiedStartDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00")
+        };
 
         //act
         var searchResult = searchRequest.ValidateSearchRequest(10);
@@ -65,9 +69,13 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Error_When_CreatedStartDate_Is_After_CreatedEndDate()
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntityRequest { PageNumber = 1, PageSize = 3 };
-        searchRequest.CreatedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00");
-        searchRequest.CreatedEndDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00");
+        var searchRequest = new ActiveModifiedEntityRequest
+        {
+            PageNumber = 1,
+            PageSize = 3,
+            CreatedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00"),
+            CreatedEndDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00")
+        };
 
         //act
         var searchResult = searchRequest.ValidateSearchRequest(10);
@@ -82,9 +90,13 @@ public class SearchRequestExtensionsTests
     public void ValidateSearchRequest_Error_When_ModifiedStartDate_Is_After_ModifiedEndDate()
     {
         //arrange
-        var searchRequest = new ActiveModifiedEntityRequest { PageNumber = 1, PageSize = 3 };
-        searchRequest.ModifiedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00");
-        searchRequest.ModifiedEndDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00");
+        var searchRequest = new ActiveModifiedEntityRequest
+        {
+            PageNumber = 1,
+            PageSize = 3,
+            ModifiedStartDate = DateTimeOffset.Parse("2022-01-05T12:00:00-05:00"),
+            ModifiedEndDate = DateTimeOffset.Parse("1991-01-01T12:00:00-05:00")
+        };
 
         //act
         var searchResult = searchRequest.ValidateSearchRequest(10);
