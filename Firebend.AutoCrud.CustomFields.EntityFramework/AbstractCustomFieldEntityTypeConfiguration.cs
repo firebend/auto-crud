@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
         public virtual void Configure(EntityTypeBuilder<TEfModel> builder)
         {
             builder.ToTable(_tableName, _schema);
-            builder.Property(x => x.Id).HasAnnotation(SqlServerAnnotationNames.Clustered, false);
+            builder.Property(x => x.Id).HasAnnotation("SqlServer:Clustered", false);
 
             builder.Property(x => x.Key).IsRequired().HasMaxLength(250);
             builder.Property(x => x.Value).IsRequired().HasMaxLength(250);

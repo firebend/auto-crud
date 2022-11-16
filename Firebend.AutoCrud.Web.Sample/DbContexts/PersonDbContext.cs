@@ -34,14 +34,17 @@ public class PersonDbContext : DbContext, IDbContext
         {
             if (entityType.ClrType.GetInterface(nameof(IEntityDataAuth)) != null)
             {
+                #pragma warning disable EF1001 // Internal EF Core API usage.
                 var builder = new EntityTypeBuilder<IEntityDataAuth>(entityType);
                 ConfigureDataAuthEntity(builder);
+                #pragma warning restore EF1001
             }
         }
     }
 
     private static void ConfigureDataAuthEntity(EntityTypeBuilder<IEntityDataAuth> builder) =>
-        builder.Property(e => e.DataAuth).HasConversion(new EntityFrameworkJsonValueConverter<DataAuth>())
+        builder.Property(e => e.DataAuth)
+            .HasConversion(new EntityFrameworkJsonValueConverter<DataAuth>())
             .Metadata
             .SetValueComparer(new EntityFrameworkJsonComparer<DataAuth>());
 }
