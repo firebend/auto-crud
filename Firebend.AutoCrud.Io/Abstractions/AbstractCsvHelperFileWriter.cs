@@ -52,8 +52,8 @@ namespace Firebend.AutoCrud.Io.Abstractions
             }
 
             _writer = FileType == EntityFileType.Csv
-                ? new CsvWriter(_textWriter, GetCsvConfiguration(), true)
-                : new SpreadsheetWriter(_stream, "Export", GetCsvConfiguration(), true);
+                ? new CsvWriter(_textWriter, GetCsvConfiguration())
+                : new SpreadsheetWriter(_stream, "Export", GetCsvConfiguration());
 
             WriteHeader(fields);
 
@@ -69,6 +69,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 excelWriter.SetWidths();
                 excelWriter.SaveWorkbook();
             }
+
 
             _stream.Seek(0, SeekOrigin.Begin);
 
@@ -157,7 +158,8 @@ namespace Firebend.AutoCrud.Io.Abstractions
 
         private static CsvConfiguration GetCsvConfiguration() => new(CultureInfo.InvariantCulture)
         {
-            IgnoreBlankLines = true
+            IgnoreBlankLines = true,
+            LeaveOpen = true,
         };
 
         protected override void DisposeManagedObjects()

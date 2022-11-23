@@ -11,7 +11,10 @@ public static class HelperExtensions
         if (memberLamda.Body is MemberExpression memberSelectorExpression)
         {
             var property = memberSelectorExpression.Member as PropertyInfo;
-            property?.SetValue(target, value, null);
+            if (property != null)
+            {
+                property.SetValue(target, value, null);
+            }
         }
     }
 

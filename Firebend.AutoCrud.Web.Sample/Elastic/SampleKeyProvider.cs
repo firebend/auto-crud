@@ -8,7 +8,7 @@ using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using MassTransit;
-using MassTransit.DependencyInjection;
+using MassTransit.Scoping;
 using Microsoft.AspNetCore.Http;
 
 namespace Firebend.AutoCrud.Web.Sample.Elastic

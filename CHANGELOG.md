@@ -4,13 +4,6 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
-<a name="5.2.0"></a>
-## [5.2.0](https://www.github.com/firebend/auto-crud/releases/tag/v5.2.0) (2022-11-16)
-
-### Features
-
-* dontet 7 (#135) ([f0a1ad8](https://www.github.com/firebend/auto-crud/commit/f0a1ad832da5500ebfd37165196d20533c2d4fbd))
-
 <a name="5.1.1"></a>
 ## [5.1.1](https://www.github.com/firebend/auto-crud/releases/tag/v5.1.1) (2022-10-21)
 
