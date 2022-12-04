@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
 {
     public static class ChildListsCaches
     {
-        public static readonly ConcurrentDictionary<Type, List<PropertyInfo>> Caches = new();
+        public static readonly ConcurrentDictionary<string, List<PropertyInfo>> Caches = new();
     }
     public abstract class AbstractCsvHelperFileWriter : BaseDisposable, IEntityFileWriter
     {
@@ -80,9 +80,16 @@ namespace Firebend.AutoCrud.Io.Abstractions
         {
             await _writer.NextRecordAsync().ConfigureAwait(false);
 
-            var childLists = typeof(T).GetProperties()
-                .Where(propInfo => propInfo.PropertyType.IsCollection())
-                .ToList();
+            // var childLists = typeof(T).GetProperties()
+            //     .Where(propInfo => propInfo.PropertyType.IsCollection())
+            //     .ToList();
+
+            var childLists = ChildListsCaches
+                .Caches
+                .GetOrAdd(typeof(T).FullName, static (_, _) =>
+                    typeof(T).GetProperties()
+                        .Where(propInfo => propInfo.PropertyType.IsCollection())
+                        .ToList(), this);
 
             var writeSubRowMethod = typeof(AbstractCsvHelperFileWriter)
                 .GetMethod(nameof(WriteSubRow), BindingFlags.NonPublic | BindingFlags.Instance);

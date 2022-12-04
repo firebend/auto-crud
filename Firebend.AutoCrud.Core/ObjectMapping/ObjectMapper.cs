@@ -7,7 +7,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 {
     internal static class ObjectMapperCache
     {
-        public static readonly ConcurrentDictionary<(Type source, Type target, string[] ignores), DynamicMethod> MapperCache = new();
+        public static readonly ConcurrentDictionary<string, DynamicMethod> MapperCache = new();
     }
     /// <summary>
     /// This mapper class finds the matching properties and copies them from source object to target object. The copy function has IL codes to do this task.
@@ -75,16 +75,15 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             var sourceType = typeof(TSource);
             var targetType = typeof(TTarget);
 
-            // var dynamicMethod = ObjectMapperCache.MapperCache.GetOrAdd(
-            //     (sourceType, targetType, propertiesToIgnore), static (dictKey, self) =>
-            // {
-            //     var (source, target, ignores) = dictKey;
-            //     var key = self.MapTypes(source, target, ignores);
-            //     return self.DynamicMethodFactory(key, source, target, ignores);
-            // }, this);
+            var ignores = propertiesToIgnore is null ? null : string.Join(string.Empty, propertiesToIgnore);
+            var key = $"{sourceType}_{targetType}_{ignores}";
 
-            var key = MapTypes(sourceType, targetType, propertiesToIgnore);
-           var dynamicMethod = DynamicMethodFactory(key, sourceType, targetType, propertiesToIgnore);
+            var dynamicMethod = ObjectMapperCache.MapperCache.GetOrAdd(key, static (dictKey, args) =>
+            {
+                var self = args.Item1;
+                var key = self.MapTypes(args.sourceType, args.targetType, args.propertiesToIgnore);
+                return self.DynamicMethodFactory(key, args.sourceType, args.targetType, args.propertiesToIgnore);
+            }, (this, sourceType, targetType, propertiesToIgnore));
 
             var args = new object[] { source, target };
 
