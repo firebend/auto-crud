@@ -12,12 +12,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 
-public static class DbContextProviderCaches<TContext>
-    where TContext : DbContext
-{
-    public static readonly ConcurrentDictionary<string, PooledDbContextFactory<TContext>> Factories = new();
-}
-
 public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
@@ -89,10 +83,7 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
 
         var options = _optionsProvider.GetDbContextOptions<TContext>(connectionString);
 
-        var factory = DbContextProviderCaches<TContext>.Factories
-            .GetOrAdd(GetPooledKey(typeof(TContext)),
-                static (_, opts) => new PooledDbContextFactory<TContext>(opts),
-                options);
+        var factory = new PooledDbContextFactory<TContext>(options);
 
         return await CreateContextAsync(factory, cancellationToken);
     }
@@ -106,6 +97,4 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
     }
 
     protected virtual string GetMemoizeKey(Type dbContextType) => $"{dbContextType.FullName}.Init";
-
-    protected virtual string GetPooledKey(Type dbContextType) => $"{dbContextType.FullName}.Pooled";
 }
