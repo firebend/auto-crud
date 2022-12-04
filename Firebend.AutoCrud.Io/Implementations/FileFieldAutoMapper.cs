@@ -68,9 +68,6 @@ namespace Firebend.AutoCrud.Io.Implementations
         }
 
         public IFileFieldWrite<T>[] MapOutput<T>()
-            where T : class => FileFieldAutoMapperCaches<T>
-            .Caches
-            .GetOrAdd(typeof(T).FullName, static (_, arg) =>
-                arg.MapOutputImpl<T>().OrderBy(x => x.FieldIndex).ToArray(), this);
+            where T : class => MapOutputImpl<T>().ToArray();
     }
 }

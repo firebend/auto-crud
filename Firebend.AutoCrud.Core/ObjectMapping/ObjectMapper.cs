@@ -75,13 +75,16 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             var sourceType = typeof(TSource);
             var targetType = typeof(TTarget);
 
-            var dynamicMethod = ObjectMapperCache.MapperCache.GetOrAdd(
-                (sourceType, targetType, propertiesToIgnore), static (dictKey, self) =>
-            {
-                var (source, target, ignores) = dictKey;
-                var key = self.MapTypes(source, target, ignores);
-                return self.DynamicMethodFactory(key, source, target, ignores);
-            }, this);
+            // var dynamicMethod = ObjectMapperCache.MapperCache.GetOrAdd(
+            //     (sourceType, targetType, propertiesToIgnore), static (dictKey, self) =>
+            // {
+            //     var (source, target, ignores) = dictKey;
+            //     var key = self.MapTypes(source, target, ignores);
+            //     return self.DynamicMethodFactory(key, source, target, ignores);
+            // }, this);
+
+            var key = MapTypes(sourceType, targetType, propertiesToIgnore);
+           var dynamicMethod = DynamicMethodFactory(key, sourceType, targetType, propertiesToIgnore);
 
             var args = new object[] { source, target };
 

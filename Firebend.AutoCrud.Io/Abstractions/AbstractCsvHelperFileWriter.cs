@@ -80,12 +80,9 @@ namespace Firebend.AutoCrud.Io.Abstractions
         {
             await _writer.NextRecordAsync().ConfigureAwait(false);
 
-            var childLists = ChildListsCaches
-                .Caches
-                .GetOrAdd(typeof(T), static (_, _) =>
-                    typeof(T).GetProperties()
-                        .Where(propInfo => propInfo.PropertyType.IsCollection())
-                        .ToList(), this);
+            var childLists = typeof(T).GetProperties()
+                .Where(propInfo => propInfo.PropertyType.IsCollection())
+                .ToList();
 
             var writeSubRowMethod = typeof(AbstractCsvHelperFileWriter)
                 .GetMethod(nameof(WriteSubRow), BindingFlags.NonPublic | BindingFlags.Instance);

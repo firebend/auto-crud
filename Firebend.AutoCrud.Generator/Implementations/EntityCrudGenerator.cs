@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
         }
 
-        public List<BaseBuilder> Builders { get; } = new();
+        public List<BaseBuilder> Builders { get; private set; } = new();
 
         public IServiceCollection ServiceCollection { get; }
 
@@ -52,7 +52,6 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 OnGenerate();
                 _isGenerated = true;
                 return ServiceCollection;
-
             }
         }
 
@@ -336,6 +335,19 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return this;
         }
 
-        protected override void DisposeManagedObjects() => _classGenerator?.Dispose();
+        protected override void DisposeManagedObjects()
+        {
+            _classGenerator?.Dispose();
+
+            if (Builders is not null)
+            {
+                foreach (var builder in Builders)
+                {
+                    builder.Dispose();
+                }
+            }
+
+            Builders = null;
+        }
     }
 }
