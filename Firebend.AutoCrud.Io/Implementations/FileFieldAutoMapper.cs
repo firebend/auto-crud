@@ -12,10 +12,6 @@ using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {
-    public static class FileFieldAutoMapperCaches<T>
-    {
-        public static readonly ConcurrentDictionary<string, IFileFieldWrite<T>[]> Caches = new();
-    }
     public class FileFieldAutoMapper : IFileFieldAutoMapper
     {
         private readonly IFileFieldWriteFilterFactory _filterFactory;

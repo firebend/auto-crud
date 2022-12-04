@@ -5,10 +5,6 @@ using System.Reflection.Emit;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
 {
-    internal static class ObjectMapperCache
-    {
-        public static readonly ConcurrentDictionary<string, DynamicMethod> MapperCache = new();
-    }
     /// <summary>
     /// This mapper class finds the matching properties and copies them from source object to target object. The copy function has IL codes to do this task.
     /// </summary>
