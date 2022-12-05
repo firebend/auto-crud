@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 targetProperties,
                 x => x.Name,
                 x => x.Name,
-                (source, target) => new PropertyMap { SourceProperty = source, TargetProperty = target })
+                (source, target) => new PropertyMap(source,target))
                 .Where(x => x.SourceProperty.CanRead)
                 .Where(x => x.TargetProperty.CanWrite)
                 .ToArray();
