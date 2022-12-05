@@ -33,10 +33,4 @@ public class AbstractElasticDbContextProvider<TKey, TEntity, TContext> : Abstrac
         var key = $"{dbContextType.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Init";
         return key;
     }
-
-    protected override string GetPooledKey(Type dbContextType)
-    {
-        var key = $"{dbContextType.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Pooled";
-        return key;
-    }
 }
