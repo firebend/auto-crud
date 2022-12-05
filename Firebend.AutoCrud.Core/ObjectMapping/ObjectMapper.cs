@@ -5,6 +5,11 @@ using System.Reflection.Emit;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
 {
+    internal static class ObjectMapperCaches
+    {
+        public static readonly ConcurrentDictionary<string, DynamicMethod> DynamicMethods = new();
+    }
+
     /// <summary>
     /// This mapper class finds the matching properties and copies them from source object to target object. The copy function has IL codes to do this task.
     /// </summary>
@@ -53,7 +58,6 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 il.EmitCall(OpCodes.Callvirt, map.TargetProperty.GetSetMethod() ?? throw new InvalidOperationException(), null);
             }
             il.Emit(OpCodes.Ret);
-
             return dm;
         }
 
@@ -72,11 +76,17 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
             var targetType = typeof(TTarget);
 
             var key = MapTypes(sourceType, targetType, propertiesToIgnore);
-            var dynamicMethod = DynamicMethodFactory(key, sourceType, targetType, propertiesToIgnore);
 
-            var args = new object[] { source, target };
+            var dynamicMethod = ObjectMapperCaches.DynamicMethods.GetOrAdd(key, static(dictKey, factoryArg) =>
+            {
+                var (s, t, ignores, self) = factoryArg;
 
-            dynamicMethod.Invoke(null, args);
+                var dynamicMethod = self.DynamicMethodFactory(dictKey, s, t, ignores);
+
+                return dynamicMethod;
+            }, (sourceType, targetType, propertiesToIgnore, this));
+
+            dynamicMethod.Invoke(null, new object[] { source, target });
         }
     }
 }
