@@ -8,13 +8,15 @@ public class EntityDeleteAuthorizationFilter<TKey, TEntity> : EntityAuthorizatio
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
+    private static readonly string IdArg = nameof(IEntity<TKey>.Id).ToLower();
+
     public EntityDeleteAuthorizationFilter(string policy) : base(policy)
     {
     }
 
     protected override async Task AuthorizeRequestAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (await TryAuthorizeById(context, nameof(IEntity<TKey>.Id).ToLower()))
+        if (await TryAuthorizeById(context, IdArg))
         {
             await next();
         }

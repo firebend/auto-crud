@@ -80,9 +80,11 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
             return context;
         }
 
-        protected virtual string GetScaffoldingKey(Type type) => $"{type.FullName}.Changes.Scaffolding";
+        private string _scaffoldKey;
 
-        private async Task<bool> ScaffoldAsync(ChangeTrackingDbContext<TEntityKey, TEntity> context, CancellationToken cancellationToken)
+        protected virtual string GetScaffoldingKey(Type type) => _scaffoldKey ??= $"{type.FullName}.Changes.Scaffolding";
+
+        private async Task<bool> ScaffoldAsync(DbContext context, CancellationToken cancellationToken)
         {
             var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>));
 
@@ -93,6 +95,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
             var schema = type.GetSchema().Coalesce("dbo");
             var table = type.GetTableName();
+
             var fullTableName = $"[{schema}].[{table}]";
 
             if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)

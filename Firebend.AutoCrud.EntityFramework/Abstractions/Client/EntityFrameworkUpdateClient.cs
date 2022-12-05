@@ -19,6 +19,11 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
+    internal static class UpdateClientConstants
+    {
+        public static readonly string ModifiedDatePath = $"/{nameof(IModifiedEntity.ModifiedDate)}";
+    }
+
     internal static class EntityFrameworkUpdateClientCaches<TEntity>
     {
         static EntityFrameworkUpdateClientCaches()
@@ -145,7 +150,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             {
                 jsonPatchDocument.Operations.Add(new Operation<TEntity>(
                     "replace",
-                    $"/{nameof(IModifiedEntity.ModifiedDate)}",
+                    UpdateClientConstants.ModifiedDatePath,
                     null,
                     DateTimeOffset.Now));
             }
