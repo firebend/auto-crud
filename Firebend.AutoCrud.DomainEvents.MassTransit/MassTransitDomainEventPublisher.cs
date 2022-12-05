@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit
             }
 
             return transaction.AddFunctionEnrollmentAsync(ct =>
-                _bus.Publish(domainEvent, cancellationToken), cancellationToken);
+                _bus.Publish(domainEvent, ct), cancellationToken);
         }
     }
 }

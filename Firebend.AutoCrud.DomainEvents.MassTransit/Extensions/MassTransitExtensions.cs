@@ -92,6 +92,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 });
             }
 
+            _listeners.Clear();
             _listeners = null;
         }
 
@@ -101,7 +102,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
         {
             if (queueMode == AutoCrudMassTransitQueueMode.Unknown)
             {
-                throw new ArgumentException("Qeue mode is unknown", nameof(queueMode));
+                throw new ArgumentException("Queue mode is unknown", nameof(queueMode));
             }
 
             var prefix = QueuePrefix;
