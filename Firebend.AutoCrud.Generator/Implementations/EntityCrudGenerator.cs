@@ -345,6 +345,8 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 {
                     builder.Dispose();
                 }
+
+                Builders.Clear();
             }
 
             Builders = null;
