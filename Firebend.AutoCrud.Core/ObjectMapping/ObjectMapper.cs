@@ -77,7 +77,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
 
             var key = MapTypes(sourceType, targetType, propertiesToIgnore);
 
-            var dynamicMethod = ObjectMapperCaches.DynamicMethods.GetOrAdd(key, static(dictKey, factoryArg) =>
+            var dynamicMethod = ObjectMapperCaches.DynamicMethods.GetOrAdd(key, static (dictKey, factoryArg) =>
             {
                 var (s, t, ignores, self) = factoryArg;
 
