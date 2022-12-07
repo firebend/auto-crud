@@ -12,6 +12,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 
+public static class DbContextProviderCaches<TContext>
+    where TContext : DbContext
+{
+    public static readonly ConcurrentDictionary<string, PooledDbContextFactory<TContext>> Factories = new();
+}
+
 public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
@@ -33,7 +39,7 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
         _logger = loggerFactory.CreateLogger<AbstractDbContextProvider<TKey, TEntity, TContext>>();
     }
 
-    private async Task<IDbContext> CreateContextAsync(PooledDbContextFactory<TContext> factory,
+    protected async Task<IDbContext> CreateContextAsync(IDbContextFactory<TContext> factory,
         CancellationToken cancellationToken)
     {
         var context = await factory.CreateDbContextAsync(cancellationToken);
@@ -83,7 +89,10 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
 
         var options = _optionsProvider.GetDbContextOptions<TContext>(connectionString);
 
-        var factory = new PooledDbContextFactory<TContext>(options);
+        var factory = DbContextProviderCaches<TContext>.Factories
+            .GetOrAdd(GetPooledKey(typeof(TContext)),
+                static (_, opts) => new PooledDbContextFactory<TContext>(opts),
+                options);
 
         return await CreateContextAsync(factory, cancellationToken);
     }
@@ -96,5 +105,9 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
         return await CreateContextAsync(new PooledDbContextFactory<TContext>(options), cancellationToken);
     }
 
-    protected virtual string GetMemoizeKey(Type dbContextType) => $"{dbContextType.FullName}.Init";
+    private string _memoizeKey;
+    protected virtual string GetMemoizeKey(Type dbContextType) => _memoizeKey ??= $"{dbContextType.FullName}.Init";
+
+    private string _poolKey;
+    protected virtual string GetPooledKey(Type dbContextType) => _poolKey ??= $"{dbContextType.FullName}.Pooled";
 }

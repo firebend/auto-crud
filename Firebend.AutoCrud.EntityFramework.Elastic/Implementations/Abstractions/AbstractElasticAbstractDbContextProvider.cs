@@ -28,9 +28,11 @@ public class AbstractElasticDbContextProvider<TKey, TEntity, TContext> : Abstrac
         _shardKeyProvider = shardKeyProvider;
     }
 
+    private string _memoizeKey;
     protected override string GetMemoizeKey(Type dbContextType)
-    {
-        var key = $"{dbContextType.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Init";
-        return key;
-    }
+        => _memoizeKey ??= $"{dbContextType.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Init";
+
+    private string _poolKey;
+    protected override string GetPooledKey(Type dbContextType)
+        => _poolKey ??= $"{dbContextType.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Pooled";
 }
