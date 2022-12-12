@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         protected AbstractTenantSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityTableCreator tableCreator,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IMemoizer<bool> memoizer)
+            IMemoizer memoizer)
             : base(contextProvider, tableCreator, memoizer)
         {
             _tenantEntityProvider = tenantEntityProvider;
@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             {
                 var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken).ConfigureAwait(false);
 
-                _cacheKey = $"{tenant.TenantId}_{typeof(TEntity).Name}";
+                _cacheKey = $"{tenant.TenantId}_{typeof(TEntity).Name}.Sql.CustomFields.Storage.Creator";
             }
 
             return _cacheKey;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

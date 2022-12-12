@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
 using Firebend.AutoCrud.CustomFields.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Authorization;

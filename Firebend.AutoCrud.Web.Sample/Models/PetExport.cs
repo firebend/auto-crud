@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 
 namespace Firebend.AutoCrud.Web.Sample.Models

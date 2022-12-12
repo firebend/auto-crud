@@ -1,4 +1,6 @@
 using System;
+using Firebend.AutoCrud.Core.Implementations.Concurrency;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +55,7 @@ namespace Firebend.AutoCrud.Mongo
         {
             serviceCollection.TryAddScoped<IMongoIndexMergeService, MongoIndexMergeService>();
             serviceCollection.TryAddScoped<IMongoIndexComparisonService, MongoIndexComparisonService>();
+            serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
 
             using var mongo = serviceCollection.UsingMongoCrud(connectionString, enableLogging);
             configure(mongo);

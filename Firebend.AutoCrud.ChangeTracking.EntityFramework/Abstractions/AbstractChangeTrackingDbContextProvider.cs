@@ -26,12 +26,12 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
         private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
         private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
-        private readonly IMemoizer<bool> _memoizer;
+        private readonly IMemoizer _memoizer;
 
         protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
             IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
             IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider,
-            IMemoizer<bool> memoizer)
+            IMemoizer memoizer)
         {
             _optionsProvider = optionsProvider;
             _connectionStringProvider = connectionStringProvider;
@@ -67,7 +67,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
             var key = GetScaffoldingKey(typeof(TEntity));
 
-            await _memoizer.MemoizeAsync<(
+            await _memoizer.MemoizeAsync<bool,(
                 AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> self,
                 ChangeTrackingDbContext<TEntityKey, TEntity> context,
                 CancellationToken cancellationToken

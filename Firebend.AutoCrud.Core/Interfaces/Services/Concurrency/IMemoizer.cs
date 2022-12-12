@@ -7,7 +7,7 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 /// <summary>
 ///     Memoizes the return of a given factory function.
 /// </summary>
-public interface IMemoizer<T>
+public interface IMemoizer
 {
     /// <summary>
     ///     Given a function, if its already been ran, use its result; otherwise, run the function and cache the result.
@@ -22,7 +22,7 @@ public interface IMemoizer<T>
     /// <returns>
     ///     A result of a function that should have only ran once.
     /// </returns>
-    Task<T> MemoizeAsync(string key, Func<Task<T>> factory, CancellationToken cancellationToken);
+    Task<T> MemoizeAsync<T>(string key, Func<Task<T>> factory, CancellationToken cancellationToken);
 
 
     /// <summary>
@@ -45,5 +45,9 @@ public interface IMemoizer<T>
     /// <returns>
     ///     A result of a function that should have only ran once.
     /// </returns>
-    Task<T> MemoizeAsync<TArg>(string key, Func<TArg, Task<T>> factory, TArg arg, CancellationToken cancellationToken);
+    Task<T> MemoizeAsync<T, TArg>(string key, Func<TArg, Task<T>> factory, TArg arg, CancellationToken cancellationToken);
+
+    T Memoize<T>(string key, Func<T> factory);
+
+    T Memoize<T, TArg>(string key, Func<TArg, T> factory, TArg arg);
 }

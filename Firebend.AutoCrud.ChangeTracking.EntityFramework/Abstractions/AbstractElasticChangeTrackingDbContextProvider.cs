@@ -21,7 +21,7 @@ public class AbstractElasticChangeTrackingDbContextProvider<TEntityKey, TEntity,
         IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
         IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
         IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider,
-        IMemoizer<bool> memoizer,
+        IMemoizer memoizer,
         IShardNameProvider shardNameProvider,
         IShardKeyProvider shardKeyProvider) : base(optionsProvider, connectionStringProvider, changeTrackingOptionsProvider, memoizer)
     {

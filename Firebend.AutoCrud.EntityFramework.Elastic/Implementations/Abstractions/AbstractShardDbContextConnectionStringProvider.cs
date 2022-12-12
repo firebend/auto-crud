@@ -35,14 +35,14 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
         private readonly IShardManager _shardManager;
         private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
         private readonly IShardNameProvider _shardNameProvider;
-        private readonly IMemoizer<string> _memoizer;
+        private readonly IMemoizer _memoizer;
 
         protected AbstractShardDbContextConnectionStringProvider(
             IShardManager shardManager,
             IShardKeyProvider shardKeyProvider,
             IShardNameProvider shardNameProvider,
             ShardMapMangerConfiguration shardMapMangerConfiguration,
-            IMemoizer<string> memoizer)
+            IMemoizer memoizer)
         {
             _shardManager = shardManager;
             _shardKeyProvider = shardKeyProvider;
@@ -71,6 +71,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
             var memoizeKey = $"{shardKey}.Sharding.Enrollment";
 
             var connectionString = await _memoizer.MemoizeAsync<
+                string,
                 (AbstractShardDbContextConnectionStringProvider<TKey, TEntity> self, string shardKey, CancellationToken cancellationToken)>(
                 memoizeKey,
                 static arg => arg.self.GetShardConnectionStringAsync(arg.shardKey, arg.cancellationToken),
