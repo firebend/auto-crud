@@ -85,7 +85,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
 
-            var iProperties = interfaceType.GetProperties().Select(x => new PropertySet(x.Name, x.PropertyType,null, true));
+            var iProperties = interfaceType.GetProperties().Select(x => new PropertySet(x.Name, x.PropertyType, null, true));
 
             properties ??= Array.Empty<PropertySet>();
 
