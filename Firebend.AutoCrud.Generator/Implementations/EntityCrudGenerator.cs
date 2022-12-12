@@ -57,22 +57,17 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
         private void OnGenerate()
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var start = Stopwatch.GetTimestamp();
 
             foreach (var builder in Builders)
             {
-                var builderStopwatch = new Stopwatch();
-                builderStopwatch.Start();
+                var builderStart = Stopwatch.GetTimestamp();
                 Generate(ServiceCollection, builder);
-                builderStopwatch.Stop();
-                Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {builderStopwatch.ElapsedMilliseconds} (ms)");
+                Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {Stopwatch.GetElapsedTime(builderStart).Milliseconds} (ms)");
                 builder.Dispose();
             }
 
-            stopwatch.Stop();
-
-            Console.WriteLine($"All entities generated in {stopwatch.ElapsedMilliseconds} (ms)");
+            Console.WriteLine($"All entities generated in {Stopwatch.GetElapsedTime(start).TotalMilliseconds} (ms)");
         }
 
         protected virtual void Generate(IServiceCollection serviceCollection, BaseBuilder builder)
