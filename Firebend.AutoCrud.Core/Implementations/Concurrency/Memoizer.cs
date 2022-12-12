@@ -7,7 +7,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 namespace Firebend.AutoCrud.Core.Implementations.Concurrency;
 
 
-internal static class MemoizeCaches
+public static class MemoizeCaches
 {
     public static readonly ConcurrentDictionary<string, object> Caches = new();
 }

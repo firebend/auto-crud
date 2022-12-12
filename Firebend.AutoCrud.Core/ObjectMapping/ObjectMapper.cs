@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Implementations.Concurrency;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
 {

@@ -10,13 +10,6 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Firebend.AutoCrud.ChangeTracking.Web
 {
-    internal static class ChangeTracingViewModelCaches
-    {
-        public static readonly string[] MapperIgnores = {
-            nameof(ChangeTrackingModel<Guid, FooEntity>.Changes),
-            nameof(ChangeTrackingModel<Guid, FooEntity>.Entity)
-        };
-    }
     public class ChangeTrackingViewModel<TKey, TEntity, TViewModel> : ChangeTrackingModel<TKey, TViewModel>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
@@ -26,7 +19,9 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
             IReadViewModelMapper<TKey, TEntity, TViewModel> mapper,
             CancellationToken cancellationToken = default)
         {
-            changeTrackingEntity.CopyPropertiesTo(this, ChangeTracingViewModelCaches.MapperIgnores);
+            changeTrackingEntity.CopyPropertiesTo(this,
+                nameof(ChangeTrackingModel<Guid, FooEntity>.Changes),
+                nameof(ChangeTrackingModel<Guid, FooEntity>.Entity));
 
             var mapped = await mapper
                 .ToAsync(changeTrackingEntity.Entity, cancellationToken)
