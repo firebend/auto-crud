@@ -16,7 +16,7 @@ public class Memoizer : IMemoizer
 {
     public static Memoizer Instance = new();
 
-     public async Task<T> MemoizeAsync<T>(string key, Func<Task<T>> factory, CancellationToken cancellationToken)
+    public async Task<T> MemoizeAsync<T>(string key, Func<Task<T>> factory, CancellationToken cancellationToken)
     {
         if (TryGetFromCache<T>(key, out var returnValue))
         {

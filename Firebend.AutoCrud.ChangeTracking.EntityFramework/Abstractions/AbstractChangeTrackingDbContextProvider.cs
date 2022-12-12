@@ -67,7 +67,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
             var key = GetScaffoldingKey(typeof(TEntity));
 
-            await _memoizer.MemoizeAsync<bool,(
+            await _memoizer.MemoizeAsync<bool, (
                 AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> self,
                 ChangeTrackingDbContext<TEntityKey, TEntity> context,
                 CancellationToken cancellationToken
