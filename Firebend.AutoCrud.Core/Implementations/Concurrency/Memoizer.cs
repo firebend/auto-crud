@@ -14,7 +14,7 @@ internal static class MemoizeCaches
 
 public class Memoizer : IMemoizer
 {
-    public static Memoizer Instance = new();
+    public static Memoizer Instance { get; } = new();
 
     public async Task<T> MemoizeAsync<T>(string key, Func<Task<T>> factory, CancellationToken cancellationToken)
     {
