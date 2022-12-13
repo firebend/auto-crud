@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="5.2.1"></a>
+## [5.2.1](https://www.github.com/firebend/auto-crud/releases/tag/v5.2.1) (2022-12-13)
+
+### Bug Fixes
+
+* clean up (#139) ([d42e598](https://www.github.com/firebend/auto-crud/commit/d42e598161e81db6fd0f1d414f2d0156542c2260))
+
+### Other
+
+* performance tweaks (#138) ([62e3bf0](https://www.github.com/firebend/auto-crud/commit/62e3bf079cf82201f5b22f0f958a50c7bb9362b1))
+
 <a name="5.2.0"></a>
 ## [5.2.0](https://www.github.com/firebend/auto-crud/releases/tag/v5.2.0) (2022-11-16)
 
