@@ -1,6 +1,5 @@
 using System.Linq;
 using Firebend.AutoCrud.Web.Implementations.Swagger;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;

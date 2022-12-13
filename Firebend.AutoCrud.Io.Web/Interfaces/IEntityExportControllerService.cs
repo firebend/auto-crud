@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Io.Models;
 using Microsoft.AspNetCore.Mvc;
 

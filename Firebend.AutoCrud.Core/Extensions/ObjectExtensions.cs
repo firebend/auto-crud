@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Firebend.AutoCrud.Core.ObjectMapping;
-using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Core.Extensions
 {

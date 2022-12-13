@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Web.Sample
             _locker = new DistributedLockService();
         }
 
-        public Task<IDisposable> LockAsync(string key, CancellationToken cancellationToken)
+        public ValueTask<IDisposable> LockAsync(string key, CancellationToken cancellationToken)
         {
             LogMessage(_logger, key);
             return _locker.LockAsync(key, cancellationToken);

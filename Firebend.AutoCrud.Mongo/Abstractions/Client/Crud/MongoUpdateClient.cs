@@ -23,23 +23,6 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
-    internal static class MongoUpdateClientCaches<TEntity>
-    {
-        static MongoUpdateClientCaches()
-        {
-            var props = typeof(TEntity)
-                .GetProperties()
-                .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
-                .Select(x => x.Name)
-                .ToList();
-
-            props.Add(nameof(IModifiedEntity.CreatedDate));
-
-            MapperIgnores = props.ToArray();
-        }
-
-        public static readonly string[] MapperIgnores;
-    }
     public abstract class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
@@ -215,7 +198,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             var modified = original == null ? new TEntity() : original.Clone();
 
-            entity.CopyPropertiesTo(modified, MongoUpdateClientCaches<TEntity>.MapperIgnores);
+            entity.CopyPropertiesTo(modified, GetMapperIgnores());
 
             if (original == null && modified is IModifiedEntity mod)
             {
@@ -263,6 +246,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             return null;
         }
+
+        private static string[] GetMapperIgnores() => typeof(TEntity)
+            .GetProperties()
+            .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
+            .Select(x => x.Name)
+            .Append(nameof(IModifiedEntity.CreatedDate))
+            .ToArray();
 
         protected virtual async Task<List<TKey>> UpdateManyInternalAsync(IMongoCollection<TEntity> mongoCollection,
             IEntityTransaction entityTransaction,

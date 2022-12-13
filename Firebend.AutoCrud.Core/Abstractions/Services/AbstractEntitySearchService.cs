@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Models.Searching;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Services
 {
@@ -21,7 +20,7 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                 if (activeEntitySearchRequest.IsDeleted.HasValue)
                 {
                     var expression = activeEntitySearchRequest.IsDeleted.Value
-                        ? (Expression<Func<IActiveEntity, bool>>)(x => x.IsDeleted)
+                        ? x => x.IsDeleted
                         : (Expression<Func<IActiveEntity, bool>>)(x => !x.IsDeleted);
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }

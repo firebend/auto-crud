@@ -11,13 +11,15 @@ public class EntityChangeTrackingAuthorizationFilter<TKey, TEntity> : EntityAuth
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
+    private static readonly string IdArg = nameof(ChangeTrackingModel<TKey, TEntity>.EntityId).Camelize();
+
     public EntityChangeTrackingAuthorizationFilter(string policy) : base(policy)
     {
     }
 
     protected override async Task AuthorizeRequestAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (await TryAuthorizeById(context, nameof(ChangeTrackingModel<TKey, TEntity>.EntityId).Camelize()))
+        if (await TryAuthorizeById(context, IdArg))
         {
             await next();
         }

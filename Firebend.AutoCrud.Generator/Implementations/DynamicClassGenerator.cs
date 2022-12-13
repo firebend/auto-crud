@@ -85,7 +85,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
 
             tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
 
-            var iProperties = interfaceType.GetProperties().Select(x => new PropertySet { Name = x.Name, Type = x.PropertyType, Override = true });
+            var iProperties = interfaceType.GetProperties().Select(x => new PropertySet(x.Name, x.PropertyType, null, true));
 
             properties ??= Array.Empty<PropertySet>();
 
@@ -188,7 +188,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
             }
         }
 
-        private static CustomAttributeBuilder[] BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes) => customAttributes.Select(attribute =>
+        private static IEnumerable<CustomAttributeBuilder> BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes) => customAttributes.Select(attribute =>
             {
                 var attributeArgs = attribute.ConstructorArguments
                     .Select(a => a.Value)

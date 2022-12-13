@@ -2,7 +2,6 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.SqlServer.Metadata.Internal;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework
 {

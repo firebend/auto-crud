@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Firebend.AutoCrud.Core.Extensions;
-using MassTransit.Futures.Contracts;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {

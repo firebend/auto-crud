@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
