@@ -42,17 +42,21 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         return entityId.Value;
     }
 
-    private Task<TEntity> GetEntityAsync<TKey, TEntity>(TKey id, CancellationToken cancellationToken)
+    protected virtual Task<TEntity> GetEntityAsync<TKey, TEntity>(TKey id, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
         var readService = _serviceProvider.GetService<IEntityReadService<TKey, TEntity>>();
+
         if (readService == null)
         {
             throw new DependencyResolverException($"Cannot resolve read service for {nameof(TEntity)}");
         }
 
-        return readService.GetByKeyAsync(id, cancellationToken);
+        using (readService)
+        {
+            return readService.GetByKeyAsync(id, cancellationToken);
+        }
     }
 
     public virtual async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity>(string entityIdString,

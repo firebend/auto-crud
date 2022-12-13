@@ -199,6 +199,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
 
             ServiceCollectionHooks?.Clear();
             ServiceCollectionHooks = null;
+
+            SignatureBase = null;
         }
     }
 }

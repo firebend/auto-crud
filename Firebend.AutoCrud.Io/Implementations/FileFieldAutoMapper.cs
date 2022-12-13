@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -12,10 +11,6 @@ using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {
-    public static class FileFieldAutoMapperCaches<T>
-    {
-        public static readonly ConcurrentDictionary<string, IFileFieldWrite<T>[]> Caches = new();
-    }
     public class FileFieldAutoMapper : IFileFieldAutoMapper
     {
         private readonly IFileFieldWriteFilterFactory _filterFactory;
@@ -68,9 +63,6 @@ namespace Firebend.AutoCrud.Io.Implementations
         }
 
         public IFileFieldWrite<T>[] MapOutput<T>()
-            where T : class => FileFieldAutoMapperCaches<T>
-            .Caches
-            .GetOrAdd(typeof(T).FullName, static (_, arg) =>
-                arg.MapOutputImpl<T>().OrderBy(x => x.FieldIndex).ToArray(), this);
+            where T : class => MapOutputImpl<T>().ToArray();
     }
 }

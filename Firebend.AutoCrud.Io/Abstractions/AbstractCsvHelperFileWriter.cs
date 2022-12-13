@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -18,10 +17,6 @@ using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Abstractions
 {
-    public static class ChildListsCaches
-    {
-        public static readonly ConcurrentDictionary<Type, List<PropertyInfo>> Caches = new();
-    }
     public abstract class AbstractCsvHelperFileWriter : BaseDisposable, IEntityFileWriter
     {
         private bool _disposed;
@@ -80,12 +75,9 @@ namespace Firebend.AutoCrud.Io.Abstractions
         {
             await _writer.NextRecordAsync().ConfigureAwait(false);
 
-            var childLists = ChildListsCaches
-                .Caches
-                .GetOrAdd(typeof(T), static (_, _) =>
-                    typeof(T).GetProperties()
-                        .Where(propInfo => propInfo.PropertyType.IsCollection())
-                        .ToList(), this);
+            var childLists = typeof(T).GetProperties()
+                .Where(propInfo => propInfo.PropertyType.IsCollection())
+                .ToList();
 
             var writeSubRowMethod = typeof(AbstractCsvHelperFileWriter)
                 .GetMethod(nameof(WriteSubRow), BindingFlags.NonPublic | BindingFlags.Instance);

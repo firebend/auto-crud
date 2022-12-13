@@ -12,8 +12,8 @@ public static class Extensions
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
     {
-        var configurator =
-            new MongoCustomFieldsConfigurator<MongoDbEntityBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+        using var configurator = new MongoCustomFieldsConfigurator<MongoDbEntityBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+
         if (configure == null)
         {
             configurator.WithCustomFields();

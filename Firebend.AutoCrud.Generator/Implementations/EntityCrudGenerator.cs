@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Generator.Implementations
         {
         }
 
-        public List<BaseBuilder> Builders { get; } = new();
+        public List<BaseBuilder> Builders { get; private set; } = new();
 
         public IServiceCollection ServiceCollection { get; }
 
@@ -52,28 +52,22 @@ namespace Firebend.AutoCrud.Generator.Implementations
                 OnGenerate();
                 _isGenerated = true;
                 return ServiceCollection;
-
             }
         }
 
         private void OnGenerate()
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var start = Stopwatch.GetTimestamp();
 
             foreach (var builder in Builders)
             {
-                var builderStopwatch = new Stopwatch();
-                builderStopwatch.Start();
+                var builderStart = Stopwatch.GetTimestamp();
                 Generate(ServiceCollection, builder);
-                builderStopwatch.Stop();
-                Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {builderStopwatch.ElapsedMilliseconds} (ms)");
+                Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {Stopwatch.GetElapsedTime(builderStart).Milliseconds} (ms)");
                 builder.Dispose();
             }
 
-            stopwatch.Stop();
-
-            Console.WriteLine($"All entities generated in {stopwatch.ElapsedMilliseconds} (ms)");
+            Console.WriteLine($"All entities generated in {Stopwatch.GetElapsedTime(start).TotalMilliseconds} (ms)");
         }
 
         protected virtual void Generate(IServiceCollection serviceCollection, BaseBuilder builder)
@@ -336,6 +330,21 @@ namespace Firebend.AutoCrud.Generator.Implementations
             return this;
         }
 
-        protected override void DisposeManagedObjects() => _classGenerator?.Dispose();
+        protected override void DisposeManagedObjects()
+        {
+            _classGenerator?.Dispose();
+
+            if (Builders is not null)
+            {
+                foreach (var builder in Builders)
+                {
+                    builder.Dispose();
+                }
+
+                Builders.Clear();
+            }
+
+            Builders = null;
+        }
     }
 }

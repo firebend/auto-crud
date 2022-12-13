@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
@@ -17,11 +16,12 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
     {
         private readonly IDbContextProvider<TKey, TEntity> _contextProvider;
         private readonly IEntityTableCreator _tableCreator;
-        private readonly IMemoizer<bool> _memoizer;
+        private readonly IMemoizer _memoizer;
+        private string _memoizeKey;
 
         protected AbstractSqlServerCustomFieldsStorageCreator(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityTableCreator tableCreator,
-            IMemoizer<bool> memoizer)
+            IMemoizer memoizer)
         {
             _contextProvider = contextProvider;
             _tableCreator = tableCreator;
@@ -32,10 +32,10 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
         {
             var key = await GetCacheKey(cancellationToken).ConfigureAwait(false);
 
-            var memoizeKey = $"{key}.Sql.CustomFields.Creation";
+            _memoizeKey ??= $"{key}.Sql.CustomFields.Creation";
 
-            await _memoizer.MemoizeAsync<(IDbContextProvider<TKey, TEntity> dbContextProvider, IEntityTableCreator _tableCreator, CancellationToken cancellationToken)>(
-                memoizeKey, static async arg =>
+            await _memoizer.MemoizeAsync<bool, (IDbContextProvider<TKey, TEntity> dbContextProvider, IEntityTableCreator _tableCreator, CancellationToken cancellationToken)>(
+                _memoizeKey, static async arg =>
             {
                 var (dbContextProvider, tableCreator, cancellationToken) = arg;
 
@@ -51,6 +51,6 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions
             }, (_contextProvider, _tableCreator, cancellationToken), cancellationToken);
         }
 
-        protected virtual Task<string> GetCacheKey(CancellationToken cancellationToken) => Task.FromResult($"{typeof(TEntity).Name}");
+        protected virtual Task<string> GetCacheKey(CancellationToken cancellationToken) => Task.FromResult(typeof(TEntity).Name);
     }
 }

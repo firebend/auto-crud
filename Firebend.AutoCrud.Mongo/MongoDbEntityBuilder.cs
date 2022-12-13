@@ -281,7 +281,7 @@ namespace Firebend.AutoCrud.Mongo
 
             var iFaceType = typeof(IMongoDefaultDatabaseSelector);
 
-            var defaultDbField = new PropertySet { Name = nameof(IMongoDefaultDatabaseSelector.DefaultDb), Type = typeof(string), Value = db, Override = true };
+            var defaultDbField = new PropertySet(nameof(IMongoDefaultDatabaseSelector.DefaultDb), typeof(string), db, true);
 
             WithDynamicClass(iFaceType,
                 new DynamicClassRegistration

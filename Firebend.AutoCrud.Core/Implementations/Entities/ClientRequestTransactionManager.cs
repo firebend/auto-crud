@@ -67,13 +67,13 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         IEntityTransactionFactory<TKey, TEntity> transactionFactory, CancellationToken cancellationToken)
         where TKey : struct where TEntity : IEntity<TKey>
     {
-        var transaction = await _sharedTransactions.GetOrAdd(key,
-            async (_) =>
+        var transaction = await _sharedTransactions.GetOrAdd(key, static async (_, arg) =>
             {
-                var transaction = await transactionFactory.StartTransactionAsync(cancellationToken);
-                AddTransaction(transaction);
+                var (self, tf, ct) = arg;
+                var transaction = await tf.StartTransactionAsync(ct);
+                self.AddTransaction(transaction);
                 return transaction;
-            });
+            }, (this, transactionFactory, cancellationToken));
         return transaction;
     }
 
@@ -101,5 +101,9 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         TransactionStarted = false;
     }
 
-    public void Dispose() => ClearTransactions();
+    public void Dispose()
+    {
+        ClearTransactions();
+        GC.SuppressFinalize(this);
+    }
 }

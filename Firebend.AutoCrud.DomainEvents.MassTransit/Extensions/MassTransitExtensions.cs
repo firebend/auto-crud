@@ -8,7 +8,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;
 using MassTransit;
-using MassTransit.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -92,6 +91,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 });
             }
 
+            _listeners.Clear();
             _listeners = null;
         }
 
@@ -101,7 +101,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
         {
             if (queueMode == AutoCrudMassTransitQueueMode.Unknown)
             {
-                throw new ArgumentException("Qeue mode is unknown", nameof(queueMode));
+                throw new ArgumentException("Queue mode is unknown", nameof(queueMode));
             }
 
             var prefix = QueuePrefix;

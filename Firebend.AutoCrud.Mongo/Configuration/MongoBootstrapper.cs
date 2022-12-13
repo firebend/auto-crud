@@ -1,18 +1,15 @@
 using System;
-using Firebend.AutoCrud.Core.Implementations.Concurrency;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.HostedServices;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Scrutor;
 
 namespace Firebend.AutoCrud.Mongo.Configuration
 {
     public static class MongoBootstrapper
     {
-        private static readonly object BootStrapLock = new();
+        private static object BootStrapLock { get; set; } = new();
         private static bool _isBootstrapped;
 
         public static IServiceCollection ConfigureMongoDb(
@@ -60,7 +57,6 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             );
 
             configurator.Configure();
-            services.TryAddSingleton(typeof(IMemoizer<>), typeof(Memoizer<>));
             services.AddSingleton<IMongoClientFactory, MongoClientFactory>();
             services.AddSingleton(provider =>
             {

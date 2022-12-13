@@ -38,7 +38,7 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             where TKey : struct
             where TEntity : class, IEntity<TKey>
         {
-            var config = new EntityCrudConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+            using var config = new EntityCrudConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
             configure(config);
             return builder;
         }
@@ -80,7 +80,7 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
         ///  .ConfigureServices((hostContext, services) => {
         ///      services.UsingEfCrud(ef =>
         ///     {
-        ///         ef.AddEntity<Guid, WeatherForecast>(forecast => 
+        ///         ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///             forecast.WithDbContext<AppDbContext>()
         ///                 .AddCrud()
         ///                 .AddDomainEvents(events => events
@@ -100,8 +100,8 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
             where TKey : struct
             where TEntity : class, IEntity<TKey>
         {
-            var config = new DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
-            configure(config);
+            using var domainEventsConfigurator = new DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+            configure(domainEventsConfigurator);
             return builder;
         }
     }

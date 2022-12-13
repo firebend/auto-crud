@@ -15,14 +15,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
     public class MongoIndexMergeService : MongoClientBase, IMongoIndexMergeService
     {
         private readonly IMongoIndexComparisonService _comparisonService;
-        private readonly ILogger<MongoIndexMergeService> _logger;
 
         public MongoIndexMergeService(IMongoClient client,
             ILogger<MongoIndexMergeService> logger,
             IMongoRetryService mongoRetryService,
             IMongoIndexComparisonService comparisonService) : base(client, logger, mongoRetryService)
         {
-            _logger = logger;
             _comparisonService = comparisonService;
         }
 

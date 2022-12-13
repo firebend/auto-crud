@@ -21,7 +21,7 @@ public class AbstractElasticChangeTrackingDbContextProvider<TEntityKey, TEntity,
         IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
         IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
         IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider,
-        IMemoizer<bool> memoizer,
+        IMemoizer memoizer,
         IShardNameProvider shardNameProvider,
         IShardKeyProvider shardKeyProvider) : base(optionsProvider, connectionStringProvider, changeTrackingOptionsProvider, memoizer)
     {
@@ -29,9 +29,11 @@ public class AbstractElasticChangeTrackingDbContextProvider<TEntityKey, TEntity,
         _shardKeyProvider = shardKeyProvider;
     }
 
+    private string _scaffoldKey;
+
     protected override string GetScaffoldingKey(Type type)
     {
-        var key = $"{type.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Changes.Scaffolding";
-        return key;
+        _scaffoldKey ??= $"{type.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Changes.Scaffolding";
+        return _scaffoldKey;
     }
 }
