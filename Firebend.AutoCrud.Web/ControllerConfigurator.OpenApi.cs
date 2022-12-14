@@ -82,7 +82,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
             return;
         }
 
-        using var _ = AsyncDuplicateLock.Lock(ControllerConfiguratorCache.Lock);
+        using var locker = AsyncDuplicateLock.Lock(nameof(AddSwaggerGenOptionConfiguration));
         {
             if (ControllerConfiguratorCache.IsSwaggerApplied)
             {

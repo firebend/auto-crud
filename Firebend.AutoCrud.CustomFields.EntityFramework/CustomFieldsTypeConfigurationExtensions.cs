@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Reflection;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
@@ -12,10 +11,6 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 {
     public static class CustomFieldsTypeConfigurationExtensions
     {
-        private static readonly MethodInfo EntityType = typeof(ModelBuilder)
-            .GetMethods()
-            .FirstOrDefault(x => x.Name == nameof(ModelBuilder.Entity) && x.IsGenericMethod);
-
         public static void AddCustomFieldsConfigurations(this IDbContext context, ModelBuilder builder)
         {
             var entityTypes = context
@@ -76,7 +71,11 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
                 var configureMethod = configType.GetMethod("Configure");
 
-                var entityMethodGeneric = EntityType.MakeGenericMethod(customFieldsEntityType);
+                var entityTypeMethod = typeof(ModelBuilder)
+                    .GetMethods()
+                    .FirstOrDefault(x => x.Name == nameof(ModelBuilder.Entity) && x.IsGenericMethod);
+
+                var entityMethodGeneric = entityTypeMethod.MakeGenericMethod(customFieldsEntityType);
 
                 var entityResult = entityMethodGeneric.Invoke(builder, Array.Empty<object>());
 

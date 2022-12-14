@@ -19,24 +19,6 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
-    internal static class EntityFrameworkUpdateClientCaches<TEntity>
-    {
-        static EntityFrameworkUpdateClientCaches()
-        {
-            var props = typeof(TEntity)
-                .GetProperties()
-                .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
-                .Select(x => x.Name)
-                .ToList();
-
-            props.Add(nameof(IModifiedEntity.CreatedDate));
-
-            IgnoredProperties = props.ToArray();
-        }
-
-        public static readonly string[] IgnoredProperties;
-    }
-
     public abstract class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
@@ -187,7 +169,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             if (original != null)
             {
-                model = entity.CopyPropertiesTo(model, EntityFrameworkUpdateClientCaches<TEntity>.IgnoredProperties);
+                model = entity.CopyPropertiesTo(model, GetMapperIgnores());
 
                 if (model is IModifiedEntity modified)
                 {
@@ -247,6 +229,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             return model;
         }
+
+        private static string[] GetMapperIgnores() => typeof(TEntity)
+            .GetProperties()
+            .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
+            .Select(x => x.Name)
+            .Append(nameof(IModifiedEntity.CreatedDate))
+            .ToArray();
 
         public virtual Task<TEntity> UpdateAsync(TEntity entity,
             CancellationToken cancellationToken = default)

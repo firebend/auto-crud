@@ -15,7 +15,9 @@ namespace Firebend.AutoCrud.EntityFramework
         public static IServiceCollection UsingEfCrud(this IServiceCollection serviceCollection,
             Action<EntityFrameworkEntityCrudGenerator> configure)
         {
-            serviceCollection.TryAddSingleton(typeof(IMemoizer<>), typeof(Memoizer<>));
+
+            serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
+
             using var ef = UsingEfCrud(serviceCollection);
             configure(ef);
             return ef.Generate();

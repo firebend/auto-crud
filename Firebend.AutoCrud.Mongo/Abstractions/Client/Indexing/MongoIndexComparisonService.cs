@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Firebend.JsonPatch.Extensions;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;

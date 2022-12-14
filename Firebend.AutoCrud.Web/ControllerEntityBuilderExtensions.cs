@@ -11,7 +11,8 @@ namespace Firebend.AutoCrud.Web
             where TKey : struct
             where TEntity : class, IEntity<TKey>
         {
-            configure(new ControllerConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder));
+            using var configurator = new ControllerConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+            configure(configurator);
             return builder;
         }
     }

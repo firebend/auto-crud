@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.Io
             where TKey : struct
             where TEntity : class, IEntity<TKey>
         {
-            var config = new IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+            using var config = new IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
             configure?.Invoke(config);
             return builder;
         }

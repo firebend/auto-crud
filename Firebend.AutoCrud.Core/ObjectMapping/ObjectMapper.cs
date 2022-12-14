@@ -1,13 +1,13 @@
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection.Emit;
+using Firebend.AutoCrud.Core.Implementations.Concurrency;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping
 {
     internal static class ObjectMapperCache
     {
-        public static readonly ConcurrentDictionary<(Type source, Type target, string[] ignores, bool includeObjects), DynamicMethod> MapperCache = new();
+        public static readonly ConcurrentDictionary<(Type source, Type target, string[] ignores), DynamicMethod> MapperCache = new();
     }
     /// <summary>
     /// This mapper class finds the matching properties and copies them from source object to target object. The copy function has IL codes to do this task.
@@ -95,9 +95,19 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 return self.DynamicMethodFactory(key, source, target, ignores, includeObjects);
             }, this);
 
-            var args = new object[] { source, target };
+            var key = MapTypes(sourceType, targetType, propertiesToIgnore, includeObjects);
 
-            dynamicMethod.Invoke(null, args);
+            var dynamic = Memoizer.Instance.Memoize<DynamicMethod, (string, Type, Type, string[], bool, ObjectMapper)>(
+                key, static factoryArg =>
+                {
+                    var (dictKey, s, t, ignores, includeObjects, self) = factoryArg;
+
+                    var dynamicMethod = self.DynamicMethodFactory(dictKey, s, t, ignores, includeObjects);
+
+                    return dynamicMethod;
+                }, (key, sourceType, targetType, propertiesToIgnore, this));
+
+            dynamic.Invoke(null, new object[] { source, target });
         }
     }
 }

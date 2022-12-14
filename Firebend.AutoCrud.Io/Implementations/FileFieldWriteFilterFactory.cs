@@ -14,7 +14,5 @@ public class FileFieldWriteFilterFactory : IFileFieldWriteFilterFactory
     }
 
     public IFileFieldWriteFilter<TExport> GetFilter<TExport>()
-    {
-        return _serviceProvider.GetService<IFileFieldWriteFilter<TExport>>();
-    }
+        => _serviceProvider.GetService<IFileFieldWriteFilter<TExport>>();
 }

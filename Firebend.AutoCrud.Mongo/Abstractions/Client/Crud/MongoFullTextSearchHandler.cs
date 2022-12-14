@@ -1,7 +1,6 @@
 using System.Linq;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Models.Searching;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
