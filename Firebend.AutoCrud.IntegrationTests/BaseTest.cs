@@ -808,6 +808,7 @@ public abstract class BaseTest<
         if (doExport)
         {
             await ExportToCsvAsync();
+            await ExportToSpreadsheetAsync();
         }
 
         var changes = await GetChangeTrackingAsync(result.Id, 3);
@@ -902,5 +903,23 @@ public abstract class BaseTest<
         await PatchCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
         await DeleteCustomFieldsUnauthorizedAsync(CreatedKey, customField.Id);
         await SearchCustomFieldsUnauthorizedAsync(customField.Key, customField.Id);
+    }
+    private async Task ExportToSpreadsheetAsync()
+    {
+        var response = await $"{Url}/export/spreadsheet".WithAuth()
+            .SetQueryParam("pagenumber", 1.ToString())
+            .SetQueryParam("pageSize", 10.ToString())
+            .SetQueryParam("doCount", true.ToString())
+            .SetQueryParam("fileName", "temp")
+            .GetAsync();
+
+        //assert
+        response.Should().NotBeNull();
+        response.StatusCode.Should().Be(200);
+
+        var responseBytes = await response.GetBytesAsync();
+        responseBytes.Should().NotBeNullOrEmpty();
+
+        SaveResponse(response);
     }
 }

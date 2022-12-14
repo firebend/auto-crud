@@ -36,7 +36,7 @@ jobs:
         if: steps.versionize.outcome == 'success'
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.100
+          dotnet-version: 7.0.100
 
       - name: Install dependencies
         if: steps.versionize.outcome == 'success'
@@ -128,4 +128,3 @@ jobs:
           force: true
           unprotect_reviews: true
           sleep: 5
-

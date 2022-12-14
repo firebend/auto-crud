@@ -14,21 +14,20 @@ namespace Firebend.AutoCrud.Io.Implementations
         private int _row = 1;
 
         protected bool LeaveOpen { get; }
-        protected bool IsSanitizeForInjection { get; }
+        protected InjectionOptions InjectionOptions { get; }
         protected Stream Stream { get; }
 
         protected IXLWorksheet Worksheet { get; }
         protected XLWorkbook Workbook { get; }
 
-        public SpreadsheetWriter(Stream stream, string sheetName, CsvConfiguration configuration) : base(TextWriter.Null, configuration)
+        public SpreadsheetWriter(Stream stream, string sheetName, IWriterConfiguration configuration, bool leaveOpen) : base(TextWriter.Null, configuration)
         {
             configuration.Validate();
             Workbook = new XLWorkbook(XLEventTracking.Disabled);
             Worksheet = GetOrAddWorksheet(Workbook, sheetName);
             Stream = stream;
-
-            LeaveOpen = configuration.LeaveOpen;
-            IsSanitizeForInjection = configuration.SanitizeForInjection;
+            LeaveOpen = leaveOpen;
+            InjectionOptions = configuration.InjectionOptions;
         }
 
         private static IXLWorksheet GetOrAddWorksheet(IXLWorkbook workbook, string sheetName)
@@ -45,11 +44,7 @@ namespace Firebend.AutoCrud.Io.Implementations
         /// <inheritdoc />
         public override void WriteField(string field, bool shouldQuote)
         {
-            if (IsSanitizeForInjection)
-            {
-                field = SanitizeForInjection(field);
-            }
-
+            field = SanitizeForInjection(field);
             WriteToCell(field);
             _index++;
         }
