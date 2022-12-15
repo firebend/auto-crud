@@ -52,7 +52,7 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         {
             if (propertiesToIgnore is null || propertiesToIgnore.Length <= 0)
             {
-                return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}";
+                return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}_includeObjects{includeObjects}";
             }
 
             return $"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}_{string.Join('_', propertiesToIgnore)}_includeObjects{includeObjects}";
