@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncKeyedLock;
@@ -11,6 +10,16 @@ namespace Firebend.AutoCrud.Core.Threading
         private static readonly AsyncKeyedLocker _asyncKeyedLocker = new();
 
         public static IDisposable Lock(object key) => _asyncKeyedLocker.Lock(key);
+
+        public static ValueTask<IDisposable> LockAsync(object key)
+        {
+            return _asyncKeyedLocker.LockAsync(key);
+        }
+
+        public static ValueTask<IDisposable> LockAsync(object key, CancellationToken cancellationToken)
+        {
+            return _asyncKeyedLocker.LockAsync(key, cancellationToken);
+        }
 
         public static async ValueTask<IDisposable> LockAsync(object key, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
         {
