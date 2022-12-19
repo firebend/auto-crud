@@ -113,6 +113,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
+            if (isValid.Model != null)
+            {
+                entityUpdate = isValid.Model;
+            }
+
             TEntity entity;
 
             try
@@ -268,8 +273,10 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return NotFound(new { id });
             }
 
+            var updated = await _readService.GetByKeyAsync(update.Id, cancellationToken);
+
             var mapped = await _readViewModelMapper
-                .ToAsync(update, cancellationToken)
+                .ToAsync(updated, cancellationToken)
                 .ConfigureAwait(false);
 
             return Ok(mapped);
