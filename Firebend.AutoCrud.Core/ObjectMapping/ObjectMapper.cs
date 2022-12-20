@@ -26,19 +26,19 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// <param name="target">The type of the target object</param>
         /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process</param>
         /// <exception cref="InvalidOperationException">The Invalid Operation Exception will be thrown if it can't find the given property in source/target objects.</exception>
-        protected override string MapTypes(Type source, Type target, params string[] propertiesToIgnore)
+        protected override string MapTypes(Type source, Type target, string[] propertiesToIgnore, bool includeObjects)
         {
-            var key = GetMapKey(source, target, propertiesToIgnore);
+            var key = GetMapKey(source, target, propertiesToIgnore, includeObjects);
             return key;
         }
 
-        private DynamicMethod DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore)
+        private DynamicMethod DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore, bool includeObjects)
         {
             var args = new[] { source, target };
 
             var dm = new DynamicMethod(key, null, args);
             var il = dm.GetILGenerator();
-            var maps = GetMatchingProperties(source, target);
+            var maps = GetMatchingProperties(source, target, includeObjects);
 
             foreach (var map in maps)
             {
@@ -50,9 +50,22 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
                 il.Emit(OpCodes.Ldarg_1);
                 il.Emit(OpCodes.Ldarg_0);
                 il.EmitCall(OpCodes.Callvirt, map.SourceProperty.GetGetMethod() ?? throw new InvalidOperationException(), null);
+
+                var targetUnderlyingType = Nullable.GetUnderlyingType(map.TargetProperty.PropertyType);
+                var targetIsNullable = targetUnderlyingType != null;
+
+                if (targetIsNullable && targetUnderlyingType == map.SourceProperty.PropertyType)
+                {
+                    var constructor = typeof(Nullable<>).MakeGenericType(targetUnderlyingType)
+                        .GetConstructor(new[] { targetUnderlyingType }) ?? throw new Exception();
+
+                    il.Emit(OpCodes.Newobj, constructor);
+                }
+
                 il.EmitCall(OpCodes.Callvirt, map.TargetProperty.GetSetMethod() ?? throw new InvalidOperationException(), null);
             }
             il.Emit(OpCodes.Ret);
+
             return dm;
         }
 
@@ -65,24 +78,24 @@ namespace Firebend.AutoCrud.Core.ObjectMapping
         /// It is best practice to have this as a static variable at all possible. Doing so will reduce
         /// memory allocations.
         /// </param>
-        public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null)
+        public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, bool includeObjects = true)
         {
             var sourceType = typeof(TSource);
             var targetType = typeof(TTarget);
 
-            var key = MapTypes(sourceType, targetType, propertiesToIgnore);
+            var key = MapTypes(sourceType, targetType, propertiesToIgnore, includeObjects);
 
-            var dynamicMethod = Memoizer.Instance.Memoize<DynamicMethod, (string, Type, Type, string[], ObjectMapper)>(
+            var dynamic = Memoizer.Instance.Memoize<DynamicMethod, (string, Type, Type, string[], bool, ObjectMapper)>(
                 key, static factoryArg =>
-            {
-                var (dictKey, s, t, ignores, self) = factoryArg;
+                {
+                    var (dictKey, s, t, ignores, includeObjects, self) = factoryArg;
 
-                var dynamicMethod = self.DynamicMethodFactory(dictKey, s, t, ignores);
+                    var dynamicMethod = self.DynamicMethodFactory(dictKey, s, t, ignores, includeObjects);
 
-                return dynamicMethod;
-            }, (key, sourceType, targetType, propertiesToIgnore, this));
+                    return dynamicMethod;
+                }, (key, sourceType, targetType, propertiesToIgnore, includeObjects, this));
 
-            dynamicMethod.Invoke(null, new object[] { source, target });
+            dynamic.Invoke(null, new object[] { source, target });
         }
     }
 }

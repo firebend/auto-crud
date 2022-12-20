@@ -61,7 +61,7 @@ public partial class
 
         WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity>>();
         WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
-        WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultUpdateViewModelMapper<TKey, TEntity>>();
+        WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, TEntity, DefaultUpdateViewModelMapper<TKey, TEntity>>();
         WithCreateMultipleViewModel<MultipleEntityViewModel<TEntity>, TEntity,
             DefaultCreateMultipleViewModelMapper<TKey, TEntity>>();
         WithMaxPageSize();
@@ -265,12 +265,12 @@ public partial class
                 CreateMultipleViewModelType, ReadViewModelType);
 
     public Type ValidateUpdateControllerType()
-        => typeof(AbstractEntityValidateUpdateController<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType);
+        => typeof(AbstractEntityValidateUpdateController<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, UpdateViewModelBodyType, ReadViewModelType);
 
     public Type UpdateControllerType()
-        => typeof(AbstractEntityUpdateController<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, ReadViewModelType);
+        => typeof(AbstractEntityUpdateController<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, UpdateViewModelBodyType, ReadViewModelType);
 
     public Type ReadControllerType()
         => typeof(AbstractEntityReadController<,,>)
@@ -733,6 +733,7 @@ public partial class
             serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
                 Builder.EntityType,
                 UpdateViewModelType,
+                UpdateViewModelBodyType,
                 ReadViewModelType);
         }
 
@@ -779,7 +780,7 @@ public partial class
             WithValidateUpdateController();
         }
         return WithUpdateController(
-            typeof(AbstractEntityUpdateController<,,,>),
+            typeof(AbstractEntityUpdateController<,,,,>),
             UpdateControllerType,
             makeServiceTypeGeneric: true);
     }
@@ -816,7 +817,7 @@ public partial class
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateUpdateController()
         => WithUpdateController(
-            typeof(AbstractEntityValidateUpdateController<,,,>),
+            typeof(AbstractEntityValidateUpdateController<,,,,>),
             ValidateUpdateControllerType,
             makeServiceTypeGeneric: true);
 
@@ -962,9 +963,17 @@ public partial class
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidationService<TService>(bool replace = true)
-        where TService : IEntityValidationService<TKey, TEntity>
     {
-        Builder.WithRegistration<IEntityValidationService<TKey, TEntity>, TService>(replace);
+        var type = typeof(IEntityValidationService<,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+
+        if (!type.IsAssignableFrom(typeof(TService)))
+        {
+            throw new ArgumentException($"The service type {typeof(TService).Name} does not implement {type.Name}");
+        };
+
+        Builder.WithRegistration(type, typeof(TService), replace);
+
         return this;
     }
 

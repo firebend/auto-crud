@@ -10,8 +10,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        Task<ModelStateResult<TEntity>> ValidateAsync(TEntity entity, CancellationToken cancellationToken);
-
         Task<ModelStateResult<TEntity>> ValidateAsync(TEntity original,
             TEntity entity,
             JsonPatchDocument<TEntity> patch,

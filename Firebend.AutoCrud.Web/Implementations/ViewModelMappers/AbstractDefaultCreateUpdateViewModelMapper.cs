@@ -12,17 +12,17 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         where TKey : struct
     {
         public Task<TEntity> FromAsync(DefaultCreateUpdateViewModel<TKey, TEntity> model, CancellationToken _ = default)
-            => Task.FromResult(model.Entity);
+            => Task.FromResult(model.Body);
 
         public Task<IEnumerable<TEntity>> FromAsync(IEnumerable<DefaultCreateUpdateViewModel<TKey, TEntity>> model,
             CancellationToken _ = default)
-            => Task.FromResult(model.Select(m => m.Entity));
+            => Task.FromResult(model.Select(m => m.Body));
 
         public Task<DefaultCreateUpdateViewModel<TKey, TEntity>> ToAsync(TEntity entity, CancellationToken _ = default)
-            => Task.FromResult(new DefaultCreateUpdateViewModel<TKey, TEntity> { Entity = entity });
+            => Task.FromResult(new DefaultCreateUpdateViewModel<TKey, TEntity> { Body = entity });
 
         public Task<IEnumerable<DefaultCreateUpdateViewModel<TKey, TEntity>>> ToAsync(IEnumerable<TEntity> entity,
             CancellationToken _ = default)
-            => Task.FromResult(entity.Select(e => new DefaultCreateUpdateViewModel<TKey, TEntity> { Entity = e }));
+            => Task.FromResult(entity.Select(e => new DefaultCreateUpdateViewModel<TKey, TEntity> { Body = e }));
     }
 }
