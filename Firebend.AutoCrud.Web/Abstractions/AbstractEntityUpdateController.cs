@@ -100,8 +100,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 : _jsonPatchGenerator.Generate(original, entityUpdate);
 
             var isValid = await _entityValidationService
-                .ValidateAsync(original, entityUpdate, patch, cancellationToken)
-                .ConfigureAwait(false);
+                .ValidateAsync(original, entityUpdate, patch, cancellationToken);
 
             if (!isValid.WasSuccessful)
             {
@@ -123,8 +122,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             try
             {
                 entity = await _updateService
-                    .UpdateAsync(entityUpdate, cancellationToken)
-                    .ConfigureAwait(false);
+                    .UpdateAsync(entityUpdate, cancellationToken);
             }
             catch (AutoCrudEntityException ex)
             {
@@ -146,8 +144,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             }
 
             var mapped = await _readViewModelMapper
-                .ToAsync(entity, cancellationToken)
-                .ConfigureAwait(false);
+                .ToAsync(entity, cancellationToken);
 
             return Ok(mapped);
         }
@@ -196,8 +193,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             }
 
             var entity = await _readService
-                .GetByKeyAsync(key.Value, cancellationToken)
-                .ConfigureAwait(false);
+                .GetByKeyAsync(key.Value, cancellationToken);
 
             if (entity == null)
             {
@@ -228,8 +224,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var entityPatch = _jsonPatchGenerator.Generate(original, modifiedEntity);
 
             var isValid = await _entityValidationService
-                .ValidateAsync(original, modifiedEntity, entityPatch, cancellationToken)
-                .ConfigureAwait(false);
+                .ValidateAsync(original, modifiedEntity, entityPatch, cancellationToken);
 
             if (!isValid.WasSuccessful)
             {
@@ -251,8 +246,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             try
             {
                 update = await _updateService
-                    .UpdateAsync(modifiedEntity, cancellationToken)
-                    .ConfigureAwait(false);
+                    .UpdateAsync(modifiedEntity, cancellationToken);
             }
             catch (AutoCrudEntityException ex)
             {
@@ -276,8 +270,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var updated = await _readService.GetByKeyAsync(update.Id, cancellationToken);
 
             var mapped = await _readViewModelMapper
-                .ToAsync(updated, cancellationToken)
-                .ConfigureAwait(false);
+                .ToAsync(updated, cancellationToken);
 
             return Ok(mapped);
         }
