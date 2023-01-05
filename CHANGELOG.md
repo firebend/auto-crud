@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="6.1.0"></a>
+## [6.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v6.1.0) (2023-1-5)
+
+### Features
+
+* update to object mapper, and allow specifying properties to copy forward on patch (#143) ([15c084b](https://www.github.com/firebend/auto-crud/commit/15c084b6b3807789460fa97e9cd2cbb15b1b206f))
+
 <a name="6.0.0"></a>
 ## [6.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v6.0.0) (2022-12-20)
 
