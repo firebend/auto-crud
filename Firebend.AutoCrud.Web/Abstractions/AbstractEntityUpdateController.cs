@@ -1,9 +1,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -36,6 +38,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
         private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readViewModelMapper;
         private readonly IJsonPatchGenerator _jsonPatchGenerator;
+        private readonly ICopyOnPatchPropertyAccessor<TEntity, TUpdateViewModel> _copyOnPatchPropertyAccessor;
 
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
@@ -44,7 +47,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
             IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
             IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions,
-            IJsonPatchGenerator jsonPatchGenerator) : base(entityKeyParser, apiOptions)
+            IJsonPatchGenerator jsonPatchGenerator,
+            ICopyOnPatchPropertyAccessor<TEntity, TUpdateViewModel> copyOnPatchPropertyAccessor) : base(entityKeyParser, apiOptions)
         {
             _updateService = updateService;
             _readService = readService;
@@ -52,6 +56,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             _updateViewModelMapper = updateViewModelMapper;
             _readViewModelMapper = readViewModelMapper;
             _jsonPatchGenerator = jsonPatchGenerator;
+            _copyOnPatchPropertyAccessor = copyOnPatchPropertyAccessor;
         }
 
         [HttpPut("{id}")]
@@ -221,7 +226,15 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var modifiedEntity = await _updateViewModelMapper.FromAsync(vm, cancellationToken);
             modifiedEntity.Id = key.Value;
 
+            var copyOnPatchProperties = _copyOnPatchPropertyAccessor.GetProperties();
+
+            if (copyOnPatchProperties.HasValues())
+            {
+                original.CopyPropertiesTo(modifiedEntity, propertiesToInclude: copyOnPatchProperties);
+            }
+
             var entityPatch = _jsonPatchGenerator.Generate(original, modifiedEntity);
+
 
             var isValid = await _entityValidationService
                 .ValidateAsync(original, modifiedEntity, entityPatch, cancellationToken);

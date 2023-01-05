@@ -179,6 +179,41 @@ public class MapperTests
     }
 
     [TestCase]
+    public void Mapper_Should_Only_Copy_Included_Properties()
+    {
+        // given
+        var source = new SourceModelA
+        {
+            IntValue = 1,
+            NullableIntValue = 2,
+            StringValue = "test",
+            DtoValue = DateTimeOffset.Now,
+            NullableDtoValue = DateTimeOffset.Now.AddHours(1),
+            GuidValue = Guid.NewGuid(),
+            NullableGuidValue = Guid.NewGuid(),
+            EnumValue = EntityFileType.Csv,
+            NullableEnumValue = EntityFileType.Spreadsheet
+        };
+        var target = new TargetModelA();
+
+        // when
+        ObjectMapper.Instance.Copy(source, target,
+            propertiesToInclude: new[] { nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue) });
+
+        // then
+        target.Should().NotBeNull();
+        target.IntValue.Should().Be(source.IntValue);
+        target.NullableIntValue.Should().BeNull();
+        target.StringValue.Should().Be(default);
+        target.DtoValue.Should().Be(default);
+        target.NullableDtoValue.Should().BeNull();
+        target.GuidValue.Should().Be(default(Guid));
+        target.NullableGuidValue.Should().BeNull();
+        target.EnumValue.Should().Be(default);
+        target.NullableEnumValue.Should().Be(source.NullableEnumValue);
+    }
+
+    [TestCase]
     public void Mapper_Should_Not_Copy_Ignored_Properties_After_Full_Copy()
     {
         // given
