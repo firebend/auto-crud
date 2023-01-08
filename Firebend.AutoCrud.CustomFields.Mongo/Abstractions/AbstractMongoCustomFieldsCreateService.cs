@@ -30,13 +30,13 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
     private readonly ISessionTransactionManager _transactionManager;
     private readonly bool _isDefaultPublisher;
 
-    public AbstractMongoCustomFieldsCreateService(IMongoClient client,
+    public AbstractMongoCustomFieldsCreateService(IMongoClientFactory<TKey, TEntity> clientFactory,
         ILogger<AbstractMongoCustomFieldsCreateService<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
         IEntityDomainEventPublisher domainEventPublisher,
-        ISessionTransactionManager transactionManager) : base(client, logger, entityConfiguration, mongoRetryService)
+        ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;

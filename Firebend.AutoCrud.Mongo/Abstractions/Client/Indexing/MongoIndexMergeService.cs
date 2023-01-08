@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
@@ -12,20 +13,22 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 {
-    public class MongoIndexMergeService : MongoClientBase, IMongoIndexMergeService
+    public class MongoIndexMergeService<TKey, TEntity> : MongoClientBase<TKey, TEntity>, IMongoIndexMergeService<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IMongoIndexComparisonService _comparisonService;
 
-        public MongoIndexMergeService(IMongoClient client,
-            ILogger<MongoIndexMergeService> logger,
+        public MongoIndexMergeService(IMongoClientFactory<TKey, TEntity> clientFactory,
+            ILogger<MongoIndexMergeService<TKey, TEntity>> logger,
             IMongoRetryService mongoRetryService,
-            IMongoIndexComparisonService comparisonService) : base(client, logger, mongoRetryService)
+            IMongoIndexComparisonService comparisonService) : base(clientFactory, logger, mongoRetryService)
         {
             _comparisonService = comparisonService;
         }
 
 
-        public async Task MergeIndexesAsync<TEntity>(IMongoCollection<TEntity> dbCollection,
+        public async Task MergeIndexesAsync(IMongoCollection<TEntity> dbCollection,
             CreateIndexModel<TEntity>[] indexModels,
             CancellationToken cancellationToken)
         {
@@ -55,7 +58,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             }
         }
 
-        protected virtual async Task MergeIndexesAsync<TEntity>(IMongoCollection<TEntity> dbCollection,
+        protected virtual async Task MergeIndexesAsync(IMongoCollection<TEntity> dbCollection,
             IEnumerable<CreateIndexModel<TEntity>> indexesToAdd,
             IReadOnlyCollection<BsonDocument> indexes,
             CancellationToken cancellationToken)
@@ -84,12 +87,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             }
         }
 
-        private Task CreateIndexesAsync<TEntity>(IMongoCollection<TEntity> dbCollection,
+        private Task CreateIndexesAsync(IMongoCollection<TEntity> dbCollection,
             IReadOnlyCollection<CreateIndexModel<TEntity>> adds,
             CancellationToken cancellationToken)
             => RetryErrorAsync(() => dbCollection.Indexes.CreateManyAsync(adds, cancellationToken));
 
-        private async Task DropIndexAsync<TEntity>(IMongoCollection<TEntity> dbCollection, List<string> indexNames, CancellationToken cancellationToken)
+        private async Task DropIndexAsync(IMongoCollection<TEntity> dbCollection, List<string> indexNames, CancellationToken cancellationToken)
         {
             foreach (var indexName in indexNames)
             {
@@ -97,7 +100,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             }
         }
 
-        private void HandleOtherIndexes<TEntity>(
+        private void HandleOtherIndexes(
             IMongoCollection<TEntity> mongoCollection,
             IEnumerable<BsonDocument> indexes,
             CreateIndexModel<TEntity> indexToAdd,
@@ -142,7 +145,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             drops.Add(existingIndex["name"].AsString);
         }
 
-        private bool HandleTextIndex<TEntity>(
+        private bool HandleTextIndex(
             IMongoCollection<TEntity> dbCollection,
             IEnumerable<BsonDocument> indexes,
             CreateIndexModel<TEntity> indexToAdd,

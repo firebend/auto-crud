@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -9,17 +10,17 @@ using MongoDB.Driver;
 namespace Firebend.AutoCrud.Mongo.Implementations
 {
     public class MongoEntityTransactionFactory<TKey, TEntity> :
-        Firebend.AutoCrud.Mongo.Abstractions.Client.MongoClientBase, IEntityTransactionFactory<TKey, TEntity>
+        MongoClientBase<TKey, TEntity>, IEntityTransactionFactory<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IEntityTransactionOutbox _outbox;
 
-        public MongoEntityTransactionFactory(IMongoClient client,
+        public MongoEntityTransactionFactory(IMongoClientFactory<TKey, TEntity> factory,
             ILoggerFactory loggerFactory,
             IEntityTransactionOutbox outbox,
             IMongoRetryService retryService) :
-            base(client, loggerFactory.CreateLogger<MongoEntityTransactionFactory<TKey, TEntity>>(), retryService)
+            base(factory, loggerFactory.CreateLogger<MongoEntityTransactionFactory<TKey, TEntity>>(), retryService)
         {
             _outbox = outbox;
         }

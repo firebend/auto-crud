@@ -32,14 +32,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         private readonly IJsonPatchGenerator _jsonPatchDocumentGenerator;
         private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
 
-        protected MongoUpdateClient(IMongoClient client,
+        protected MongoUpdateClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoUpdateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
             IDomainEventContextProvider domainEventContextProvider,
             IJsonPatchGenerator jsonPatchDocumentGenerator,
             IEntityDomainEventPublisher domainEventPublisher,
-            IMongoRetryService retryService) : base(client, logger, entityConfiguration, retryService)
+            IMongoRetryService retryService) : base(clientFactory, logger, entityConfiguration, retryService)
         {
             _keyGenerator = keyGenerator;
             _domainEventContextProvider = domainEventContextProvider;

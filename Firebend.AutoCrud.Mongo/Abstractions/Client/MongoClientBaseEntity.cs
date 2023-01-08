@@ -14,14 +14,14 @@ using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
-    public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase
-        where TEntity : IEntity<TKey>
+    public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase<TKey, TEntity>
+        where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
-        protected MongoClientBaseEntity(IMongoClient client,
+        protected MongoClientBaseEntity(IMongoClientFactory<TKey, TEntity> factory,
             ILogger logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IMongoRetryService mongoRetryService) : base(client, logger, mongoRetryService)
+            IMongoRetryService mongoRetryService) : base(factory, logger, mongoRetryService)
         {
             EntityConfiguration = entityConfiguration;
         }

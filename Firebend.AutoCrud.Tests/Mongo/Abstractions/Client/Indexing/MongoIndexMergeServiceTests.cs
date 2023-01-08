@@ -92,7 +92,7 @@ namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing
                     x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
                 .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService>();
+            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
             var keys = Builders<FooIndexEntity>.IndexKeys;
             var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
             date.Options.Name = "fake";
@@ -117,7 +117,7 @@ namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing
                     x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
                 .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService>();
+            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
             var keys = Builders<FooIndexEntity>.IndexKeys;
             var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
 
@@ -142,7 +142,7 @@ namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing
                     x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
                 .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService>();
+            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
             var keys = Builders<FooIndexEntity>.IndexKeys;
             var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
 
@@ -167,7 +167,7 @@ namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing
                     x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
                 .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService>();
+            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
 
             //act
             await sut.MergeIndexesAsync(Collection.Object, Array.Empty<CreateIndexModel<FooIndexEntity>>(), default);
@@ -190,7 +190,7 @@ namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing
                     x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
                 .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService>();
+            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
             var keys = Builders<FooIndexEntity>.IndexKeys;
             var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
             var fullText = MongoIndexProviderHelpers.FullText(keys);
@@ -216,7 +216,7 @@ namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing
                     x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
                 .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService>();
+            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
             var keys = Builders<FooIndexEntity>.IndexKeys;
             var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
             var fullText = MongoIndexProviderHelpers.FullText(keys);

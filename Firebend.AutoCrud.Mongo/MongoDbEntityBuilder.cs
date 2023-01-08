@@ -397,5 +397,23 @@ namespace Firebend.AutoCrud.Mongo
             WithRegistration<IMongoAllShardsProvider, TAllShardsProvider>();
             return this;
         }
+
+        public MongoDbEntityBuilder<TKey, TEntity> WithConnectionStringProvider<TConnectionStringProvider>()
+            where TConnectionStringProvider : IMongoConnectionStringProvider<TKey, TEntity>
+        {
+            WithRegistration<IMongoConnectionStringProvider<TKey, TEntity>, TConnectionStringProvider>();
+            WithRegistration<IMongoClientFactory<TKey, TEntity>, MongoClientFactory<TKey, TEntity>>();
+            WithRegistration<IMongoIndexMergeService<TKey, TEntity>, MongoIndexMergeService<TKey, TEntity>>();
+            return this;
+        }
+
+        public MongoDbEntityBuilder<TKey, TEntity> WithConnectionString(string connectionString)
+        {
+            WithRegistrationInstance<IMongoConnectionStringProvider<TKey, TEntity>>(
+                new DefaultMongoConnectionStringProvider<TKey, TEntity>(connectionString));
+            WithRegistration<IMongoClientFactory<TKey, TEntity>, MongoClientFactory<TKey, TEntity>>();
+            WithRegistration<IMongoIndexMergeService<TKey, TEntity>, MongoIndexMergeService<TKey, TEntity>>();
+            return this;
+        }
     }
 }

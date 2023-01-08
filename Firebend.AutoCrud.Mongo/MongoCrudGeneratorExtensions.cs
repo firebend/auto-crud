@@ -53,7 +53,6 @@ namespace Firebend.AutoCrud.Mongo
             bool enableLogging,
             Action<MongoEntityCrudGenerator> configure)
         {
-            serviceCollection.TryAddScoped<IMongoIndexMergeService, MongoIndexMergeService>();
             serviceCollection.TryAddScoped<IMongoIndexComparisonService, MongoIndexComparisonService>();
             serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
 

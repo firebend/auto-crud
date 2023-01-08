@@ -1,19 +1,22 @@
 using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
-    public abstract class MongoClientBase : BaseDisposable
+    public abstract class MongoClientBase<TKey, TEntity> : BaseDisposable
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
-        protected MongoClientBase(IMongoClient client,
+        protected MongoClientBase(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger logger,
             IMongoRetryService mongoRetryService)
         {
-            Client = client;
+            Client = clientFactory.CreateClientAsync().Result;
             Logger = logger;
             MongoRetryService = mongoRetryService;
         }

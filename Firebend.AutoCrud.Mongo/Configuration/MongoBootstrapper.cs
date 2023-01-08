@@ -57,13 +57,6 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             );
 
             configurator.Configure();
-            services.AddSingleton<IMongoClientFactory, MongoClientFactory>();
-            services.AddSingleton(provider =>
-            {
-                var factory = provider.GetService<IMongoClientFactory>();
-                var client = factory?.CreateClient(connectionString, enableCommandLogging);
-                return client;
-            });
 
             services.AddHostedService<ConfigureCollectionsHostedService>();
             services.AddHostedService<MongoMigrationHostedService>();

@@ -13,17 +13,17 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoTenantReadClient<TKey, TEntity, TTenantKey> : MongoReadClient<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>, ITenantEntity<TTenantKey>
+        where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>
         where TTenantKey : struct
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
-        protected MongoTenantReadClient(IMongoClient client,
+        protected MongoTenantReadClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoTenantReadClient<TKey, TEntity, TTenantKey>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
             IEntityQueryOrderByHandler<TKey, TEntity> entityQueryOrderByHandler,
-            IMongoRetryService retryService) : base(client, logger, entityConfiguration, entityQueryOrderByHandler, retryService)
+            IMongoRetryService retryService) : base(clientFactory, logger, entityConfiguration, entityQueryOrderByHandler, retryService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

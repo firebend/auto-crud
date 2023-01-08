@@ -15,19 +15,19 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 {
     public abstract class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoIndexClient<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IDistributedLockService _distributedLockService;
         private readonly IMongoIndexProvider<TEntity> _indexProvider;
-        private readonly IMongoIndexMergeService _mongoIndexMergeService;
+        private readonly IMongoIndexMergeService<TKey, TEntity> _mongoIndexMergeService;
 
-        public MongoIndexClient(IMongoClient client,
+        public MongoIndexClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ILogger<MongoIndexClient<TKey, TEntity>> logger,
             IMongoIndexProvider<TEntity> indexProvider,
             IMongoRetryService retryService,
             IDistributedLockService distributedLockService,
-            IMongoIndexMergeService mongoIndexMergeService) : base(client, logger, entityConfiguration, retryService)
+            IMongoIndexMergeService<TKey, TEntity> mongoIndexMergeService) : base(clientFactory, logger, entityConfiguration, retryService)
         {
             _indexProvider = indexProvider;
             _distributedLockService = distributedLockService;

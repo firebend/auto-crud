@@ -1,9 +1,13 @@
+using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
-    public interface IMongoClientFactory
+    public interface IMongoClientFactory<TKey, TEntity>
+        where TEntity : IEntity<TKey>
+        where TKey : struct
     {
-        IMongoClient CreateClient(string connectionString, bool enableLogging);
+        Task<IMongoClient> CreateClientAsync(bool enableLogging = false);
     }
 }

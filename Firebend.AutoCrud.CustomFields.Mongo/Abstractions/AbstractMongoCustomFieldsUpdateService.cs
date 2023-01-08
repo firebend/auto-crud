@@ -39,13 +39,13 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
     private const string ArrayDefFieldName = "customField";
     private const string ArrayFilterDefId = $"{ArrayDefFieldName}._id";
 
-    public AbstractMongoCustomFieldsUpdateService(IMongoClient client,
+    public AbstractMongoCustomFieldsUpdateService(IMongoClientFactory<TKey, TEntity> clientFactory,
         ILogger<AbstractMongoCustomFieldsUpdateService<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
         IEntityDomainEventPublisher domainEventPublisher,
-        ISessionTransactionManager transactionManager) : base(client, logger, entityConfiguration, mongoRetryService)
+        ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;
