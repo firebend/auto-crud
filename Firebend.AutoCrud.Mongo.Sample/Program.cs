@@ -40,9 +40,11 @@ namespace Firebend.AutoCrud.Mongo.Sample
             {
                 services
                     //.AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
-                    .UsingMongoCrud(hostContext.Configuration.GetConnectionString("Mongo"))
+                    .UsingMongoCrud()
                     .AddEntity<Guid, Person>(person =>
-                        person.WithDefaultDatabase("Samples")
+                        person
+                            .WithConnectionString(hostContext.Configuration.GetConnectionString("Mongo"))
+                            .WithDefaultDatabase("Samples")
                             .WithCollection("People")
                             .WithFullTextSearch()
                             .AddCrud()

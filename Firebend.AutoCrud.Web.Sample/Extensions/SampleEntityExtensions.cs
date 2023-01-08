@@ -35,9 +35,11 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 {
     public static class SampleEntityExtensions
     {
-        public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenerator generator) =>
+        public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenerator generator, IConfiguration configuration) =>
             generator.AddEntity<Guid, MongoTenantPerson>(person =>
-                person.WithDefaultDatabase("Samples")
+                person
+                    .WithConnectionString(configuration.GetConnectionString("Mongo"))
+                    .WithDefaultDatabase("Samples")
                     .WithCollection("People")
                     .WithFullTextSearch()
                     .WithShardKeyProvider<SampleKeyProviderMongo>()

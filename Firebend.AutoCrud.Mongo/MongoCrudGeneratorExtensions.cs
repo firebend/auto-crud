@@ -25,8 +25,7 @@ namespace Firebend.AutoCrud.Mongo
         ///  // ...
         /// </code>
         /// </example>
-        public static MongoEntityCrudGenerator UsingMongoCrud(this IServiceCollection serviceCollection,
-            string connectionString, bool enableLogging = true) => new(serviceCollection, connectionString, enableLogging);
+        public static MongoEntityCrudGenerator UsingMongoCrud(this IServiceCollection serviceCollection) => new(serviceCollection);
 
 
         /// <summary>
@@ -49,14 +48,12 @@ namespace Firebend.AutoCrud.Mongo
         /// </example>
         /// See <see cref="MongoEntityCrudGenerator.AddEntity"/> for configuring entities
         public static IServiceCollection UsingMongoCrud(this IServiceCollection serviceCollection,
-            string connectionString,
-            bool enableLogging,
             Action<MongoEntityCrudGenerator> configure)
         {
             serviceCollection.TryAddScoped<IMongoIndexComparisonService, MongoIndexComparisonService>();
             serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
 
-            using var mongo = serviceCollection.UsingMongoCrud(connectionString, enableLogging);
+            using var mongo = serviceCollection.UsingMongoCrud();
             configure(mongo);
             return mongo.Generate();
         }
