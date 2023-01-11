@@ -50,7 +50,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             configurator.Configure();
 
             services.AddHostedService<ConfigureCollectionsHostedService>();
-            services.AddHostedService<MongoMigrationHostedService>();
+            // services.AddHostedService<MongoMigrationHostedService>();
         }
     }
 }
