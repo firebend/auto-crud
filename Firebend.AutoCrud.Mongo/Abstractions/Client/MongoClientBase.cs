@@ -12,16 +12,28 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
+        private readonly IMongoClientFactory<TKey, TEntity> _mongoClientFactory;
+        private IMongoClient _mongoClient;
+
         protected MongoClientBase(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger logger,
             IMongoRetryService mongoRetryService)
         {
-            Client = clientFactory.CreateClientAsync().Result;
+            _mongoClientFactory = clientFactory;
             Logger = logger;
             MongoRetryService = mongoRetryService;
         }
 
-        protected IMongoClient Client { get; }
+        protected async Task<IMongoClient> GetClientAsync()
+        {
+            if (_mongoClient != null)
+            {
+                return _mongoClient;
+            }
+
+            _mongoClient = await _mongoClientFactory.CreateClientAsync();
+            return _mongoClient;
+        }
 
         protected ILogger Logger { get; }
 

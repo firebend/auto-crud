@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 return;
             }
 
-            var dbCollection = GetCollection(configuration);
+            var dbCollection = await GetCollectionAsync(configuration);
 
             await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
         }
@@ -64,7 +64,8 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 .LockAsync(key, cancellationToken)
                 .ConfigureAwait(false);
 
-            var database = Client.GetDatabase(configuration.DatabaseName);
+            var client = await GetClientAsync();
+            var database = client.GetDatabase(configuration.DatabaseName);
 
             var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };
 

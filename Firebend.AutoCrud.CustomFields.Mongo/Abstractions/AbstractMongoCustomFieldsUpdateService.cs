@@ -71,7 +71,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == customField.Id);
 
-        var mongoCollection = GetCollection();
+        var mongoCollection = await GetCollectionAsync();
         var updateDefinition = Builders<TEntity>.Update.Set(x => x.CustomFields[-1], customField);
 
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))
@@ -147,7 +147,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
 
-        var mongoCollection = GetCollection();
+        var mongoCollection = await GetCollectionAsync();
 
         var list = jsonPatchDocument
             .Operations

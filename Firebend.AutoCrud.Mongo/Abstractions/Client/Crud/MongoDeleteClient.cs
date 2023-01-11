@@ -36,7 +36,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         {
             filter = await BuildFiltersAsync(filter, cancellationToken);
 
-            var mongoCollection = GetCollection();
+            var mongoCollection = await GetCollectionAsync();
 
 
             TEntity result;

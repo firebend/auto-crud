@@ -60,7 +60,7 @@ public class AbstractMongoCustomFieldsDeleteService<TKey, TEntity> :
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
 
-        var mongoCollection = GetCollection();
+        var mongoCollection = await GetCollectionAsync();
         var updateDefinition = Builders<TEntity>.Update.PullFilter(x => x.CustomFields, x => x.Id == key);
 
 

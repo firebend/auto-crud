@@ -28,14 +28,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
 
-        protected virtual IMongoCollection<TEntity> GetCollection(IMongoEntityConfiguration<TKey, TEntity> configuration)
+        protected virtual async Task<IMongoCollection<TEntity>> GetCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration)
         {
-            var database = Client.GetDatabase(configuration.DatabaseName);
+            var client = await GetClientAsync();
+            var database = client.GetDatabase(configuration.DatabaseName);
 
             return database.GetCollection<TEntity>(configuration.CollectionName);
         }
 
-        protected virtual IMongoCollection<TEntity> GetCollection() => GetCollection(EntityConfiguration);
+        protected virtual Task<IMongoCollection<TEntity>> GetCollectionAsync() => GetCollectionAsync(EntityConfiguration);
 
         protected virtual Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
             IEntityTransaction entityTransaction,
@@ -47,7 +48,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
-            var collection = GetCollection();
+            var collection = await GetCollectionAsync();
 
             var mongoQueryable = entityTransaction == null ?
                 collection.AsQueryable(EntityConfiguration.AggregateOption) :

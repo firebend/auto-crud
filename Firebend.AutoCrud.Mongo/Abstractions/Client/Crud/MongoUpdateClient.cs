@@ -77,7 +77,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            var collection = GetCollection();
+            var collection = await GetCollectionAsync();
 
             var ids = await UpdateManyInternalAsync(collection, null, entities, cancellationToken)
                 .ConfigureAwait(false);
@@ -108,7 +108,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            var collection = GetCollection();
+            var collection = await GetCollectionAsync();
 
             var ids = await UpdateManyInternalAsync(collection, transaction, entities, cancellationToken)
                 .ConfigureAwait(false);
@@ -177,7 +177,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         {
             var filters = await BuildFiltersAsync(filter, cancellationToken).ConfigureAwait(false);
             var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
-            var mongoCollection = GetCollection();
+            var mongoCollection = await GetCollectionAsync();
 
             var now = DateTimeOffset.Now;
 

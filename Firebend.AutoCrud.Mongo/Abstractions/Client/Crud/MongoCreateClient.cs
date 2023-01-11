@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
         protected virtual async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
-            var mongoCollection = GetCollection();
+            var mongoCollection = await GetCollectionAsync();
 
             if (entity is IModifiedEntity modified)
             {

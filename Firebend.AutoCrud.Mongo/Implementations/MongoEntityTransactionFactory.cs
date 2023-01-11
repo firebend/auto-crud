@@ -25,17 +25,19 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             _outbox = outbox;
         }
 
-        public Task<string> GetDbContextHashCode()
+        public async Task<string> GetDbContextHashCode()
         {
-            var hashCode = Client.Settings.GetHashCode();
-            return Task.FromResult($"mongo_{hashCode}");
+            var client = await GetClientAsync();
+            var hashCode = client.Settings.GetHashCode();
+            return $"mongo_{hashCode}";
         }
 
         public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
         {
+            var client = await GetClientAsync();
             var transactionOptions = new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority);
             var sessionOptions = new ClientSessionOptions { DefaultTransactionOptions = transactionOptions };
-            var session = await Client.StartSessionAsync(sessionOptions, cancellationToken);
+            var session = await client.StartSessionAsync(sessionOptions, cancellationToken);
             session.StartTransaction(transactionOptions);
             return new MongoEntityTransaction(session, _outbox);
         }
