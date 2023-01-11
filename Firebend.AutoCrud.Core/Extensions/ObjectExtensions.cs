@@ -9,9 +9,9 @@ namespace Firebend.AutoCrud.Core.Extensions
         public static bool IsBetween<T>(this T item, T start, T end) => Comparer<T>.Default.Compare(item, start) >= 0
                                                                         && Comparer<T>.Default.Compare(item, end) <= 0;
 
-        public static TU CopyPropertiesTo<T, TU>(this T source, TU dest, params string[] propertiesToIgnore)
+        public static TU CopyPropertiesTo<T, TU>(this T source, TU dest, string[] propertiesToIgnore = null, string[] propertiesToInclude = null, bool includeObjects = true)
         {
-            ObjectMapper.Instance.Copy(source, dest, propertiesToIgnore);
+            ObjectMapper.Instance.Copy(source, dest, propertiesToIgnore, propertiesToInclude, includeObjects);
             return dest;
         }
     }

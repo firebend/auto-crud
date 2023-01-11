@@ -74,8 +74,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
             }
 
             var isValid = await _customFieldsValidationService
-                .ValidateAsync(entity, cancellationToken)
-                .ConfigureAwait(false);
+                .ValidateAsync(entity, cancellationToken);
 
             if (!isValid.WasSuccessful)
             {

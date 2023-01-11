@@ -68,7 +68,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     .ConfigureAwait(false);
 
                 var isValid = await _entityValidationService
-                    .ValidateAsync(entityToCreate, cancellationToken)
+                    .ValidateAsync(null, entityToCreate, null, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (!isValid.WasSuccessful)

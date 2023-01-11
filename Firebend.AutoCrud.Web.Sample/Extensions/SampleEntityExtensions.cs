@@ -66,11 +66,17 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             x.Body.CopyPropertiesTo(mongoTenantPerson);
                             return mongoTenantPerson;
                         })
-                        .WithUpdateViewModel<CreatePersonViewModel>(x =>
+                        .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
                         {
                             var mongoTenantPerson = new MongoTenantPerson();
-                            x.Body.CopyPropertiesTo(mongoTenantPerson);
+                            vm.Body.CopyPropertiesTo(mongoTenantPerson);
                             return mongoTenantPerson;
+                        },
+                        entity =>
+                        {
+                            var vm = new CreatePersonViewModel { Body = new PersonViewModelBase() };
+                            entity.CopyPropertiesTo(vm.Body);
+                            return vm;
                         })
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
                         {
@@ -135,7 +141,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddIo(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers(controllers => controllers
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
-                        .WithUpdateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
+                        .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(
+                            view => new EfPerson(view),
+                            entity => new CreatePersonViewModel { Body = new PersonViewModelBase(entity) })
                         .WithReadViewModel<GetPersonViewModel, PersonViewModelMapper>()
                         //.WithReadViewModel(entity => new GetPersonViewModel(entity))
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>(
@@ -202,7 +210,14 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddControllers(controllers => controllers
                         .WithReadViewModel(pet => new GetPetViewModel(pet))
                         .WithCreateViewModel<CreatePetViewModel>(pet => new EfPet(pet))
-                        .WithUpdateViewModel<PutPetViewModel>(pet => new EfPet(pet))
+                        .WithUpdateViewModel<PutPetViewModel, PetBaseViewModel>(
+                            pet => new EfPet(pet),
+                            entity =>
+                            {
+                                var pet = new PutPetViewModel();
+                                entity.CopyPropertiesTo(pet);
+                                return pet;
+                            })
                         .WithRoute("/api/v1/ef-person/{personId:guid}/pets")
                         .WithAllControllers(true)
                         .WithOpenApiGroupName("The Beautiful Fur Babies")

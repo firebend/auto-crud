@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Models
 {
-    public class DefaultCreateUpdateViewModel<TKey, TEntity>
-        where TEntity : IEntity<TKey>
+    public class DefaultCreateUpdateViewModel<TKey, TEntity> : IViewModelWithBody<TEntity>
+        where TEntity : class, IEntity<TKey>
         where TKey : struct
     {
         [Required]
         [FromBody]
-        public TEntity Entity { get; set; }
+        public TEntity Body { get; set; }
     }
 }
