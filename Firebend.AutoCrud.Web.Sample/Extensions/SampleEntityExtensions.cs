@@ -36,7 +36,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
     public static class SampleEntityExtensions
     {
         public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenerator generator, IConfiguration configuration) =>
-            generator.AddEntity<Guid, MongoTenantPerson>(person =>
+            generator
+                .AddEntity<Guid, MongoTenantPerson>(person =>
                 person
                     .WithConnectionString(configuration.GetConnectionString("Mongo"))
                     .WithDefaultDatabase("Samples")
@@ -51,7 +52,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithCustomFields()
                     )
                     .AddDomainEvents(domainEvents => domainEvents
-                        .WithMongoChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
+                        .WithMongoChangeTracking(changeTracking => changeTracking.WithConnectionString(configuration.GetConnectionString("Mongo")),
+                            new ChangeTrackingOptions { PersistCustomContext = true })
                         .WithMassTransit()
                         .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())

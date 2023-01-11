@@ -5,8 +5,8 @@ using MongoDB.Driver;
 namespace Firebend.AutoCrud.Mongo.Interfaces
 {
     public interface IMongoClientFactory<TKey, TEntity>
-        where TEntity : IEntity<TKey>
         where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
         Task<IMongoClient> CreateClientAsync(bool enableLogging = false);
     }

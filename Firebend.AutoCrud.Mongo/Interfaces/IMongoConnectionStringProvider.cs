@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Mongo.Interfaces;
 
 public interface IMongoConnectionStringProvider<TKey, TEntity>
     where TKey : struct
-    where TEntity : IEntity<TKey>
+    where TEntity : class, IEntity<TKey>
 {
     Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default);
 }

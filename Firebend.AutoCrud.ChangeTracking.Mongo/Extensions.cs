@@ -49,6 +49,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
         /// </exception>
         public static DomainEventsConfigurator<TBuilder, TKey, TEntity> WithMongoChangeTracking<TBuilder, TKey, TEntity>(
             this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator,
+            //TODO TS: add this to docs
+            Action<MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure,
             ChangeTrackingOptions changeTrackingOptions = null)
             where TKey : struct
             where TEntity : class, IEntity<TKey>, new()
@@ -131,6 +133,11 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
 
             configurator.Builder.WithRegistrationInstance<IChangeTrackingOptionsProvider<TKey, TEntity>>(
                 new DefaultChangeTrackingOptionsProvider<TKey, TEntity>(changeTrackingOptions ?? new ChangeTrackingOptions()));
+
+            using var changeTrackingConfigurator =
+                new MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(configurator.Builder);
+
+            configure(changeTrackingConfigurator);
 
             return configurator;
         }
