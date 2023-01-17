@@ -7,7 +7,11 @@ namespace Firebend.AutoCrud.Core.Threading
 {
     public static class AsyncDuplicateLock
     {
-        private static readonly AsyncKeyedLock KeyedLocker = new();
+        private static readonly AsyncKeyedLock KeyedLocker = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
 
         public static IDisposable Lock(object key) => KeyedLocker.Lock(key);
 
