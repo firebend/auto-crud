@@ -7,13 +7,13 @@ namespace Firebend.AutoCrud.Core.Threading
 {
     public static class AsyncDuplicateLock
     {
-        private static readonly AsyncKeyedLocker _asyncKeyedLocker = new();
+        private static readonly AsyncKeyedLock KeyedLocker = new();
 
-        public static IDisposable Lock(object key) => _asyncKeyedLocker.Lock(key);
+        public static IDisposable Lock(object key) => KeyedLocker.Lock(key);
 
         public static ValueTask<IDisposable> LockAsync(object key)
         {
-            return _asyncKeyedLocker.LockAsync(key);
+            return KeyedLocker.LockAsync(key);
         }
 
         public static ValueTask<IDisposable> LockAsync(object key, CancellationToken cancellationToken)
@@ -25,9 +25,9 @@ namespace Firebend.AutoCrud.Core.Threading
         {
             if (timeout.HasValue)
             {
-                return await _asyncKeyedLocker.LockAsync(key, timeout.Value, cancellationToken).ConfigureAwait(false);
+                return await KeyedLocker.LockAsync(key, timeout.Value, cancellationToken).ConfigureAwait(false);
             }
-            return await _asyncKeyedLocker.LockAsync(key, cancellationToken).ConfigureAwait(false);
+            return await KeyedLocker.LockAsync(key, cancellationToken).ConfigureAwait(false);
         }
     }
 }
