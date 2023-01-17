@@ -8,10 +8,9 @@ namespace Firebend.AutoCrud.Core.Implementations.Concurrency
 {
     public class DistributedLockService : IDistributedLockService
     {
-        public async Task<IDisposable> LockAsync(string key, CancellationToken cancellationToken)
+        public ValueTask<IDisposable> LockAsync(string key, CancellationToken cancellationToken)
         {
-            var lockObj = await AsyncDuplicateLock.LockAsync(key, cancellationToken);
-            return lockObj;
+            return AsyncDuplicateLock.LockAsync(key, cancellationToken);
         }
     }
 }
