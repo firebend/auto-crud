@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.Core.Threading
 
         public static ValueTask<IDisposable> LockAsync(object key, CancellationToken cancellationToken)
         {
-            return _asyncKeyedLocker.LockAsync(key, cancellationToken);
+            return KeyedLocker.LockAsync(key, cancellationToken);
         }
 
         public static async ValueTask<IDisposable> LockAsync(object key, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
