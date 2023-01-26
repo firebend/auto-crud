@@ -25,13 +25,9 @@ namespace Firebend.AutoCrud.Core.Threading
             return KeyedLocker.LockAsync(key, cancellationToken);
         }
 
-        public static async ValueTask<IDisposable> LockAsync(object key, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
+        public static async ValueTask<AsyncKeyedLockTimeoutReleaser<object>> LockAsync(object key, TimeSpan timeout, CancellationToken cancellationToken = default)
         {
-            if (timeout.HasValue)
-            {
-                return await KeyedLocker.LockAsync(key, timeout.Value, cancellationToken).ConfigureAwait(false);
-            }
-            return await KeyedLocker.LockAsync(key, cancellationToken).ConfigureAwait(false);
+            return await KeyedLocker.LockAsync(key, timeout, cancellationToken).ConfigureAwait(false);
         }
     }
 }
