@@ -19,7 +19,6 @@ public class MongoChangeTrackingConfigurator<TBuilder, TKey, TEntity> : EntityBu
     {
     }
 
-    //TODO TS: add docs
     public MongoChangeTrackingConfigurator<TBuilder, TKey, TEntity> WithConnectionStringProvider<TConnectionStringProvider>()
         where TConnectionStringProvider : class, IMongoConnectionStringProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>
     {
