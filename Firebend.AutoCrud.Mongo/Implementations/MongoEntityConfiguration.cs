@@ -48,6 +48,16 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         {
             ShardKey = shardKey;
         }
+
+        public static MongoEntityIndexConfiguration<TKey, TEntity> FromConfiguration(IMongoEntityConfiguration<TKey, TEntity> configuration)
+        {
+            return new MongoEntityIndexConfiguration<TKey, TEntity>(
+                configuration.CollectionName,
+                configuration.DatabaseName,
+                configuration.AggregateOption,
+                null,
+                configuration.ShardMode);
+        }
     }
 
     public class MongoTenantEntityConfiguration<TKey, TEntity> : IMongoEntityConfiguration<TKey, TEntity>
