@@ -2,7 +2,10 @@ using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Generator.Implementations;
 using Firebend.AutoCrud.Mongo.Configuration;
+using Firebend.AutoCrud.Mongo.Implementations;
+using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Firebend.AutoCrud.Mongo
 {
@@ -24,9 +27,11 @@ namespace Firebend.AutoCrud.Mongo
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
         ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
         ///  .ConfigureServices((hostContext, services) => {
-        ///      services.UsingMongoCrud("mongodb://localhost:27017", mongo => {
+        ///      services.UsingMongoCrud(mongo => {
         ///          mongo.AddEntity<Guid, WeatherForecast>(forecast =>
-        ///              forecast.WithDefaultDatabase("Samples")
+        ///              forecast
+        ///                  .WithConnectionString("mongodb://localhost:27017")
+        ///                  .WithDefaultDatabase("Samples")
         ///                  .WithCollection("WeatherForecasts")
         ///                  // ... finish configuring the entity
         ///          )
@@ -43,6 +48,38 @@ namespace Firebend.AutoCrud.Mongo
             var builder = new MongoDbEntityBuilder<TKey, TEntity>();
             configure(builder);
             Builders.Add(builder);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the default connection string to be used for mongo migrations
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <example>
+        /// <code>
+        /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        ///  .ConfigureWebHostDefaults(webbuilder => { webBuilder.UseStartup<Startup>(); })
+        ///  .ConfigureServices((hostContext, services) => {
+        ///      services.UsingMongoCrud(mongo => {
+        ///          mongo
+        ///              .WithDefaultConnectionString("mongodb://localhost:27017")
+        ///              .AddEntity<Guid, WeatherForecast>(forecast =>
+        ///                 forecast
+        ///                      .WithConnectionString("mongodb://localhost:27017")
+        ///                     .WithDefaultDatabase("Samples")
+        ///                     .WithCollection("WeatherForecasts")
+        ///                     // ... finish configuring the entity
+        ///          )
+        ///      });
+        ///  })
+        ///  // ...
+        /// </code>
+        /// </example>
+        public MongoEntityCrudGenerator WithMigrationConnectionString(string connectionString)
+        {
+            ServiceCollection.TryAddSingleton<IMongoMigrationConnectionStringProvider>(
+                new MongoMigrationConnectionStringProvider(connectionString));
+
             return this;
         }
     }

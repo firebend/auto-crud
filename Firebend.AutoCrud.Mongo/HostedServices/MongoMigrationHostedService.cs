@@ -15,19 +15,20 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
 {
     public class MongoMigrationHostedService : BackgroundService
     {
-        private readonly IMongoDefaultDatabaseSelector _databaseSelector;
-        private readonly ILogger _logger;
         private readonly IEnumerable<IMongoMigration> _migrations;
-        private readonly IMongoClient _mongoClient;
+        private readonly IMongoDefaultDatabaseSelector _databaseSelector;
+        private readonly IMongoMigrationConnectionStringProvider _mongoMigrationConnectionStringProvider;
+        private readonly ILogger _logger;
 
-        public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider)
+        public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider, IMongoMigrationConnectionStringProvider mongoMigrationConnectionStringProvider)
         {
+            _mongoMigrationConnectionStringProvider = mongoMigrationConnectionStringProvider;
+            _logger = logger;
+
             using var scope = serviceProvider.CreateScope();
 
             _migrations = scope.ServiceProvider.GetService<IEnumerable<IMongoMigration>>();
-            _logger = logger;
             _databaseSelector = scope.ServiceProvider.GetService<IMongoDefaultDatabaseSelector>();
-            _mongoClient = scope.ServiceProvider.GetService<IMongoClient>();
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken) => DoMigration(stoppingToken);
@@ -41,7 +42,18 @@ namespace Firebend.AutoCrud.Mongo.HostedServices
                 return;
             }
 
-            var db = _mongoClient.GetDatabase(dbName);
+            var connectionString = _mongoMigrationConnectionStringProvider.GetConnectionString();
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                return;
+            }
+
+            var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
+
+            var client = new MongoClient(mongoClientSettings);
+
+            var db = client.GetDatabase(dbName);
 
             var collection = db.GetCollection<MongoDbMigrationVersion>($"__{nameof(MongoDbMigrationVersion)}");
 

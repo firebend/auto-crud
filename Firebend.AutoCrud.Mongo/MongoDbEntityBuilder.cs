@@ -410,7 +410,7 @@ namespace Firebend.AutoCrud.Mongo
         public MongoDbEntityBuilder<TKey, TEntity> WithConnectionString(string connectionString)
         {
             WithRegistrationInstance<IMongoConnectionStringProvider<TKey, TEntity>>(
-                new DefaultMongoConnectionStringProvider<TKey, TEntity>(connectionString));
+                new StaticMongoConnectionStringProvider<TKey, TEntity>(connectionString));
             WithRegistration<IMongoClientFactory<TKey, TEntity>, MongoClientFactory<TKey, TEntity>>();
             WithRegistration<IMongoIndexMergeService<TKey, TEntity>, MongoIndexMergeService<TKey, TEntity>>();
             return this;

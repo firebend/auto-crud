@@ -34,7 +34,7 @@ public class MongoChangeTrackingConfigurator<TBuilder, TKey, TEntity> : EntityBu
     public MongoChangeTrackingConfigurator<TBuilder, TKey, TEntity> WithConnectionString(string connectionString)
     {
         Builder.WithRegistrationInstance<IMongoConnectionStringProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>>(
-            new DefaultMongoConnectionStringProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>(connectionString));
+            new StaticMongoConnectionStringProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>(connectionString));
         Builder.WithRegistration<IMongoClientFactory<Guid, ChangeTrackingEntity<TKey, TEntity>>,
             MongoClientFactory<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
         Builder.WithRegistration<IMongoIndexMergeService<Guid, ChangeTrackingEntity<TKey, TEntity>>,

@@ -1,4 +1,5 @@
 using System;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Mongo.Models
 {
