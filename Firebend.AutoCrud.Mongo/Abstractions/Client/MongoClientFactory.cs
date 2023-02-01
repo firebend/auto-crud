@@ -22,9 +22,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             _connectionStringProvider = connectionStringProvider;
         }
 
-        public async Task<IMongoClient> CreateClientAsync(bool enableLogging = false)
+        public async Task<IMongoClient> CreateClientAsync(string overrideShardKey = null, bool enableLogging = false)
         {
-            var connectionString = await _connectionStringProvider.GetConnectionStringAsync();
+            var connectionString = await _connectionStringProvider.GetConnectionStringAsync(overrideShardKey);
 
             var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
 

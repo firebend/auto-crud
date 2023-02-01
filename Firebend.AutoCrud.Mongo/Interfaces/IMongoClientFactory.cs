@@ -8,6 +8,6 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        Task<IMongoClient> CreateClientAsync(bool enableLogging = false);
+        Task<IMongoClient> CreateClientAsync(string overrideShardKey = null, bool enableLogging = false);
     }
 }

@@ -65,7 +65,9 @@ namespace Firebend.AutoCrud.Web.Sample
                 .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer")))
                 .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer"))
                 )
-                .UsingMongoCrud(mongo => mongo.AddMongoPerson(configuration))
+                .UsingMongoCrud(mongo => mongo
+                    .WithMigrationConnectionString(configuration.GetConnectionString("Mongo"))
+                    .AddMongoPerson(configuration))
                 .UsingEfCrud(ef =>
                 {
                     ef.AddEfPerson(configuration)

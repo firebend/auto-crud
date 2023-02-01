@@ -9,6 +9,6 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
-        Task<IEnumerable<IMongoEntityConfiguration<TKey, TEntity>>> GetAllEntityConfigurationsAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<IMongoEntityIndexConfiguration<TKey, TEntity>>> GetAllEntityConfigurationsAsync(CancellationToken cancellationToken);
     }
 }

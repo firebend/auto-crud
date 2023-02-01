@@ -34,9 +34,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
             _mongoIndexMergeService = mongoIndexMergeService;
         }
 
-        public async Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+        public async Task BuildIndexesAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
         {
-            var key = $"{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
+            var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
 
             using var _ = await _distributedLockService
                 .LockAsync(key, cancellationToken)
@@ -51,20 +51,20 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 return;
             }
 
-            var dbCollection = await GetCollectionAsync(configuration);
+            var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey);
 
             await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
         }
 
-        public async Task CreateCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+        public async Task CreateCollectionAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
         {
-            var key = $"{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection";
+            var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection";
 
             using var _ = await _distributedLockService
                 .LockAsync(key, cancellationToken)
                 .ConfigureAwait(false);
 
-            var client = await GetClientAsync();
+            var client = await GetClientAsync(configuration.ShardKey);
             var database = client.GetDatabase(configuration.DatabaseName);
 
             var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };

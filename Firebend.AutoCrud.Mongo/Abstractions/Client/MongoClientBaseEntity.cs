@@ -28,15 +28,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 
         protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
 
-        protected virtual async Task<IMongoCollection<TEntity>> GetCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration)
+        protected virtual async Task<IMongoCollection<TEntity>> GetCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, string shardKey = null)
         {
-            var client = await GetClientAsync();
+            var client = await GetClientAsync(shardKey);
             var database = client.GetDatabase(configuration.DatabaseName);
 
             return database.GetCollection<TEntity>(configuration.CollectionName);
         }
 
-        protected virtual Task<IMongoCollection<TEntity>> GetCollectionAsync() => GetCollectionAsync(EntityConfiguration);
+        protected virtual Task<IMongoCollection<TEntity>> GetCollectionAsync(string shardKey = null) => GetCollectionAsync(EntityConfiguration, shardKey);
 
         protected virtual Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
             IEntityTransaction entityTransaction,

@@ -8,5 +8,5 @@ public interface IMongoConnectionStringProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default);
+    Task<string> GetConnectionStringAsync(string overrideShardKey = null, CancellationToken cancellationToken = default);
 }

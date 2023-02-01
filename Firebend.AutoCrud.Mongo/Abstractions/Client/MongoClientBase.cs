@@ -24,14 +24,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             MongoRetryService = mongoRetryService;
         }
 
-        protected async Task<IMongoClient> GetClientAsync()
+        protected async Task<IMongoClient> GetClientAsync(string overrideShardKey = null)
         {
             if (_mongoClient != null)
             {
                 return _mongoClient;
             }
 
-            _mongoClient = await _mongoClientFactory.CreateClientAsync();
+            _mongoClient = await _mongoClientFactory.CreateClientAsync(overrideShardKey);
             return _mongoClient;
         }
 

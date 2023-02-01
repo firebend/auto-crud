@@ -10,11 +10,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
-        private readonly IMongoEntityConfiguration<TKey, TEntity> _configuration;
+        private readonly IMongoEntityIndexConfiguration<TKey, TEntity> _configuration;
 
         protected MongoConfigureCollection(ILogger<MongoConfigureCollection<TKey, TEntity>> logger,
             IMongoIndexClient<TKey, TEntity> indexClient,
-            IMongoEntityConfiguration<TKey, TEntity> configuration) : base(logger, indexClient)
+            IMongoEntityIndexConfiguration<TKey, TEntity> configuration) : base(logger, indexClient)
         {
             _configuration = configuration;
         }

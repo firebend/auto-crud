@@ -34,6 +34,22 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         public MongoTenantShardMode ShardMode { get; }
     }
 
+    public class MongoEntityIndexConfiguration<TKey, TEntity> : MongoEntityConfiguration<TKey, TEntity>, IMongoEntityIndexConfiguration<TKey, TEntity>
+        where TKey : struct
+        where TEntity : IEntity<TKey>
+    {
+        public string ShardKey { get; set; }
+
+        public MongoEntityIndexConfiguration(string collectionName,
+            string databaseName,
+            AggregateOptions aggregateOption,
+            string shardKey,
+            MongoTenantShardMode tenantShardMode = MongoTenantShardMode.Unknown) : base(collectionName, databaseName, aggregateOption, tenantShardMode)
+        {
+            ShardKey = shardKey;
+        }
+    }
+
     public class MongoTenantEntityConfiguration<TKey, TEntity> : IMongoEntityConfiguration<TKey, TEntity>
         where TKey : struct
         where TEntity : IEntity<TKey>
