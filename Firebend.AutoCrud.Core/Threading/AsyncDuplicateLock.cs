@@ -1,89 +1,33 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 
 namespace Firebend.AutoCrud.Core.Threading
 {
     public static class AsyncDuplicateLock
     {
-        private static readonly Dictionary<object, RefCounted<SemaphoreSlim>> SemaphoreSlims = new();
-
-        private static SemaphoreSlim GetOrCreate(object key)
+        private static readonly AsyncKeyedLocker KeyedLocker = new(o =>
         {
-            RefCounted<SemaphoreSlim> item;
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
 
-            lock (SemaphoreSlims)
-            {
-                if (SemaphoreSlims.TryGetValue(key, out item))
-                {
-                    ++item.RefCount;
-                }
-                else
-                {
-                    item = new RefCounted<SemaphoreSlim>(new SemaphoreSlim(1, 1));
-                    SemaphoreSlims[key] = item;
-                }
-            }
+        public static IDisposable Lock(object key) => KeyedLocker.Lock(key);
 
-            return item.Value;
+        public static ValueTask<IDisposable> LockAsync(object key)
+        {
+            return KeyedLocker.LockAsync(key);
         }
 
-        public static IDisposable Lock(object key)
+        public static ValueTask<IDisposable> LockAsync(object key, CancellationToken cancellationToken)
         {
-            GetOrCreate(key).Wait();
-
-            return new Releaser { Key = key };
+            return KeyedLocker.LockAsync(key, cancellationToken);
         }
 
-        public static async Task<IDisposable> LockAsync(object key, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
+        public static async ValueTask<AsyncKeyedLockTimeoutReleaser<object>> LockAsync(object key, TimeSpan timeout, CancellationToken cancellationToken = default)
         {
-            var didGetLock = await GetOrCreate(key)
-                .WaitAsync((int)(timeout?.TotalMilliseconds ?? -1), cancellationToken)
-                .ConfigureAwait(false);
-
-            return new Releaser { Key = key, DidGetLock = didGetLock };
-        }
-
-        private sealed class RefCounted<T>
-        {
-            public RefCounted(T value)
-            {
-                RefCount = 1;
-                Value = value;
-            }
-
-            public int RefCount { get; set; }
-
-            public T Value { get; }
-        }
-
-        private sealed class Releaser : IDisposable
-        {
-            public object Key { get; set; }
-
-            public bool DidGetLock { get; set; }
-
-            public void Dispose()
-            {
-                RefCounted<SemaphoreSlim> item;
-
-                lock (SemaphoreSlims)
-                {
-                    item = SemaphoreSlims[Key];
-                    --item.RefCount;
-
-                    if (item.RefCount == 0)
-                    {
-                        SemaphoreSlims.Remove(Key);
-                    }
-                }
-
-                if (DidGetLock)
-                {
-                    item.Value.Release();
-                }
-            }
+            return await KeyedLocker.LockAsync(key, timeout, cancellationToken).ConfigureAwait(false);
         }
     }
 }
