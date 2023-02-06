@@ -40,7 +40,7 @@ namespace Firebend.AutoCrud.Mongo
         ///  // ...
         /// </code>
         /// </example>
-        /// See <see cref="MongoDbEntityBuilder"/> extensions for options for configuring entities
+        /// See <see cref="MongoDbEntityBuilder{TKey, TEntity}"/> extensions for options for configuring entities
         public MongoEntityCrudGenerator AddEntity<TKey, TEntity>(Action<MongoDbEntityBuilder<TKey, TEntity>> configure)
             where TKey : struct
             where TEntity : class, IEntity<TKey>, new()

@@ -46,7 +46,7 @@ namespace Firebend.AutoCrud.Mongo
         ///  // ...
         /// </code>
         /// </example>
-        /// See <see cref="MongoEntityCrudGenerator.AddEntity"/> for configuring entities
+        /// See <see cref="MongoEntityCrudGenerator.AddEntity{TKey,TEntity}"/> for configuring entities
         public static IServiceCollection UsingMongoCrud(this IServiceCollection serviceCollection,
             Action<MongoEntityCrudGenerator> configure)
         {

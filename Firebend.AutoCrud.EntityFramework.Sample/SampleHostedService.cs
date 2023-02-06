@@ -128,6 +128,7 @@ namespace Firebend.AutoCrud.EntityFramework.Sample
 
         private void LogObject(string message, object entity = null)
         {
+            // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
             _logger.LogInformation(message);
 
             if (entity != null)

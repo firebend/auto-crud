@@ -24,16 +24,15 @@ namespace Firebend.AutoCrud.EntityFramework.Implementations
         public async Task CompleteAsync(CancellationToken cancellationToken)
         {
             await ContextTransaction.CommitAsync(cancellationToken);
-            await Outbox.InvokeEnrollmentsAsync(Id, cancellationToken);
+            await Outbox.InvokeEnrollmentsAsync(Id.ToString(), cancellationToken);
         }
 
         public async Task RollbackAsync(CancellationToken cancellationToken)
         {
             await ContextTransaction.RollbackAsync(cancellationToken);
-            await Outbox.ClearEnrollmentsAsync(Id, cancellationToken);
+            await Outbox.ClearEnrollmentsAsync(Id.ToString(), cancellationToken);
         }
 
         public IEntityTransactionOutbox Outbox { get; }
     }
 }
-

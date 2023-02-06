@@ -365,6 +365,7 @@ namespace Firebend.AutoCrud.Mongo
         /// Sets the ShardKeyProvider for the entity
         /// </summary>
         /// <typeparam name="mode">The provider to use, a class that implements <see cref="IMongoShardKeyProvider" /></typeparam>
+        /// <typeparam name="TShardKeyProvider"></typeparam>
         /// <example>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)

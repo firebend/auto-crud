@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Core.Models.Searching
         public bool? DoCount { get; set; } = true;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="EntityRequest" />
     public class EntitySearchRequest : EntityRequest, IFullTextSearchRequest
     {
         /// <inheritdoc />

@@ -11,9 +11,9 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
 {
     public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
     {
-        private readonly Dictionary<Guid, List<IEntityTransactionOutboxEnrollment>> _enrollments = new();
+        private readonly Dictionary<string, List<IEntityTransactionOutboxEnrollment>> _enrollments = new();
 
-        public async Task AddEnrollmentAsync(Guid transactionId, IEntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
+        public async Task AddEnrollmentAsync(string transactionId, IEntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
         {
             using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);
@@ -28,7 +28,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
             _enrollments[transactionId].Add(enrollment);
         }
 
-        public async Task InvokeEnrollmentsAsync(Guid transactionId, CancellationToken cancellationToken)
+        public async Task InvokeEnrollmentsAsync(string transactionId, CancellationToken cancellationToken)
         {
             if (_enrollments.IsEmpty())
             {
@@ -72,7 +72,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
             _enrollments.Remove(transactionId);
         }
 
-        public async Task ClearEnrollmentsAsync(Guid transactionId, CancellationToken cancellationToken)
+        public async Task ClearEnrollmentsAsync(string transactionId, CancellationToken cancellationToken)
         {
             using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);

@@ -24,13 +24,13 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         public async Task CompleteAsync(CancellationToken cancellationToken)
         {
             await ClientSessionHandle.CommitTransactionAsync(cancellationToken);
-            await Outbox.InvokeEnrollmentsAsync(Id, cancellationToken);
+            await Outbox.InvokeEnrollmentsAsync(Id.ToString(), cancellationToken);
         }
 
         public async Task RollbackAsync(CancellationToken cancellationToken)
         {
             await ClientSessionHandle.AbortTransactionAsync(cancellationToken);
-            await Outbox.ClearEnrollmentsAsync(Id, cancellationToken);
+            await Outbox.ClearEnrollmentsAsync(Id.ToString(), cancellationToken);
         }
 
         public IEntityTransactionOutbox Outbox { get; }

@@ -10,7 +10,6 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
