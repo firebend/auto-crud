@@ -15,28 +15,28 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 {
     public abstract class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoIndexClient<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IDistributedLockService _distributedLockService;
         private readonly IMongoIndexProvider<TEntity> _indexProvider;
-        private readonly IMongoIndexMergeService _mongoIndexMergeService;
+        private readonly IMongoIndexMergeService<TKey, TEntity> _mongoIndexMergeService;
 
-        public MongoIndexClient(IMongoClient client,
+        public MongoIndexClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ILogger<MongoIndexClient<TKey, TEntity>> logger,
             IMongoIndexProvider<TEntity> indexProvider,
             IMongoRetryService retryService,
             IDistributedLockService distributedLockService,
-            IMongoIndexMergeService mongoIndexMergeService) : base(client, logger, entityConfiguration, retryService)
+            IMongoIndexMergeService<TKey, TEntity> mongoIndexMergeService) : base(clientFactory, logger, entityConfiguration, retryService)
         {
             _indexProvider = indexProvider;
             _distributedLockService = distributedLockService;
             _mongoIndexMergeService = mongoIndexMergeService;
         }
 
-        public async Task BuildIndexesAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+        public async Task BuildIndexesAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
         {
-            var key = $"{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
+            var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
 
             using var _ = await _distributedLockService
                 .LockAsync(key, cancellationToken)
@@ -51,20 +51,21 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
                 return;
             }
 
-            var dbCollection = GetCollection(configuration);
+            var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey);
 
             await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
         }
 
-        public async Task CreateCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+        public async Task CreateCollectionAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
         {
-            var key = $"{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection";
+            var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection";
 
             using var _ = await _distributedLockService
                 .LockAsync(key, cancellationToken)
                 .ConfigureAwait(false);
 
-            var database = Client.GetDatabase(configuration.DatabaseName);
+            var client = await GetClientAsync(configuration.ShardKey);
+            var database = client.GetDatabase(configuration.DatabaseName);
 
             var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };
 

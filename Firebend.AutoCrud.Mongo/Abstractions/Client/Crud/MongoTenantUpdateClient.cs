@@ -10,7 +10,6 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
@@ -22,7 +21,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
-        protected MongoTenantUpdateClient(IMongoClient client,
+        protected MongoTenantUpdateClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoTenantUpdateClient<TKey, TEntity, TTenantKey>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
@@ -31,7 +30,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityDomainEventPublisher domainEventPublisher,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
             IMongoRetryService retryService)
-            : base(client, logger, entityConfiguration, keyGenerator, domainEventContextProvider,
+            : base(clientFactory, logger, entityConfiguration, keyGenerator, domainEventContextProvider,
                 jsonPatchDocumentGenerator, domainEventPublisher, retryService)
         {
             _tenantEntityProvider = tenantEntityProvider;

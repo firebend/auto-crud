@@ -39,13 +39,13 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
     private const string ArrayDefFieldName = "customField";
     private const string ArrayFilterDefId = $"{ArrayDefFieldName}._id";
 
-    public AbstractMongoCustomFieldsUpdateService(IMongoClient client,
+    public AbstractMongoCustomFieldsUpdateService(IMongoClientFactory<TKey, TEntity> clientFactory,
         ILogger<AbstractMongoCustomFieldsUpdateService<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
         IEntityDomainEventPublisher domainEventPublisher,
-        ISessionTransactionManager transactionManager) : base(client, logger, entityConfiguration, mongoRetryService)
+        ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;
@@ -71,7 +71,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == customField.Id);
 
-        var mongoCollection = GetCollection();
+        var mongoCollection = await GetCollectionAsync();
         var updateDefinition = Builders<TEntity>.Update.Set(x => x.CustomFields[-1], customField);
 
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))
@@ -147,7 +147,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
 
-        var mongoCollection = GetCollection();
+        var mongoCollection = await GetCollectionAsync();
 
         var list = jsonPatchDocument
             .Operations

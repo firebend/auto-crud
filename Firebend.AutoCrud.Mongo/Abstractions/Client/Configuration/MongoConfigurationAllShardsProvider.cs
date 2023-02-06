@@ -25,15 +25,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
             _transformService = transformService;
         }
 
-        public async Task<IEnumerable<IMongoEntityConfiguration<TKey, TEntity>>> GetAllEntityConfigurationsAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<IMongoEntityIndexConfiguration<TKey, TEntity>>> GetAllEntityConfigurationsAsync(CancellationToken cancellationToken)
         {
             var shards = await _allShardsProvider.GetAllShardsAsync(cancellationToken);
 
             var configurations = shards
-                .Select(x => new MongoEntityConfiguration<TKey, TEntity>(
-                    _transformService.GetCollection(_defaultConfiguration, x),
-                    _transformService.GetDatabase(_defaultConfiguration, x),
+                .Select(shardKey => new MongoEntityIndexConfiguration<TKey, TEntity>(
+                    _transformService.GetCollection(_defaultConfiguration, shardKey),
+                    _transformService.GetDatabase(_defaultConfiguration, shardKey),
                     _defaultConfiguration.AggregateOption,
+                    shardKey,
                     _defaultConfiguration.ShardMode))
                 .ToArray();
 

@@ -8,7 +8,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
@@ -19,13 +18,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
     {
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
-        protected MongoTenantCreateClient(IMongoClient client,
+        protected MongoTenantCreateClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoTenantCreateClient<TKey, TEntity, TTenantKey>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IEntityDomainEventPublisher eventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IMongoRetryService mongoRetryService) : base(client, logger, entityConfiguration, eventPublisher, domainEventContextProvider, mongoRetryService)
+            IMongoRetryService mongoRetryService) : base(clientFactory, logger, entityConfiguration, eventPublisher, domainEventContextProvider, mongoRetryService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

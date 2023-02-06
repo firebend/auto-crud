@@ -17,14 +17,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
     public abstract class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoReadClient<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IEntityQueryOrderByHandler<TKey, TEntity> _orderByHandler;
-        protected MongoReadClient(IMongoClient client,
+        protected MongoReadClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoReadClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler,
-            IMongoRetryService mongoRetryService) : base(client, logger, entityConfiguration, mongoRetryService)
+            IMongoRetryService mongoRetryService) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
         {
             _orderByHandler = orderByHandler;
         }

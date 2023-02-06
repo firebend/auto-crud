@@ -1,5 +1,3 @@
-using System;
-using Firebend.AutoCrud.Mongo.Abstractions.Client;
 using Firebend.AutoCrud.Mongo.HostedServices;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,8 +12,6 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
         public static IServiceCollection ConfigureMongoDb(
             this IServiceCollection services,
-            string connectionString,
-            bool enableCommandLogging,
             IMongoDbConfigurator configurator)
         {
             if (_isBootstrapped)
@@ -30,7 +26,7 @@ namespace Firebend.AutoCrud.Mongo.Configuration
                     return services;
                 }
 
-                DoBootstrapping(services, connectionString, enableCommandLogging, configurator);
+                DoBootstrapping(services, configurator);
 
                 _isBootstrapped = true;
 
@@ -40,15 +36,8 @@ namespace Firebend.AutoCrud.Mongo.Configuration
 
         private static void DoBootstrapping(
             this IServiceCollection services,
-            string connectionString,
-            bool enableCommandLogging,
             IMongoDbConfigurator configurator)
         {
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
             services.Scan(action => action.FromAssemblies()
                 .AddClasses(classes => classes.AssignableTo<IMongoMigration>())
                 .UsingRegistrationStrategy(RegistrationStrategy.Append)
@@ -57,13 +46,6 @@ namespace Firebend.AutoCrud.Mongo.Configuration
             );
 
             configurator.Configure();
-            services.AddSingleton<IMongoClientFactory, MongoClientFactory>();
-            services.AddSingleton(provider =>
-            {
-                var factory = provider.GetService<IMongoClientFactory>();
-                var client = factory?.CreateClient(connectionString, enableCommandLogging);
-                return client;
-            });
 
             services.AddHostedService<ConfigureCollectionsHostedService>();
             services.AddHostedService<MongoMigrationHostedService>();

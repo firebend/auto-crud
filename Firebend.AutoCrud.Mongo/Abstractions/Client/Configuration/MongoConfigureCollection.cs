@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +21,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
         }
 
         public virtual Task ConfigureAsync(CancellationToken cancellationToken)
-            => ConfigureAsync(_configuration, cancellationToken);
+        {
+            var config = MongoEntityIndexConfiguration<TKey, TEntity>.FromConfiguration(_configuration);
+            return ConfigureAsync(config, cancellationToken);
+        }
     }
 }

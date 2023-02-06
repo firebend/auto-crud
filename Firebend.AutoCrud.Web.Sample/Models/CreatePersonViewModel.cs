@@ -15,7 +15,7 @@ public static class PersonExtensions
     public static GetPersonViewModel ToViewModel(this MongoTenantPerson person) => new(person);
 }
 
-public class CreatePersonViewModel : IEntityViewModelCreate<PersonViewModelBase>
+public class CreatePersonViewModel : IEntityViewModelCreate<PersonViewModelBase>, IViewModelWithBody<PersonViewModelBase>
 {
     public CreatePersonViewModel()
     {

@@ -19,7 +19,6 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
 {
     public static class Extensions
     {
-
         /// <summary>
         /// Adds change tracking for a given entity and persists it to a data store using Mongo.
         /// This function registers a <see cref="AbstractMongoChangeTrackingService{TEntityKey,TEntity}"/> to track changes and
@@ -28,6 +27,9 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
         /// and <see cref="AbstractChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
         /// <param name="configurator">
         /// The <see cref="DomainEventsConfigurator{TBuilder,TKey,TEntity}"/> to configure Mongo persistence for.
+        /// </param>
+        /// <param name="configure">
+        /// A function to configure mongo change tracking.
         /// </param>
         /// <param name="changeTrackingOptions">
         /// The <see cref="ChangeTrackingOptions"/> to configure change tracking.
@@ -49,6 +51,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
         /// </exception>
         public static DomainEventsConfigurator<TBuilder, TKey, TEntity> WithMongoChangeTracking<TBuilder, TKey, TEntity>(
             this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator,
+            Action<MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure,
             ChangeTrackingOptions changeTrackingOptions = null)
             where TKey : struct
             where TEntity : class, IEntity<TKey>, new()
@@ -131,6 +134,11 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
 
             configurator.Builder.WithRegistrationInstance<IChangeTrackingOptionsProvider<TKey, TEntity>>(
                 new DefaultChangeTrackingOptionsProvider<TKey, TEntity>(changeTrackingOptions ?? new ChangeTrackingOptions()));
+
+            using var changeTrackingConfigurator =
+                new MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(configurator.Builder);
+
+            configure(changeTrackingConfigurator);
 
             return configurator;
         }

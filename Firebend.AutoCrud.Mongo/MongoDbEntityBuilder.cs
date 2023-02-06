@@ -365,6 +365,7 @@ namespace Firebend.AutoCrud.Mongo
         /// Sets the ShardKeyProvider for the entity
         /// </summary>
         /// <typeparam name="mode">The provider to use, a class that implements <see cref="IMongoShardKeyProvider" /></typeparam>
+        /// <typeparam name="TShardKeyProvider"></typeparam>
         /// <example>
         /// <code>
         /// public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
@@ -395,6 +396,24 @@ namespace Firebend.AutoCrud.Mongo
             where TAllShardsProvider : IMongoAllShardsProvider
         {
             WithRegistration<IMongoAllShardsProvider, TAllShardsProvider>();
+            return this;
+        }
+
+        public MongoDbEntityBuilder<TKey, TEntity> WithConnectionStringProvider<TConnectionStringProvider>()
+            where TConnectionStringProvider : IMongoConnectionStringProvider<TKey, TEntity>
+        {
+            WithRegistration<IMongoConnectionStringProvider<TKey, TEntity>, TConnectionStringProvider>();
+            WithRegistration<IMongoClientFactory<TKey, TEntity>, MongoClientFactory<TKey, TEntity>>();
+            WithRegistration<IMongoIndexMergeService<TKey, TEntity>, MongoIndexMergeService<TKey, TEntity>>();
+            return this;
+        }
+
+        public MongoDbEntityBuilder<TKey, TEntity> WithConnectionString(string connectionString)
+        {
+            WithRegistrationInstance<IMongoConnectionStringProvider<TKey, TEntity>>(
+                new StaticMongoConnectionStringProvider<TKey, TEntity>(connectionString));
+            WithRegistration<IMongoClientFactory<TKey, TEntity>, MongoClientFactory<TKey, TEntity>>();
+            WithRegistration<IMongoIndexMergeService<TKey, TEntity>, MongoIndexMergeService<TKey, TEntity>>();
             return this;
         }
     }

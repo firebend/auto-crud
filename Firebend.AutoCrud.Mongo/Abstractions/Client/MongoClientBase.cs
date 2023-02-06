@@ -1,24 +1,39 @@
 using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
-    public abstract class MongoClientBase : BaseDisposable
+    public abstract class MongoClientBase<TKey, TEntity> : BaseDisposable
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
-        protected MongoClientBase(IMongoClient client,
+        private readonly IMongoClientFactory<TKey, TEntity> _mongoClientFactory;
+        private IMongoClient _mongoClient;
+
+        protected MongoClientBase(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger logger,
             IMongoRetryService mongoRetryService)
         {
-            Client = client;
+            _mongoClientFactory = clientFactory;
             Logger = logger;
             MongoRetryService = mongoRetryService;
         }
 
-        protected IMongoClient Client { get; }
+        protected async Task<IMongoClient> GetClientAsync(string overrideShardKey = null)
+        {
+            if (_mongoClient != null)
+            {
+                return _mongoClient;
+            }
+
+            _mongoClient = await _mongoClientFactory.CreateClientAsync(overrideShardKey);
+            return _mongoClient;
+        }
 
         protected ILogger Logger { get; }
 

@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Implementations.Patching;
 using Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -491,7 +488,6 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     /// Specify a custom view model to use for the entity Create, Update, and Read endpoints
     /// </summary>
     /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
-    /// <typeparam name="TViewModelBody"></typeparam>
     /// <param name="to">A callback function that maps the entity to the view model class</param>
     /// <param name="from">A callback function that maps the view model to the entity class</param>
     /// <example>

@@ -29,7 +29,7 @@ public class TokenController : ControllerBase
     {
         if (userData is { Email: { }, Password: { } })
         {
-            var user = GetUser(userData.Email, userData.Password);
+            var user = GetUser(userData.Email);
 
             if (user != null)
             {
@@ -67,7 +67,7 @@ public class TokenController : ControllerBase
         }
     }
 
-    private static UserInfo GetUser(string email, string _) => new()
+    private static UserInfo GetUser(string email) => new()
     {
         UserId = Guid.NewGuid(),
         UserName = "John",

@@ -22,6 +22,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models
         public static Task AddFunctionEnrollmentAsync(this IEntityTransaction source,
             Func<CancellationToken, Task> func,
             CancellationToken cancellationToken)
-            => source.Outbox.AddEnrollmentAsync(source.Id, new FunctionTransactionOutboxEnrollment(func), cancellationToken);
+            => source.Outbox.AddEnrollmentAsync(source.Id.ToString(), new FunctionTransactionOutboxEnrollment(func), cancellationToken);
     }
 }

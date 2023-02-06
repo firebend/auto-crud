@@ -970,7 +970,7 @@ public partial class
         if (!type.IsAssignableFrom(typeof(TService)))
         {
             throw new ArgumentException($"The service type {typeof(TService).Name} does not implement {type.Name}");
-        };
+        }
 
         Builder.WithRegistration(type, typeof(TService), replace);
 

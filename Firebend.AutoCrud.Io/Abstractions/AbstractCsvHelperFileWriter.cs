@@ -133,6 +133,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 await _writer.NextRecordAsync().ConfigureAwait(false);
                 WriteHeader(fields);
                 await WriteRows(fields, records, false);
+
                 return true;
             }
             return false;

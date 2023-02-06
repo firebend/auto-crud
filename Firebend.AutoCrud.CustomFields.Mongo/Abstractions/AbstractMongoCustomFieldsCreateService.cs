@@ -30,13 +30,13 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
     private readonly ISessionTransactionManager _transactionManager;
     private readonly bool _isDefaultPublisher;
 
-    public AbstractMongoCustomFieldsCreateService(IMongoClient client,
+    public AbstractMongoCustomFieldsCreateService(IMongoClientFactory<TKey, TEntity> clientFactory,
         ILogger<AbstractMongoCustomFieldsCreateService<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
         IEntityDomainEventPublisher domainEventPublisher,
-        ISessionTransactionManager transactionManager) : base(client, logger, entityConfiguration, mongoRetryService)
+        ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;
@@ -68,7 +68,7 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
 
         var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken).ConfigureAwait(false);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
-        var mongoCollection = GetCollection();
+        var mongoCollection = await GetCollectionAsync();
         var updateDefinition = Builders<TEntity>.Update.Push(x => x.CustomFields, customField);
 
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))

@@ -32,7 +32,7 @@ namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions
         ///  // ...
         /// </code>
         /// </example>
-        /// See <see cref="EntityCrudConfigurator"/> for additional configuration options available in the callback
+        /// See <see cref="EntityCrudConfigurator{EntityCrudBuilder, TKey, TEntity}"/> for additional configuration options available in the callback
         public static EntityCrudBuilder<TKey, TEntity> AddCrud<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder,
             Action<EntityCrudConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure)
             where TKey : struct

@@ -42,6 +42,8 @@ public interface IMemoizer
     /// <typeparam name="TArg">
     ///     The type of argument to pass to the factory.
     /// </typeparam>
+    /// <typeparam name="T"></typeparam>
+    ///     The type of the result of the task
     /// <returns>
     ///     A result of a function that should have only ran once.
     /// </returns>

@@ -7,7 +7,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
@@ -18,12 +17,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         private readonly IDomainEventContextProvider _domainEventContextProvider;
         private readonly IEntityDomainEventPublisher _eventPublisher;
 
-        protected MongoCreateClient(IMongoClient client,
+        protected MongoCreateClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoCreateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IEntityDomainEventPublisher eventPublisher,
             IDomainEventContextProvider domainEventContextProvider,
-            IMongoRetryService mongoRetryService) : base(client, logger, entityConfiguration, mongoRetryService)
+            IMongoRetryService mongoRetryService) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
         {
             _eventPublisher = eventPublisher;
             _domainEventContextProvider = domainEventContextProvider;
@@ -31,7 +30,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
         protected virtual async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
         {
-            var mongoCollection = GetCollection();
+            var mongoCollection = await GetCollectionAsync();
 
             if (entity is IModifiedEntity modified)
             {
