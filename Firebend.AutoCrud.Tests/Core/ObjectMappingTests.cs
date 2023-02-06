@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.ObjectMapping;
 using Firebend.AutoCrud.Io.Models;
 using FluentAssertions;
 using NUnit.Framework;
+// ReSharper disable UnusedAutoPropertyAccessor.Local
 
 namespace Firebend.AutoCrud.Tests.Core;
 
