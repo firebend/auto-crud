@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="6.2.0"></a>
+## [6.2.0](https://www.github.com/firebend/auto-crud/releases/tag/v6.2.0) (2023-2-6)
+
+### Features
+
+* version bump BREAKING CHANGE: VERSION BUMP (#149) ([a8d5631](https://www.github.com/firebend/auto-crud/commit/a8d5631cad652f0fda90e14b1b18318f9a93d164))
+
+### Other
+
+* BREAKING CHANGE: version bump for connection string providers (#148) ([4e781bb](https://www.github.com/firebend/auto-crud/commit/4e781bbcfd012585ec7998e7773b2796b0c0ffa0))
+* Forks/tschneider/conn string providers (#144) ([d7a48fe](https://www.github.com/firebend/auto-crud/commit/d7a48fe1885a01c95f2c122eb8c68ea4a13055b8))
+* Switched from AsyncDuplicateLock to AsyncKeyedLock (#136) ([d008264](https://www.github.com/firebend/auto-crud/commit/d008264692ccc91e19837f7df04ea8d45acf4689))
+* Update to AsyncKeyedLock 6.1.0 (#146) ([eeef979](https://www.github.com/firebend/auto-crud/commit/eeef979e3ebdac1b0852ec3bcf185ed7d1ed2eeb))
+* Update to AsyncKeyedLock 6.1.1 (#147) ([d8ded0c](https://www.github.com/firebend/auto-crud/commit/d8ded0ccbff24d93b78506edf87a357ccde1e176))
+
 <a name="6.1.0"></a>
 ## [6.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v6.1.0) (2023-1-5)
 
