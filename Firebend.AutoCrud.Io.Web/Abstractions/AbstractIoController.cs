@@ -15,7 +15,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Io.Web.Abstractions;
 
 [ApiController]
-public abstract class AbstractIoController<TKey, TEntity, TVersion, TSearch, TMapped> : AbstractEntityControllerBase
+public abstract class AbstractIoController<TKey, TEntity, TVersion, TSearch, TMapped> : AbstractEntityControllerBase<TVersion>
     where TSearch : IEntitySearchRequest
     where TKey : struct
     where TEntity : IEntity<TKey>

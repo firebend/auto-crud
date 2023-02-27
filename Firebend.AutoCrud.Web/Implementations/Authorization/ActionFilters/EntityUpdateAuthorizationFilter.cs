@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public class EntityUpdateAuthorizationFilter<TKey, TEntity, TViewModel, TVersion> : EntityAuthorizationFilter<TKey, TEntity, TVersion>
+public class EntityUpdateAuthorizationFilter<TKey, TEntity, TVersion, TViewModel> : EntityAuthorizationFilter<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
     where TVersion : class, IApiVersion

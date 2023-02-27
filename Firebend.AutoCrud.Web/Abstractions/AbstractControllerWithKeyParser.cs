@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public abstract class AbstractControllerWithKeyParser<TKey, TEntity, TVersion> : AbstractEntityControllerBase
+    public abstract class AbstractControllerWithKeyParser<TKey, TEntity, TVersion> : AbstractEntityControllerBase<TVersion>
         where TKey : struct
         where TEntity : IEntity<TKey>
         where TVersion : class, IApiVersion

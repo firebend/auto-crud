@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers;
 [OpenApiGroupName("The Beautiful Mongo People")]
 [OpenApiEntityName("MongoTenantPerson")]
 [ApiController]
-public class CustomControllerWithResourceAuthorizeAttribute : AbstractEntityControllerBase
+public class CustomControllerWithResourceAuthorizeAttribute : AbstractEntityControllerBase<V1>
 {
     private readonly IEntityReadService<Guid, MongoTenantPerson> _readService;
 

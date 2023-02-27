@@ -186,7 +186,7 @@ public partial class
         .Registrations
         .SelectMany(x => x.Value, (pair, registration) => new KeyValuePair<Type, Registration>(pair.Key, registration))
         .Where(x => x.Value is ServiceRegistration)
-        .Where(x => typeof(ControllerBase).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType));
+        .Where(x => typeof(AbstractEntityControllerBase<TVersion>).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType));
 
     /// <summary>
     /// Specifies the base route to use for an entity

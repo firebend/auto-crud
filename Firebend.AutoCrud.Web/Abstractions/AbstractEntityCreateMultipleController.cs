@@ -16,7 +16,8 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel> : AbstractEntityControllerBase
+    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel>
+        : AbstractEntityControllerBase<TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TVersion : class, IApiVersion

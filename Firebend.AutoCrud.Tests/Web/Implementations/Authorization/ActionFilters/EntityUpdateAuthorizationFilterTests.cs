@@ -69,8 +69,8 @@ public class EntityUpdateAuthorizationFilterTests
 
         // when
         var entityUpdateAuthorizationFilter =
-            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
-                ActionFilterTestHelper.TestEntity, V1>(_policy);
+            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
+                ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
@@ -98,8 +98,8 @@ public class EntityUpdateAuthorizationFilterTests
 
         // when
         var entityUpdateAuthorizationFilter =
-            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
-                ActionFilterTestHelper.TestEntity, V1>(_policy);
+            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
+                ActionFilterTestHelper.TestEntity>(_policy);
         await entityUpdateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
             _nextDelegate.Object);
 
@@ -130,8 +130,8 @@ public class EntityUpdateAuthorizationFilterTests
 
         // when
         var entityUpdateAuthorizationFilter =
-            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
-                ActionFilterTestHelper.TestEntity, V1>(_policy);
+            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
+                ActionFilterTestHelper.TestEntity>(_policy);
         await entityUpdateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
             _nextDelegate.Object);
 
@@ -148,8 +148,8 @@ public class EntityUpdateAuthorizationFilterTests
 
         // when
         var entityUpdateAuthorizationFilter =
-            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
-                ActionFilterTestHelper.TestEntity, V1>(_policy);
+            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
+                ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
         Assert.ThrowsAsync<ArgumentException>(() =>
@@ -176,8 +176,8 @@ public class EntityUpdateAuthorizationFilterTests
 
         // when
         var entityUpdateAuthorizationFilter =
-            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
-                ActionFilterTestHelper.TestEntity, V1>(_policy);
+            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
+                ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
         await entityUpdateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
@@ -216,8 +216,8 @@ public class EntityUpdateAuthorizationFilterTests
 
         // when
         var entityUpdateAuthorizationFilter =
-            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
-                ActionFilterTestHelper.TestEntity, V1>(_policy);
+            new EntityUpdateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
+                ActionFilterTestHelper.TestEntity>(_policy);
 
         // then
         await entityUpdateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,

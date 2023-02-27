@@ -143,7 +143,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         SearchViewModelType = viewModelType;
 
         var mapper = typeof(ISearchViewModelMapper<,,,,>)
-            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), viewModelType, Builder.SearchRequestType);
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), viewModelType, Builder.SearchRequestType);
 
         Builder.WithRegistration(mapper, viewModelMapper, mapper);
 
@@ -244,10 +244,10 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         SearchViewModelType = Builder.SearchRequestType;
 
         var @interface = typeof(ISearchViewModelMapper<,,,,>)
-            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, Builder.SearchRequestType);
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, Builder.SearchRequestType);
 
         var @class = typeof(IdentitySearchViewModelMapper<,,,>)
-            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType);
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType);
 
         var instance = Activator.CreateInstance(@class);
 

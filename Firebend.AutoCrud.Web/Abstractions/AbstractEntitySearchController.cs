@@ -14,7 +14,8 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntitySearchController<TKey, TEntity, TVersion, TSearch, TSearchViewModel, TReadViewModel> : AbstractEntityControllerBase
+    public abstract class AbstractEntitySearchController<TKey, TEntity, TVersion, TSearch, TSearchViewModel, TReadViewModel>
+        : AbstractEntityControllerBase<TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TVersion : class, IApiVersion

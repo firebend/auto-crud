@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Web;
 public static class ControllerExtensions
 {
 
-    public static async Task<TEntity> ValidateModel<TKey, TEntity, TVersion, TCreateViewModel>(this AbstractEntityControllerBase controller,
+    public static async Task<TEntity> ValidateModel<TKey, TEntity, TVersion, TCreateViewModel>(this AbstractEntityControllerBase<TVersion> controller,
         TCreateViewModel body,
         IViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> mapper,
         CancellationToken cancellationToken)
