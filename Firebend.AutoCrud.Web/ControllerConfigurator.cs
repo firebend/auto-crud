@@ -207,7 +207,7 @@ public partial class
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithRoute(string route)
     {
-        if (route is null) route = OpenApiEntityName.Kebaberize();
+        route ??= OpenApiEntityName.Kebaberize();
         Route = route;
         var (aType, aBuilder) = GetRouteAttributeInfo();
         AddAttributeToAllControllers(aType, aBuilder);
@@ -233,7 +233,7 @@ public partial class
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithVersionedRoute(string route = null, string routePrefix = "api")
     {
-        if (route is null) route = OpenApiEntityName.Kebaberize();
+        route ??= OpenApiEntityName.Kebaberize();
         Route = $"{routePrefix}/v{{version:apiVersion}}/{route}".TrimUrlExtraSlashes();
         var (aType, aBuilder) = GetRouteAttributeInfo();
         AddAttributeToAllControllers(aType, aBuilder);

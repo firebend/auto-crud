@@ -57,7 +57,7 @@ public static class ApiVersioningExtensions
                                         || (x.Version == version.Version && x.MinorVersion > version.MinorVersion))
                             .ToList();
 
-                        bool gotAnyFutureVersions = false;
+                        var gotAnyFutureVersions = false;
                         var matchedVersion = version;
 
                         var controllerType = controller;
