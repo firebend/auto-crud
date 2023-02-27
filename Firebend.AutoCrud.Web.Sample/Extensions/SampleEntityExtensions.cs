@@ -88,44 +88,44 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             return builder
                 .AddIo<Guid, MongoTenantPerson, V1>(io => io.WithMapper(x => new PersonExport(x)))
                 .AddControllers<Guid, MongoTenantPerson, V1>(controllers => controllers
-                .WithReadViewModel(x => new GetPersonViewModel(x))
-                .WithCreateViewModel<CreatePersonViewModel>(x =>
-                {
-                    var mongoTenantPerson = new MongoTenantPerson();
-                    x.Body.CopyPropertiesTo(mongoTenantPerson);
-                    return mongoTenantPerson;
-                })
-                .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
+                    .WithReadViewModel(x => new GetPersonViewModel(x))
+                    .WithCreateViewModel<CreatePersonViewModel>(x =>
                     {
                         var mongoTenantPerson = new MongoTenantPerson();
-                        vm.Body.CopyPropertiesTo(mongoTenantPerson);
+                        x.Body.CopyPropertiesTo(mongoTenantPerson);
                         return mongoTenantPerson;
-                    },
-                    entity =>
-                    {
-                        var vm = new CreatePersonViewModel { Body = new PersonViewModelBase() };
-                        entity.CopyPropertiesTo(vm.Body);
-                        return vm;
                     })
-                .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
-                {
-                    var mongoTenantPerson = new MongoTenantPerson();
-                    vm.CopyPropertiesTo(mongoTenantPerson);
-                    return mongoTenantPerson;
-                })
-                .WithAllControllers(true)
-                .WithIoControllers()
-                .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
-                .WithChangeTrackingControllers()
-                .AddChangeTrackingResourceAuthorization()
-                .AddCustomFieldsResourceAuthorization()
-                .AddResourceAuthorization()
-                .WithOpenApiGroupName("The Beautiful Mongo People")
-                .WithRoute("api/v1/mongo-person")
-                .Builder
-                .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
-                    CustomFieldValidationService<Guid, MongoTenantPerson, V2>>()
-            );
+                    .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
+                        {
+                            var mongoTenantPerson = new MongoTenantPerson();
+                            vm.Body.CopyPropertiesTo(mongoTenantPerson);
+                            return mongoTenantPerson;
+                        },
+                        entity =>
+                        {
+                            var vm = new CreatePersonViewModel { Body = new PersonViewModelBase() };
+                            entity.CopyPropertiesTo(vm.Body);
+                            return vm;
+                        })
+                    .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
+                    {
+                        var mongoTenantPerson = new MongoTenantPerson();
+                        vm.CopyPropertiesTo(mongoTenantPerson);
+                        return mongoTenantPerson;
+                    })
+                    .WithAllControllers(true)
+                    .WithIoControllers()
+                    .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
+                    .WithChangeTrackingControllers()
+                    .AddChangeTrackingResourceAuthorization()
+                    .AddCustomFieldsResourceAuthorization()
+                    .AddResourceAuthorization()
+                    .WithOpenApiGroupName("The Beautiful Mongo People")
+                    .WithRoute("api/v1/mongo-person")
+                    .Builder
+                    .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
+                        CustomFieldValidationService<Guid, MongoTenantPerson, V2>>()
+                );
         }
 
         public static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV2(this EntityCrudBuilder<Guid, MongoTenantPerson> builder)
@@ -133,44 +133,44 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             return builder
                 .AddIo<Guid, MongoTenantPerson, V2>(io => io.WithMapper(x => new PersonExport(x)))
                 .AddControllers<Guid, MongoTenantPerson, V2>(controllers => controllers
-                .WithReadViewModel(x => new GetPersonViewModel(x))
-                .WithCreateViewModel<CreatePersonViewModel>(x =>
-                {
-                    var mongoTenantPerson = new MongoTenantPerson();
-                    x.Body.CopyPropertiesTo(mongoTenantPerson);
-                    return mongoTenantPerson;
-                })
-                .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
+                    .WithReadViewModel(x => new GetPersonViewModel(x))
+                    .WithCreateViewModel<CreatePersonViewModel>(x =>
                     {
                         var mongoTenantPerson = new MongoTenantPerson();
-                        vm.Body.CopyPropertiesTo(mongoTenantPerson);
+                        x.Body.CopyPropertiesTo(mongoTenantPerson);
                         return mongoTenantPerson;
-                    },
-                    entity =>
-                    {
-                        var vm = new CreatePersonViewModel { Body = new PersonViewModelBase() };
-                        entity.CopyPropertiesTo(vm.Body);
-                        return vm;
                     })
-                .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
-                {
-                    var mongoTenantPerson = new MongoTenantPerson();
-                    vm.CopyPropertiesTo(mongoTenantPerson);
-                    return mongoTenantPerson;
-                })
-                .WithAllControllers(true)
-                .WithIoControllers()
-                .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
-                .WithChangeTrackingControllers()
-                .AddChangeTrackingResourceAuthorization()
-                .AddCustomFieldsResourceAuthorization()
-                .AddResourceAuthorization()
-                .WithOpenApiGroupName("The Beautiful Mongo People")
-                .WithRoute("api/v2/mongo-person")
-                .Builder
-                .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
-                    CustomFieldValidationService<Guid, MongoTenantPerson, V2>>()
-            );
+                    .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
+                        {
+                            var mongoTenantPerson = new MongoTenantPerson();
+                            vm.Body.CopyPropertiesTo(mongoTenantPerson);
+                            return mongoTenantPerson;
+                        },
+                        entity =>
+                        {
+                            var vm = new CreatePersonViewModel { Body = new PersonViewModelBase() };
+                            entity.CopyPropertiesTo(vm.Body);
+                            return vm;
+                        })
+                    .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
+                    {
+                        var mongoTenantPerson = new MongoTenantPerson();
+                        vm.CopyPropertiesTo(mongoTenantPerson);
+                        return mongoTenantPerson;
+                    })
+                    .WithAllControllers(true)
+                    .WithIoControllers()
+                    .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
+                    .WithChangeTrackingControllers()
+                    .AddChangeTrackingResourceAuthorization()
+                    .AddCustomFieldsResourceAuthorization()
+                    .AddResourceAuthorization()
+                    .WithOpenApiGroupName("The Beautiful Mongo People")
+                    .WithRoute("api/v2/mongo-person")
+                    .Builder
+                    .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
+                        CustomFieldValidationService<Guid, MongoTenantPerson, V2>>()
+                );
         }
 
         public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,
