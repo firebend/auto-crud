@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
 using Firebend.AutoCrud.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
@@ -67,7 +68,7 @@ public class EntityCreateAuthorizationFilterTests
 
         // when
         var entityCreateAuthorizationFilter =
-            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
+            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
                 ActionFilterTestHelper.TestEntity>(_policy);
         Assert.ThrowsAsync<DependencyResolverException>(() =>
             entityCreateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object, _nextDelegate.Object));
@@ -91,7 +92,7 @@ public class EntityCreateAuthorizationFilterTests
 
         // when
         var entityCreateAuthorizationFilter =
-            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
+            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
                 ActionFilterTestHelper.TestEntity>(_policy);
 
         await entityCreateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
@@ -124,7 +125,7 @@ public class EntityCreateAuthorizationFilterTests
 
         // when
         var entityCreateAuthorizationFilter =
-            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
+            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
                 ActionFilterTestHelper.TestEntity>(_policy);
         await entityCreateAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
             _nextDelegate.Object);
@@ -144,7 +145,7 @@ public class EntityCreateAuthorizationFilterTests
 
         // when
         var entityCreateAuthorizationFilter =
-            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity,
+            new EntityCreateAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1,
                 ActionFilterTestHelper.TestEntity>(_policy);
 
         Assert.ThrowsAsync<ArgumentException>(() =>

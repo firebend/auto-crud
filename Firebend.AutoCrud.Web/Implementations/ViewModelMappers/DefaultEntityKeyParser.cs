@@ -1,12 +1,14 @@
 using System;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
-    public class DefaultEntityKeyParser<TKey, TEntity> : IEntityKeyParser<TKey, TEntity>
+    public class DefaultEntityKeyParser<TKey, TEntity, TVersion> : IEntityKeyParser<TKey, TEntity, TVersion>
         where TKey : struct
         where TEntity : IEntity<TKey>
+        where TVersion : class, IApiVersion
     {
         public TKey? ParseKey(string key)
         {

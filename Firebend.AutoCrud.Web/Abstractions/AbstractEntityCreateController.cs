@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -11,21 +12,22 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityCreateController<TKey, TEntity, TCreateViewModel, TReadViewModel> : AbstractEntityControllerBase
+    public abstract class AbstractEntityCreateController<TKey, TEntity, TVersion, TCreateViewModel, TReadViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
         where TCreateViewModel : class
         where TReadViewModel : class
     {
         private IEntityCreateService<TKey, TEntity> _createService;
-        private IEntityValidationService<TKey, TEntity> _entityValidationService;
-        private ICreateViewModelMapper<TKey, TEntity, TCreateViewModel> _mapper;
-        private IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readMapper;
+        private IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
+        private ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> _mapper;
+        private IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
 
         public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
-            IEntityValidationService<TKey, TEntity> entityValidationService,
-            ICreateViewModelMapper<TKey, TEntity, TCreateViewModel> mapper,
-            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper,
+            IEntityValidationService<TKey, TEntity, TVersion> entityValidationService,
+            ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> mapper,
+            IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _createService = createService;

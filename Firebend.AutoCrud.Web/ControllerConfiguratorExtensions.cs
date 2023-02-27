@@ -1,19 +1,21 @@
 using System;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Web;
 
 public static class ControllerConfiguratorExtensions
 {
-    public static ControllerConfigurator<TBuilder, TKey, TEntity> AddResourceAuthorization<TBuilder, TKey,
-        TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator, Type type, Type filterType,
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddResourceAuthorization<TBuilder, TKey,
+        TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator, Type type, Type filterType,
         string policy)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
     {
         var (attributeType, attributeBuilder) =
             GetResourceAuthorizationAttributeInfo(filterType, policy);

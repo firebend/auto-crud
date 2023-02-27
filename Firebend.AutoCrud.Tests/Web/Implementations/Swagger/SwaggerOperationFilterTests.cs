@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Abstractions;
@@ -24,11 +25,17 @@ namespace Firebend.AutoCrud.Tests.Web.Implementations.Swagger
         public Guid Id { get; set; }
     }
 
-    public class FakeController : AbstractEntityReadController<Guid, FakeEntity, FakeEntity>
+    public class V1 : IApiVersion
+    {
+        public string Version => "v1";
+        public string Name => "Version 1";
+    }
+
+    public class FakeController : AbstractEntityReadController<Guid, FakeEntity, V1, FakeEntity>
     {
         public FakeController(IEntityReadService<Guid, FakeEntity> readService,
-            IEntityKeyParser<Guid, FakeEntity> entityKeyParser,
-            IReadViewModelMapper<Guid, FakeEntity, FakeEntity> viewModelMapper,
+            IEntityKeyParser<Guid, FakeEntity, V1> entityKeyParser,
+            IReadViewModelMapper<Guid, FakeEntity, V1, FakeEntity> viewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(readService, entityKeyParser, viewModelMapper, apiOptions)
         {
         }

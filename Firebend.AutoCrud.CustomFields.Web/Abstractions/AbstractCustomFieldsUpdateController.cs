@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -18,15 +19,16 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
     public abstract class
-        AbstractCustomFieldsUpdateController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+        AbstractCustomFieldsUpdateController<TKey, TEntity, TVersion> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TVersion : class, IApiVersion
     {
-        private readonly ICustomFieldsValidationService<TKey, TEntity> _customFieldsValidationService;
+        private readonly ICustomFieldsValidationService<TKey, TEntity, TVersion> _customFieldsValidationService;
         private readonly ICustomFieldsUpdateService<TKey, TEntity> _updateService;
 
-        protected AbstractCustomFieldsUpdateController(IEntityKeyParser<TKey, TEntity> keyParser,
-            ICustomFieldsValidationService<TKey, TEntity> customFieldsValidationService,
+        protected AbstractCustomFieldsUpdateController(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
+            ICustomFieldsValidationService<TKey, TEntity, TVersion> customFieldsValidationService,
             ICustomFieldsUpdateService<TKey, TEntity> updateService,
             IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
         {

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -20,10 +21,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
     public abstract class
-        AbstractEntityUpdateController<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel> :
-            AbstractControllerWithKeyParser<TKey, TEntity>
+        AbstractEntityUpdateController<TKey, TEntity, TVersion, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel> :
+            AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
+        where TVersion : class, IApiVersion
         where TReadViewModel : class
         where TUpdateViewModel : class
         where TUpdateViewModelBody : class
@@ -31,23 +33,23 @@ namespace Firebend.AutoCrud.Web.Abstractions
         private const string IdPatchPath = $"/{nameof(IEntity<Guid>.Id)}";
         private const string CustomFieldsPatchPath = $"/{nameof(ICustomFieldsEntity<Guid>.CustomFields)}";
 
-        private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
+        private readonly IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
         private readonly IEntityReadService<TKey, TEntity> _readService;
         private readonly IEntityUpdateService<TKey, TEntity> _updateService;
-        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
-        private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readViewModelMapper;
+        private readonly IUpdateViewModelMapper<TKey, TEntity, TVersion, TUpdateViewModel> _updateViewModelMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readViewModelMapper;
         private readonly IJsonPatchGenerator _jsonPatchGenerator;
-        private readonly ICopyOnPatchPropertyAccessor<TEntity, TUpdateViewModel> _copyOnPatchPropertyAccessor;
+        private readonly ICopyOnPatchPropertyAccessor<TEntity, TVersion, TUpdateViewModel> _copyOnPatchPropertyAccessor;
 
         protected AbstractEntityUpdateController(IEntityUpdateService<TKey, TEntity> updateService,
             IEntityReadService<TKey, TEntity> readService,
-            IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IEntityValidationService<TKey, TEntity> entityValidationService,
-            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
-            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
+            IEntityKeyParser<TKey, TEntity, TVersion> entityKeyParser,
+            IEntityValidationService<TKey, TEntity, TVersion> entityValidationService,
+            IUpdateViewModelMapper<TKey, TEntity, TVersion, TUpdateViewModel> updateViewModelMapper,
+            IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readViewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions,
             IJsonPatchGenerator jsonPatchGenerator,
-            ICopyOnPatchPropertyAccessor<TEntity, TUpdateViewModel> copyOnPatchPropertyAccessor) : base(entityKeyParser, apiOptions)
+            ICopyOnPatchPropertyAccessor<TEntity, TVersion, TUpdateViewModel> copyOnPatchPropertyAccessor) : base(entityKeyParser, apiOptions)
         {
             _updateService = updateService;
             _readService = readService;

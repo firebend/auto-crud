@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
+using Firebend.AutoCrud.Web.Sample.Extensions;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,7 @@ public class CustomControllerWithResourceAuthorizeAttribute : AbstractEntityCont
 
     [HttpGet]
     [Produces("application/json")]
-    [TypeFilter(typeof(AuthorizeById<Guid, MongoTenantPerson>),
+    [TypeFilter(typeof(AuthorizeById<Guid, MongoTenantPerson, V1>),
         Arguments = new object[] { "personId" })]
     public async Task<IActionResult> GetFullName(
         [FromRoute] Guid personId,

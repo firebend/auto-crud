@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -13,13 +14,14 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
-    public abstract class AbstractCustomFieldsDeleteController<TKey, TEntity> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractCustomFieldsDeleteController<TKey, TEntity, TVersion> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TVersion : class, IApiVersion
     {
         private readonly ICustomFieldsDeleteService<TKey, TEntity> _deleteService;
 
-        protected AbstractCustomFieldsDeleteController(IEntityKeyParser<TKey, TEntity> keyParser,
+        protected AbstractCustomFieldsDeleteController(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
             ICustomFieldsDeleteService<TKey, TEntity> deleteService,
             IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
         {

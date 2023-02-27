@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
-    public class FunctionViewModelMapper<TKey, TEntity, TViewModel> : ICreateViewModelMapper<TKey, TEntity, TViewModel>,
-        IUpdateViewModelMapper<TKey, TEntity, TViewModel>,
-        IReadViewModelMapper<TKey, TEntity, TViewModel>
+    public class FunctionViewModelMapper<TKey, TEntity, TVersion, TViewModel> : ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel>,
+        IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel>,
+        IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel>
         where TViewModel : class
         where TEntity : class, IEntity<TKey>
         where TKey : struct
+        where TVersion : class, IApiVersion
     {
         private static Func<TEntity, TViewModel> _to;
         private static Func<TViewModel, TEntity> _from;

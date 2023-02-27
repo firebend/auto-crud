@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
@@ -13,19 +14,20 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch, TViewModel> : AbstractEntityControllerBase
+    public abstract class AbstractEntitySearchController<TKey, TEntity, TVersion, TSearch, TViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
         where TSearch : IEntitySearchRequest
         where TViewModel : class
     {
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
-        private readonly IReadViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
-        private readonly IMaxPageSize<TKey, TEntity> _maxPageSize;
+        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> _viewModelMapper;
+        private readonly IMaxPageSize<TKey, TEntity, TVersion> _maxPageSize;
 
         protected AbstractEntitySearchController(IEntitySearchService<TKey, TEntity, TSearch> searchService,
-            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
-            IMaxPageSize<TKey, TEntity> maxPageSize,
+            IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> viewModelMapper,
+            IMaxPageSize<TKey, TEntity, TVersion> maxPageSize,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _searchService = searchService;

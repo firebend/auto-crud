@@ -1,5 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Io.Web.Abstractions;
 using Firebend.AutoCrud.Io.Web.Interfaces;
@@ -11,15 +12,17 @@ namespace Firebend.AutoCrud.Io.Web;
 
 public static class Extensions
 {
-    public static Type IoControllerType<TBuilder, TKey, TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
+    public static Type IoControllerType<TBuilder, TKey, TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        => typeof(AbstractIoController<,,,>)
+        where TVersion : class, IApiVersion
+        => typeof(AbstractIoController<,,,,>)
             .MakeGenericType(
                 configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
+                typeof(TVersion),
                 configurator.Builder.SearchRequestType,
                 configurator.Builder.ExportType);
 
@@ -37,14 +40,15 @@ public static class Extensions
     ///          .WithIoControllers())
     /// </code>
     /// </example>
-    public static ControllerConfigurator<TBuilder, TKey, TEntity> WithIoControllers<TBuilder, TKey, TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithIoControllers<TBuilder, TKey, TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator,
         string entityName = null,
         string entityNamePlural = null,
         string openApiName = null)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
     {
         if (configurator?.Builder?.SearchRequestType == null)
         {
@@ -57,16 +61,18 @@ public static class Extensions
                 "No export type configured for this controller configurator. Use IoConfigurator to set mappings.");
         }
 
-        var controllerType = typeof(AbstractIoController<,,,>);
+        var controllerType = typeof(AbstractIoController<,,,,>);
 
-        var iface = typeof(IEntityExportControllerService<,,,>).MakeGenericType(configurator.Builder.EntityKeyType,
+        var iface = typeof(IEntityExportControllerService<,,,,>).MakeGenericType(configurator.Builder.EntityKeyType,
             configurator.Builder.EntityType,
+            typeof(TVersion),
             configurator.Builder.SearchRequestType,
             configurator.Builder.ExportType);
 
-        var impl = typeof(AbstractEntityExportControllerService<,,,>).MakeGenericType(
+        var impl = typeof(AbstractEntityExportControllerService<,,,,>).MakeGenericType(
             configurator.Builder.EntityKeyType,
             configurator.Builder.EntityType,
+            typeof(TVersion),
             configurator.Builder.SearchRequestType,
             configurator.Builder.ExportType);
 
@@ -78,6 +84,7 @@ public static class Extensions
             openApiName,
             configurator.Builder.EntityKeyType,
             configurator.Builder.EntityType,
+            typeof(TVersion),
             configurator.Builder.SearchRequestType,
             configurator.Builder.ExportType);
     }
@@ -97,24 +104,26 @@ public static class Extensions
     ///          .WithMaxExportPageSize(100))
     /// </code>
     /// </example>
-    public static ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxExportPageSize<TBuilder, TKey, TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithMaxExportPageSize<TBuilder, TKey, TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator,
         int pageSize)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
     {
-        configurator.Builder.WithRegistrationInstance<IMaxExportPageSize<TKey, TEntity>>(
-            new DefaultMaxPageSize<TEntity, TKey>(pageSize));
+        configurator.Builder.WithRegistrationInstance<IMaxExportPageSize<TKey, TEntity, TVersion>>(
+            new DefaultMaxPageSize<TEntity, TKey, TVersion>(pageSize));
 
         return configurator;
     }
 
-    public static ControllerConfigurator<TBuilder, TKey, TEntity> AddIoAuthorizationPolicy<TBuilder, TKey, TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator, string policy)
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddIoAuthorizationPolicy<TBuilder, TKey, TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator, string policy)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
         => configurator.AddAuthorizationPolicy(configurator.IoControllerType(),
             policy);
 }

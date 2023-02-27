@@ -1,5 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -7,13 +8,14 @@ using Microsoft.Extensions.Options;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public abstract class AbstractControllerWithKeyParser<TKey, TEntity> : AbstractEntityControllerBase
+    public abstract class AbstractControllerWithKeyParser<TKey, TEntity, TVersion> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : IEntity<TKey>
+        where TVersion : class, IApiVersion
     {
-        private readonly IEntityKeyParser<TKey, TEntity> _keyParser;
+        private readonly IEntityKeyParser<TKey, TEntity, TVersion> _keyParser;
 
-        protected AbstractControllerWithKeyParser(IEntityKeyParser<TKey, TEntity> keyParser,
+        protected AbstractControllerWithKeyParser(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _keyParser = keyParser;

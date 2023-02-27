@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -10,21 +11,23 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityValidateUpdateController<TKey, TEntity, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractEntityValidateUpdateController<TKey, TEntity, TVersion, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel>
+        : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
+        where TVersion : class, IApiVersion
         where TReadViewModel : class
         where TUpdateViewModel : class
         where TUpdateViewModelBody : class
     {
 
-        private readonly IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> _updateViewModelMapper;
-        private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readViewModelMapper;
+        private readonly IUpdateViewModelMapper<TKey, TEntity, TVersion, TUpdateViewModel> _updateViewModelMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readViewModelMapper;
 
         protected AbstractEntityValidateUpdateController(
-            IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IUpdateViewModelMapper<TKey, TEntity, TUpdateViewModel> updateViewModelMapper,
-            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readViewModelMapper,
+            IEntityKeyParser<TKey, TEntity, TVersion> entityKeyParser,
+            IUpdateViewModelMapper<TKey, TEntity, TVersion, TUpdateViewModel> updateViewModelMapper,
+            IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readViewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
         {
             _updateViewModelMapper = updateViewModelMapper;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Io.Interfaces;
@@ -13,12 +14,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Io.Web.Abstractions
 {
-    public abstract class AbstractEntityExportControllerService<TKey, TEntity, TSearch, TMapped> :
+    public abstract class AbstractEntityExportControllerService<TKey, TEntity, TVersion, TSearch, TMapped> :
         BaseDisposable,
-        IEntityExportControllerService<TKey, TEntity, TSearch, TMapped>
+        IEntityExportControllerService<TKey, TEntity, TVersion, TSearch, TMapped>
         where TSearch : IEntitySearchRequest
         where TMapped : class
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
         where TKey : struct
     {
         private readonly IEntityFileTypeMimeTypeMapper _entityFileTypeMimeTypeMapper;

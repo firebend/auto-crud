@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
-    public class DefaultReadViewModelMapper<TKey, TEntity> : IReadViewModelMapper<TKey, TEntity, TEntity>
+    public class DefaultReadViewModelMapper<TKey, TEntity, TVersion> : IReadViewModelMapper<TKey, TEntity, TVersion, TEntity>
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
         where TKey : struct
     {
         public Task<TEntity> FromAsync(TEntity model, CancellationToken cancellationToken = default)

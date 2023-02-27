@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Entities;
@@ -15,22 +16,23 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel> : AbstractEntityControllerBase
+    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel> : AbstractEntityControllerBase
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IApiVersion
         where TMultipleViewModel : class
         where TReadViewModel : class
         where TMultipleViewModelWrapper : IMultipleEntityViewModel<TMultipleViewModel>
     {
         private readonly IEntityCreateService<TKey, TEntity> _createService;
-        private readonly IEntityValidationService<TKey, TEntity> _entityValidationService;
-        private readonly ICreateMultipleViewModelMapper<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel> _multipleMapper;
-        private readonly IReadViewModelMapper<TKey, TEntity, TReadViewModel> _readMapper;
+        private readonly IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
+        private readonly ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel> _multipleMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
 
         protected AbstractEntityCreateMultipleController(IEntityCreateService<TKey, TEntity> createService,
-            IEntityValidationService<TKey, TEntity> entityValidationService,
-            ICreateMultipleViewModelMapper<TKey, TEntity, TMultipleViewModelWrapper, TMultipleViewModel> multipleMapper,
-            IReadViewModelMapper<TKey, TEntity, TReadViewModel> readMapper,
+            IEntityValidationService<TKey, TEntity, TVersion> entityValidationService,
+            ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel> multipleMapper,
+            IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _createService = createService;

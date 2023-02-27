@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -9,9 +10,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFilter, IAsyncResultFilter
+public abstract class EntityAuthorizationFilter<TKey, TEntity, TVersion> : IAsyncActionFilter, IAsyncResultFilter
     where TKey : struct
     where TEntity : class, IEntity<TKey>
+    where TVersion : class, IApiVersion
 {
     private readonly string _policy;
     private IEntityAuthProvider _entityAuthProvider;
@@ -79,10 +81,10 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity> : IAsyncActionFil
 
         var authorizationResult =
             entityId == null
-                ? await _entityAuthProvider.AuthorizeEntityAsync<TKey, TEntity>(entityIdString,
+                ? await _entityAuthProvider.AuthorizeEntityAsync<TKey, TEntity, TVersion>(entityIdString,
                     context.HttpContext.User,
                     _policy, context.HttpContext.RequestAborted)
-                : await _entityAuthProvider.AuthorizeEntityAsync<TKey, TEntity>(entityId.Value,
+                : await _entityAuthProvider.AuthorizeEntityAsync<TKey, TEntity, TVersion>(entityId.Value,
                     context.HttpContext.User,
                     _policy, context.HttpContext.RequestAborted);
 

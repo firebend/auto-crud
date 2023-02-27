@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -11,9 +12,10 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Web.Sample.ValidationServices;
 
-public class CustomFieldValidationService<TKey, TEntity> : ICustomFieldsValidationService<TKey, TEntity>
+public class CustomFieldValidationService<TKey, TEntity, TVersion> : ICustomFieldsValidationService<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+    where TVersion : class, IApiVersion
 {
     private readonly ICustomFieldsReadService<TKey, TEntity> _customFieldsReadService;
 
