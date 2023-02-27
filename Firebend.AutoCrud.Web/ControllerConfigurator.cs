@@ -287,8 +287,8 @@ public partial class
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), ReadViewModelType);
 
     public Type SearchControllerType()
-        => typeof(AbstractEntitySearchController<,,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, ReadViewModelType);
+        => typeof(AbstractEntitySearchController<,,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, SearchViewModelType, ReadViewModelType);
 
     /// <summary>
     /// Registers a CREATE controller for the entity
@@ -642,7 +642,7 @@ public partial class
         if (makeRegistrationTypeGeneric)
         {
             registrationType = registrationType
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, ReadViewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, SearchViewModelType, ReadViewModelType);
         }
 
         return WithControllerHelper(SearchControllerType(),
@@ -685,7 +685,7 @@ public partial class
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchController()
-        => WithSearchController(typeof(AbstractEntitySearchController<,,,,>),
+        => WithSearchController(typeof(AbstractEntitySearchController<,,,,,>),
             makeRegistrationTypeGeneric: true);
 
     /// <summary>

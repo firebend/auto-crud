@@ -30,6 +30,15 @@ namespace Firebend.AutoCrud.Web.Interfaces
 
     }
 
+    public interface ISearchViewModelMapper<TKey, TEntity, TVersion, in TViewModel, TSearchModel>
+        where TEntity : IEntity<TKey>
+        where TKey : struct
+        where TVersion : class, IApiVersion
+        where TViewModel : class
+    {
+        Task<TSearchModel> FromAsync(TViewModel model, CancellationToken cancellationToken = default);
+    }
+
     public interface IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel> : IViewModelMapper<TKey, TEntity, TVersion, TViewModel>
         where TEntity : IEntity<TKey>
         where TKey : struct

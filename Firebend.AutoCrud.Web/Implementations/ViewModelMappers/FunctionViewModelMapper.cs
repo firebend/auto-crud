@@ -59,4 +59,28 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         public Task<IEnumerable<TViewModel>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken = default)
             => _to == null ? Task.FromResult((IEnumerable<TViewModel>)null) : Task.FromResult(entity.Select(ToViewModel));
     }
+
+    public class FunctionSearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>
+        : ISearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>
+        where TViewModel : class
+        where TEntity : class, IEntity<TKey>
+        where TKey : struct
+        where TVersion : class, IApiVersion
+        where TSearchModel : class
+    {
+        private static Func<TViewModel, TSearchModel> _from;
+
+        public FunctionSearchViewModelMapper()
+        {
+
+        }
+
+        public FunctionSearchViewModelMapper(Func<TViewModel, TSearchModel> from)
+        {
+            _from = from;
+        }
+
+        public Task<TSearchModel> FromAsync(TViewModel model, CancellationToken cancellationToken = default)
+            => Task.FromResult(_from?.Invoke(model));
+    }
 }

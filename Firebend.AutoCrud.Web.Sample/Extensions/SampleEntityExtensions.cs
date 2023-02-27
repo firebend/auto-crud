@@ -30,6 +30,7 @@ using Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
+using Firebend.AutoCrud.Web.Sample.Migrations;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Firebend.AutoCrud.Web.Sample.ValidationServices;
 using Microsoft.EntityFrameworkCore;
@@ -77,7 +78,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithSearchHandler<CustomSearchParameters, MongoCustomSearchHandler>()
                         .WithCrud()
                     )
-                    .AddIo<Guid, MongoTenantPerson, V1>(io => io.WithMapper(x => new PersonExport(x)))
                     .AddMongoPersonApiV1()
                     .AddMongoPersonApiV2()
 
@@ -85,7 +85,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 
         public static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV1(this EntityCrudBuilder<Guid, MongoTenantPerson> builder)
         {
-            return builder.AddControllers<Guid, MongoTenantPerson, V1>(controllers => controllers
+            return builder
+                .AddIo<Guid, MongoTenantPerson, V1>(io => io.WithMapper(x => new PersonExport(x)))
+                .AddControllers<Guid, MongoTenantPerson, V1>(controllers => controllers
                 .WithReadViewModel(x => new GetPersonViewModel(x))
                 .WithCreateViewModel<CreatePersonViewModel>(x =>
                 {
@@ -93,6 +95,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     x.Body.CopyPropertiesTo(mongoTenantPerson);
                     return mongoTenantPerson;
                 })
+                .WithSearchViewModel<CustomSearchParameters>()
                 .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
                     {
                         var mongoTenantPerson = new MongoTenantPerson();
@@ -128,7 +131,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 
         public static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV2(this EntityCrudBuilder<Guid, MongoTenantPerson> builder)
         {
-            return builder.AddControllers<Guid, MongoTenantPerson, V2>(controllers => controllers
+            return builder
+                .AddIo<Guid, MongoTenantPerson, V2>(io => io.WithMapper(x => new PersonExport(x)))
+                .AddControllers<Guid, MongoTenantPerson, V2>(controllers => controllers
                 .WithReadViewModel(x => new GetPersonViewModel(x))
                 .WithCreateViewModel<CreatePersonViewModel>(x =>
                 {
@@ -136,6 +141,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     x.Body.CopyPropertiesTo(mongoTenantPerson);
                     return mongoTenantPerson;
                 })
+                .WithSearchViewModel<CustomSearchParameters>()
                 .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
                     {
                         var mongoTenantPerson = new MongoTenantPerson();
@@ -211,6 +217,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddIo<Guid, EfPerson, V1>(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers<Guid, EfPerson, V1>(controllers => controllers
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
+                        .WithSearchViewModel<CustomSearchParameters>()
                         .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(
                             view => new EfPerson(view),
                             entity => new CreatePersonViewModel { Body = new PersonViewModelBase(entity) })
@@ -280,6 +287,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddControllers<Guid, EfPet, V1>(controllers => controllers
                         .WithReadViewModel(pet => new GetPetViewModel(pet))
                         .WithCreateViewModel<CreatePetViewModel>(pet => new EfPet(pet))
+                        .WithSearchViewModel<PetSearch>()
                         .WithUpdateViewModel<PutPetViewModel, PetBaseViewModel>(
                             pet => new EfPet(pet),
                             entity =>

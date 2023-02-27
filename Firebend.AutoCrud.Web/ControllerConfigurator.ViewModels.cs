@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Web.Implementations.Patching;
 using Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -10,6 +11,7 @@ namespace Firebend.AutoCrud.Web;
 public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 {
     public Type CreateViewModelType { get; private set; }
+    public Type SearchViewModelType { get; private set; }
     public Type UpdateViewModelType { get; private set; }
     public Type UpdateViewModelBodyType { get; private set; }
     public Type ReadViewModelType { get; private set; }
@@ -113,6 +115,139 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         CreateViewModelType = typeof(TViewModel);
 
         Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel>>(instance);
+
+        return this;
+    }
+
+    // TODO TS: fix these docs
+    /// <summary>
+    /// Specify a custom view model to use for the entity Create endpoint
+    /// </summary>
+    /// <param name="viewModelType">The type of the view model to use</param>
+    /// <param name="viewModelMapper">The type of the view model mapper to use</param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithCreateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TSearchModel>(Type viewModelType, Type viewModelMapper)
+    {
+        ViewModelGuard("Please register a Create view model before adding controllers");
+
+        SearchViewModelType = viewModelType;
+
+        var mapper = typeof(ISearchViewModelMapper<,,,,>)
+            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), viewModelType, typeof(TSearchModel));
+
+        Builder.WithRegistration(mapper, viewModelMapper, mapper);
+
+        return this;
+    }
+
+    // TODO TS: fix these docs
+    /// <summary>
+    /// Specify a custom view model to use for the entity Create endpoint
+    /// </summary>
+    /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
+    /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithCreateViewModel<ViewModel, ViewModelWrapper>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TViewModel, TSearchModel, TViewModelMapper>()
+        where TViewModel : class
+        where TViewModelMapper : ISearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>
+        where TSearchModel : class
+    {
+        ViewModelGuard("Please register a Create view model before adding controllers");
+
+        SearchViewModelType = typeof(TViewModel);
+
+        Builder.WithRegistration<ISearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>, TViewModelMapper>();
+
+        return this;
+    }
+
+    // TODO TS: fix these docs
+    /// <summary>
+    /// Specify a custom view model to use for the entity Create endpoint
+    /// </summary>
+    /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithCreateViewModel<ViewModel>(viewModel => {
+    ///              var e = new WeatherForecast();
+    ///              viewModel?.Body?.CopyPropertiesTo(e);
+    ///              return e;
+    ///          }))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TViewModel, TSearchModel>(
+        Func<TViewModel, TSearchModel> from)
+        where TViewModel : class
+        where TSearchModel : class
+    {
+        ViewModelGuard("Please register read view model before adding controllers.");
+
+        var instance = new FunctionSearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>(@from);
+
+        Builder.WithRegistrationInstance<ISearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>>(instance);
+
+        SearchViewModelType = typeof(TViewModel);
+
+        return this;
+    }
+
+    // TODO TS: fix these docs
+    /// <summary>
+    /// Specify a custom view model to use for the entity Create endpoint
+    /// </summary>
+    /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithCreateViewModel<ViewModel>(viewModel => {
+    ///              var e = new WeatherForecast();
+    ///              viewModel?.Body?.CopyPropertiesTo(e);
+    ///              return e;
+    ///          }))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TSearchModel>()
+        where TSearchModel : class, new()
+    {
+        ViewModelGuard("Please register read view model before adding controllers.");
+
+        var instance = new FunctionSearchViewModelMapper<TKey, TEntity, TVersion, TSearchModel, TSearchModel>(x =>
+            x?.CopyPropertiesTo(new TSearchModel()));
+
+        Builder.WithRegistrationInstance<ISearchViewModelMapper<TKey, TEntity, TVersion, TSearchModel, TSearchModel>>(instance);
+
+        SearchViewModelType = typeof(TSearchModel);
 
         return this;
     }
@@ -470,7 +605,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithViewModel<TViewModel, TViewModelMapper>()
-        where TViewModel : class
+        where TViewModel : class, new()
         where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel>,
         ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel>,
         IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel>
