@@ -117,6 +117,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithIoControllers()
                     .WithOpenApiGroupName("The Beautiful Mongo People")
                     .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
+                    .WithChangeTrackingControllers(openApiName: "The Beautiful Mongo People Change Tracking")
                     .WithVersionedRoute("mongo-person")
                     .Builder
                     .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V1>,
@@ -289,7 +290,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithChangeTrackingControllers()
                         .WithCustomFieldsControllers()
                         .WithIoControllers()
-                        .WithVersionedRoute("ef-person/{{personId:guid}}/pets")
+                        .WithVersionedRoute("ef-person/{personId:guid}/pets")
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
 
 
