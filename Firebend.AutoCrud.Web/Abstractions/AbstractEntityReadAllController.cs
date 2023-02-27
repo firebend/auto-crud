@@ -7,12 +7,13 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityReadAllController<TKey, TEntity, TVersion, TViewModel> : ControllerBase, IAutoCrudController
+    public abstract class AbstractEntityReadAllController<TKey, TEntity, TVersion, TViewModel> : AbstractEntityControllerBase<TVersion>, IAutoCrudController
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TVersion : class, IApiVersion
@@ -22,7 +23,8 @@ namespace Firebend.AutoCrud.Web.Abstractions
         private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> _viewModelMapper;
 
         protected AbstractEntityReadAllController(IEntityReadService<TKey, TEntity> readService,
-            IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> viewModelMapper)
+            IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> viewModelMapper,
+            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _readService = readService;
             _viewModelMapper = viewModelMapper;
