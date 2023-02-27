@@ -206,7 +206,34 @@ public partial class
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithRoute(string route)
     {
+        if (route is null) route = OpenApiEntityName.Kebaberize();
         Route = route;
+        var (aType, aBuilder) = GetRouteAttributeInfo();
+        AddAttributeToAllControllers(aType, aBuilder);
+        return this;
+    }
+
+    // TODO TS: fix these docs
+    /// <summary>
+    /// Specifies the base route to use for an entity
+    /// </summary>
+    /// <param name="route"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers(true)
+    ///          .WithOpenApiGroupName("Weather Forecasts")
+    ///          .WithRoute("api/v1/mongo-person"))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithVersionedRoute(string route = null, string routePrefix = "api")
+    {
+        if (route is null) route = OpenApiEntityName.Kebaberize();
+        Route = $"{routePrefix}/v{{version:apiVersion}}/{route}";
         var (aType, aBuilder) = GetRouteAttributeInfo();
         AddAttributeToAllControllers(aType, aBuilder);
         return this;

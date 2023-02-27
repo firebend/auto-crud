@@ -27,7 +27,7 @@ namespace Firebend.AutoCrud.Tests.Web.Implementations.Swagger
 
     public class V1 : IApiVersion
     {
-        public string Version => "v1";
+        public int Version => 1;
         public string Name => "Version 1";
     }
 

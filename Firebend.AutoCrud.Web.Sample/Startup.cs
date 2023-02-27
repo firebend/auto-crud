@@ -1,28 +1,36 @@
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.Mongo;
+using Firebend.AutoCrud.Web.Abstractions;
+using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.AutoCrud.Web.Sample.Authorization;
+using Firebend.AutoCrud.Web.Sample.Controllers;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Extensions;
+using Firebend.AutoCrud.Web.Sample.Models;
 using Firebend.AutoCrud.Web.Sample.Tenant;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace Firebend.AutoCrud.Web.Sample
 {
@@ -61,6 +69,8 @@ namespace Firebend.AutoCrud.Web.Sample
 
             services
                 .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
+                .AddSingleton<IApiVersion, V1>()
+                .AddSingleton<IApiVersion, V2>()
                 .AddHttpContextAccessor()
                 .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer")))
                 .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer"))
@@ -74,9 +84,58 @@ namespace Firebend.AutoCrud.Web.Sample
                         .AddEfPets(configuration)
                         .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
                 })
+                //TODO TS: add an extension to do add api versioning, add versioned api explorer, and add swagger gen
+                .AddApiVersioning(o =>
+                {
+                    o.ReportApiVersions = false;
+                    o.AssumeDefaultVersionWhenUnspecified = false;
+
+                    var provider = services.BuildServiceProvider();
+                    var versions = provider.GetServices<IApiVersion>();
+
+                    var allControllerTypes = services
+                        .Where(x => x.ServiceType.IsAssignableTo(typeof(IAutoCrudController)))
+                        .Select(x => x.ServiceType)
+                        .ToList();
+
+                    foreach (var version in versions.OrderBy(x => x.Version).ThenBy(x => x.MinorVersion))
+                    {
+                        // TODO TS
+                        // use reflection to determine if there is a matching later version
+                        // if not, back fill that version
+                        // if so, mark this one as deprecated
+                        // https://referbruv.com/blog/integrating-aspnet-core-api-versions-with-swagger-ui/
+
+                        var type = typeof(AbstractEntityControllerBase<>).MakeGenericType(version.GetType());
+                        var controllers = allControllerTypes.Where(x => x.IsAssignableTo(type)).ToList();
+
+                        foreach (var controller in controllers)
+                        {
+                            o.Conventions.Controller(controller).HasApiVersion(new ApiVersion(version.Version, version.MinorVersion));
+                        }
+                    }
+                })
+                .AddVersionedApiExplorer(o =>
+                {
+                    o.GroupNameFormat = "'v'VVV";
+                    o.SubstituteApiVersionInUrl = true;
+                })
                 .AddSampleMassTransit(configuration)
                 .AddRouting()
-                .AddSwaggerGen()
+                .AddSwaggerGen(o =>
+                {
+                    var provider = services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
+                    foreach (var description in provider.ApiVersionDescriptions)
+                    {
+                        o.SwaggerDoc(
+                            description.GroupName,
+                            new OpenApiInfo
+                            {
+                                Title = $"Firebend Auto Crud Web Sample {description.GroupName}",
+                                Version = description.ApiVersion.ToString()
+                            });
+                    }
+                })
                 .AddFirebendAutoCrudApiBehaviors()
                 .AddScoped<IDistributedLockService, CustomLockService>()
                 .AddControllers()
@@ -93,7 +152,7 @@ namespace Firebend.AutoCrud.Web.Sample
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
             if (env.IsDevelopment())
             {
@@ -123,7 +182,13 @@ namespace Firebend.AutoCrud.Web.Sample
 
             app.UseSwagger(opt => opt.RouteTemplate = "/open-api/{documentName}/open-api.json");
 
-            app.UseSwaggerUI(opt => opt.SwaggerEndpoint("/open-api/v1/open-api.json", "Firebend Auto Crud Web Sample"));
+            app.UseSwaggerUI(opt =>
+            {
+                foreach (var description in provider.ApiVersionDescriptions)
+                {
+                    opt.SwaggerEndpoint($"/open-api/{description.GroupName}/open-api.json", $"Firebend Auto Crud Web Sample {description.GroupName}");
+                }
+            });
         }
     }
 }
