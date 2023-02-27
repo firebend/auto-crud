@@ -8,7 +8,7 @@ using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Interfaces
 {
-    public interface IEntityExportService<in T, in TVersion> : IDisposable
+    public interface IEntityExportService<in T, TVersion> : IDisposable
         where T : class
         where TVersion : class, IApiVersion
     {
