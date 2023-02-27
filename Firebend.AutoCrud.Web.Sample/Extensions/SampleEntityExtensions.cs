@@ -76,7 +76,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithSearchHandler<CustomSearchParameters, MongoCustomSearchHandler>()
                         .WithCrud()
                     )
-                    // .AddMongoPersonApiV1()
+                    .AddMongoPersonApiV1()
                     .AddMongoPersonApiV2()
 
             );
@@ -213,7 +213,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             view => new EfPerson(view),
                             entity => new CreatePersonViewModel { Body = new PersonViewModelBase(entity) })
                         .WithReadViewModel<GetPersonViewModel, PersonViewModelMapper>()
-                        //.WithReadViewModel(entity => new GetPersonViewModel(entity))
                         .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>(
                             (_, viewModel) => new EfPerson(viewModel))
                         .WithAllControllers(true)
@@ -226,6 +225,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithIoControllers()
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)
+                        .WithVersionedRoute()
                         .WithValidationService<PersonValidationService>()
                         .Builder
                         .WithRegistration<ICustomFieldsValidationService<Guid, EfPerson, V1>,

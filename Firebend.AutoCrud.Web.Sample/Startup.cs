@@ -30,7 +30,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 
 namespace Firebend.AutoCrud.Web.Sample
 {
@@ -69,8 +68,6 @@ namespace Firebend.AutoCrud.Web.Sample
 
             services
                 .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
-                .AddSingleton<IApiVersion, V1>()
-                .AddSingleton<IApiVersion, V2>()
                 .AddHttpContextAccessor()
                 .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer")))
                 .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer"))
@@ -84,58 +81,10 @@ namespace Firebend.AutoCrud.Web.Sample
                         .AddEfPets(configuration)
                         .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
                 })
-                //TODO TS: add an extension to do add api versioning, add versioned api explorer, and add swagger gen
-                .AddApiVersioning(o =>
-                {
-                    o.ReportApiVersions = false;
-                    o.AssumeDefaultVersionWhenUnspecified = false;
-
-                    var provider = services.BuildServiceProvider();
-                    var versions = provider.GetServices<IApiVersion>();
-
-                    var allControllerTypes = services
-                        .Where(x => x.ServiceType.IsAssignableTo(typeof(IAutoCrudController)))
-                        .Select(x => x.ServiceType)
-                        .ToList();
-
-                    foreach (var version in versions.OrderBy(x => x.Version).ThenBy(x => x.MinorVersion))
-                    {
-                        // TODO TS
-                        // use reflection to determine if there is a matching later version
-                        // if not, back fill that version
-                        // if so, mark this one as deprecated
-                        // https://referbruv.com/blog/integrating-aspnet-core-api-versions-with-swagger-ui/
-
-                        var type = typeof(AbstractEntityControllerBase<>).MakeGenericType(version.GetType());
-                        var controllers = allControllerTypes.Where(x => x.IsAssignableTo(type)).ToList();
-
-                        foreach (var controller in controllers)
-                        {
-                            o.Conventions.Controller(controller).HasApiVersion(new ApiVersion(version.Version, version.MinorVersion));
-                        }
-                    }
-                })
-                .AddVersionedApiExplorer(o =>
-                {
-                    o.GroupNameFormat = "'v'VVV";
-                    o.SubstituteApiVersionInUrl = true;
-                })
                 .AddSampleMassTransit(configuration)
                 .AddRouting()
-                .AddSwaggerGen(o =>
-                {
-                    var provider = services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
-                    foreach (var description in provider.ApiVersionDescriptions)
-                    {
-                        o.SwaggerDoc(
-                            description.GroupName,
-                            new OpenApiInfo
-                            {
-                                Title = $"Firebend Auto Crud Web Sample {description.GroupName}",
-                                Version = description.ApiVersion.ToString()
-                            });
-                    }
-                })
+                .AddAutoCrudApiVersioning(description => $"Firebend Auto Crud Web Sample {description.GroupName}",
+                    new[] { typeof(V1), typeof(V2) })
                 .AddFirebendAutoCrudApiBehaviors()
                 .AddScoped<IDistributedLockService, CustomLockService>()
                 .AddControllers()

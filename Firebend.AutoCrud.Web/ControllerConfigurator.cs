@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -233,7 +234,7 @@ public partial class
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithVersionedRoute(string route = null, string routePrefix = "api")
     {
         if (route is null) route = OpenApiEntityName.Kebaberize();
-        Route = $"{routePrefix}/v{{version:apiVersion}}/{route}";
+        Route = $"{routePrefix}/v{{version:apiVersion}}/{route}".TrimUrlExtraSlashes();
         var (aType, aBuilder) = GetRouteAttributeInfo();
         AddAttributeToAllControllers(aType, aBuilder);
         return this;
