@@ -66,6 +66,7 @@ public partial class
         WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, TEntity, DefaultUpdateViewModelMapper<TKey, TEntity, TVersion>>();
         WithCreateMultipleViewModel<MultipleEntityViewModel<TEntity>, TEntity,
             DefaultCreateMultipleViewModelMapper<TKey, TEntity, TVersion>>();
+        WithSearchRequest();
         WithMaxPageSize();
     }
 

@@ -95,7 +95,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     x.Body.CopyPropertiesTo(mongoTenantPerson);
                     return mongoTenantPerson;
                 })
-                .WithSearchViewModel<CustomSearchParameters>()
                 .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
                     {
                         var mongoTenantPerson = new MongoTenantPerson();
@@ -141,7 +140,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     x.Body.CopyPropertiesTo(mongoTenantPerson);
                     return mongoTenantPerson;
                 })
-                .WithSearchViewModel<CustomSearchParameters>()
                 .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
                     {
                         var mongoTenantPerson = new MongoTenantPerson();
@@ -217,7 +215,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddIo<Guid, EfPerson, V1>(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers<Guid, EfPerson, V1>(controllers => controllers
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
-                        .WithSearchViewModel<CustomSearchParameters>()
                         .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(
                             view => new EfPerson(view),
                             entity => new CreatePersonViewModel { Body = new PersonViewModelBase(entity) })
@@ -287,7 +284,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .AddControllers<Guid, EfPet, V1>(controllers => controllers
                         .WithReadViewModel(pet => new GetPetViewModel(pet))
                         .WithCreateViewModel<CreatePetViewModel>(pet => new EfPet(pet))
-                        .WithSearchViewModel<PetSearch>()
                         .WithUpdateViewModel<PutPetViewModel, PetBaseViewModel>(
                             pet => new EfPet(pet),
                             entity =>

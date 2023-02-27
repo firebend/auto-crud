@@ -136,14 +136,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     ///          .WithCreateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TSearchModel>(Type viewModelType, Type viewModelMapper)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel(Type viewModelType, Type viewModelMapper)
     {
         ViewModelGuard("Please register a Create view model before adding controllers");
 
         SearchViewModelType = viewModelType;
 
         var mapper = typeof(ISearchViewModelMapper<,,,,>)
-            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), viewModelType, typeof(TSearchModel));
+            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), viewModelType, Builder.SearchRequestType);
 
         Builder.WithRegistration(mapper, viewModelMapper, mapper);
 
@@ -237,17 +237,21 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     ///          }))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TSearchModel>()
-        where TSearchModel : class, new()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchRequest()
     {
         ViewModelGuard("Please register read view model before adding controllers.");
 
-        var instance = new FunctionSearchViewModelMapper<TKey, TEntity, TVersion, TSearchModel, TSearchModel>(x =>
-            x?.CopyPropertiesTo(new TSearchModel()));
+        SearchViewModelType = Builder.SearchRequestType;
 
-        Builder.WithRegistrationInstance<ISearchViewModelMapper<TKey, TEntity, TVersion, TSearchModel, TSearchModel>>(instance);
+        var @interface = typeof(ISearchViewModelMapper<,,,,>)
+            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, Builder.SearchRequestType);
 
-        SearchViewModelType = typeof(TSearchModel);
+        var @class = typeof(IdentitySearchViewModelMapper<,,,>)
+            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType);
+
+        var instance = Activator.CreateInstance(@class);
+
+        Builder.WithRegistrationInstance(@interface, instance);
 
         return this;
     }
