@@ -77,7 +77,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithSearchHandler<CustomSearchParameters, MongoCustomSearchHandler>()
                         .WithCrud()
                     )
-                    .AddIo(io => io.WithMapper(x => new PersonExport(x)))
+                    .AddIo<Guid, MongoTenantPerson, V1>(io => io.WithMapper(x => new PersonExport(x)))
                     .AddMongoPersonApiV1()
                     .AddMongoPersonApiV2()
 
@@ -208,7 +208,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                         .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
                     )
-                    .AddIo(io => io.WithMapper(x => new PersonExport(x)))
+                    .AddIo<Guid, EfPerson, V1>(io => io.WithMapper(x => new PersonExport(x)))
                     .AddControllers<Guid, EfPerson, V1>(controllers => controllers
                         .WithCreateViewModel<CreatePersonViewModel>(view => new EfPerson(view))
                         .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(
@@ -276,7 +276,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithEfChangeTracking()
                         .WithMassTransit()
                     )
-                    .AddIo(io => io.WithMapper(x => new ExportPetViewModel(x)))
+                    .AddIo<Guid, EfPet, V1>(io => io.WithMapper(x => new ExportPetViewModel(x)))
                     .AddControllers<Guid, EfPet, V1>(controllers => controllers
                         .WithReadViewModel(pet => new GetPetViewModel(pet))
                         .WithCreateViewModel<CreatePetViewModel>(pet => new EfPet(pet))

@@ -23,14 +23,14 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         where TVersion : class, IApiVersion
         where TKey : struct
     {
-        private readonly IEntityFileTypeMimeTypeMapper _entityFileTypeMimeTypeMapper;
-        private readonly IEntityExportService<TMapped> _exportService;
-        private readonly IEntityExportMapper<TEntity, TMapped> _mapper;
+        private readonly IEntityFileTypeMimeTypeMapper<TVersion> _entityFileTypeMimeTypeMapper;
+        private readonly IEntityExportService<TMapped, TVersion> _exportService;
+        private readonly IEntityExportMapper<TEntity, TVersion, TMapped> _mapper;
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
 
-        protected AbstractEntityExportControllerService(IEntityFileTypeMimeTypeMapper entityFileTypeMimeTypeMapper,
-            IEntityExportService<TMapped> exportService,
-            IEntityExportMapper<TEntity, TMapped> mapper,
+        protected AbstractEntityExportControllerService(IEntityFileTypeMimeTypeMapper<TVersion> entityFileTypeMimeTypeMapper,
+            IEntityExportService<TMapped, TVersion> exportService,
+            IEntityExportMapper<TEntity, TVersion, TMapped> mapper,
             IEntitySearchService<TKey, TEntity, TSearch> searchService)
         {
             _entityFileTypeMimeTypeMapper = entityFileTypeMimeTypeMapper;

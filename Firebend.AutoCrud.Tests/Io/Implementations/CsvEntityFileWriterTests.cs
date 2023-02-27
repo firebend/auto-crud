@@ -9,6 +9,7 @@ using AutoFixture.AutoMoq;
 using Firebend.AutoCrud.Io.Implementations;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
+using Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
@@ -46,32 +47,32 @@ public class CsvEntityFileWriterTests
         Fixture = new Fixture();
         Fixture.Customize(new AutoMoqCustomization());
 
-        var parentFileFieldWriteFilter = Fixture.Freeze<Mock<IFileFieldWriteFilter<Parent>>>();
+        var parentFileFieldWriteFilter = Fixture.Freeze<Mock<IFileFieldWriteFilter<Parent, V1>>>();
         parentFileFieldWriteFilter.Setup(x => x.ShouldExport(It.IsAny<IFileFieldWrite<Parent>>()))
             .Returns(true);
-        var childFileFieldWriteFilter = Fixture.Freeze<Mock<IFileFieldWriteFilter<Child>>>();
+        var childFileFieldWriteFilter = Fixture.Freeze<Mock<IFileFieldWriteFilter<Child, V1>>>();
         childFileFieldWriteFilter.Setup(x => x.ShouldExport(It.IsAny<IFileFieldWrite<Child>>()))
             .Returns(true);
-        var fileFieldWriteFilterFactory = Fixture.Freeze<Mock<IFileFieldWriteFilterFactory>>();
+        var fileFieldWriteFilterFactory = Fixture.Freeze<Mock<IFileFieldWriteFilterFactory<V1>>>();
 
         fileFieldWriteFilterFactory.Setup(x => x.GetFilter<Parent>())
             .Returns(parentFileFieldWriteFilter.Object);
         fileFieldWriteFilterFactory.Setup(x => x.GetFilter<Child>())
             .Returns(childFileFieldWriteFilter.Object);
         fileFieldWriteFilterFactory.Setup(x => x.GetFilter<Pet>())
-            .Returns((IFileFieldWriteFilter<Pet>)null);
+            .Returns((IFileFieldWriteFilter<Pet, V1>)null);
     }
 
     [TestCase]
     public async Task WriteRecordsAsync_Should_Work_With_Lists_Of_Lists()
     {
         //arrange
-        var fileFieldAutoMapper = Fixture.Create<FileFieldAutoMapper>();
+        var fileFieldAutoMapper = Fixture.Create<FileFieldAutoMapper<V1>>();
 
         var fields = fileFieldAutoMapper.MapOutput<Parent>();
         var parents = Fixture.CreateMany<Parent>(3).ToList();
 
-        var writer = new CsvEntityFileWriter(fileFieldAutoMapper);
+        var writer = new CsvEntityFileWriter<V1>(fileFieldAutoMapper);
 
         //act
         var result = await writer.WriteRecordsAsync(fields, parents, default);
@@ -97,7 +98,7 @@ public class CsvEntityFileWriterTests
     public async Task WriteRecordsAsync_Should_Work_With_Empty_And_Null_And_Single_List()
     {
         //arrange
-        var fileFieldAutoMapper = Fixture.Create<FileFieldAutoMapper>();
+        var fileFieldAutoMapper = Fixture.Create<FileFieldAutoMapper<V1>>();
 
         var fields = fileFieldAutoMapper.MapOutput<Parent>();
         var parents = Fixture.CreateMany<Parent>(3).ToList();
@@ -105,7 +106,7 @@ public class CsvEntityFileWriterTests
         parents[1].Children = null;
         parents[2].Children = new List<Child>();
 
-        var writer = new CsvEntityFileWriter(fileFieldAutoMapper);
+        var writer = new CsvEntityFileWriter<V1>(fileFieldAutoMapper);
 
         //act
         var result = await writer.WriteRecordsAsync(fields, parents, default);

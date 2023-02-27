@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Interfaces
 {
-    public interface IEntityFileWriter : IDisposable
+    public interface IEntityFileWriter<TVersion> : IDisposable
+        where TVersion : class, IApiVersion
     {
         EntityFileType FileType { get; }
 
@@ -17,11 +19,13 @@ namespace Firebend.AutoCrud.Io.Interfaces
             where T : class;
     }
 
-    public interface IEntityFileWriterCsv : IEntityFileWriter
+    public interface IEntityFileWriterCsv<TVersion> : IEntityFileWriter<TVersion>
+        where TVersion : class, IApiVersion
     {
     }
 
-    public interface IEntityFileWriterSpreadSheet : IEntityFileWriter
+    public interface IEntityFileWriterSpreadSheet<TVersion> : IEntityFileWriter<TVersion>
+        where TVersion : class, IApiVersion
     {
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Io
@@ -32,12 +33,13 @@ namespace Firebend.AutoCrud.Io
         ///     })
         /// </code>
         /// </example>
-        public static EntityCrudBuilder<TKey, TEntity> AddIo<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder,
-            Action<IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure = null)
+        public static EntityCrudBuilder<TKey, TEntity> AddIo<TKey, TEntity, TVersion>(this EntityCrudBuilder<TKey, TEntity> builder,
+            Action<IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity, TVersion>> configure = null)
             where TKey : struct
             where TEntity : class, IEntity<TKey>
+            where TVersion : class, IApiVersion
         {
-            using var config = new IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+            using var config = new IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity, TVersion>(builder);
             configure?.Invoke(config);
             return builder;
         }

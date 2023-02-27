@@ -10,6 +10,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Implementations;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
@@ -17,7 +18,8 @@ using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Abstractions
 {
-    public abstract class AbstractCsvHelperFileWriter : BaseDisposable, IEntityFileWriter
+    public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IEntityFileWriter<TVersion>
+        where TVersion : class, IApiVersion
     {
         private bool _disposed;
 
@@ -27,9 +29,9 @@ namespace Firebend.AutoCrud.Io.Abstractions
         private TextWriter _textWriter;
         private Stream _stream;
 
-        private readonly IFileFieldAutoMapper _autoMapper;
+        private readonly IFileFieldAutoMapper<TVersion> _autoMapper;
 
-        protected AbstractCsvHelperFileWriter(IFileFieldAutoMapper autoMapper)
+        protected AbstractCsvHelperFileWriter(IFileFieldAutoMapper<TVersion> autoMapper)
         {
             _autoMapper = autoMapper;
         }
@@ -79,7 +81,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 .Where(propInfo => propInfo.PropertyType.IsCollection())
                 .ToList();
 
-            var writeSubRowMethod = typeof(AbstractCsvHelperFileWriter)
+            var writeSubRowMethod = typeof(AbstractCsvHelperFileWriter<TVersion>)
                 .GetMethod(nameof(WriteSubRow), BindingFlags.NonPublic | BindingFlags.Instance);
             var hasAddedSubRows = false;
 

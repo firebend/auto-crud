@@ -1,11 +1,13 @@
 using System;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {
-    public class EntityFileWriterFactory : IEntityFileWriterFactory
+    public class EntityFileWriterFactory<TVersion> : IEntityFileWriterFactory<TVersion>
+        where TVersion : class, IApiVersion
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -14,10 +16,10 @@ namespace Firebend.AutoCrud.Io.Implementations
             _serviceProvider = serviceProvider;
         }
 
-        public IEntityFileWriter Get(EntityFileType type) => type switch
+        public IEntityFileWriter<TVersion> Get(EntityFileType type) => type switch
         {
-            EntityFileType.Csv => _serviceProvider.GetService<IEntityFileWriterCsv>(),
-            EntityFileType.Spreadsheet => _serviceProvider.GetService<IEntityFileWriterSpreadSheet>(),
+            EntityFileType.Csv => _serviceProvider.GetService<IEntityFileWriterCsv<TVersion>>(),
+            EntityFileType.Spreadsheet => _serviceProvider.GetService<IEntityFileWriterSpreadSheet<TVersion>>(),
             EntityFileType.Unknown => throw new Exception($"{nameof(EntityFileType.Unknown)} is not a valid export type."),
             _ => throw new Exception($"Could not find file writer for {type}")
         };

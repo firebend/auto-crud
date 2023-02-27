@@ -1,9 +1,11 @@
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Interfaces
 {
-    public interface IEntityFileWriterFactory
+    public interface IEntityFileWriterFactory<TVersion>
+        where TVersion : class, IApiVersion
     {
-        IEntityFileWriter Get(EntityFileType type);
+        IEntityFileWriter<TVersion> Get(EntityFileType type);
     }
 }
