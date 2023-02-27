@@ -18,6 +18,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
+    [ApiController]
     public abstract class
         AbstractCustomFieldsUpdateController<TKey, TEntity, TVersion> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TKey : struct

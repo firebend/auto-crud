@@ -35,7 +35,7 @@ public static class ApiVersioningExtensions
         return services.AddApiVersioning(o =>
             {
                 o.ReportApiVersions = false;
-                o.AssumeDefaultVersionWhenUnspecified = false;
+                o.AssumeDefaultVersionWhenUnspecified = true;
 
                 var provider = services.BuildServiceProvider();
                 var versions = provider.GetServices<IApiVersion>();
@@ -57,9 +57,6 @@ public static class ApiVersioningExtensions
                                         || (x.Version == version.Version && x.MinorVersion > version.MinorVersion))
                             .ToList();
 
-                        var gotAnyFutureVersions = false;
-                        var matchedVersion = version;
-
                         var controllerType = controller;
                         while (!controllerType.IsGenericType || !controllerType.GetGenericArguments()
                                    .Any(x => x.IsAssignableTo(typeof(IApiVersion))))
@@ -70,48 +67,21 @@ public static class ApiVersioningExtensions
                         var futureVersionTypes = futureVersions.Select(fv =>
                         {
                             var genericArgs = controllerType.GetGenericArguments();
-                            return (controllerType.GetGenericTypeDefinition().MakeGenericType(genericArgs
+                            return controllerType.GetGenericTypeDefinition().MakeGenericType(genericArgs
                                 .Select(arg =>
-                                    arg.IsAssignableTo(typeof(IApiVersion)) ? fv.GetType() : arg).ToArray()), fv);
+                                    arg.IsAssignableTo(typeof(IApiVersion)) ? fv.GetType() : arg).ToArray());
                         });
 
 
-                        foreach (var (futureType, futureVersion) in futureVersionTypes)
-                        {
-                            var existingType = allControllerTypes.Any(x => x.IsAssignableTo(futureType));
-                            if (existingType)
-                            {
-                                gotAnyFutureVersions = true;
-                                matchedVersion = futureVersion;
-
-                                break;
-                            }
-                        }
-
-                        if (gotAnyFutureVersions)
+                        if (futureVersionTypes.Any(type => allControllerTypes.Any(y => y.IsAssignableTo(type))))
                         {
                             o.Conventions.Controller(controller)
                                 .HasDeprecatedApiVersion(new ApiVersion(version.Version, version.MinorVersion));
-                            foreach (var v in futureVersions)
-                            {
-                                if (v.Version < matchedVersion.Version || (v.Version == matchedVersion.Version &&
-                                                                           v.MinorVersion <
-                                                                           matchedVersion.MinorVersion))
-                                {
-                                    o.Conventions.Controller(controller)
-                                        .HasDeprecatedApiVersion(new ApiVersion(v.Version, v.MinorVersion));
-                                }
-                            }
                         }
                         else
                         {
                             o.Conventions.Controller(controller)
                                 .HasApiVersion(new ApiVersion(version.Version, version.MinorVersion));
-                            foreach (var v in futureVersions)
-                            {
-                                o.Conventions.Controller(controller)
-                                    .HasApiVersion(new ApiVersion(v.Version, v.MinorVersion));
-                            }
                         }
                     }
                 }

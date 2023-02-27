@@ -110,18 +110,17 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         vm.CopyPropertiesTo(mongoTenantPerson);
                         return mongoTenantPerson;
                     })
-                    .WithAllControllers(true)
-                    .WithIoControllers()
-                    .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
-                    .WithChangeTrackingControllers()
                     .AddChangeTrackingResourceAuthorization()
                     .AddCustomFieldsResourceAuthorization()
                     .AddResourceAuthorization()
+                    .WithAllControllers(true)
+                    .WithIoControllers()
                     .WithOpenApiGroupName("The Beautiful Mongo People")
+                    .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                     .WithVersionedRoute("mongo-person")
                     .Builder
-                    .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
-                        CustomFieldValidationService<Guid, MongoTenantPerson, V2>>()
+                    .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V1>,
+                        CustomFieldValidationService<Guid, MongoTenantPerson, V1>>()
                 );
 
         private static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV2(this EntityCrudBuilder<Guid, MongoTenantPerson> builder) =>
@@ -155,12 +154,12 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     })
                     .WithAllControllers(true)
                     .WithIoControllers()
-                    .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
-                    .WithChangeTrackingControllers()
                     .AddChangeTrackingResourceAuthorization()
                     .AddCustomFieldsResourceAuthorization()
                     .AddResourceAuthorization()
                     .WithOpenApiGroupName("The Beautiful Mongo People")
+                    .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
+                    .WithChangeTrackingControllers(openApiName: "The Beautiful Mongo People Change Tracking")
                     .WithVersionedRoute("mongo-person")
                     .Builder
                     .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
@@ -193,7 +192,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                     .WithMassTransit();
                             }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPerson, int>, V1>(controllers => controllers
                                 .WithChangeTrackingControllers()
-                                .WithVersionedRoute("ef-person/{{personId:guid}}/custom-fields")
+                                .WithVersionedRoute("ef-person/{personId:guid}/custom-fields")
                                 .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
                                 .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
@@ -217,12 +216,12 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                             (_, viewModel) => new EfPerson(viewModel))
                         .WithAllControllers(true)
                         .AddResourceAuthorization()
-                        .WithOpenApiGroupName("The Beautiful Sql People")
-                        .WithChangeTrackingControllers()
                         .AddChangeTrackingResourceAuthorization()
                         .AddCustomFieldsResourceAuthorization()
-                        .WithCustomFieldsControllers(openApiName: "The Beautiful Sql People Custom Fields")
                         .WithIoControllers()
+                        .WithOpenApiGroupName("The Beautiful Sql People")
+                        .WithChangeTrackingControllers(openApiName: "The Beautiful Sql People Change Tracking")
+                        .WithCustomFieldsControllers(openApiName: "The Beautiful Sql People Custom Fields")
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)
                         .WithVersionedRoute()
@@ -256,7 +255,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                     .WithMassTransit();
                             }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPet, int>, V1>(controllers => controllers
                                 .WithChangeTrackingControllers()
-                                .WithVersionedRoute("ef-person/{{personId:guid}}/pets/{{petId:guid}}/custom-fields")
+                                .WithVersionedRoute("ef-person/{personId:guid}/pets/{petId:guid}/custom-fields")
                                 .WithOpenApiGroupName("The Beautiful Sql Fur Babies Custom Fields")
                                 .WithOpenApiEntityName("Fur Babies Custom Field", "Fur Babies Custom Fields"))))
                     .AddCrud(crud => crud.WithSearchHandler<PetSearch>((pets, parameters) =>
@@ -286,12 +285,14 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                 entity.CopyPropertiesTo(pet);
                                 return pet;
                             })
-                        .WithVersionedRoute("ef-person/{{personId:guid}}/pets")
                         .WithAllControllers(true)
-                        .WithOpenApiGroupName("The Beautiful Fur Babies")
                         .WithChangeTrackingControllers()
-                        .WithIoControllers()
                         .WithCustomFieldsControllers()
+                        .WithIoControllers()
+                        .WithVersionedRoute("ef-person/{{personId:guid}}/pets")
+                        .WithOpenApiGroupName("The Beautiful Fur Babies")
+
+
                     ));
     }
 

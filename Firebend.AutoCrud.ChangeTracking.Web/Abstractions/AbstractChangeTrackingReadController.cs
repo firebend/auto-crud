@@ -16,6 +16,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
 {
+    [ApiController]
     public abstract class AbstractChangeTrackingReadController<TKey, TEntity, TVersion, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
