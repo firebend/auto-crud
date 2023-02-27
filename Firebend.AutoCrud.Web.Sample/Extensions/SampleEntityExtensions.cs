@@ -83,9 +83,8 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
 
             );
 
-        public static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV1(this EntityCrudBuilder<Guid, MongoTenantPerson> builder)
-        {
-            return builder
+        private static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV1(this EntityCrudBuilder<Guid, MongoTenantPerson> builder) =>
+            builder
                 .AddIo<Guid, MongoTenantPerson, V1>(io => io.WithMapper(x => new PersonExport(x)))
                 .AddControllers<Guid, MongoTenantPerson, V1>(controllers => controllers
                     .WithReadViewModel(x => new GetPersonViewModel(x))
@@ -126,11 +125,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
                         CustomFieldValidationService<Guid, MongoTenantPerson, V2>>()
                 );
-        }
 
-        public static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV2(this EntityCrudBuilder<Guid, MongoTenantPerson> builder)
-        {
-            return builder
+        private static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV2(this EntityCrudBuilder<Guid, MongoTenantPerson> builder) =>
+            builder
                 .AddIo<Guid, MongoTenantPerson, V2>(io => io.WithMapper(x => new PersonExport(x)))
                 .AddControllers<Guid, MongoTenantPerson, V2>(controllers => controllers
                     .WithReadViewModel(x => new GetPersonViewModel(x))
@@ -171,7 +168,6 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
                         CustomFieldValidationService<Guid, MongoTenantPerson, V2>>()
                 );
-        }
 
         public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,
             IConfiguration configuration) =>
