@@ -119,9 +119,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         return this;
     }
 
-    // TODO TS: fix these docs
     /// <summary>
-    /// Specify a custom view model to use for the entity Create endpoint
+    /// Specify a custom view model to use for the entity Search endpoint
     /// </summary>
     /// <param name="viewModelType">The type of the view model to use</param>
     /// <param name="viewModelMapper">The type of the view model mapper to use</param>
@@ -133,7 +132,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .WithCreateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
+    ///          .WithSearchViewModel(typeof(ViewModel), typeof(ViewModelMapper))
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel(Type viewModelType, Type viewModelMapper)
@@ -150,9 +149,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         return this;
     }
 
-    // TODO TS: fix these docs
     /// <summary>
-    /// Specify a custom view model to use for the entity Create endpoint
+    /// Specify a custom view model to use for the entity Search endpoint
     /// </summary>
     /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
     /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
@@ -164,7 +162,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .WithCreateViewModel<ViewModel, ViewModelWrapper>()
+    ///          .WithSearchViewModel<ViewModel, ViewModelWrapper>()
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TViewModel, TSearchModel, TViewModelMapper>()
@@ -181,9 +179,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         return this;
     }
 
-    // TODO TS: fix these docs
     /// <summary>
-    /// Specify a custom view model to use for the entity Create endpoint
+    /// Specify a custom view model to use for the entity Search endpoint
     /// </summary>
     /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
     /// <example>
@@ -194,8 +191,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .WithCreateViewModel<ViewModel>(viewModel => {
-    ///              var e = new WeatherForecast();
+    ///          .WithSearchViewModel<ViewModel>(viewModel => {
+    ///              var e = new WeatherForecastSearchRequest();
     ///              viewModel?.Body?.CopyPropertiesTo(e);
     ///              return e;
     ///          }))
@@ -217,11 +214,10 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         return this;
     }
 
-    // TODO TS: fix these docs
     /// <summary>
-    /// Specify a custom view model to use for the entity Create endpoint
+    /// Registers the default search request model as the search view model. This will be called automatically
+    /// by the controller configurator.
     /// </summary>
-    /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")
@@ -230,11 +226,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     ///      .AddCrud()
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers()
-    ///          .WithCreateViewModel<ViewModel>(viewModel => {
-    ///              var e = new WeatherForecast();
-    ///              viewModel?.Body?.CopyPropertiesTo(e);
-    ///              return e;
-    ///          }))
+    ///          .WithSearchViewModel()))
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchRequest()

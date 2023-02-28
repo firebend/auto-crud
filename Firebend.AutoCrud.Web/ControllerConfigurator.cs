@@ -214,9 +214,12 @@ public partial class
         return this;
     }
 
-    // TODO TS: fix these docs
     /// <summary>
-    /// Specifies the base route to use for an entity
+    /// Specifies the route to use for an entity. The route will be prefixed with the
+    /// "routePrefix" parameter ("api" by default) followed by a slug for the version number,
+    /// e.g. "api/v{version:apiVersion}/mongo-person". If no route is specified, the
+    /// route will be "api/v{version:apiVersion}/[entityName]" where [entityName] is the
+    /// name of the entity in kebab case.
     /// </summary>
     /// <param name="route"></param>
     /// <example>
@@ -228,13 +231,13 @@ public partial class
     ///      .AddControllers(controllers => controllers
     ///          .WithAllControllers(true)
     ///          .WithOpenApiGroupName("Weather Forecasts")
-    ///          .WithRoute("api/v1/mongo-person"))
+    ///          .WithVersionedRoute("mongo-person"))
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithVersionedRoute(string route = null, string routePrefix = "api")
     {
         route ??= OpenApiEntityName.Kebaberize();
-        Route = $"{routePrefix}/v{{version:apiVersion}}/{route}".TrimUrlExtraSlashes();
+        Route = $"{routePrefix}/v{{version:apiVersion}}/{route}".TrimExtraPathSlashes();
         var (aType, aBuilder) = GetRouteAttributeInfo();
         AddAttributeToAllControllers(aType, aBuilder);
         return this;

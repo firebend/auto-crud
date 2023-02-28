@@ -57,6 +57,6 @@ namespace Firebend.AutoCrud.Core.Extensions
             });
         }
 
-        public static string TrimUrlExtraSlashes(this string url) => url.Replace("//", "/");
+        public static string TrimExtraPathSlashes(this string url) => url.Replace("//", "/");
     }
 }
