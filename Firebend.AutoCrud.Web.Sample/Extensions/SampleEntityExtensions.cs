@@ -128,29 +128,44 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
             builder
                 .AddIo<Guid, MongoTenantPerson, V2>(io => io.WithMapper(x => new PersonExport(x)))
                 .AddControllers<Guid, MongoTenantPerson, V2>(controllers => controllers
-                    .WithReadViewModel(x => new GetPersonViewModel(x))
-                    .WithCreateViewModel<CreatePersonViewModel>(x =>
+                    .WithReadViewModel(x => new GetPersonViewModelV2(x))
+                    .WithCreateViewModel<CreatePersonViewModelV2>(x =>
                     {
                         var mongoTenantPerson = new MongoTenantPerson();
                         x.Body.CopyPropertiesTo(mongoTenantPerson);
+                        mongoTenantPerson.FirstName = x.Body.Name.First;
+                        mongoTenantPerson.LastName = x.Body.Name.Last;
+                        mongoTenantPerson.NickName = x.Body.Name.NickName;
                         return mongoTenantPerson;
                     })
-                    .WithUpdateViewModel<CreatePersonViewModel, PersonViewModelBase>(vm =>
+                    .WithUpdateViewModel<CreatePersonViewModelV2, PersonViewModelBaseV2>(vm =>
                         {
                             var mongoTenantPerson = new MongoTenantPerson();
                             vm.Body.CopyPropertiesTo(mongoTenantPerson);
+                            mongoTenantPerson.FirstName = vm.Body.Name.First;
+                            mongoTenantPerson.LastName = vm.Body.Name.Last;
+                            mongoTenantPerson.NickName = vm.Body.Name.NickName;
                             return mongoTenantPerson;
                         },
                         entity =>
                         {
-                            var vm = new CreatePersonViewModel { Body = new PersonViewModelBase() };
+                            var vm = new CreatePersonViewModelV2 { Body = new PersonViewModelBaseV2() };
                             entity.CopyPropertiesTo(vm.Body);
+                            vm.Body.Name = new Name
+                            {
+                                First = entity.FirstName,
+                                Last = entity.LastName,
+                                NickName = entity.NickName
+                            };
                             return vm;
                         })
-                    .WithCreateMultipleViewModel<CreateMultiplePeopleViewModel, PersonViewModelBase>((_, vm) =>
+                    .WithCreateMultipleViewModel<CreateMultiplePeopleViewModelV2, PersonViewModelBaseV2>((_, vm) =>
                     {
                         var mongoTenantPerson = new MongoTenantPerson();
                         vm.CopyPropertiesTo(mongoTenantPerson);
+                        mongoTenantPerson.FirstName = vm.Name.First;
+                        mongoTenantPerson.LastName = vm.Name.Last;
+                        mongoTenantPerson.NickName = vm.Name.NickName;
                         return mongoTenantPerson;
                     })
                     .WithAllControllers(true)
