@@ -83,7 +83,7 @@ namespace Firebend.AutoCrud.Web.Sample
                 })
                 .AddSampleMassTransit(configuration)
                 .AddRouting()
-                .AddAutoCrudOpenApi(description => $"Firebend Auto Crud Web Sample {description.GroupName}")
+                .AddAutoCrudOpenApi(description => $"Firebend Auto Crud Web Sample {description.GroupName}", forwardNonDeprecatedEndpoints: true)
                 .AddFirebendAutoCrudApiBehaviors()
                 .AddScoped<IDistributedLockService, CustomLockService>()
                 .AddControllers()

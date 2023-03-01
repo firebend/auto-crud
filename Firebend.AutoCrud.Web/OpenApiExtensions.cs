@@ -23,7 +23,7 @@ public static class OpenApiExtensions
     /// <param name="configureSwaggerGenOptions">Additional configuration for SwaggerGenOptions</param>
     public static IServiceCollection AddAutoCrudOpenApi(this IServiceCollection services,
         Func<ApiVersionDescription, string> getTitle,
-        bool forwardNonDeprecatedEndpoints = true,
+        bool forwardNonDeprecatedEndpoints = false,
         Action<ApiVersioningOptions> configureVersioningOptions = null,
         Action<ApiExplorerOptions> configureExplorerOptions = null,
         Action<SwaggerGenOptions> configureSwaggerGenOptions = null)
