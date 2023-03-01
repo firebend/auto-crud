@@ -276,7 +276,11 @@ public partial class
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithVersionedRoute(string route = null, string routePrefix = "", bool deprecated = false)
     {
         route ??= OpenApiEntityName.Kebaberize();
-        Route = $"{routePrefix}/v{{version:apiVersion}}/{route}".TrimExtraPathSlashes();
+        var prefix = string.IsNullOrWhiteSpace(routePrefix)
+            ? "{routePrefix}/"
+            : string.Empty;
+
+        Route = $"{prefix}v{{version:apiVersion}}/{route}".TrimExtraPathSlashes();
 
         var (routeType, routeBuilder) = GetRouteAttributeInfo();
         AddAttributeToAllControllers(routeType, routeBuilder);
