@@ -118,7 +118,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithOpenApiGroupName("The Beautiful Mongo People")
                     .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                     .WithChangeTrackingControllers(openApiName: "The Beautiful Mongo People Change Tracking")
-                    .WithVersionedRoute("mongo-person")
+                    .WithVersionedRoute("mongo-person", "api", deprecated: true)
                     .Builder
                     .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V1>,
                         CustomFieldValidationService<Guid, MongoTenantPerson, V1>>()
@@ -176,7 +176,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     .WithOpenApiGroupName("The Beautiful Mongo People")
                     .WithCustomFieldsControllers(openApiName: "The Beautiful Mongo People Custom Fields")
                     .WithChangeTrackingControllers(openApiName: "The Beautiful Mongo People Change Tracking")
-                    .WithVersionedRoute("mongo-person")
+                    .WithVersionedRoute("mongo-person", "api")
                     .Builder
                     .WithRegistration<ICustomFieldsValidationService<Guid, MongoTenantPerson, V2>,
                         CustomFieldValidationService<Guid, MongoTenantPerson, V2>>()
@@ -208,7 +208,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                     .WithMassTransit();
                             }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPerson, int>, V1>(controllers => controllers
                                 .WithChangeTrackingControllers()
-                                .WithVersionedRoute("ef-person/{personId:guid}/custom-fields")
+                                .WithVersionedRoute("ef-person/{personId:guid}/custom-fields", "api")
                                 .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
                                 .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
                     .AddCrud(crud => crud
@@ -240,7 +240,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithCustomFieldsControllers(openApiName: "The Beautiful Sql People Custom Fields")
                         .WithMaxPageSize(20)
                         .WithMaxExportPageSize(50)
-                        .WithVersionedRoute()
+                        .WithVersionedRoute(routePrefix: "api")
                         .WithValidationService<PersonValidationService>()
                         .Builder
                         .WithRegistration<ICustomFieldsValidationService<Guid, EfPerson, V1>,
@@ -271,7 +271,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                                     .WithMassTransit();
                             }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPet, int>, V1>(controllers => controllers
                                 .WithChangeTrackingControllers()
-                                .WithVersionedRoute("ef-person/{personId:guid}/pets/{petId:guid}/custom-fields")
+                                .WithVersionedRoute("ef-person/{personId:guid}/pets/{petId:guid}/custom-fields", "api")
                                 .WithOpenApiGroupName("The Beautiful Sql Fur Babies Custom Fields")
                                 .WithOpenApiEntityName("Fur Babies Custom Field", "Fur Babies Custom Fields"))))
                     .AddCrud(crud => crud.WithSearchHandler<PetSearch>((pets, parameters) =>
@@ -305,7 +305,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithChangeTrackingControllers()
                         .WithCustomFieldsControllers()
                         .WithIoControllers()
-                        .WithVersionedRoute("ef-person/{personId:guid}/pets")
+                        .WithVersionedRoute("ef-person/{personId:guid}/pets", "api")
                         .WithOpenApiGroupName("The Beautiful Fur Babies")
 
 

@@ -55,7 +55,7 @@ public partial class
         OpenApiEntityName = name;
         OpenApiEntityNamePlural = name.Pluralize();
 
-        WithVersionedRoute(name.Kebaberize());
+        WithVersionedRoute(name.Kebaberize(), "api");
         WithOpenApiGroupName(name);
 
         WithValidationService<DefaultEntityValidationService<TKey, TEntity, TVersion>>(false);
@@ -86,6 +86,40 @@ public partial class
         var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] { Route });
 
         return (routeType, attributeBuilder);
+    }
+
+    private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetApiVersionAttributeInfo(bool deprecated)
+    {
+        var type = typeof(ApiVersionAttribute);
+        var ctor = type.GetConstructor(new[] { typeof(string) });
+
+        if (ctor == null)
+        {
+            return default;
+        }
+
+        var version = (IApiVersion)Activator.CreateInstance(typeof(TVersion));
+
+        var propertyInfos = type.GetProperties().Where(x => x.Name == nameof(ApiVersionAttribute.Deprecated)).Take(1).ToArray();
+
+        var attributeBuilder = new CustomAttributeBuilder(ctor, new object[] { $"{version.Version}.{version.MinorVersion}" }, propertyInfos, new object[] { deprecated });
+
+        return (type, attributeBuilder);
+    }
+
+    private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetApiVersionNeutralAttributeInfo()
+    {
+        var type = typeof(ApiVersionNeutralAttribute);
+        var ctor = type.GetConstructor(Array.Empty<Type>());
+
+        if (ctor == null)
+        {
+            return default;
+        }
+
+        var attributeBuilder = new CustomAttributeBuilder(ctor, Array.Empty<object>());
+
+        return (type, attributeBuilder);
     }
 
     private void AddRouteAttribute(Type controllerType)
@@ -209,8 +243,13 @@ public partial class
     {
         route ??= OpenApiEntityName.Kebaberize();
         Route = route;
+
         var (aType, aBuilder) = GetRouteAttributeInfo();
         AddAttributeToAllControllers(aType, aBuilder);
+
+        var (apiVersionType, apiVersionBuilder) = GetApiVersionNeutralAttributeInfo();
+        AddAttributeToAllControllers(apiVersionType, apiVersionBuilder);
+
         return this;
     }
 
@@ -218,7 +257,7 @@ public partial class
     /// Specifies the route to use for an entity. The route will be prefixed with the
     /// "routePrefix" parameter ("api" by default) followed by a slug for the version number,
     /// e.g. "api/v{version:apiVersion}/mongo-person". If no route is specified, the
-    /// route will be "api/v{version:apiVersion}/[entityName]" where [entityName] is the
+    /// route will be "v{version:apiVersion}/[entityName]" where [entityName] is the
     /// name of the entity in kebab case.
     /// </summary>
     /// <param name="route"></param>
@@ -234,12 +273,17 @@ public partial class
     ///          .WithVersionedRoute("mongo-person"))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithVersionedRoute(string route = null, string routePrefix = "api")
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithVersionedRoute(string route = null, string routePrefix = "", bool deprecated = false)
     {
         route ??= OpenApiEntityName.Kebaberize();
         Route = $"{routePrefix}/v{{version:apiVersion}}/{route}".TrimExtraPathSlashes();
-        var (aType, aBuilder) = GetRouteAttributeInfo();
-        AddAttributeToAllControllers(aType, aBuilder);
+
+        var (routeType, routeBuilder) = GetRouteAttributeInfo();
+        AddAttributeToAllControllers(routeType, routeBuilder);
+
+        var (apiVersionType, apiVersionBuilder) = GetApiVersionAttributeInfo(deprecated);
+        AddAttributeToAllControllers(apiVersionType, apiVersionBuilder);
+
         return this;
     }
 

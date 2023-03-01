@@ -21,8 +21,8 @@ namespace Firebend.AutoCrud.Io
         ///         ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///             forecast.WithDbContext<AppDbContext>()
         ///                 .AddCrud()
-        ///                 .AddIo(io => io.WithMapper(x => new WeatherForecastExport(x)))
-        ///                 .AddControllers(controllers => controllers
+        ///                 .AddIo<Guid, WeatherForecast, V1>(io => io.WithMapper(x => new WeatherForecastExport(x)))
+        ///                 .AddControllers<Guid, WeatherForecast, V1>(controllers => controllers
         ///                         .WithAllControllers(true)
         ///                         .WithOpenApiGroupName("WeatherForecasts")
         ///                         .WithIoControllers()
