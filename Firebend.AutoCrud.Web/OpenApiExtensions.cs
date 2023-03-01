@@ -15,6 +15,12 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web;
 
+public class TypeWithOriginalType
+{
+    public Type Type { get; set; }
+    public Type OriginalType { get; set; }
+}
+
 public static class OpenApiExtensions
 {
     public static IServiceCollection AddAutoCrudOpenApi(this IServiceCollection services,
@@ -40,12 +46,12 @@ public static class OpenApiExtensions
                             ct = ct.BaseType;
                         }
 
-                        return ct;
+                        return new TypeWithOriginalType { Type = ct, OriginalType = x };
                     })
                     .ToList();
 
                 var versions = allControllerTypes
-                    .Select(x => x.GetGenericArguments().First(y => y.IsAssignableTo(typeof(IApiVersion))))
+                    .Select(x => x.Type.GetGenericArguments().First(y => y.IsAssignableTo(typeof(IApiVersion))))
                     .Distinct()
                     .Select(x => (IApiVersion)Activator.CreateInstance(x))
                     .ToList();
@@ -54,7 +60,7 @@ public static class OpenApiExtensions
                 {
                     var baseType = typeof(AbstractEntityControllerBase<>).MakeGenericType(version.GetType());
 
-                    var controllerTypes = allControllerTypes.Where(x => x.IsAssignableTo(baseType)).ToList();
+                    var controllerTypes = allControllerTypes.Where(x => x.Type.IsAssignableTo(baseType)).ToList();
 
                     foreach (var controllerType in controllerTypes)
                     {
@@ -65,20 +71,20 @@ public static class OpenApiExtensions
 
                         var futureVersionTypes = futureVersions.Select(fv =>
                         {
-                            var genericArgs = controllerType.GetGenericArguments();
-                            return controllerType.GetGenericTypeDefinition().MakeGenericType(genericArgs
+                            var genericArgs = controllerType.Type.GetGenericArguments();
+                            return controllerType.Type.GetGenericTypeDefinition().MakeGenericType(genericArgs
                                 .Select(arg =>
                                     arg.IsAssignableTo(typeof(IApiVersion)) ? fv.GetType() : arg).ToArray());
                         });
 
-                        if (futureVersionTypes.Any(t => allControllerTypes.Any(y => ControllerTypesMatch(y, t))))
+                        if (futureVersionTypes.Any(t => allControllerTypes.Any(y => ControllerTypesMatch(y.Type, t))))
                         {
-                            o.Conventions.Controller(controllerType)
+                            o.Conventions.Controller(controllerType.OriginalType)
                                 .HasDeprecatedApiVersion(new ApiVersion(version.Version, version.MinorVersion));
                         }
                         else
                         {
-                            o.Conventions.Controller(controllerType)
+                            o.Conventions.Controller(controllerType.OriginalType)
                                 .HasApiVersion(new ApiVersion(version.Version, version.MinorVersion));
                         }
                     }
@@ -101,61 +107,30 @@ public static class OpenApiExtensions
                         new OpenApiInfo { Title = getTitle(description), Version = description.ApiVersion.ToString() });
                 }
 
-                // o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
-                // {
-                //     var versions = apiDesc.ActionDescriptor
-                //         .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
-                //
-                //     // if (apiDesc.RelativePath.Contains("api/v1/mongo-person/validate"))
-                //     // {
-                //     //     throw new Exception(System.Text.Json.JsonSerializer.Serialize(versions.DeprecatedApiVersions.Select(x => x.MajorVersion)));
-                //     // }
-                //
-                //     if (versions == null)
-                //     {
-                //         return true;
-                //     }
-                //
-                //     bool Predicate(ApiVersion v) => $"v{v}" == docName
-                //                                     || $"v{v.MajorVersion}" == docName
-                //                                     || $"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated();
-                //
-                //     if (versions.DeclaredApiVersions.Any())
-                //     {
-                //         return versions.DeclaredApiVersions.Any(Predicate);
-                //     }
-                //
-                //     return versions.ImplementedApiVersions.Any(Predicate);
-                // };
+                o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
+                {
+                    var versions = apiDesc.ActionDescriptor
+                        .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
+
+                    if (versions == null)
+                    {
+                        return true;
+                    }
+
+                    bool Predicate(ApiVersion v) => $"v{v}" == docName
+                                                    || $"v{v.MajorVersion}" == docName
+                                                    || $"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated();
+
+                    if (versions.DeclaredApiVersions.Any())
+                    {
+                        return versions.DeclaredApiVersions.Any(Predicate);
+                    }
+
+                    return versions.ImplementedApiVersions.Any(Predicate);
+                };
 
                 configureSwaggerGenOptions?.Invoke(o);
             });
-    }
-
-    public static void PrintType(Type t)
-    {
-        var a = new StringBuilder();
-        if (t.IsGenericType)
-        {
-
-            a.Append(t.Name.Substring(0, t.Name.IndexOf("`", StringComparison.Ordinal)));
-            a.Append("<");
-            var args = t.GetGenericArguments();
-            for (var i = 0; i < args.Length; i++)
-            {
-                a.Append(args[i]);
-                if (i < args.Length - 1)
-                {
-                    a.Append(", ");
-                }
-            }
-            a.Append(">");
-        }
-        else
-        {
-            a.Append(t.Name);
-        }
-        Console.WriteLine(a.ToString());
     }
 
     private static bool ControllerTypesMatch(Type typeA, Type typeB)
@@ -171,12 +146,8 @@ public static class OpenApiExtensions
         var argsA = typeA.GetGenericArguments();
         var argsB = typeB.GetGenericArguments();
 
-        if (argsA[0] == argsB[0] && argsA[1] == argsB[1] && argsA[2] == argsB[2])
-        {
-            return true;
-        }
-
-        return false;
+        // TKey, TEntity, and TVersion are all the same
+        return argsA[0] == argsB[0] && argsA[1] == argsB[1] && argsA[2] == argsB[2];
     }
 }
 
