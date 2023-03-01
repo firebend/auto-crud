@@ -78,7 +78,7 @@ public static class OpenApiExtensions
 
                         bool Predicate(ApiVersion v) => $"v{v}" == docName
                                                         || $"v{v.MajorVersion}" == docName
-                                                        || $"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated();
+                                                        || ($"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated());
 
                         return versions.DeclaredApiVersions.Any()
                             ? versions.DeclaredApiVersions.Any(Predicate)
