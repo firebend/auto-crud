@@ -50,18 +50,11 @@ public static class OpenApiExtensions
                     .Select(x => (IApiVersion)Activator.CreateInstance(x))
                     .ToList();
 
-                Console.WriteLine(string.Join(", ", versions.Select(x => x.Name)));
-
-                var deprecated = new List<string>();
                 foreach (var version in versions.OrderBy(x => x.Version).ThenBy(x => x.MinorVersion))
                 {
                     var baseType = typeof(AbstractEntityControllerBase<>).MakeGenericType(version.GetType());
 
-                    // TODO TS: we will have to do something other than isassignable here, either use the url or match the controller by type names somehow
-                    var controllerTypes = allControllerTypes.Where(x => x.IsAssignableTo(baseType))
-                        .ToList();
-
-
+                    var controllerTypes = allControllerTypes.Where(x => x.IsAssignableTo(baseType)).ToList();
 
                     foreach (var controllerType in controllerTypes)
                     {
@@ -78,21 +71,8 @@ public static class OpenApiExtensions
                                     arg.IsAssignableTo(typeof(IApiVersion)) ? fv.GetType() : arg).ToArray());
                         });
 
-                        Console.WriteLine("!!!");
-                        PrintType(controllerType);
-                        Console.WriteLine("_______________");
-                        foreach (var futureVersionType in futureVersionTypes)
+                        if (futureVersionTypes.Any(t => allControllerTypes.Any(y => ControllerTypesMatch(y, t))))
                         {
-                            PrintType(futureVersionType);
-                            Console.WriteLine(allControllerTypes.Any(y => y.IsAssignableTo(futureVersionType)) ? "TRUE" : "FALSE");
-
-                        }
-
-                        deprecated.Add(string.Join("\n", futureVersionTypes.Select(x => x.Name)));
-
-                        if (futureVersionTypes.Any(t => allControllerTypes.Any(y => y.IsAssignableTo(t))))
-                        {
-                            deprecated.Add(controllerType + " is deprecated");
                             o.Conventions.Controller(controllerType)
                                 .HasDeprecatedApiVersion(new ApiVersion(version.Version, version.MinorVersion));
                         }
@@ -102,11 +82,7 @@ public static class OpenApiExtensions
                                 .HasApiVersion(new ApiVersion(version.Version, version.MinorVersion));
                         }
                     }
-
-
                 }
-
-                throw new Exception(string.Join("\n", deprecated));
                 configureVersioningOptions?.Invoke(o);
             })
             .AddVersionedApiExplorer(o =>
@@ -125,32 +101,32 @@ public static class OpenApiExtensions
                         new OpenApiInfo { Title = getTitle(description), Version = description.ApiVersion.ToString() });
                 }
 
-                o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
-                {
-                    var versions = apiDesc.ActionDescriptor
-                        .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
-
-                    // if (apiDesc.RelativePath.Contains("api/v1/mongo-person/validate"))
-                    // {
-                    //     throw new Exception(System.Text.Json.JsonSerializer.Serialize(versions.DeprecatedApiVersions.Select(x => x.MajorVersion)));
-                    // }
-
-                    if (versions == null)
-                    {
-                        return true;
-                    }
-
-                    bool Predicate(ApiVersion v) => $"v{v}" == docName
-                                                    || $"v{v.MajorVersion}" == docName
-                                                    || $"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated();
-
-                    if (versions.DeclaredApiVersions.Any())
-                    {
-                        return versions.DeclaredApiVersions.Any(Predicate);
-                    }
-
-                    return versions.ImplementedApiVersions.Any(Predicate);
-                };
+                // o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
+                // {
+                //     var versions = apiDesc.ActionDescriptor
+                //         .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
+                //
+                //     // if (apiDesc.RelativePath.Contains("api/v1/mongo-person/validate"))
+                //     // {
+                //     //     throw new Exception(System.Text.Json.JsonSerializer.Serialize(versions.DeprecatedApiVersions.Select(x => x.MajorVersion)));
+                //     // }
+                //
+                //     if (versions == null)
+                //     {
+                //         return true;
+                //     }
+                //
+                //     bool Predicate(ApiVersion v) => $"v{v}" == docName
+                //                                     || $"v{v.MajorVersion}" == docName
+                //                                     || $"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated();
+                //
+                //     if (versions.DeclaredApiVersions.Any())
+                //     {
+                //         return versions.DeclaredApiVersions.Any(Predicate);
+                //     }
+                //
+                //     return versions.ImplementedApiVersions.Any(Predicate);
+                // };
 
                 configureSwaggerGenOptions?.Invoke(o);
             });
@@ -180,6 +156,27 @@ public static class OpenApiExtensions
             a.Append(t.Name);
         }
         Console.WriteLine(a.ToString());
+    }
+
+    private static bool ControllerTypesMatch(Type typeA, Type typeB)
+    {
+        var defA = typeA.GetGenericTypeDefinition();
+        var defB = typeB.GetGenericTypeDefinition();
+
+        if (defA != defB)
+        {
+            return false;
+        }
+
+        var argsA = typeA.GetGenericArguments();
+        var argsB = typeB.GetGenericArguments();
+
+        if (argsA[0] == argsB[0] && argsA[1] == argsB[1] && argsA[2] == argsB[2])
+        {
+            return true;
+        }
+
+        return false;
     }
 }
 
