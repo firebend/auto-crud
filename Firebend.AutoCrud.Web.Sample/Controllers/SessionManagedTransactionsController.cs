@@ -46,7 +46,8 @@ public class SessionManagedTransactionsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/api/v1/transactions/commit")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/transactions/commit")]
     public Task<ActionResult<SessionTransactionAssertionViewModel>> CommitAsync(
         [FromBody] SessionTransactionRequestModel requestModel, CancellationToken cancellationToken)
     {
@@ -55,7 +56,8 @@ public class SessionManagedTransactionsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/api/v1/transactions/rollback")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/transactions/rollback")]
     public Task<ActionResult<SessionTransactionAssertionViewModel>> RollbackAsync(
         [FromBody] SessionTransactionRequestModel requestModel, CancellationToken cancellationToken)
     {
@@ -64,7 +66,8 @@ public class SessionManagedTransactionsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/api/v1/transactions/exception")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/transactions/exception")]
     public Task<ActionResult<SessionTransactionAssertionViewModel>> ExceptionRollbackAsync(
         [FromBody] SessionTransactionRequestModel requestModel,
         CancellationToken cancellationToken)

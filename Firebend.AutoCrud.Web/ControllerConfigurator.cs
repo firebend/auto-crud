@@ -55,7 +55,7 @@ public partial class
         OpenApiEntityName = name;
         OpenApiEntityNamePlural = name.Pluralize();
 
-        WithRoute($"/api/v1/{name.Kebaberize()}");
+        WithVersionedRoute(name.Kebaberize());
         WithOpenApiGroupName(name);
 
         WithValidationService<DefaultEntityValidationService<TKey, TEntity, TVersion>>(false);

@@ -14,10 +14,11 @@ using Microsoft.Extensions.Options;
 namespace Firebend.AutoCrud.Web.Sample.Controllers;
 
 [Authorize]
-[Route("/api/v1/mongo-person/{personId:guid}/fullname")]
+[Route("/api/v{version:apiVersion}/mongo-person/{personId:guid}/fullname")]
 [OpenApiGroupName("The Beautiful Mongo People")]
 [OpenApiEntityName("MongoTenantPerson")]
 [ApiController]
+[ApiVersion("1.0")]
 public class CustomControllerWithResourceAuthorizeAttribute : AbstractEntityControllerBase<V1>
 {
     private readonly IEntityReadService<Guid, MongoTenantPerson> _readService;

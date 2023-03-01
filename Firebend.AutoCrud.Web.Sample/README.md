@@ -160,7 +160,7 @@ generator.AddEntity<Guid, EfPerson>(person =>
                                     .WithMassTransit();
                             }).AddControllers(controllers => controllers
                                 .WithChangeTrackingControllers()
-                                .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
+                                .WithVersionedRoute("ef-person/{personId}/custom-fields")
                                 .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
                                 .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
 ```

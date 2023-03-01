@@ -23,8 +23,19 @@ public class TypeWithOriginalType
 
 public static class OpenApiExtensions
 {
+    /// <summary>
+    /// Enables OpenAPI documentation for the AutoCrud controllers
+    /// </summary>
+    /// <param name="getTitle">A func that takes an ApiVersionDescription object and returns the title for the swagger doc.</param>
+    /// <param name="markDeprecated">If true, mark controllers that have a matching later version as deprecated.</param>
+    /// <param name="forwardNonSupersededEndpoints">If true, endpoints that don't have a matching later version will appear in the swagger doc for later versions.</param>
+    /// <param name="configureVersioningOptions">Additional configuration for ApiVersioningOptions</param>
+    /// <param name="configureExplorerOptions">Additional configuration for ApiExplorerOptions</param>
+    /// <param name="configureSwaggerGenOptions">Additional configuration for SwaggerGenOptions</param>
     public static IServiceCollection AddAutoCrudOpenApi(this IServiceCollection services,
         Func<ApiVersionDescription, string> getTitle,
+        bool markDeprecated = true,
+        bool forwardNonSupersededEndpoints = true,
         Action<ApiVersioningOptions> configureVersioningOptions = null,
         Action<ApiExplorerOptions> configureExplorerOptions = null,
         Action<SwaggerGenOptions> configureSwaggerGenOptions = null)
@@ -77,7 +88,7 @@ public static class OpenApiExtensions
                                     arg.IsAssignableTo(typeof(IApiVersion)) ? fv.GetType() : arg).ToArray());
                         });
 
-                        if (futureVersionTypes.Any(t => allControllerTypes.Any(y => ControllerTypesMatch(y.Type, t))))
+                        if (markDeprecated && futureVersionTypes.Any(t => allControllerTypes.Any(y => ControllerTypesMatch(y.Type, t))))
                         {
                             o.Conventions.Controller(controllerType.OriginalType)
                                 .HasDeprecatedApiVersion(new ApiVersion(version.Version, version.MinorVersion));
@@ -107,27 +118,30 @@ public static class OpenApiExtensions
                         new OpenApiInfo { Title = getTitle(description), Version = description.ApiVersion.ToString() });
                 }
 
-                o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
+                if (forwardNonSupersededEndpoints)
                 {
-                    var versions = apiDesc.ActionDescriptor
-                        .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
-
-                    if (versions == null)
+                    o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
                     {
-                        return true;
-                    }
+                        var versions = apiDesc.ActionDescriptor
+                            .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
 
-                    bool Predicate(ApiVersion v) => $"v{v}" == docName
-                                                    || $"v{v.MajorVersion}" == docName
-                                                    || $"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated();
+                        if (versions == null)
+                        {
+                            return true;
+                        }
 
-                    if (versions.DeclaredApiVersions.Any())
-                    {
-                        return versions.DeclaredApiVersions.Any(Predicate);
-                    }
+                        bool Predicate(ApiVersion v) => $"v{v}" == docName
+                                                        || $"v{v.MajorVersion}" == docName
+                                                        || $"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated();
 
-                    return versions.ImplementedApiVersions.Any(Predicate);
-                };
+                        if (versions.DeclaredApiVersions.Any())
+                        {
+                            return versions.DeclaredApiVersions.Any(Predicate);
+                        }
+
+                        return versions.ImplementedApiVersions.Any(Predicate);
+                    };
+                }
 
                 configureSwaggerGenOptions?.Invoke(o);
             });

@@ -134,6 +134,7 @@ namespace Firebend.AutoCrud.Web.Sample
             {
                 foreach (var description in provider.ApiVersionDescriptions)
                 {
+                    string isDeprecated = description.IsDeprecated ? " (DEPRECATED)" : string.Empty;
                     opt.SwaggerEndpoint($"/open-api/{description.GroupName}/open-api.json", $"Firebend Auto Crud Web Sample {description.GroupName}");
                 }
             });
