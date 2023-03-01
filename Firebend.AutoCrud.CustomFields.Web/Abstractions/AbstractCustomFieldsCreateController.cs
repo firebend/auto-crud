@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions;
 public abstract class AbstractCustomFieldsCreateController<TKey, TEntity, TVersion> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
 {
     private readonly ICustomFieldsValidationService<TKey, TEntity, TVersion> _customFieldsValidationService;
     private readonly ICustomFieldsCreateService<TKey, TEntity> _createService;

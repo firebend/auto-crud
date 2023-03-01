@@ -36,13 +36,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace Firebend.AutoCrud.Web.Sample.Extensions
 {
-    public class V1 : IApiVersion
+    public class V1 : IAutoCrudApiVersion
     {
         public int Version => 1;
         public string Name => "Api V1";
     }
 
-    public class V2 : IApiVersion
+    public class V2 : IAutoCrudApiVersion
     {
         public int Version => 2;
         public string Name => "Api V2";

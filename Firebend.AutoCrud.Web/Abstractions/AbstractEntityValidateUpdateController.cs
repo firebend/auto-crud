@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TReadViewModel : class
         where TUpdateViewModel : class
         where TUpdateViewModelBody : class

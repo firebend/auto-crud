@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Io.Interfaces
 {
     public interface IEntityExportService<in T, TVersion> : IDisposable
         where T : class
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         Task<Stream> ExportAsync(EntityFileType exportType,
             IEnumerable<T> records,

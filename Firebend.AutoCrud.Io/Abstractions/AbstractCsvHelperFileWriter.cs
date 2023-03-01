@@ -19,7 +19,7 @@ using Firebend.JsonPatch.Extensions;
 namespace Firebend.AutoCrud.Io.Abstractions
 {
     public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IEntityFileWriter<TVersion>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         private bool _disposed;
 

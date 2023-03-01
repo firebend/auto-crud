@@ -17,7 +17,7 @@ public static class ControllerExtensions
         CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TCreateViewModel : class
     {
         if (body == null)

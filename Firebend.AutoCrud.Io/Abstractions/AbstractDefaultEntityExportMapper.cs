@@ -5,7 +5,7 @@ namespace Firebend.AutoCrud.Io.Abstractions
 {
     public abstract class AbstractDefaultEntityExportMapper<T, TVersion> : IEntityExportMapper<T, TVersion, T>
         where T : class
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         public T Map(T entity) => entity;
     }

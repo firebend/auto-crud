@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 public class EntityDeleteAuthorizationFilter<TKey, TEntity, TVersion> : EntityAuthorizationFilter<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
 {
     private static readonly string IdArg = nameof(IEntity<TKey>.Id).ToLower();
 

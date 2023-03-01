@@ -8,7 +8,7 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
     public class DefaultEntityKeyParser<TKey, TEntity, TVersion> : IEntityKeyParser<TKey, TEntity, TVersion>
         where TKey : struct
         where TEntity : IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         public TKey? ParseKey(string key)
         {

@@ -17,7 +17,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => typeof(AbstractIoController<,,,,>)
             .MakeGenericType(
                 configurator.Builder.EntityKeyType,
@@ -48,7 +48,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         if (configurator?.Builder?.SearchRequestType == null)
         {
@@ -110,7 +110,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         configurator.Builder.WithRegistrationInstance<IMaxExportPageSize<TKey, TEntity, TVersion>>(
             new DefaultMaxPageSize<TEntity, TKey, TVersion>(pageSize));
@@ -123,7 +123,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddAuthorizationPolicy(configurator.IoControllerType(),
             policy);
 }

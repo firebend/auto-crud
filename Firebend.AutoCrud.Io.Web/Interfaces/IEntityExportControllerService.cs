@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Io.Web.Interfaces
         where TSearch : IEntitySearchRequest
         where TKey : struct
         where TEntity : IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TMapped : class
     {
         Task<FileResult> ExportEntitiesAsync(EntityFileType fileType,

@@ -34,7 +34,7 @@ public partial class
     where TBuilder : EntityCrudBuilder<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
 {
     internal ControllerConfigurator(TBuilder builder) : base(builder)
     {
@@ -98,7 +98,7 @@ public partial class
             return default;
         }
 
-        var version = (IApiVersion)Activator.CreateInstance(typeof(TVersion));
+        var version = (IAutoCrudApiVersion)Activator.CreateInstance(typeof(TVersion));
 
         var propertyInfos = type.GetProperties().Where(x => x.Name == nameof(ApiVersionAttribute.Deprecated)).Take(1).ToArray();
 

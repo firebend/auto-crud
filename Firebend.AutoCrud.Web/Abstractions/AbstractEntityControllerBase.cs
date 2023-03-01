@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     public abstract class AbstractEntityControllerBase<TVersion> : ControllerBase, IAutoCrudController
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         private readonly IOptions<ApiBehaviorOptions> _apiOptions;
 

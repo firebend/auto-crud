@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
     public abstract class AbstractCustomFieldsSearchController<TKey, TEntity, TVersion> : AbstractEntityControllerBase<TVersion>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         private readonly ICustomFieldsSearchService<TKey, TEntity> _searchService;
         private readonly IMaxPageSize<TKey, TEntity, TVersion> _maxPageSize;

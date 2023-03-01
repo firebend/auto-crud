@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
         where TSearch : IEntitySearchRequest
         where TMapped : class
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TKey : struct
     {
         private readonly IEntityFileTypeMimeTypeMapper<TVersion> _entityFileTypeMimeTypeMapper;

@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
     public interface IMaxPageSize<TKey, TEntity, TVersion>
         where TEntity : IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         public int MaxPageSize { get; }
     }
@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
     public interface IMaxExportPageSize<TKey, TEntity, TVersion> : IMaxPageSize<TKey, TEntity, TVersion>
         where TEntity : IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
 
     }

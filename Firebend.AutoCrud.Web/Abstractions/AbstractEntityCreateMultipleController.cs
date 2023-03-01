@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         : AbstractEntityControllerBase<TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TMultipleViewModel : class
         where TReadViewModel : class
         where TMultipleViewModelWrapper : IMultipleEntityViewModel<TMultipleViewModel>

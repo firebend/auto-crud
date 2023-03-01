@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
     public class ChangeTrackingViewModel<TKey, TEntity, TVersion, TViewModel> : ChangeTrackingModel<TKey, TViewModel>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
         public async Task<ChangeTrackingViewModel<TKey, TEntity, TVersion, TViewModel>> MapAsync(ChangeTrackingEntity<TKey, TEntity> changeTrackingEntity,

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Firebend.AutoCrud.Io.Implementations
 {
     public class EntityFileWriterFactory<TVersion> : IEntityFileWriterFactory<TVersion>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         private readonly IServiceProvider _serviceProvider;
 

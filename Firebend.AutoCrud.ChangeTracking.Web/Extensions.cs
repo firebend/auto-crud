@@ -16,7 +16,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => typeof(AbstractChangeTrackingReadController<,,,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
@@ -32,7 +32,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         var controller = configurator.ChangeTrackingControllerType();
         return configurator.WithController(controller, controller, entityName, entityNamePlural, openApiName);
@@ -62,7 +62,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddResourceAuthorization(configurator.ChangeTrackingControllerType(),
             typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity, TVersion>), policy);
 
@@ -82,7 +82,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddAuthorizationPolicy(configurator.ChangeTrackingControllerType(),
             policy);
 }

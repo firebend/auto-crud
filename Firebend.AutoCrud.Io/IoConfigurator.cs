@@ -14,7 +14,7 @@ namespace Firebend.AutoCrud.Io
         where TBuilder : EntityBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         public IoConfigurator(TBuilder builder) : base(builder)
         {

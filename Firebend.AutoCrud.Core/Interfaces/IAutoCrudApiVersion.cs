@@ -1,6 +1,6 @@
 namespace Firebend.AutoCrud.Core.Interfaces;
 
-public interface IApiVersion
+public interface IAutoCrudApiVersion
 {
     public int Version { get; }
     public int MinorVersion => 0;

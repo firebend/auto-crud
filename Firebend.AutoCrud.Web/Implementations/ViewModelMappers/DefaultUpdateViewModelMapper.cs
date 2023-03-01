@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         IUpdateViewModelMapper<TKey, TEntity, TVersion, DefaultCreateUpdateViewModel<TKey, TEntity>>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
     }
 }

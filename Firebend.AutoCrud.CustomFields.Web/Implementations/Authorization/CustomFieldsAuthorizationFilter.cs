@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Implementations.Authorization;
 public class CustomFieldsAuthorizationFilter<TKey, TEntity, TVersion> : EntityAuthorizationFilter<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
 {
     public CustomFieldsAuthorizationFilter(string policy) : base(policy)
     {

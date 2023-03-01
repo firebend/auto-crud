@@ -6,7 +6,7 @@ using Firebend.AutoCrud.Io.Models;
 namespace Firebend.AutoCrud.Io.Implementations
 {
     public class SpreadSheetEntityFileWriter<TVersion> : AbstractCsvHelperFileWriter<TVersion>, IEntityFileWriterSpreadSheet<TVersion>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         public override EntityFileType FileType => EntityFileType.Spreadsheet;
 

@@ -13,7 +13,7 @@ using Firebend.JsonPatch.Extensions;
 namespace Firebend.AutoCrud.Io.Implementations
 {
     public class FileFieldAutoMapper<TVersion> : IFileFieldAutoMapper<TVersion>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         private readonly IFileFieldWriteFilterFactory<TVersion> _filterFactory;
 

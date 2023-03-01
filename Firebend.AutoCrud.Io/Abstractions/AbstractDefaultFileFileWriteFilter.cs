@@ -5,7 +5,7 @@ using Firebend.AutoCrud.Io.Models;
 namespace Firebend.AutoCrud.Io.Abstractions
 {
     public abstract class AbstractDefaultFileFileWriteFilter<TExport, TVersion> : IFileFieldWriteFilter<TExport, TVersion>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         public bool ShouldExport(IFileFieldWrite<TExport> field) => true;
     }

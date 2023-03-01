@@ -19,7 +19,7 @@ public abstract class AbstractIoController<TKey, TEntity, TVersion, TSearch, TMa
     where TSearch : IEntitySearchRequest
     where TKey : struct
     where TEntity : IEntity<TKey>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
     where TMapped : class
 {
     private readonly IEntityExportControllerService<TKey, TEntity, TVersion, TSearch, TMapped> _exportService;

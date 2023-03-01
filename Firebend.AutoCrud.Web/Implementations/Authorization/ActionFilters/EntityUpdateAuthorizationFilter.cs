@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 public class EntityUpdateAuthorizationFilter<TKey, TEntity, TVersion, TViewModel> : EntityAuthorizationFilter<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
 {
     public EntityUpdateAuthorizationFilter(string policy) : base(policy)
     {

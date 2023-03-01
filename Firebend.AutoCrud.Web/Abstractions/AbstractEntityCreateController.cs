@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
     public abstract class AbstractEntityCreateController<TKey, TEntity, TVersion, TCreateViewModel, TReadViewModel> : AbstractEntityControllerBase<TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TCreateViewModel : class
         where TReadViewModel : class
     {

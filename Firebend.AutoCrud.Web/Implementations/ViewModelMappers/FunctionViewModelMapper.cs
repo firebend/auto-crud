@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         where TViewModel : class
         where TEntity : class, IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         private static Func<TEntity, TViewModel> _to;
         private static Func<TViewModel, TEntity> _from;
@@ -65,7 +65,7 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         where TViewModel : class
         where TEntity : class, IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TSearchModel : class
     {
         private static Func<TViewModel, TSearchModel> _from;
@@ -88,7 +88,7 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         : ISearchViewModelMapper<TKey, TEntity, TVersion, TSearchModel, TSearchModel>
         where TEntity : class, IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TSearchModel : class
     {
         public IdentitySearchViewModelMapper()

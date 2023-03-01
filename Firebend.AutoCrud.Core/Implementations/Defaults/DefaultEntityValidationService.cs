@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Core.Implementations.Defaults
     public abstract class DefaultEntityValidationService<TKey, TEntity, TVersion> : IEntityValidationService<TKey, TEntity, TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         public Task<ModelStateResult<TEntity>> ValidateAsync(TEntity original,
             TEntity entity,

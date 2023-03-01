@@ -13,7 +13,7 @@ namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 public abstract class EntityAuthorizationFilter<TKey, TEntity, TVersion> : IAsyncActionFilter, IAsyncResultFilter
     where TKey : struct
     where TEntity : class, IEntity<TKey>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
 {
     private readonly string _policy;
     private IEntityAuthProvider _entityAuthProvider;

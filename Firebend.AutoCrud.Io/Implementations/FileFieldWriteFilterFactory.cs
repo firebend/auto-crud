@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Firebend.AutoCrud.Io.Implementations;
 
 public class FileFieldWriteFilterFactory<TVersion> : IFileFieldWriteFilterFactory<TVersion>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
 {
     private readonly IServiceProvider _serviceProvider;
 

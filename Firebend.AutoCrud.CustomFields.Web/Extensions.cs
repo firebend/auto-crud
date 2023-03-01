@@ -18,7 +18,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => typeof(AbstractCustomFieldsCreateController<,,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
@@ -29,7 +29,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => typeof(AbstractCustomFieldsUpdateController<,,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
@@ -40,7 +40,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => typeof(AbstractCustomFieldsDeleteController<,,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
@@ -51,7 +51,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => typeof(AbstractCustomFieldsSearchController<,,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
@@ -65,7 +65,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         configurator.Builder
             .WithRegistration<ICustomFieldsValidationService<TKey, TEntity, TVersion>,
@@ -109,7 +109,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion =>
+        where TVersion : class, IAutoCrudApiVersion =>
         configurator
             .AddResourceAuthorization(configurator.CustomFieldsCreateControllerType(),
                 typeof(CustomFieldsAuthorizationFilter<TKey, TEntity, TVersion>), policy)
@@ -136,7 +136,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddAuthorizationPolicy(configurator.CustomFieldsCreateControllerType(), policy);
 
     public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddCustomFieldsUpdateAuthorizationPolicy<TBuilder,
@@ -145,7 +145,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddAuthorizationPolicy(configurator.CustomFieldsUpdateControllerType(), policy);
 
     public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddCustomFieldsDeleteAuthorizationPolicy<TBuilder,
@@ -154,7 +154,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddAuthorizationPolicy(configurator.CustomFieldsDeleteControllerType(), policy);
 
     public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddCustomFieldsSearchAuthorizationPolicy<TBuilder,
@@ -163,7 +163,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddAuthorizationPolicy(configurator.CustomFieldsSearchControllerType(), policy);
 
     public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddCustomFieldsQueryAuthorizationPolicies<TBuilder,
@@ -172,7 +172,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddCustomFieldsSearchAuthorizationPolicy(policy);
 
     public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddCustomFieldsAlterAuthorizationPolicies<TBuilder,
@@ -181,7 +181,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddCustomFieldsCreateAuthorizationPolicy(policy)
             .AddCustomFieldsUpdateAuthorizationPolicy(policy)
             .AddCustomFieldsDeleteAuthorizationPolicy(policy);
@@ -191,7 +191,7 @@ public static class Extensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         => configurator
             .AddCustomFieldsQueryAuthorizationPolicies(policy)
             .AddCustomFieldsAlterAuthorizationPolicies(policy);

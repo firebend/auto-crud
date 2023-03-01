@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Io.Implementations
 {
     public class EntityExportService<T, TVersion> : BaseDisposable, IEntityExportService<T, TVersion>
         where T : class
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         private readonly IFileFieldAutoMapper<TVersion> _autoMapper;
         private readonly IEntityFileWriterFactory<TVersion> _fileWriterFactory;

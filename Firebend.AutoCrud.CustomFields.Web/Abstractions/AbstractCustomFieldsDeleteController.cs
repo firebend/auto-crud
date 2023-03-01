@@ -18,7 +18,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
     public abstract class AbstractCustomFieldsDeleteController<TKey, TEntity, TVersion> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         private readonly ICustomFieldsDeleteService<TKey, TEntity> _deleteService;
 

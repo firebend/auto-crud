@@ -15,7 +15,7 @@ namespace Firebend.AutoCrud.Web.Sample.ValidationServices;
 public class CustomFieldValidationService<TKey, TEntity, TVersion> : ICustomFieldsValidationService<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
-    where TVersion : class, IApiVersion
+    where TVersion : class, IAutoCrudApiVersion
 {
     private readonly ICustomFieldsReadService<TKey, TEntity> _customFieldsReadService;
 

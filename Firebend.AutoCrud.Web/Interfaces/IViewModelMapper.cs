@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
     public interface IViewModelMapper<TKey, TEntity, TVersion, TViewModel>
         where TEntity : IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
         Task<TEntity> FromAsync(TViewModel model, CancellationToken cancellationToken = default);
@@ -24,7 +24,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
     public interface ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel> : IViewModelMapper<TKey, TEntity, TVersion, TViewModel>
         where TEntity : IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
 
@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
     public interface ISearchViewModelMapper<TKey, TEntity, TVersion, in TViewModel, TSearchModel>
         where TEntity : IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
         Task<TSearchModel> FromAsync(TViewModel model, CancellationToken cancellationToken = default);
@@ -42,7 +42,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
     public interface IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel> : IViewModelMapper<TKey, TEntity, TVersion, TViewModel>
         where TEntity : IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
 
@@ -51,7 +51,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
     public interface IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> : IViewModelMapper<TKey, TEntity, TVersion, TViewModel>
         where TEntity : IEntity<TKey>
         where TKey : struct
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
 
@@ -61,7 +61,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
         where TViewWrapper : IMultipleEntityViewModel<TView>
         where TKey : struct
         where TEntity : IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken = default);
     }

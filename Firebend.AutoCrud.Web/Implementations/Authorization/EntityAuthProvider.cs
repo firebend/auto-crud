@@ -27,7 +27,7 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
     private TKey GetEntityKeyAsync<TKey, TEntity, TVersion>(string entityIdString)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         var keyParser = _serviceProvider.GetService<IEntityKeyParser<TKey, TEntity, TVersion>>();
         if (keyParser == null)
@@ -65,7 +65,7 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         ClaimsPrincipal user, string policy, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         var entityId = GetEntityKeyAsync<TKey, TEntity, TVersion>(entityIdString);
         return await AuthorizeEntityAsync<TKey, TEntity, TVersion>(entityId, user, policy, cancellationToken);
@@ -75,7 +75,7 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         string policy, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         var entity = await GetEntityAsync<TKey, TEntity>(id, cancellationToken);
         return await AuthorizeEntityAsync(user, entity, policy);
@@ -85,7 +85,7 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion =>
+        where TVersion : class, IAutoCrudApiVersion =>
         AuthorizeEntityAsync<TKey, TEntity, TVersion>(id, user, ReadAuthorizationRequirement.DefaultPolicy, cancellationToken);
 
     public virtual async Task<AuthorizationResult> AuthorizeEntityAsync(ClaimsPrincipal user, object entity, string policy) =>

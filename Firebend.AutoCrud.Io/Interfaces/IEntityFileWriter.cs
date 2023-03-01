@@ -9,7 +9,7 @@ using Firebend.AutoCrud.Io.Models;
 namespace Firebend.AutoCrud.Io.Interfaces
 {
     public interface IEntityFileWriter<TVersion> : IDisposable
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         EntityFileType FileType { get; }
 
@@ -20,12 +20,12 @@ namespace Firebend.AutoCrud.Io.Interfaces
     }
 
     public interface IEntityFileWriterCsv<TVersion> : IEntityFileWriter<TVersion>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
     }
 
     public interface IEntityFileWriterSpreadSheet<TVersion> : IEntityFileWriter<TVersion>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
     }
 }

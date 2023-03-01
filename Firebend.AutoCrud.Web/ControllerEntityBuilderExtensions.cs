@@ -11,7 +11,7 @@ namespace Firebend.AutoCrud.Web
             Action<ControllerConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity, TVersion>> configure)
             where TKey : struct
             where TEntity : class, IEntity<TKey>
-            where TVersion : class, IApiVersion
+            where TVersion : class, IAutoCrudApiVersion
         {
             using var configurator = new ControllerConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity, TVersion>(builder);
             configure(configurator);

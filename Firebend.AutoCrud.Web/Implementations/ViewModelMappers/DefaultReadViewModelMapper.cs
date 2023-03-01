@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
 {
     public class DefaultReadViewModelMapper<TKey, TEntity, TVersion> : IReadViewModelMapper<TKey, TEntity, TVersion, TEntity>
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TKey : struct
     {
         public Task<TEntity> FromAsync(TEntity model, CancellationToken cancellationToken = default)

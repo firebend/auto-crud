@@ -13,19 +13,19 @@ public interface IEntityAuthProvider
         ClaimsPrincipal user, string policy, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion;
+        where TVersion : class, IAutoCrudApiVersion;
 
     Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity, TVersion>(TKey id, ClaimsPrincipal user,
         string policy, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion;
+        where TVersion : class, IAutoCrudApiVersion;
 
     Task<AuthorizationResult> AuthorizeEntityReadAsync<TKey, TEntity, TVersion>(TKey id, ClaimsPrincipal user,
         CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion;
+        where TVersion : class, IAutoCrudApiVersion;
 
     Task<AuthorizationResult> AuthorizeEntityAsync(ClaimsPrincipal user, object entity, string policy);
 }

@@ -6,7 +6,7 @@ using Firebend.AutoCrud.Io.Models;
 namespace Firebend.AutoCrud.Io.Implementations
 {
     public class EntityFileTypeMimeTypeMapper<TVersion> : IEntityFileTypeMimeTypeMapper<TVersion>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         public string MapMimeType(EntityFileType entityFileType) => entityFileType switch
         {

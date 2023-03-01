@@ -10,7 +10,7 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
     public class FunctionCreateMultipleViewModelMapper<TKey, TEntity, TVersion, TViewWrapper, TView> : ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TViewWrapper, TView>
         where TKey : struct
         where TEntity : IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TViewWrapper : IMultipleEntityViewModel<TView>
     {
         private static Func<TViewWrapper, TView, TEntity> _func;

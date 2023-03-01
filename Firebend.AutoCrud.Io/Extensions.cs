@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.Io
             Action<IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity, TVersion>> configure = null)
             where TKey : struct
             where TEntity : class, IEntity<TKey>
-            where TVersion : class, IApiVersion
+            where TVersion : class, IAutoCrudApiVersion
         {
             using var config = new IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity, TVersion>(builder);
             configure?.Invoke(config);

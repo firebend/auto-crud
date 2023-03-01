@@ -16,7 +16,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
     public abstract class AbstractEntityReadAllController<TKey, TEntity, TVersion, TViewModel> : AbstractEntityControllerBase<TVersion>, IAutoCrudController
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
         private readonly IEntityReadService<TKey, TEntity> _readService;

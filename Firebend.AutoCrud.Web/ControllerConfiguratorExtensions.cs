@@ -15,7 +15,7 @@ public static class ControllerConfiguratorExtensions
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        where TVersion : class, IApiVersion
+        where TVersion : class, IAutoCrudApiVersion
     {
         var (attributeType, attributeBuilder) =
             GetResourceAuthorizationAttributeInfo(filterType, policy);
