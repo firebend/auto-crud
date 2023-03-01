@@ -125,7 +125,7 @@ public static class OpenApiExtensions
                         var versions = apiDesc.ActionDescriptor
                             .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
 
-                        if (versions == null)
+                        if (versions == null || versions.IsApiVersionNeutral)
                         {
                             return true;
                         }
@@ -134,13 +134,23 @@ public static class OpenApiExtensions
                                                         || $"v{v.MajorVersion}" == docName
                                                         || $"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated();
 
-                        if (versions.DeclaredApiVersions.Any())
+                        return versions.DeclaredApiVersions.Any()
+                            ? versions.DeclaredApiVersions.Any(Predicate)
+                            : versions.ImplementedApiVersions.Any(Predicate);
+                    };
+
+                    o.ResolveConflictingActions(actions =>
+                    {
+                        if (actions.All(apiDesc => apiDesc.ActionDescriptor
+                                .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit)
+                                .IsApiVersionNeutral))
                         {
-                            return versions.DeclaredApiVersions.Any(Predicate);
+                            return actions.First();
                         }
 
-                        return versions.ImplementedApiVersions.Any(Predicate);
-                    };
+                        throw new Exception(
+                            $"Conflicting actions: {string.Join(", ", actions.Select(x => x.ActionDescriptor.DisplayName))}");
+                    });
                 }
 
                 configureSwaggerGenOptions?.Invoke(o);

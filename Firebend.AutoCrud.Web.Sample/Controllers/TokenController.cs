@@ -15,6 +15,7 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers;
 [Route("api/token")]
 [AllowAnonymous]
 [ApiController]
+[ApiVersionNeutral]
 public class TokenController : ControllerBase
 {
     private readonly IConfiguration _configuration;
