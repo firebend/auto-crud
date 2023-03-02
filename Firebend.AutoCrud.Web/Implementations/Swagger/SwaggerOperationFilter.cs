@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Interfaces;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -16,6 +18,8 @@ namespace Firebend.AutoCrud.Web.Implementations.Swagger
                 .ApiDescription
                 ?.ActionDescriptor
                 ?.EndpointMetadata;
+
+            operation.Deprecated |= context.ApiDescription.IsDeprecated();
 
             if (endpointMetaData is null)
             {
