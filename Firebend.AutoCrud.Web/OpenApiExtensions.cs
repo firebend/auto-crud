@@ -16,7 +16,6 @@ public static class OpenApiExtensions
     /// Enables OpenAPI documentation for the AutoCrud controllers
     /// </summary>
     /// <param name="getTitle">A func that takes an ApiVersionDescription object and returns the title for the swagger doc.</param>
-    /// <param name="markDeprecated">If true, mark controllers that have a matching later version as deprecated.</param>
     /// <param name="forwardNonDeprecatedEndpoints">If true, endpoints that don't have a matching later version will appear in the swagger doc for later versions.</param>
     /// <param name="configureVersioningOptions">Additional configuration for ApiVersioningOptions</param>
     /// <param name="configureExplorerOptions">Additional configuration for ApiExplorerOptions</param>

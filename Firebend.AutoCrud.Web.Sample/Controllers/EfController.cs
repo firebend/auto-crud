@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Firebend.AutoCrud.Web.Sample.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Route("/api/v{version:apiVersion}/ef/people-regular")]
 public class EfController : ControllerBase
 {
