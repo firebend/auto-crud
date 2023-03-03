@@ -23,7 +23,7 @@ namespace Firebend.AutoCrud.Io.Implementations
         public SpreadsheetWriter(Stream stream, string sheetName, IWriterConfiguration configuration, bool leaveOpen) : base(TextWriter.Null, configuration)
         {
             configuration.Validate();
-            Workbook = new XLWorkbook(XLEventTracking.Disabled);
+            Workbook = new XLWorkbook();
             Worksheet = GetOrAddWorksheet(Workbook, sheetName);
             Stream = stream;
             LeaveOpen = leaveOpen;
