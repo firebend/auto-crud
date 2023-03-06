@@ -20,7 +20,8 @@ public class MongoCustomFieldsReadController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/v1/mongo-person/{personId:Guid}/custom-fields")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/mongo-person/{personId:Guid}/custom-fields/custom")]
     public async Task<ActionResult<IEnumerable<CustomFieldViewModel>>> Get(Guid personId, [FromQuery] string key,
         CancellationToken cancellationToken)
     {
@@ -32,7 +33,8 @@ public class MongoCustomFieldsReadController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/v1/mongo-person/{personId:Guid}/custom-fields/{id:Guid}")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/mongo-person/{personId:Guid}/custom-fields/custom/{id:Guid}")]
     public async Task<ActionResult<CustomFieldViewModel>> GetById(Guid personId, Guid id,
         CancellationToken cancellationToken)
     {
@@ -42,7 +44,8 @@ public class MongoCustomFieldsReadController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/v1/mongo-person/{personId:Guid}/custom-fields/exists")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/mongo-person/{personId:Guid}/custom-fields/custom/exists")]
     public async Task<ActionResult<bool>> Exists(Guid personId, [FromQuery] string key,
         CancellationToken cancellationToken)
     {
@@ -52,7 +55,8 @@ public class MongoCustomFieldsReadController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/v1/mongo-person/{personId:Guid}/custom-fields/first")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/mongo-person/{personId:Guid}/custom-fields/custom/first")]
     public async Task<ActionResult<CustomFieldViewModel>> First(Guid personId, [FromQuery] string key,
         CancellationToken cancellationToken)
     {

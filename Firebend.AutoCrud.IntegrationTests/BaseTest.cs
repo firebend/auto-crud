@@ -465,7 +465,7 @@ public abstract class BaseTest<
             return (httpResponse, httpResponseModel);
         }
 
-        var (response, responseModel) = await RetryAsync(DoSearch, 30);
+        var (response, responseModel) = await RetryAsync(DoSearch, 5);
 
         ChangeTrackingAssertions(response, responseModel);
 

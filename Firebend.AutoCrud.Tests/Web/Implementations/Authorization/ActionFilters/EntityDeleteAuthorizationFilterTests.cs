@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
 using Firebend.AutoCrud.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
@@ -69,7 +70,7 @@ public class EntityDeleteAuthorizationFilterTests
 
         // when
         var entityDeleteAuthorizationFilter =
-            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
@@ -85,7 +86,7 @@ public class EntityDeleteAuthorizationFilterTests
 
         // when
         var entityDeleteAuthorizationFilter =
-            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // then
         Assert.ThrowsAsync<ArgumentException>(() =>
@@ -99,7 +100,7 @@ public class EntityDeleteAuthorizationFilterTests
     {
         // given
 
-        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
             It.IsAny<string>(),
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<string>(),
@@ -112,7 +113,7 @@ public class EntityDeleteAuthorizationFilterTests
 
         // when
         var entityDeleteAuthorizationFilter =
-            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // then
         await entityDeleteAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
@@ -123,7 +124,7 @@ public class EntityDeleteAuthorizationFilterTests
         _actionExecutingContext.Object.Result.As<ObjectResult>().StatusCode.Should().Be(403);
 
         _entityAuthProvider.Verify(v =>
-            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
                 It.IsAny<string>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<string>(),
@@ -136,7 +137,7 @@ public class EntityDeleteAuthorizationFilterTests
     public async Task Should_Next_If_Authorized()
     {
         // given
-        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
             It.IsAny<string>(),
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<string>(),
@@ -149,7 +150,7 @@ public class EntityDeleteAuthorizationFilterTests
 
         // when
         var entityDeleteAuthorizationFilter =
-            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new EntityDeleteAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
         await entityDeleteAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
             _nextDelegate.Object);
 
@@ -157,7 +158,7 @@ public class EntityDeleteAuthorizationFilterTests
         _actionExecutingContext.Object.Result.Should().BeNull();
 
         _entityAuthProvider.Verify(v =>
-            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
                 It.IsAny<string>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<string>(),

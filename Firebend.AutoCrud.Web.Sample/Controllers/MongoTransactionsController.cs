@@ -30,7 +30,8 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
         }
 
         [HttpPost]
-        [Route("/api/v1/mongo/transactions/commit")]
+        [ApiVersion("1.0")]
+        [Route("/api/v{version:apiVersion}/mongo/transactions/commit")]
         public async Task<ActionResult> CommitAsync(CancellationToken cancellationToken)
         {
             using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);
@@ -38,7 +39,8 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
         }
 
         [HttpPost]
-        [Route("/api/v1/mongo/transactions/rollback")]
+        [ApiVersion("1.0")]
+        [Route("/api/v{version:apiVersion}/mongo/transactions/rollback")]
         public async Task<ActionResult> RollbackAsync(CancellationToken cancellationToken)
         {
             using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);

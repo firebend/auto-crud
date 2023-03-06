@@ -4,19 +4,21 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {
-    public class EntityExportService<T> : BaseDisposable, IEntityExportService<T>
+    public class EntityExportService<T, TVersion> : BaseDisposable, IEntityExportService<T, TVersion>
         where T : class
+        where TVersion : class, IAutoCrudApiVersion
     {
-        private readonly IFileFieldAutoMapper _autoMapper;
-        private readonly IEntityFileWriterFactory _fileWriterFactory;
+        private readonly IFileFieldAutoMapper<TVersion> _autoMapper;
+        private readonly IEntityFileWriterFactory<TVersion> _fileWriterFactory;
 
-        public EntityExportService(IEntityFileWriterFactory fileWriterFactory,
-            IFileFieldAutoMapper autoMapper)
+        public EntityExportService(IEntityFileWriterFactory<TVersion> fileWriterFactory,
+            IFileFieldAutoMapper<TVersion> autoMapper)
         {
             _fileWriterFactory = fileWriterFactory;
             _autoMapper = autoMapper;

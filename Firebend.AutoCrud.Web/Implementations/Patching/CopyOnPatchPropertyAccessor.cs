@@ -5,7 +5,7 @@ using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web.Implementations.Patching;
 
-public class CopyOnPatchPropertyAccessor<TEntity, TViewModel> : ICopyOnPatchPropertyAccessor<TEntity, TViewModel>
+public class CopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel> : ICopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel>
 {
     private readonly string[] _copyOnPatchPropertyNames;
 

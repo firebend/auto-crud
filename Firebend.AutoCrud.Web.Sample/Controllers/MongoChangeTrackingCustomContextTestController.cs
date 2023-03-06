@@ -12,7 +12,8 @@ using MongoDB.Bson.Serialization;
 namespace Firebend.AutoCrud.Web.Sample.Controllers
 {
     [ApiController]
-    [Route("/api/v1/mongo/domain-event-custom-context")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/mongo/domain-event-custom-context")]
     public class MongoChangeTrackingCustomContextTestController : ControllerBase
     {
         static MongoChangeTrackingCustomContextTestController()

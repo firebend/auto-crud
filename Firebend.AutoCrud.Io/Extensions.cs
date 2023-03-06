@@ -1,5 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
 namespace Firebend.AutoCrud.Io
@@ -20,8 +21,8 @@ namespace Firebend.AutoCrud.Io
         ///         ef.AddEntity<Guid, WeatherForecast>(forecast =>
         ///             forecast.WithDbContext<AppDbContext>()
         ///                 .AddCrud()
-        ///                 .AddIo(io => io.WithMapper(x => new WeatherForecastExport(x)))
-        ///                 .AddControllers(controllers => controllers
+        ///                 .AddIo<Guid, WeatherForecast, V1>(io => io.WithMapper(x => new WeatherForecastExport(x)))
+        ///                 .AddControllers<Guid, WeatherForecast, V1>(controllers => controllers
         ///                         .WithAllControllers(true)
         ///                         .WithOpenApiGroupName("WeatherForecasts")
         ///                         .WithIoControllers()
@@ -32,12 +33,13 @@ namespace Firebend.AutoCrud.Io
         ///     })
         /// </code>
         /// </example>
-        public static EntityCrudBuilder<TKey, TEntity> AddIo<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder,
-            Action<IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure = null)
+        public static EntityCrudBuilder<TKey, TEntity> AddIo<TKey, TEntity, TVersion>(this EntityCrudBuilder<TKey, TEntity> builder,
+            Action<IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity, TVersion>> configure = null)
             where TKey : struct
             where TEntity : class, IEntity<TKey>
+            where TVersion : class, IAutoCrudApiVersion
         {
-            using var config = new IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+            using var config = new IoConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity, TVersion>(builder);
             configure?.Invoke(config);
             return builder;
         }

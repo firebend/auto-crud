@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Io.Interfaces;
@@ -13,22 +14,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Io.Web.Abstractions
 {
-    public abstract class AbstractEntityExportControllerService<TKey, TEntity, TSearch, TMapped> :
+    public abstract class AbstractEntityExportControllerService<TKey, TEntity, TVersion, TSearch, TMapped> :
         BaseDisposable,
-        IEntityExportControllerService<TKey, TEntity, TSearch, TMapped>
+        IEntityExportControllerService<TKey, TEntity, TVersion, TSearch, TMapped>
         where TSearch : IEntitySearchRequest
         where TMapped : class
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
         where TKey : struct
     {
-        private readonly IEntityFileTypeMimeTypeMapper _entityFileTypeMimeTypeMapper;
-        private readonly IEntityExportService<TMapped> _exportService;
-        private readonly IEntityExportMapper<TEntity, TMapped> _mapper;
+        private readonly IEntityFileTypeMimeTypeMapper<TVersion> _entityFileTypeMimeTypeMapper;
+        private readonly IEntityExportService<TMapped, TVersion> _exportService;
+        private readonly IEntityExportMapper<TEntity, TVersion, TMapped> _mapper;
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
 
-        protected AbstractEntityExportControllerService(IEntityFileTypeMimeTypeMapper entityFileTypeMimeTypeMapper,
-            IEntityExportService<TMapped> exportService,
-            IEntityExportMapper<TEntity, TMapped> mapper,
+        protected AbstractEntityExportControllerService(IEntityFileTypeMimeTypeMapper<TVersion> entityFileTypeMimeTypeMapper,
+            IEntityExportService<TMapped, TVersion> exportService,
+            IEntityExportMapper<TEntity, TVersion, TMapped> mapper,
             IEntitySearchService<TKey, TEntity, TSearch> searchService)
         {
             _entityFileTypeMimeTypeMapper = entityFileTypeMimeTypeMapper;

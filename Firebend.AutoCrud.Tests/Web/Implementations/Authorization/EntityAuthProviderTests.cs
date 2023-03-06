@@ -7,6 +7,7 @@ using AutoFixture.AutoMoq;
 using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
+using Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
 using Firebend.AutoCrud.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,7 @@ public class EntityAuthProviderTests
     private Fixture _fixture;
     private Mock<IServiceProvider> _serviceProvider;
     private Mock<IEntityReadService<Guid, ActionFilterTestHelper.TestEntity>> _entityReadService;
-    private Mock<IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity>> _entityKeyParser;
+    private Mock<IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity, V1>> _entityKeyParser;
     private Mock<IAuthorizationService> _authService;
 
     [SetUp]
@@ -36,12 +37,12 @@ public class EntityAuthProviderTests
                 => s.GetService(typeof(IEntityReadService<Guid, ActionFilterTestHelper.TestEntity>)))
             .Returns(_entityReadService.Object);
 
-        _entityKeyParser = new Mock<IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity>>();
+        _entityKeyParser = new Mock<IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity, V1>>();
         _entityKeyParser.Setup(s => s.ParseKey(
             It.IsAny<string>()
         )).Returns(Guid.NewGuid());
         _serviceProvider.Setup(s
-                => s.GetService(typeof(IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity>)))
+                => s.GetService(typeof(IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity, V1>)))
             .Returns(_entityKeyParser.Object);
     }
 
@@ -58,7 +59,7 @@ public class EntityAuthProviderTests
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
-            entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(Guid.NewGuid().ToString(),
+            entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(Guid.NewGuid().ToString(),
                 It.IsAny<ClaimsPrincipal>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
         _authService.Verify(a => a.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()),
             Times.Never);
@@ -69,7 +70,7 @@ public class EntityAuthProviderTests
     {
         // given
         _serviceProvider.Setup(s
-            => s.GetService(typeof(IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity>))).Returns(default);
+            => s.GetService(typeof(IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity, V1>))).Returns(default);
 
         // when
         var entityAuthProvider =
@@ -77,7 +78,7 @@ public class EntityAuthProviderTests
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
-            entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(Guid.NewGuid().ToString(),
+            entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(Guid.NewGuid().ToString(),
                 It.IsAny<ClaimsPrincipal>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
         _authService.Verify(a => a.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()),
             Times.Never);
@@ -96,7 +97,7 @@ public class EntityAuthProviderTests
 
         // then
         Assert.ThrowsAsync<ArgumentException>(() =>
-            entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(Guid.NewGuid().ToString(),
+            entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(Guid.NewGuid().ToString(),
                 It.IsAny<ClaimsPrincipal>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
         _authService.Verify(a => a.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()),
             Times.Never);
@@ -112,7 +113,7 @@ public class EntityAuthProviderTests
             new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
 
         // then
-        await entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+        await entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
             Guid.NewGuid().ToString(),
             It.IsAny<ClaimsPrincipal>(), It.IsAny<string>(), It.IsAny<CancellationToken>());
 
@@ -131,7 +132,7 @@ public class EntityAuthProviderTests
             new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
 
         // then
-        await entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+        await entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
             It.IsAny<Guid>(),
             It.IsAny<ClaimsPrincipal>(), It.IsAny<string>(), It.IsAny<CancellationToken>());
 

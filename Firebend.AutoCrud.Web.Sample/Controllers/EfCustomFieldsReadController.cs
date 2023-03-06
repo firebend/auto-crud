@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Firebend.AutoCrud.Web.Sample.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 public class EfCustomFieldsReadController : ControllerBase
 {
     private readonly ICustomFieldsReadService<Guid, EfPerson> _efCustomFieldsReadService;
@@ -19,7 +20,7 @@ public class EfCustomFieldsReadController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/v1/ef-person/{personId:Guid}/custom-fields")]
+    [Route("/api/v{version:apiVersion}/ef-person/{personId:Guid}/custom-fields")]
     public async Task<ActionResult<IEnumerable<CustomFieldViewModel>>> Get(Guid personId, [FromQuery] string key,
         CancellationToken cancellationToken)
     {
@@ -31,7 +32,7 @@ public class EfCustomFieldsReadController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/v1/ef-person/{personId:Guid}/custom-fields/{id:Guid}")]
+    [Route("/api/v{version:apiVersion}/ef-person/{personId:Guid}/custom-fields/{id:Guid}")]
     public async Task<ActionResult<CustomFieldViewModel>> GetById(Guid personId, Guid id,
         CancellationToken cancellationToken)
     {
@@ -41,7 +42,7 @@ public class EfCustomFieldsReadController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/v1/ef-person/{personId:Guid}/custom-fields/exists")]
+    [Route("/api/v{version:apiVersion}/ef-person/{personId:Guid}/custom-fields/exists")]
     public async Task<ActionResult<bool>> Exists(Guid personId, [FromQuery] string key,
         CancellationToken cancellationToken)
     {
@@ -51,7 +52,7 @@ public class EfCustomFieldsReadController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/api/v1/ef-person/{personId:Guid}/custom-fields/first")]
+    [Route("/api/v{version:apiVersion}/ef-person/{personId:Guid}/custom-fields/first")]
     public async Task<ActionResult<CustomFieldViewModel>> First(Guid personId, [FromQuery] string key,
         CancellationToken cancellationToken)
     {

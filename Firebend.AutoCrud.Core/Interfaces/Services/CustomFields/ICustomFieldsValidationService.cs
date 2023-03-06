@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 
-public interface ICustomFieldsValidationService<TKey, TEntity>
+public interface ICustomFieldsValidationService<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
 {
     Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> customField,
         CancellationToken cancellationToken);

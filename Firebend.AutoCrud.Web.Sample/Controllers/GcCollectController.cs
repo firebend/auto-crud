@@ -6,7 +6,8 @@ namespace Firebend.AutoCrud.Web.Sample.Controllers
     [ApiController]
     public class GcCollectController : ControllerBase
     {
-        [HttpGet("/api/v1/gc-collect")]
+        [ApiVersion("1.0")]
+        [HttpGet("/api/v{version:apiVersion}/gc-collect")]
         public IActionResult Get()
         {
             GC.Collect();

@@ -11,7 +11,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web;
 
-public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
+public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 {
     public string OpenApiGroupName { get; private set; }
     public string OpenApiEntityName { get; private set; }
@@ -32,7 +32,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithOpenApiGroupName("Weather Forecasts")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiGroupName(string openApiGroupName)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithOpenApiGroupName(string openApiGroupName)
     {
         OpenApiGroupName = openApiGroupName;
 
@@ -61,7 +61,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithOpenApiGroupName("Weather Forecast")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithOpenApiEntityName(string name, string plural = null)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithOpenApiEntityName(string name, string plural = null)
     {
         OpenApiEntityName = name;
         OpenApiEntityNamePlural = plural ?? name.Pluralize();

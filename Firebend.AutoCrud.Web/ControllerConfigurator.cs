@@ -8,7 +8,9 @@ using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
@@ -28,10 +30,11 @@ public static class ControllerConfiguratorCache
 }
 
 public partial class
-    ControllerConfigurator<TBuilder, TKey, TEntity> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>
+    ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>
     where TBuilder : EntityCrudBuilder<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
 {
     internal ControllerConfigurator(TBuilder builder) : base(builder)
     {
@@ -52,18 +55,19 @@ public partial class
         OpenApiEntityName = name;
         OpenApiEntityNamePlural = name.Pluralize();
 
-        WithRoute($"/api/v1/{name.Kebaberize()}");
+        WithVersionedRoute(name.Kebaberize(), "api");
         WithOpenApiGroupName(name);
 
-        WithValidationService<DefaultEntityValidationService<TKey, TEntity>>(false);
+        WithValidationService<DefaultEntityValidationService<TKey, TEntity, TVersion>>(false);
 
-        Builder.WithRegistration<IEntityKeyParser<TKey, TEntity>, DefaultEntityKeyParser<TKey, TEntity>>(false);
+        Builder.WithRegistration<IEntityKeyParser<TKey, TEntity, TVersion>, DefaultEntityKeyParser<TKey, TEntity, TVersion>>(false);
 
-        WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity>>();
-        WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity>>();
-        WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, TEntity, DefaultUpdateViewModelMapper<TKey, TEntity>>();
+        WithCreateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, DefaultCreateViewModelMapper<TKey, TEntity, TVersion>>();
+        WithReadViewModel<TEntity, DefaultReadViewModelMapper<TKey, TEntity, TVersion>>();
+        WithUpdateViewModel<DefaultCreateUpdateViewModel<TKey, TEntity>, TEntity, DefaultUpdateViewModelMapper<TKey, TEntity, TVersion>>();
         WithCreateMultipleViewModel<MultipleEntityViewModel<TEntity>, TEntity,
-            DefaultCreateMultipleViewModelMapper<TKey, TEntity>>();
+            DefaultCreateMultipleViewModelMapper<TKey, TEntity, TVersion>>();
+        WithSearchRequest();
         WithMaxPageSize();
     }
 
@@ -82,6 +86,40 @@ public partial class
         var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] { Route });
 
         return (routeType, attributeBuilder);
+    }
+
+    private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetApiVersionAttributeInfo(bool deprecated)
+    {
+        var type = typeof(ApiVersionAttribute);
+        var ctor = type.GetConstructor(new[] { typeof(string) });
+
+        if (ctor == null)
+        {
+            return default;
+        }
+
+        var version = (IAutoCrudApiVersion)Activator.CreateInstance(typeof(TVersion));
+
+        var propertyInfos = type.GetProperties().Where(x => x.Name == nameof(ApiVersionAttribute.Deprecated)).Take(1).ToArray();
+
+        var attributeBuilder = new CustomAttributeBuilder(ctor, new object[] { $"{version.Version}.{version.MinorVersion}" }, propertyInfos, new object[] { deprecated });
+
+        return (type, attributeBuilder);
+    }
+
+    private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetApiVersionNeutralAttributeInfo()
+    {
+        var type = typeof(ApiVersionNeutralAttribute);
+        var ctor = type.GetConstructor(Array.Empty<Type>());
+
+        if (ctor == null)
+        {
+            return default;
+        }
+
+        var attributeBuilder = new CustomAttributeBuilder(ctor, Array.Empty<object>());
+
+        return (type, attributeBuilder);
     }
 
     private void AddRouteAttribute(Type controllerType)
@@ -107,7 +145,7 @@ public partial class
     ///          .WithController())
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithController(Type type,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithController(Type type,
         Type typeToCheck,
         string entityName = null,
         string entityNamePlural = null,
@@ -154,7 +192,7 @@ public partial class
     ///          .WithController<>())
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TTypeCheck>(Type type)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithController<TTypeCheck>(Type type)
         => WithController(type, typeof(TTypeCheck));
 
     /// <summary>
@@ -171,7 +209,7 @@ public partial class
     ///          .WithController<>())
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithController<TController>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithController<TController>()
         => WithController(typeof(TController), typeof(TController));
 
     private void AddAttributeToAllControllers(Type attributeType, CustomAttributeBuilder attributeBuilder) =>
@@ -183,7 +221,7 @@ public partial class
         .Registrations
         .SelectMany(x => x.Value, (pair, registration) => new KeyValuePair<Type, Registration>(pair.Key, registration))
         .Where(x => x.Value is ServiceRegistration)
-        .Where(x => typeof(ControllerBase).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType));
+        .Where(x => typeof(AbstractEntityControllerBase<TVersion>).IsAssignableFrom((x.Value as ServiceRegistration)?.ServiceType));
 
     /// <summary>
     /// Specifies the base route to use for an entity
@@ -201,15 +239,59 @@ public partial class
     ///          .WithRoute("api/v1/mongo-person"))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithRoute(string route)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithRoute(string route)
     {
+        route ??= OpenApiEntityName.Kebaberize();
         Route = route;
+
         var (aType, aBuilder) = GetRouteAttributeInfo();
         AddAttributeToAllControllers(aType, aBuilder);
+
+        var (apiVersionType, apiVersionBuilder) = GetApiVersionNeutralAttributeInfo();
+        AddAttributeToAllControllers(apiVersionType, apiVersionBuilder);
+
         return this;
     }
 
-    private ControllerConfigurator<TBuilder, TKey, TEntity> WithControllerHelper(
+    /// <summary>
+    /// Specifies the route to use for an entity. The route will be prefixed with the
+    /// "routePrefix" parameter ("api" by default) followed by a slug for the version number,
+    /// e.g. "api/v{version:apiVersion}/mongo-person". If no route is specified, the
+    /// route will be "v{version:apiVersion}/[entityName]" where [entityName] is the
+    /// name of the entity in kebab case.
+    /// </summary>
+    /// <param name="route"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers(true)
+    ///          .WithOpenApiGroupName("Weather Forecasts")
+    ///          .WithVersionedRoute("mongo-person"))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithVersionedRoute(string route = null, string routePrefix = "", bool deprecated = false)
+    {
+        route ??= OpenApiEntityName.Kebaberize();
+        var prefix = !string.IsNullOrWhiteSpace(routePrefix)
+            ? $"{routePrefix}/"
+            : string.Empty;
+
+        Route = $"{prefix}v{{version:apiVersion}}/{route}".TrimExtraPathSlashes();
+
+        var (routeType, routeBuilder) = GetRouteAttributeInfo();
+        AddAttributeToAllControllers(routeType, routeBuilder);
+
+        var (apiVersionType, apiVersionBuilder) = GetApiVersionAttributeInfo(deprecated);
+        AddAttributeToAllControllers(apiVersionType, apiVersionBuilder);
+
+        return this;
+    }
+
+    private ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithControllerHelper(
         Type controllerType,
         Type mapperInterfaceType,
         Type registrationType,
@@ -224,10 +306,10 @@ public partial class
         if (makeControllerTypeGeneric)
         {
             controller = controllerType
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), viewModelType);
 
             mapper = mapperInterfaceType
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), viewModelType);
         }
         else
         {
@@ -238,7 +320,7 @@ public partial class
         if (makeRegistrationTypeGeneric)
         {
             registrationType = registrationType
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), viewModelType);
         }
 
         WithController(controller, registrationType);
@@ -252,41 +334,41 @@ public partial class
     }
 
     public Type CreateControllerType()
-        => typeof(AbstractEntityCreateController<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType);
+        => typeof(AbstractEntityCreateController<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), CreateViewModelType, ReadViewModelType);
 
     public Type ValidateCreateControllerType()
-        => typeof(AbstractEntityValidateCreateController<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateViewModelType, ReadViewModelType);
+        => typeof(AbstractEntityValidateCreateController<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), CreateViewModelType, ReadViewModelType);
 
     public Type CreateMultipleControllerType()
-        => typeof(AbstractEntityCreateMultipleController<,,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType,
+        => typeof(AbstractEntityCreateMultipleController<,,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), CreateMultipleViewModelWrapperType,
                 CreateMultipleViewModelType, ReadViewModelType);
 
     public Type ValidateUpdateControllerType()
-        => typeof(AbstractEntityValidateUpdateController<,,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, UpdateViewModelBodyType, ReadViewModelType);
+        => typeof(AbstractEntityValidateUpdateController<,,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), UpdateViewModelType, UpdateViewModelBodyType, ReadViewModelType);
 
     public Type UpdateControllerType()
-        => typeof(AbstractEntityUpdateController<,,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, UpdateViewModelType, UpdateViewModelBodyType, ReadViewModelType);
+        => typeof(AbstractEntityUpdateController<,,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), UpdateViewModelType, UpdateViewModelBodyType, ReadViewModelType);
 
     public Type ReadControllerType()
-        => typeof(AbstractEntityReadController<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType);
+        => typeof(AbstractEntityReadController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), ReadViewModelType);
 
     public Type ReadAllControllerType()
-        => typeof(AbstractEntityReadAllController<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType);
+        => typeof(AbstractEntityReadAllController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), ReadViewModelType);
 
     public Type DeleteControllerType()
-        => typeof(AbstractEntityDeleteController<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType);
+        => typeof(AbstractEntityDeleteController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), ReadViewModelType);
 
     public Type SearchControllerType()
-        => typeof(AbstractEntitySearchController<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchRequestType, ReadViewModelType);
+        => typeof(AbstractEntitySearchController<,,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, SearchViewModelType, ReadViewModelType);
 
     /// <summary>
     /// Registers a CREATE controller for the entity
@@ -306,7 +388,7 @@ public partial class
     ///          .WithCreateController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(Type serviceType,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateController(Type serviceType,
         Type viewModelMapper,
         Type resultModelTypeMapper,
         bool makeServiceGeneric,
@@ -314,16 +396,16 @@ public partial class
     {
         if (viewModelMapper != null)
         {
-            var createViewModelMapperInterface = typeof(ICreateViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, CreateViewModelType);
+            var createViewModelMapperInterface = typeof(ICreateViewModelMapper<,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, typeof(TVersion), CreateViewModelType);
 
             Builder.WithRegistration(createViewModelMapperInterface, viewModelMapper, createViewModelMapperInterface);
         }
 
         if (resultModelTypeMapper != null)
         {
-            var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, ReadViewModelType);
+            var resultMapperInterface = typeof(IReadViewModelMapper<,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, typeof(TVersion), ReadViewModelType);
 
             Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
         }
@@ -332,6 +414,7 @@ public partial class
         {
             serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
                 Builder.EntityType,
+                typeof(TVersion),
                 CreateViewModelType,
                 ReadViewModelType);
         }
@@ -355,7 +438,7 @@ public partial class
     ///          .WithCreateController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController<TRegistrationType>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateController<TRegistrationType>()
         => WithCreateController(typeof(TRegistrationType),
             null,
             null,
@@ -376,14 +459,14 @@ public partial class
     ///          .WithCreateController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateController(bool includeValidationController = true)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateController(bool includeValidationController = true)
     {
         if (includeValidationController)
         {
             WithValidateCreateController();
         }
         return WithCreateController(
-            typeof(AbstractEntityCreateController<,,,>),
+            typeof(AbstractEntityCreateController<,,,,>),
             null,
             null,
             true,
@@ -404,7 +487,7 @@ public partial class
     ///          .WithValidateCreateController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateCreateController<TRegistrationType>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithValidateCreateController<TRegistrationType>()
         => WithCreateController(typeof(TRegistrationType),
             null,
             null,
@@ -424,9 +507,9 @@ public partial class
     ///          .WithValidateCreateController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateCreateController()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithValidateCreateController()
         => WithCreateController(
-            typeof(AbstractEntityValidateCreateController<,,,>),
+            typeof(AbstractEntityValidateCreateController<,,,,>),
             null,
             null,
             true,
@@ -448,11 +531,11 @@ public partial class
     ///          .WithDeleteController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController(Type registrationType,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithDeleteController(Type registrationType,
         Type viewModelMapper = null,
         bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
-        typeof(AbstractEntityDeleteController<,,>),
-        typeof(ICreateViewModelMapper<,,>),
+        typeof(AbstractEntityDeleteController<,,,>),
+        typeof(ICreateViewModelMapper<,,,>),
         registrationType,
         ReadViewModelType,
         viewModelMapper,
@@ -472,7 +555,7 @@ public partial class
     ///          .WithDeleteController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController<TRegistrationType>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithDeleteController<TRegistrationType>()
         => WithDeleteController(typeof(TRegistrationType));
 
     /// <summary>
@@ -488,8 +571,8 @@ public partial class
     ///          .WithDeleteController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithDeleteController()
-        => WithDeleteController(typeof(AbstractEntityDeleteController<,,>),
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithDeleteController()
+        => WithDeleteController(typeof(AbstractEntityDeleteController<,,,>),
             makeRegistrationTypeGeneric: true);
 
     /// <summary>
@@ -508,11 +591,11 @@ public partial class
     ///          .WithGetAllController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController(Type registrationType,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithGetAllController(Type registrationType,
         Type viewModelMapper = null,
         bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
-        typeof(AbstractEntityReadAllController<,,>),
-        typeof(ICreateViewModelMapper<,,>),
+        typeof(AbstractEntityReadAllController<,,,>),
+        typeof(ICreateViewModelMapper<,,,>),
         registrationType,
         ReadViewModelType,
         viewModelMapper,
@@ -532,7 +615,7 @@ public partial class
     ///          .WithGetAllController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController<TRegistrationType>() =>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithGetAllController<TRegistrationType>() =>
         WithGetAllController(typeof(TRegistrationType));
 
     /// <summary>
@@ -548,8 +631,8 @@ public partial class
     ///          .WithGetAllController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithGetAllController()
-        => WithGetAllController(typeof(AbstractEntityReadAllController<,,>),
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithGetAllController()
+        => WithGetAllController(typeof(AbstractEntityReadAllController<,,,>),
              makeRegistrationTypeGeneric: true);
 
     /// <summary>
@@ -568,11 +651,11 @@ public partial class
     ///          .WithReadController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController(Type registrationType,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithReadController(Type registrationType,
         Type viewModelMapper = null,
         bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
-        typeof(AbstractEntityReadController<,,>),
-        typeof(ICreateViewModelMapper<,,>),
+        typeof(AbstractEntityReadController<,,,>),
+        typeof(ICreateViewModelMapper<,,,>),
         registrationType,
         ReadViewModelType,
         viewModelMapper,
@@ -592,7 +675,7 @@ public partial class
     ///          .WithReadController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController<TRegistrationType>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithReadController<TRegistrationType>()
         => WithReadController(typeof(TRegistrationType));
 
     /// <summary>
@@ -608,9 +691,9 @@ public partial class
     ///          .WithReadController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadController()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithReadController()
         => WithReadController(
-            typeof(AbstractEntityReadController<,,>),
+            typeof(AbstractEntityReadController<,,,>),
             makeRegistrationTypeGeneric: true);
 
     /// <summary>
@@ -629,17 +712,17 @@ public partial class
     ///          .WithSearchController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController(Type registrationType,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchController(Type registrationType,
         Type viewModelMapper = null,
         bool makeRegistrationTypeGeneric = false)
     {
-        var mapperInterface = typeof(IReadViewModelMapper<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, ReadViewModelType);
+        var mapperInterface = typeof(IReadViewModelMapper<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), ReadViewModelType);
 
         if (makeRegistrationTypeGeneric)
         {
             registrationType = registrationType
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, Builder.SearchRequestType, ReadViewModelType);
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, SearchViewModelType, ReadViewModelType);
         }
 
         return WithControllerHelper(SearchControllerType(),
@@ -665,7 +748,7 @@ public partial class
     ///          .WithSearchController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController<TRegistrationType>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchController<TRegistrationType>()
         => WithSearchController(typeof(TRegistrationType));
 
     /// <summary>
@@ -681,8 +764,8 @@ public partial class
     ///          .WithSearchController())
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithSearchController()
-        => WithSearchController(typeof(AbstractEntitySearchController<,,,>),
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchController()
+        => WithSearchController(typeof(AbstractEntitySearchController<,,,,,>),
             makeRegistrationTypeGeneric: true);
 
     /// <summary>
@@ -706,7 +789,7 @@ public partial class
     ///          .WithUpdateController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(Type serviceType,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUpdateController(Type serviceType,
         Func<Type> updateControllerType,
         Type viewModelMapper = null,
         Type resultModelTypeMapper = null,
@@ -714,16 +797,16 @@ public partial class
     {
         if (viewModelMapper != null)
         {
-            var updateMapperInterface = typeof(IUpdateViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, UpdateViewModelType);
+            var updateMapperInterface = typeof(IUpdateViewModelMapper<,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, typeof(TVersion), UpdateViewModelType);
 
             Builder.WithRegistration(updateMapperInterface, viewModelMapper, updateMapperInterface);
         }
 
         if (resultModelTypeMapper != null)
         {
-            var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, ReadViewModelType);
+            var resultMapperInterface = typeof(IReadViewModelMapper<,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, typeof(TVersion), ReadViewModelType);
 
             Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
         }
@@ -732,6 +815,7 @@ public partial class
         {
             serviceType = serviceType.MakeGenericType(Builder.EntityKeyType,
                 Builder.EntityType,
+                typeof(TVersion),
                 UpdateViewModelType,
                 UpdateViewModelBodyType,
                 ReadViewModelType);
@@ -756,7 +840,7 @@ public partial class
     ///          .WithUpdateController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController<TRegistrationType>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUpdateController<TRegistrationType>()
         => WithUpdateController(typeof(TRegistrationType), UpdateControllerType);
 
     /// <summary>
@@ -773,14 +857,14 @@ public partial class
     ///          .WithUpdateController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateController(bool includeValidationController = true)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUpdateController(bool includeValidationController = true)
     {
         if (includeValidationController)
         {
             WithValidateUpdateController();
         }
         return WithUpdateController(
-            typeof(AbstractEntityUpdateController<,,,,>),
+            typeof(AbstractEntityUpdateController<,,,,,>),
             UpdateControllerType,
             makeServiceTypeGeneric: true);
     }
@@ -799,7 +883,7 @@ public partial class
     ///          .WithValidateUpdateController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateUpdateController<TRegistrationType>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithValidateUpdateController<TRegistrationType>()
         => WithUpdateController(typeof(TRegistrationType), ValidateUpdateControllerType);
 
     /// <summary>
@@ -815,9 +899,9 @@ public partial class
     ///          .WithValidateUpdateController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidateUpdateController()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithValidateUpdateController()
         => WithUpdateController(
-            typeof(AbstractEntityValidateUpdateController<,,,,>),
+            typeof(AbstractEntityValidateUpdateController<,,,,,>),
             ValidateUpdateControllerType,
             makeServiceTypeGeneric: true);
 
@@ -838,15 +922,15 @@ public partial class
     ///          .WithCreateMultipleController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController(Type registrationType,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateMultipleController(Type registrationType,
         Type viewModelMapper = null,
         Type resultModelTypeMapper = null,
         bool makeRegistrationTypeGeneric = false)
     {
         if (viewModelMapper != null)
         {
-            var createMultipleViewModelMapperInterface = typeof(ICreateMultipleViewModelMapper<,,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, CreateMultipleViewModelWrapperType, CreateMultipleViewModelType);
+            var createMultipleViewModelMapperInterface = typeof(ICreateMultipleViewModelMapper<,,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), CreateMultipleViewModelWrapperType, CreateMultipleViewModelType);
 
             Builder.WithRegistration(createMultipleViewModelMapperInterface, viewModelMapper,
                 createMultipleViewModelMapperInterface);
@@ -854,8 +938,8 @@ public partial class
 
         if (resultModelTypeMapper != null)
         {
-            var resultMapperInterface = typeof(IReadViewModelMapper<,,>)
-                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, ReadViewModelType);
+            var resultMapperInterface = typeof(IReadViewModelMapper<,,,>)
+                .MakeGenericType(Builder.EntityKeyType, Builder.EntityKeyType, typeof(TVersion), ReadViewModelType);
 
             Builder.WithRegistration(resultMapperInterface, resultModelTypeMapper, resultMapperInterface);
         }
@@ -864,6 +948,7 @@ public partial class
         {
             registrationType = registrationType.MakeGenericType(Builder.EntityKeyType,
                 Builder.EntityType,
+                typeof(TVersion),
                 CreateMultipleViewModelWrapperType,
                 CreateMultipleViewModelType,
                 ReadViewModelType);
@@ -888,7 +973,7 @@ public partial class
     ///          .WithCreateMultipleController<>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController<TRegistrationType>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateMultipleController<TRegistrationType>()
         => WithCreateMultipleController(typeof(TRegistrationType));
 
     /// <summary>
@@ -904,8 +989,8 @@ public partial class
     ///          .WithCreateMultipleController()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleController()
-        => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,>),
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateMultipleController()
+        => WithCreateMultipleController(typeof(AbstractEntityCreateMultipleController<,,,,,>),
             makeRegistrationTypeGeneric: true);
 
     /// <summary>
@@ -924,7 +1009,7 @@ public partial class
     ///          .WithAllControllers(true, true)
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithAllControllers(bool includeGetAll = false,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithAllControllers(bool includeGetAll = false,
         bool includeMultipleCreate = true, bool includeValidationController = true)
     {
         WithReadController();
@@ -962,10 +1047,10 @@ public partial class
     ///          .WithValidationService<ValidationService>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithValidationService<TService>(bool replace = true)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithValidationService<TService>(bool replace = true)
     {
-        var type = typeof(IEntityValidationService<,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType);
+        var type = typeof(IEntityValidationService<,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion));
 
         if (!type.IsAssignableFrom(typeof(TService)))
         {
@@ -992,9 +1077,9 @@ public partial class
     ///          .WithMaxPageSize<ViewModel, ViewModelMapper>())
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithMaxPageSize(int size = 100)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithMaxPageSize(int size = 100)
     {
-        Builder.WithRegistrationInstance<IMaxPageSize<TKey, TEntity>>(new DefaultMaxPageSize<TEntity, TKey>(size));
+        Builder.WithRegistrationInstance<IMaxPageSize<TKey, TEntity, TVersion>>(new DefaultMaxPageSize<TEntity, TKey, TVersion>(size));
 
         return this;
     }

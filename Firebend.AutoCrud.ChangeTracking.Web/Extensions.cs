@@ -2,6 +2,7 @@ using System;
 using Firebend.AutoCrud.ChangeTracking.Web.Abstractions;
 using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,25 +11,28 @@ namespace Firebend.AutoCrud.ChangeTracking.Web;
 
 public static class Extensions
 {
-    public static Type ChangeTrackingControllerType<TBuilder, TKey, TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator)
+    public static Type ChangeTrackingControllerType<TBuilder, TKey, TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
-        => typeof(AbstractChangeTrackingReadController<,,>)
+        where TVersion : class, IAutoCrudApiVersion
+        => typeof(AbstractChangeTrackingReadController<,,,>)
             .MakeGenericType(configurator.Builder.EntityKeyType,
                 configurator.Builder.EntityType,
+                typeof(TVersion),
                 configurator.ReadViewModelType);
 
-    public static ControllerConfigurator<TBuilder, TKey, TEntity> WithChangeTrackingControllers<TBuilder, TKey,
-        TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithChangeTrackingControllers<TBuilder, TKey,
+        TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator,
         string entityName = null,
         string entityNamePlural = null,
         string openApiName = null)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
     {
         var controller = configurator.ChangeTrackingControllerType();
         return configurator.WithController(controller, controller, entityName, entityNamePlural, openApiName);
@@ -50,16 +54,17 @@ public static class Extensions
     ///          .AddChangeTrackingResourceAuthorization()
     /// </code>
     /// </example>
-    public static ControllerConfigurator<TBuilder, TKey, TEntity> AddChangeTrackingResourceAuthorization<TBuilder,
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddChangeTrackingResourceAuthorization<TBuilder,
         TKey,
-        TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator,
+        TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator,
         string policy = ChangeTrackingAuthorizationRequirement.DefaultPolicy)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddResourceAuthorization(configurator.ChangeTrackingControllerType(),
-            typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity>), policy);
+            typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity, TVersion>), policy);
 
     public static IServiceCollection AddDefaultChangeTrackingResourceAuthorizationRequirement(this IServiceCollection serviceCollection)
     {
@@ -72,11 +77,12 @@ public static class Extensions
         return serviceCollection;
     }
 
-    public static ControllerConfigurator<TBuilder, TKey, TEntity> AddChangeTrackingAuthorizationPolicy<TBuilder, TKey, TEntity>(
-        this ControllerConfigurator<TBuilder, TKey, TEntity> configurator, string policy)
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddChangeTrackingAuthorizationPolicy<TBuilder, TKey, TEntity, TVersion>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator, string policy)
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
         => configurator.AddAuthorizationPolicy(configurator.ChangeTrackingControllerType(),
             policy);
 }

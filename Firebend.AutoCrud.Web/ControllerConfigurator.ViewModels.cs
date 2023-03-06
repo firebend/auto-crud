@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Web.Implementations.Patching;
 using Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 using Firebend.AutoCrud.Web.Interfaces;
 
 namespace Firebend.AutoCrud.Web;
 
-public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
+public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 {
     public Type CreateViewModelType { get; private set; }
+    public Type SearchViewModelType { get; private set; }
     public Type UpdateViewModelType { get; private set; }
     public Type UpdateViewModelBodyType { get; private set; }
     public Type ReadViewModelType { get; private set; }
@@ -40,14 +42,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithCreateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel(Type viewModelType, Type viewModelMapper)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateViewModel(Type viewModelType, Type viewModelMapper)
     {
         ViewModelGuard("Please register a Create view model before adding controllers");
 
         CreateViewModelType = viewModelType;
 
-        var mapper = typeof(ICreateViewModelMapper<,,>)
-            .MakeGenericType(Builder.EntityType, Builder.EntityType, viewModelType);
+        var mapper = typeof(ICreateViewModelMapper<,,,>)
+            .MakeGenericType(Builder.EntityType, Builder.EntityType, typeof(TVersion), viewModelType);
 
         Builder.WithRegistration(mapper, viewModelMapper, mapper);
 
@@ -70,15 +72,15 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithCreateViewModel<ViewModel, ViewModelWrapper>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel<TViewModel, TViewModelMapper>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateViewModel<TViewModel, TViewModelMapper>()
         where TViewModel : class
-        where TViewModelMapper : ICreateViewModelMapper<TKey, TEntity, TViewModel>
+        where TViewModelMapper : ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel>
     {
         ViewModelGuard("Please register a Create view model before adding controllers");
 
         CreateViewModelType = typeof(TViewModel);
 
-        Builder.WithRegistration<ICreateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
+        Builder.WithRegistration<ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel>, TViewModelMapper>();
 
         return this;
     }
@@ -102,17 +104,146 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          }))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateViewModel<TViewModel>(
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateViewModel<TViewModel>(
         Func<TViewModel, TEntity> from)
         where TViewModel : class
     {
         ViewModelGuard("Please register read view model before adding controllers.");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(@from);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TVersion, TViewModel>(@from);
 
         CreateViewModelType = typeof(TViewModel);
 
-        Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+        Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel>>(instance);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a custom view model to use for the entity Search endpoint
+    /// </summary>
+    /// <param name="viewModelType">The type of the view model to use</param>
+    /// <param name="viewModelMapper">The type of the view model mapper to use</param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithSearchViewModel(typeof(ViewModel), typeof(ViewModelMapper))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel(Type viewModelType, Type viewModelMapper)
+    {
+        ViewModelGuard("Please register a Create view model before adding controllers");
+
+        SearchViewModelType = viewModelType;
+
+        var mapper = typeof(ISearchViewModelMapper<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), viewModelType, Builder.SearchRequestType);
+
+        Builder.WithRegistration(mapper, viewModelMapper, mapper);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a custom view model to use for the entity Search endpoint
+    /// </summary>
+    /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
+    /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithSearchViewModel<ViewModel, ViewModelWrapper>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TViewModel, TSearchModel, TViewModelMapper>()
+        where TViewModel : class
+        where TViewModelMapper : ISearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>
+        where TSearchModel : class
+    {
+        ViewModelGuard("Please register a Create view model before adding controllers");
+
+        SearchViewModelType = typeof(TViewModel);
+
+        Builder.WithRegistration<ISearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>, TViewModelMapper>();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a custom view model to use for the entity Search endpoint
+    /// </summary>
+    /// <param name="from">A callback function that maps the view model to the entity class</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithSearchViewModel<ViewModel>(viewModel => {
+    ///              var e = new WeatherForecastSearchRequest();
+    ///              viewModel?.Body?.CopyPropertiesTo(e);
+    ///              return e;
+    ///          }))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchViewModel<TViewModel, TSearchModel>(
+        Func<TViewModel, TSearchModel> from)
+        where TViewModel : class
+        where TSearchModel : class
+    {
+        ViewModelGuard("Please register read view model before adding controllers.");
+
+        var instance = new FunctionSearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>(@from);
+
+        Builder.WithRegistrationInstance<ISearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>>(instance);
+
+        SearchViewModelType = typeof(TViewModel);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers the default search request model as the search view model. This will be called automatically
+    /// by the controller configurator.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithSearchViewModel()))
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithSearchRequest()
+    {
+        ViewModelGuard("Please register read view model before adding controllers.");
+
+        SearchViewModelType = Builder.SearchRequestType;
+
+        var @interface = typeof(ISearchViewModelMapper<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, Builder.SearchRequestType);
+
+        var @class = typeof(IdentitySearchViewModelMapper<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType);
+
+        var instance = Activator.CreateInstance(@class);
+
+        Builder.WithRegistrationInstance(@interface, instance);
 
         return this;
     }
@@ -133,14 +264,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithReadViewModel(typeof(ViewModel), typeof(ViewModelMapper))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel(Type viewModelType, Type viewModelMapper)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithReadViewModel(Type viewModelType, Type viewModelMapper)
     {
         ViewModelGuard("Please register a read view model before adding controllers");
 
         ReadViewModelType = viewModelType;
 
-        var mapper = typeof(IReadViewModelMapper<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
+        var mapper = typeof(IReadViewModelMapper<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), viewModelType);
 
         Builder.WithRegistration(mapper, viewModelMapper, mapper);
 
@@ -163,15 +294,15 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithReadViewModel<ViewModel, ViewModelWrapper>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel<TViewModel, TViewModelMapper>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithReadViewModel<TViewModel, TViewModelMapper>()
         where TViewModel : class
-        where TViewModelMapper : IReadViewModelMapper<TKey, TEntity, TViewModel>
+        where TViewModelMapper : IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel>
     {
         ViewModelGuard("Please register a read view model before adding controllers");
 
         ReadViewModelType = typeof(TViewModel);
 
-        Builder.WithRegistration<IReadViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
+        Builder.WithRegistration<IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel>, TViewModelMapper>();
 
         return this;
     }
@@ -191,17 +322,17 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithReadViewModel<ViewModel>(entity => new ViewModel(entity)))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithReadViewModel<TViewModel>(
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithReadViewModel<TViewModel>(
         Func<TEntity, TViewModel> to)
         where TViewModel : class
     {
         ViewModelGuard("Please registered read view model before adding controllers");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(to);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TVersion, TViewModel>(to);
 
         ReadViewModelType = typeof(TViewModel);
 
-        Builder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+        Builder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel>>(instance);
 
         return this;
     }
@@ -222,7 +353,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithUpdateViewModel(typeof(ViewModel), typeof(ViewModelMapper))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel(
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUpdateViewModel(
         Type viewModelType,
         Type viewModelBodyType,
         Type viewModelMapper)
@@ -232,13 +363,13 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         UpdateViewModelType = viewModelType;
         UpdateViewModelBodyType = viewModelBodyType;
 
-        var mapper = typeof(IUpdateViewModelMapper<,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewModelType);
+        var mapper = typeof(IUpdateViewModelMapper<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), viewModelType);
 
         Builder.WithRegistration(mapper, viewModelMapper, mapper);
 
-        var @interface = typeof(ICopyOnPatchPropertyAccessor<,>).MakeGenericType(typeof(TEntity), UpdateViewModelType);
-        var @class = typeof(CopyOnPatchPropertyAccessor<,>).MakeGenericType(typeof(TEntity), UpdateViewModelType);
+        var @interface = typeof(ICopyOnPatchPropertyAccessor<,,>).MakeGenericType(typeof(TEntity), typeof(TVersion), UpdateViewModelType);
+        var @class = typeof(CopyOnPatchPropertyAccessor<,,>).MakeGenericType(typeof(TEntity), typeof(TVersion), UpdateViewModelType);
         var instance = Activator.CreateInstance(@class);
 
         Builder.WithRegistrationInstance(@interface, instance);
@@ -265,20 +396,20 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithUpdateViewModel<ViewModel, ViewModelWrapper>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel, TViewModelBody, TViewModelMapper>(
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUpdateViewModel<TViewModel, TViewModelBody, TViewModelMapper>(
         List<string> copyOnPatchPropertyNames = null)
         where TViewModelBody : class
         where TViewModel : class
-        where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>
+        where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel>
     {
         ViewModelGuard("Please register a update view model before adding controllers");
 
         UpdateViewModelType = typeof(TViewModel);
         UpdateViewModelBodyType = typeof(TViewModelBody);
 
-        Builder.WithRegistration<IUpdateViewModelMapper<TKey, TEntity, TViewModel>, TViewModelMapper>();
-        Builder.WithRegistrationInstance<ICopyOnPatchPropertyAccessor<TEntity, TViewModel>>(
-            new CopyOnPatchPropertyAccessor<TEntity, TViewModel>(copyOnPatchPropertyNames));
+        Builder.WithRegistration<IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel>, TViewModelMapper>();
+        Builder.WithRegistrationInstance<ICopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel>>(
+            new CopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel>(copyOnPatchPropertyNames));
 
         return this;
     }
@@ -305,7 +436,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          }))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithUpdateViewModel<TViewModel, TViewModelBody>(
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUpdateViewModel<TViewModel, TViewModelBody>(
         Func<TViewModel, TEntity> from,
         Func<TEntity, TViewModel> to,
         List<string> copyOnPatchPropertyNames = null)
@@ -314,14 +445,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     {
         ViewModelGuard("Please register a update view model before adding controllers");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(@from, to);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TVersion, TViewModel>(@from, to);
 
         UpdateViewModelType = typeof(TViewModel);
         UpdateViewModelBodyType = typeof(TViewModelBody);
 
-        Builder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-        Builder.WithRegistrationInstance<ICopyOnPatchPropertyAccessor<TEntity, TViewModel>>(
-            new CopyOnPatchPropertyAccessor<TEntity, TViewModel>(copyOnPatchPropertyNames));
+        Builder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel>>(instance);
+        Builder.WithRegistrationInstance<ICopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel>>(
+            new CopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel>(copyOnPatchPropertyNames));
 
         return this;
     }
@@ -343,7 +474,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithCreateMultipleViewModel(type(ViewWrapper), typeof(ViewModel), typeof(ViewModelMapper))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel(Type viewWrapper,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateMultipleViewModel(Type viewWrapper,
         Type view,
         Type viewMapper)
     {
@@ -352,8 +483,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         CreateMultipleViewModelType = view;
         CreateMultipleViewModelWrapperType = viewWrapper;
 
-        var mapper = typeof(ICreateMultipleViewModelMapper<,,,>)
-            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, viewWrapper, view);
+        var mapper = typeof(ICreateMultipleViewModelMapper<,,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), viewWrapper, view);
 
         Builder.WithRegistration(mapper, viewMapper, mapper);
 
@@ -377,15 +508,15 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithCreateMultipleViewModel<ViewWrapper, ViewModel, ViewModelMapper>()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel<TViewWrapper, TView, TMapper>()
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateMultipleViewModel<TViewWrapper, TView, TMapper>()
         where TView : class
         where TViewWrapper : IMultipleEntityViewModel<TView>
-        where TMapper : ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>
+        where TMapper : ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TViewWrapper, TView>
     {
         CreateMultipleViewModelType = typeof(TView);
         CreateMultipleViewModelWrapperType = typeof(TViewWrapper);
 
-        Builder.WithRegistration<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>, TMapper>();
+        Builder.WithRegistration<ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TViewWrapper, TView>, TMapper>();
 
         return this;
     }
@@ -411,7 +542,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          }))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithCreateMultipleViewModel<TViewWrapper, TView>(
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithCreateMultipleViewModel<TViewWrapper, TView>(
         Func<TViewWrapper, TView, TEntity> mapperFunc)
         where TView : class
         where TViewWrapper : IMultipleEntityViewModel<TView>
@@ -419,9 +550,9 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
         CreateMultipleViewModelType = typeof(TView);
         CreateMultipleViewModelWrapperType = typeof(TViewWrapper);
 
-        var instance = new FunctionCreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>(mapperFunc);
+        var instance = new FunctionCreateMultipleViewModelMapper<TKey, TEntity, TVersion, TViewWrapper, TView>(mapperFunc);
 
-        Builder.WithRegistrationInstance<ICreateMultipleViewModelMapper<TKey, TEntity, TViewWrapper, TView>>(instance);
+        Builder.WithRegistrationInstance<ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TViewWrapper, TView>>(instance);
 
         return this;
     }
@@ -442,7 +573,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithViewModel(ypeof(ViewModel), typeof(ViewModelMapper))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel(Type viewModelType, Type viewModelMapper)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithViewModel(Type viewModelType, Type viewModelMapper)
     {
         ViewModelGuard("Please register a view model before adding controllers");
 
@@ -469,11 +600,11 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .WithViewModel(ypeof(ViewModel), typeof(ViewModelMapper))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel, TViewModelMapper>()
-        where TViewModel : class
-        where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TViewModel>,
-        ICreateViewModelMapper<TKey, TEntity, TViewModel>,
-        IReadViewModelMapper<TKey, TEntity, TViewModel>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithViewModel<TViewModel, TViewModelMapper>()
+        where TViewModel : class, new()
+        where TViewModelMapper : IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel>,
+        ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel>,
+        IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel>
     {
         ViewModelGuard("Please register a view model before adding controllers");
 
@@ -504,22 +635,22 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          ))
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> WithViewModel<TViewModel>(
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithViewModel<TViewModel>(
         Func<TEntity, TViewModel> to,
         Func<TViewModel, TEntity> from)
         where TViewModel : class
     {
         ViewModelGuard("Please register view model before adding controllers");
 
-        var instance = new FunctionViewModelMapper<TKey, TEntity, TViewModel>(@from, to);
+        var instance = new FunctionViewModelMapper<TKey, TEntity, TVersion, TViewModel>(@from, to);
 
         CreateViewModelType = typeof(TViewModel);
         UpdateViewModelType = typeof(TViewModel);
         ReadViewModelType = typeof(TViewModel);
 
-        Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-        Builder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TViewModel>>(instance);
-        Builder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TViewModel>>(instance);
+        Builder.WithRegistrationInstance<ICreateViewModelMapper<TKey, TEntity, TVersion, TViewModel>>(instance);
+        Builder.WithRegistrationInstance<IUpdateViewModelMapper<TKey, TEntity, TVersion, TViewModel>>(instance);
+        Builder.WithRegistrationInstance<IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel>>(instance);
 
         return this;
     }

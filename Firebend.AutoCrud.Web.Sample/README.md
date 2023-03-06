@@ -116,12 +116,21 @@ As a data contract, we created a sample interface as [IDataAuth](./Models/IDataA
 
 [SampleEntityExtensions.cs](./Extensions/SampleEntityExtensions.cs)
 
+Create a type that implements `IAutoCrudApiVersion`.
+```c#
+public class V1 : IAutoCrudApiVersion
+{
+    public int Version => 1;
+    public string Name => "V1";
+}
+```
+
 ```c#
 public static MongoEntityCrudGenerator AddMongoPerson(this MongoEntityCrudGenerator generator) =>
             generator.AddEntity<Guid, MongoTenantPerson>(person =>
                 person.WithDefaultDatabase("Samples")
                     ...
-                    .AddControllers(controllers => controllers
+                    .AddControllers<Guid, MongoTenantPerson, V1>(controllers => controllers
                         ...
                         .AddResourceAuthorization()
                         .AddChangeTrackingResourceAuthorization()
@@ -158,9 +167,9 @@ generator.AddEntity<Guid, EfPerson>(person =>
                             {
                                 de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
                                     .WithMassTransit();
-                            }).AddControllers(controllers => controllers
+                            }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPerson, int>, V1>(controllers => controllers
                                 .WithChangeTrackingControllers()
-                                .WithRoute("/api/v1/ef-person/{personId}/custom-fields")
+                                .WithVersionedRoute("ef-person/{personId}/custom-fields", "api")
                                 .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
                                 .WithOpenApiEntityName("Person Custom Field", "Person Custom Fields"))))
 ```

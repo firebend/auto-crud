@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Attributes;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
@@ -11,11 +12,12 @@ using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {
-    public class FileFieldAutoMapper : IFileFieldAutoMapper
+    public class FileFieldAutoMapper<TVersion> : IFileFieldAutoMapper<TVersion>
+        where TVersion : class, IAutoCrudApiVersion
     {
-        private readonly IFileFieldWriteFilterFactory _filterFactory;
+        private readonly IFileFieldWriteFilterFactory<TVersion> _filterFactory;
 
-        public FileFieldAutoMapper(IFileFieldWriteFilterFactory filterFactory)
+        public FileFieldAutoMapper(IFileFieldWriteFilterFactory<TVersion> filterFactory)
         {
             _filterFactory = filterFactory;
         }

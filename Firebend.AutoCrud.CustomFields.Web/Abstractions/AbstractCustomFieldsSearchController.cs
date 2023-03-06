@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -13,15 +14,17 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
 {
-    public abstract class AbstractCustomFieldsSearchController<TKey, TEntity> : AbstractEntityControllerBase
+    [ApiController]
+    public abstract class AbstractCustomFieldsSearchController<TKey, TEntity, TVersion> : AbstractEntityControllerBase<TVersion>
         where TKey : struct
         where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
     {
         private readonly ICustomFieldsSearchService<TKey, TEntity> _searchService;
-        private readonly IMaxPageSize<TKey, TEntity> _maxPageSize;
+        private readonly IMaxPageSize<TKey, TEntity, TVersion> _maxPageSize;
 
         protected AbstractCustomFieldsSearchController(ICustomFieldsSearchService<TKey, TEntity> searchService,
-            IMaxPageSize<TKey, TEntity> maxPageSize,
+            IMaxPageSize<TKey, TEntity, TVersion> maxPageSize,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _searchService = searchService;

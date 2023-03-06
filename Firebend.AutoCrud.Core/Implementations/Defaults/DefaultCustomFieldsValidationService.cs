@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
@@ -9,9 +10,10 @@ using Microsoft.AspNetCore.JsonPatch;
 namespace Firebend.AutoCrud.Core.Implementations.Defaults;
 
 public abstract class
-    DefaultCustomFieldsValidationService<TKey, TEntity> : ICustomFieldsValidationService<TKey, TEntity>
+    DefaultCustomFieldsValidationService<TKey, TEntity, TVersion> : ICustomFieldsValidationService<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
 {
     public Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> customField,
         CancellationToken cancellationToken)

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web;
 
-public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
+public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 {
     public (Type attributeType, CustomAttributeBuilder attributeBuilder) DefaultAuthorizationPolicy
     {
@@ -33,7 +33,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddAuthorizationPolicy()
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy(Type type,
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddAuthorizationPolicy(Type type,
         string authorizePolicy = "")
     {
         var (attributeType, attributeBuilder) = GetAuthorizationAttributeInfo(authorizePolicy);
@@ -57,7 +57,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddAuthorizationPolicy<Controller>("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicy<TController>(string policy)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddAuthorizationPolicy<TController>(string policy)
         => AddAuthorizationPolicy(typeof(TController), policy);
 
     /// <summary>
@@ -75,7 +75,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddCreateAuthorizationPolicy("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateAuthorizationPolicy(string policy)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddCreateAuthorizationPolicy(string policy)
         => AddAuthorizationPolicy(CreateControllerType(), policy);
 
     /// <summary>
@@ -93,7 +93,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddCreateMultipleAuthorizationPolicy("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddCreateMultipleAuthorizationPolicy(string policy)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddCreateMultipleAuthorizationPolicy(string policy)
         => AddAuthorizationPolicy(CreateMultipleControllerType(), policy);
 
     /// <summary>
@@ -111,7 +111,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddDeleteAuthorizationPolicy("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddDeleteAuthorizationPolicy(string policy)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddDeleteAuthorizationPolicy(string policy)
         => AddAuthorizationPolicy(DeleteControllerType(), policy);
 
     /// <summary>
@@ -129,7 +129,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddReadAuthorizationPolicy("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAuthorizationPolicy(string policy)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddReadAuthorizationPolicy(string policy)
         => AddAuthorizationPolicy(ReadControllerType(), policy);
 
     /// <summary>
@@ -147,7 +147,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddReadAllAuthorizationPolicy("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddReadAllAuthorizationPolicy(string policy)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddReadAllAuthorizationPolicy(string policy)
         => AddAuthorizationPolicy(ReadAllControllerType(), policy);
 
     /// <summary>
@@ -165,7 +165,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddSearchAuthorizationPolicy("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddSearchAuthorizationPolicy(string policy) =>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddSearchAuthorizationPolicy(string policy) =>
         AddAuthorizationPolicy(SearchControllerType(), policy);
 
     /// <summary>
@@ -183,7 +183,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddUpdateAuthorizationPolicy("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddUpdateAuthorizationPolicy(string policy)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddUpdateAuthorizationPolicy(string policy)
         => AddAuthorizationPolicy(UpdateControllerType(), policy);
 
     /// <summary>
@@ -201,7 +201,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddAlterAuthorizationPolicies("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddAlterAuthorizationPolicies(string policy = "")
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddAlterAuthorizationPolicies(string policy = "")
     {
         AddCreateAuthorizationPolicy(policy);
         AddDeleteAuthorizationPolicy(policy);
@@ -225,7 +225,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddQueryAuthorizationPolicies("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddQueryAuthorizationPolicies(string policy = "")
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddQueryAuthorizationPolicies(string policy = "")
     {
         AddReadAuthorizationPolicy(policy);
         AddReadAllAuthorizationPolicy(policy);
@@ -249,7 +249,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity>
     ///          .AddAuthorizationPolicies("Policy")
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity> AddAuthorizationPolicies(string policy = "")
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddAuthorizationPolicies(string policy = "")
     {
         DefaultAuthorizationPolicy = GetAuthorizationAttributeInfo(policy);
 

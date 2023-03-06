@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Firebend.AutoCrud.Web.Sample.Controllers
 {
     [ApiController]
-    [Route("/api/v1/ef/domain-event-custom-context")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/ef/domain-event-custom-context")]
     public class EfChangeTrackingCustomContextTestController : ControllerBase
     {
         private readonly IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<Guid, EfPerson>> _readClient;

@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
@@ -23,11 +24,12 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         _serviceProvider = serviceProvider;
     }
 
-    private TKey GetEntityKeyAsync<TKey, TEntity>(string entityIdString)
+    private TKey GetEntityKeyAsync<TKey, TEntity, TVersion>(string entityIdString)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
     {
-        var keyParser = _serviceProvider.GetService<IEntityKeyParser<TKey, TEntity>>();
+        var keyParser = _serviceProvider.GetService<IEntityKeyParser<TKey, TEntity, TVersion>>();
         if (keyParser == null)
         {
             throw new DependencyResolverException($"Cannot resolve key parser for {nameof(TEntity)}");
@@ -59,29 +61,32 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         }
     }
 
-    public virtual async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity>(string entityIdString,
+    public virtual async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity, TVersion>(string entityIdString,
         ClaimsPrincipal user, string policy, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
     {
-        var entityId = GetEntityKeyAsync<TKey, TEntity>(entityIdString);
-        return await AuthorizeEntityAsync<TKey, TEntity>(entityId, user, policy, cancellationToken);
+        var entityId = GetEntityKeyAsync<TKey, TEntity, TVersion>(entityIdString);
+        return await AuthorizeEntityAsync<TKey, TEntity, TVersion>(entityId, user, policy, cancellationToken);
     }
 
-    public virtual async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity>(TKey id, ClaimsPrincipal user,
+    public virtual async Task<AuthorizationResult> AuthorizeEntityAsync<TKey, TEntity, TVersion>(TKey id, ClaimsPrincipal user,
         string policy, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
     {
         var entity = await GetEntityAsync<TKey, TEntity>(id, cancellationToken);
         return await AuthorizeEntityAsync(user, entity, policy);
     }
 
-    public virtual Task<AuthorizationResult> AuthorizeEntityReadAsync<TKey, TEntity>(TKey id, ClaimsPrincipal user,
+    public virtual Task<AuthorizationResult> AuthorizeEntityReadAsync<TKey, TEntity, TVersion>(TKey id, ClaimsPrincipal user,
         CancellationToken cancellationToken)
         where TKey : struct
-        where TEntity : class, IEntity<TKey> =>
-        AuthorizeEntityAsync<TKey, TEntity>(id, user, ReadAuthorizationRequirement.DefaultPolicy, cancellationToken);
+        where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion =>
+        AuthorizeEntityAsync<TKey, TEntity, TVersion>(id, user, ReadAuthorizationRequirement.DefaultPolicy, cancellationToken);
 
     public virtual async Task<AuthorizationResult> AuthorizeEntityAsync(ClaimsPrincipal user, object entity, string policy) =>
         await _authorizationService.AuthorizeAsync(user, entity, policy);

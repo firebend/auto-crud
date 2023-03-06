@@ -1,3 +1,4 @@
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Web.Implementations.ActionResults;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -5,7 +6,8 @@ using Microsoft.Extensions.Options;
 
 namespace Firebend.AutoCrud.Web.Abstractions
 {
-    public abstract class AbstractEntityControllerBase : ControllerBase, IAutoCrudController
+    public abstract class AbstractEntityControllerBase<TVersion> : ControllerBase, IAutoCrudController
+        where TVersion : class, IAutoCrudApiVersion
     {
         private readonly IOptions<ApiBehaviorOptions> _apiOptions;
 

@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Io.Models;
 using Firebend.AutoCrud.Io.Web.Interfaces;
@@ -14,18 +15,19 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Io.Web.Abstractions;
 
 [ApiController]
-public abstract class AbstractIoController<TKey, TEntity, TSearch, TMapped> : AbstractEntityControllerBase
+public abstract class AbstractIoController<TKey, TEntity, TVersion, TSearch, TMapped> : AbstractEntityControllerBase<TVersion>
     where TSearch : IEntitySearchRequest
     where TKey : struct
     where TEntity : IEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
     where TMapped : class
 {
-    private readonly IEntityExportControllerService<TKey, TEntity, TSearch, TMapped> _exportService;
-    private readonly IMaxExportPageSize<TKey, TEntity> _maxExportPageSize;
+    private readonly IEntityExportControllerService<TKey, TEntity, TVersion, TSearch, TMapped> _exportService;
+    private readonly IMaxExportPageSize<TKey, TEntity, TVersion> _maxExportPageSize;
 
-    protected AbstractIoController(IEntityExportControllerService<TKey, TEntity, TSearch, TMapped> exportService,
+    protected AbstractIoController(IEntityExportControllerService<TKey, TEntity, TVersion, TSearch, TMapped> exportService,
         IOptions<ApiBehaviorOptions> apiOptions,
-        IMaxExportPageSize<TKey, TEntity> maxExportPageSize = null) : base(apiOptions)
+        IMaxExportPageSize<TKey, TEntity, TVersion> maxExportPageSize = null) : base(apiOptions)
     {
         _exportService = exportService;
         _maxExportPageSize = maxExportPageSize;

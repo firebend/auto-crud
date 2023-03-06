@@ -10,6 +10,7 @@ using AutoFixture.AutoMoq;
 using Firebend.AutoCrud.Core.Exceptions;
 using Firebend.AutoCrud.CustomFields.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Tests.Web.Implementations.Authorization.ActionFilters;
+using Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
 using Firebend.AutoCrud.Web.Implementations.Authorization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
@@ -70,7 +71,7 @@ public class CustomFieldsAuthorizationFilterTests
 
         // when
         var CustomFieldsAuthorizationFilter =
-            new CustomFieldsAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new CustomFieldsAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
@@ -86,7 +87,7 @@ public class CustomFieldsAuthorizationFilterTests
 
         // when
         var CustomFieldsAuthorizationFilter =
-            new CustomFieldsAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new CustomFieldsAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // then
         Assert.ThrowsAsync<ArgumentException>(() =>
@@ -99,7 +100,7 @@ public class CustomFieldsAuthorizationFilterTests
     public async Task Should_Return_403_If_Id_Is_Not_Null_And_Authorization_Fail()
     {
         // given
-        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
             It.IsAny<string>(),
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<string>(),
@@ -113,7 +114,7 @@ public class CustomFieldsAuthorizationFilterTests
 
         // when
         var CustomFieldsAuthorizationFilter =
-            new CustomFieldsAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new CustomFieldsAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // then
         await CustomFieldsAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
@@ -124,7 +125,7 @@ public class CustomFieldsAuthorizationFilterTests
         _actionExecutingContext.Object.Result.As<ObjectResult>().StatusCode.Should().Be(403);
 
         _entityAuthProvider.Verify(v =>
-            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
                 It.IsAny<string>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<string>(),
@@ -137,7 +138,7 @@ public class CustomFieldsAuthorizationFilterTests
     public async Task Should_Next_If_Id_Is_Not_Null_And_Authorization_Succeeds()
     {
         // given
-        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+        _entityAuthProvider.Setup(a => a.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
             It.IsAny<string>(),
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<string>(),
@@ -150,7 +151,7 @@ public class CustomFieldsAuthorizationFilterTests
 
         // when
         var CustomFieldsAuthorizationFilter =
-            new CustomFieldsAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new CustomFieldsAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // then
         await CustomFieldsAuthorizationFilter.OnActionExecutionAsync(_actionExecutingContext.Object,
@@ -159,7 +160,7 @@ public class CustomFieldsAuthorizationFilterTests
         _actionExecutingContext.Object.Result.Should().BeNull();
 
         _entityAuthProvider.Verify(v =>
-            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity>(
+            v.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
                 It.IsAny<string>(),
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<string>(),

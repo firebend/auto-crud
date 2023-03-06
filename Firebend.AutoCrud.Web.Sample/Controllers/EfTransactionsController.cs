@@ -30,7 +30,8 @@ public class EfTransactionsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/api/v1/ef/transactions/commit")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/ef/transactions/commit")]
     public async Task<ActionResult> CommitAsync(CancellationToken cancellationToken)
     {
         using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);
@@ -38,7 +39,8 @@ public class EfTransactionsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/api/v1/ef/transactions/rollback")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/ef/transactions/rollback")]
     public async Task<ActionResult> RollbackAsync(CancellationToken cancellationToken)
     {
         using var transaction = await _personTransactionFactory.StartTransactionAsync(cancellationToken);

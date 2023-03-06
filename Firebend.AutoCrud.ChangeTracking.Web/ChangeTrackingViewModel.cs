@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.JsonPatch.Operations;
@@ -17,13 +18,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
             nameof(ChangeTrackingModel<Guid, FooEntity>.Entity)
         };
     }
-    public class ChangeTrackingViewModel<TKey, TEntity, TViewModel> : ChangeTrackingModel<TKey, TViewModel>
+    public class ChangeTrackingViewModel<TKey, TEntity, TVersion, TViewModel> : ChangeTrackingModel<TKey, TViewModel>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
-        public async Task<ChangeTrackingViewModel<TKey, TEntity, TViewModel>> MapAsync(ChangeTrackingEntity<TKey, TEntity> changeTrackingEntity,
-            IReadViewModelMapper<TKey, TEntity, TViewModel> mapper,
+        public async Task<ChangeTrackingViewModel<TKey, TEntity, TVersion, TViewModel>> MapAsync(ChangeTrackingEntity<TKey, TEntity> changeTrackingEntity,
+            IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> mapper,
             CancellationToken cancellationToken = default)
         {
             changeTrackingEntity.CopyPropertiesTo(this, ChangeTracingViewModelCaches.MapperIgnores);

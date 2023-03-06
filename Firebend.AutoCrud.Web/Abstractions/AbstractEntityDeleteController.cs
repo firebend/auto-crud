@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -11,17 +12,18 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntityDeleteController<TKey, TEntity, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity>
+    public abstract class AbstractEntityDeleteController<TKey, TEntity, TVersion, TViewModel> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
         private readonly IEntityDeleteService<TKey, TEntity> _deleteService;
-        private readonly IReadViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> _viewModelMapper;
 
         protected AbstractEntityDeleteController(IEntityDeleteService<TKey, TEntity> deleteService,
-            IEntityKeyParser<TKey, TEntity> entityKeyParser,
-            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
+            IEntityKeyParser<TKey, TEntity, TVersion> entityKeyParser,
+            IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> viewModelMapper,
             IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
         {
             _deleteService = deleteService;

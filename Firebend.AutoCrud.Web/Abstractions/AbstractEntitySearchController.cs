@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
@@ -13,23 +14,31 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    public abstract class AbstractEntitySearchController<TKey, TEntity, TSearch, TViewModel> : AbstractEntityControllerBase
+    public abstract class AbstractEntitySearchController<TKey, TEntity, TVersion, TSearch, TSearchViewModel, TReadViewModel>
+        : AbstractEntityControllerBase<TVersion>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
         where TSearch : IEntitySearchRequest
-        where TViewModel : class
+        where TReadViewModel : class
+        where TSearchViewModel : class
     {
         private readonly IEntitySearchService<TKey, TEntity, TSearch> _searchService;
-        private readonly IReadViewModelMapper<TKey, TEntity, TViewModel> _viewModelMapper;
-        private readonly IMaxPageSize<TKey, TEntity> _maxPageSize;
+
+        private readonly ISearchViewModelMapper<TKey, TEntity, TVersion, TSearchViewModel, TSearch>
+            _searchViewModelMapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readViewModelMapper;
+        private readonly IMaxPageSize<TKey, TEntity, TVersion> _maxPageSize;
 
         protected AbstractEntitySearchController(IEntitySearchService<TKey, TEntity, TSearch> searchService,
-            IReadViewModelMapper<TKey, TEntity, TViewModel> viewModelMapper,
-            IMaxPageSize<TKey, TEntity> maxPageSize,
+            ISearchViewModelMapper<TKey, TEntity, TVersion, TSearchViewModel, TSearch> searchViewModelMapper,
+            IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readViewModelMapper,
+            IMaxPageSize<TKey, TEntity, TVersion> maxPageSize,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
             _searchService = searchService;
-            _viewModelMapper = viewModelMapper;
+            _searchViewModelMapper = searchViewModelMapper;
+            _readViewModelMapper = readViewModelMapper;
             _maxPageSize = maxPageSize;
         }
 
@@ -38,11 +47,13 @@ namespace Firebend.AutoCrud.Web.Abstractions
         [SwaggerResponse(200, "All the {entityNamePlural} that match the search criteria.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
         [SwaggerResponse(403, "Forbidden")]
-        public virtual async Task<ActionResult<EntityPagedResponse<TViewModel>>> SearchAsync(
-            [FromQuery] TSearch searchRequest,
+        public virtual async Task<ActionResult<EntityPagedResponse<TReadViewModel>>> SearchAsync(
+            [FromQuery] TSearchViewModel searchViewModel,
             CancellationToken cancellationToken)
         {
             Response.RegisterForDispose(_searchService);
+
+            var searchRequest = await _searchViewModelMapper.FromAsync(searchViewModel, cancellationToken);
 
             var validationResult = searchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
             if (!validationResult.WasSuccessful)
@@ -65,11 +76,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return Ok(entities);
             }
 
-            var mapped = await _viewModelMapper
+            var mapped = await _readViewModelMapper
                 .ToAsync(entities.Data, cancellationToken)
                 .ConfigureAwait(false);
 
-            var result = new EntityPagedResponse<TViewModel>
+            var result = new EntityPagedResponse<TReadViewModel>
             {
                 Data = mapped,
                 CurrentPage = entities.CurrentPage,

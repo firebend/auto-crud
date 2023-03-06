@@ -165,7 +165,7 @@ public class MongoCustomFieldsApiTests
     [TestMethod]
     public async Task EfCustomFieldsGetAll()
     {
-        var response = await $"{PersonUrl}/{_personWith10CustomFields.person.Id}/custom-fields".WithAuth()
+        var response = await $"{PersonUrl}/{_personWith10CustomFields.person.Id}/custom-fields/custom".WithAuth()
             .GetJsonAsync<List<CustomFieldViewModel>>();
 
         response.Should().NotBeNull();
@@ -176,9 +176,9 @@ public class MongoCustomFieldsApiTests
     public async Task EfCustomFieldsGetAllWithFilter()
     {
         var (person, customFields) = _personWith10CustomFields;
-        var responseValid = await $"{PersonUrl}/{person.Id}/custom-fields?key={customFields[0].Key}".WithAuth()
+        var responseValid = await $"{PersonUrl}/{person.Id}/custom-fields/custom?key={customFields[0].Key}".WithAuth()
             .GetJsonAsync<List<CustomFieldViewModel>>();
-        var responseInValid = await $"{PersonUrl}/{person.Id}/custom-fields?key=nope".WithAuth()
+        var responseInValid = await $"{PersonUrl}/{person.Id}/custom-fields/custom?key=nope".WithAuth()
             .GetJsonAsync<List<CustomFieldViewModel>>();
 
         responseValid.Should().NotBeNull();
@@ -196,7 +196,7 @@ public class MongoCustomFieldsApiTests
         var addedResponse = await added.GetJsonAsync<CustomFieldViewModel>();
         added.StatusCode.Should().Be((int)HttpStatusCode.OK);
 
-        var response = await $"{PersonUrl}/{_person.Id}/custom-fields/{addedResponse.Id}".WithAuth()
+        var response = await $"{PersonUrl}/{_person.Id}/custom-fields/custom/{addedResponse.Id}".WithAuth()
             .GetJsonAsync<CustomFieldViewModel>();
 
         response.Should().NotBeNull();
@@ -208,10 +208,10 @@ public class MongoCustomFieldsApiTests
     {
         var (person, customFields) = _personWith10CustomFields;
 
-        var responseValid = await $"{PersonUrl}/{person.Id}/custom-fields/exists?key={customFields[0].Key}".WithAuth()
+        var responseValid = await $"{PersonUrl}/{person.Id}/custom-fields/custom/exists?key={customFields[0].Key}".WithAuth()
             .GetJsonAsync<bool>();
 
-        var responseInValid = await $"{PersonUrl}/{person.Id}/custom-fields/exists?key=nope".WithAuth()
+        var responseInValid = await $"{PersonUrl}/{person.Id}/custom-fields/custom/exists?key=nope".WithAuth()
             .GetJsonAsync<bool>();
 
         responseValid.Should().BeTrue();
@@ -224,10 +224,10 @@ public class MongoCustomFieldsApiTests
     {
         var (person, customFields) = _personWith10CustomFields;
 
-        var responseValid = await $"{PersonUrl}/{person.Id}/custom-fields/first?key={customFields[0].Key}".WithAuth()
+        var responseValid = await $"{PersonUrl}/{person.Id}/custom-fields/custom/first?key={customFields[0].Key}".WithAuth()
             .GetJsonAsync<CustomFieldViewModel>();
 
-        var responseInValid = await $"{PersonUrl}/{person.Id}/custom-fields/first?key=nope".WithAuth()
+        var responseInValid = await $"{PersonUrl}/{person.Id}/custom-fields/custom/first?key=nope".WithAuth()
             .GetJsonAsync<CustomFieldViewModel>();
 
         responseValid.Should().NotBeNull();

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Firebend.AutoCrud.Core.Exceptions;
+using Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
 using Firebend.AutoCrud.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
@@ -66,7 +67,7 @@ public class EntityReadAuthorizationFilterTests
             => s.GetService(typeof(IEntityAuthProvider))).Returns(default);
 
         var entityReadAuthorizationFilter =
-            new EntityReadAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new EntityReadAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // when
         Assert.Throws<DependencyResolverException>(() =>
@@ -81,7 +82,7 @@ public class EntityReadAuthorizationFilterTests
         _resultExecutingContext.Setup(s => s.Result).Returns(new Mock<NotFoundResult>().Object);
 
         var entityReadAuthorizationFilter =
-            new EntityReadAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new EntityReadAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // when
 
@@ -105,7 +106,7 @@ public class EntityReadAuthorizationFilterTests
         _resultExecutingContext.Object.Result = okObjectResult;
 
         var entityReadAuthorizationFilter =
-            new EntityReadAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new EntityReadAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // when
         entityReadAuthorizationFilter.OnResultExecutionAsync(_resultExecutingContext.Object, _nextDelegate.Object);
@@ -126,7 +127,7 @@ public class EntityReadAuthorizationFilterTests
         // given
 
         var entityReadAuthorizationFilter =
-            new EntityReadAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity>(_policy);
+            new EntityReadAuthorizationFilter<Guid, ActionFilterTestHelper.TestEntity, V1>(_policy);
 
         // when
         await entityReadAuthorizationFilter.OnResultExecutionAsync(_resultExecutingContext.Object,
