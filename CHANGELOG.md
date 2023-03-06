@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.0.0"></a>
+## [7.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.0.0) (2023-3-6)
+
+### Breaking Changes
+
+* add api versioning (#166) ([ca8d4e7](https://www.github.com/firebend/auto-crud/commit/ca8d4e7c467b997767a67195e5ad5139a6ae328a))
+
+### Other
+
+* BREAKING CHANGE!: add api versioning (#151) ([d8997f4](https://www.github.com/firebend/auto-crud/commit/d8997f42832da604132072400bdd82c4cd77430c))
+* BREAKING CHANGE!: add api versioning (#165) ([1f60b8e](https://www.github.com/firebend/auto-crud/commit/1f60b8ea8cd6f3390fab86a1f2e65531a9956453))
+* Create .github/dependabot.yml (#152) ([d0c9634](https://www.github.com/firebend/auto-crud/commit/d0c96343f0c7c5fba415c5f6980468af7a30718e))
+* Update dependabot.yml (#157) ([9402420](https://www.github.com/firebend/auto-crud/commit/9402420c2e6bbf2b647a1ebd1cc74656bc8c3293))
+* Update to AsyncKeyedLock 6.2.0 (#150) ([e8e01c0](https://www.github.com/firebend/auto-crud/commit/e8e01c02e2479f43e5118cefd631b1dd30b59020))
+* **deps:** bump Firebend.JsonPatchGenerator from 3.0.0 to 3.0.2 (#162) ([2067196](https://www.github.com/firebend/auto-crud/commit/2067196fc2bba15da6519982ad42c189c3ca7ec3))
+* **deps:** bump json5 from 1.0.1 to 1.0.2 in /Firebend.AutoCrud.Web.Sample.LoadTest (#154) ([260e66e](https://www.github.com/firebend/auto-crud/commit/260e66efa10daa9dd72d7ce6c14546655d0e7ad4))
+* **deps:** bump loader-utils from 1.4.0 to 1.4.2 in /Firebend.AutoCrud.Web.Sample.LoadTest (#153) ([7579e75](https://www.github.com/firebend/auto-crud/commit/7579e75879e7a42faef2391cd774ab108ab8eb9f))
+* **deps:** bump MSTest.TestAdapter from 2.2.10 to 3.0.2 (#161) ([0c17487](https://www.github.com/firebend/auto-crud/commit/0c174875cf31118096c8ceea6d2c7f23ce58cf3a))
+* **deps:** bump Newtonsoft.Json from 13.0.1 to 13.0.2 (#160) ([311053a](https://www.github.com/firebend/auto-crud/commit/311053a38f805a6007093cb250066722c488b2a2))
+* **deps:** bump Scrutor from 4.2.0 to 4.2.1 (#158) ([d63d37b](https://www.github.com/firebend/auto-crud/commit/d63d37b448de0aa96777e20ed1f26fe226a202f6))
+* **deps:** bump terser from 5.5.1 to 5.16.5 in /Firebend.AutoCrud.Web.Sample.LoadTest (#156) ([5cf6ea0](https://www.github.com/firebend/auto-crud/commit/5cf6ea00d038cd69ac8ca247d391bae33a23a6bc))
+* **deps-dev:** bump moment from 2.29.2 to 2.29.4 in /Firebend.AutoCrud.Web.Sample.LoadTest (#155) ([ec72f41](https://www.github.com/firebend/auto-crud/commit/ec72f4113b905d0994ad798c231f910db28bc2e7))
+
 <a name="6.2.0"></a>
 ## [6.2.0](https://www.github.com/firebend/auto-crud/releases/tag/v6.2.0) (2023-2-6)
 
