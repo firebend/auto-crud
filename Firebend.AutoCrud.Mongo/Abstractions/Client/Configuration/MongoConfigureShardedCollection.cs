@@ -22,8 +22,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
         public async Task ConfigureAsync(CancellationToken cancellationToken)
         {
             var configurations = await _configurationAllShardsProvider
-                .GetAllEntityConfigurationsAsync(cancellationToken)
-                .ConfigureAwait(false);
+                .GetAllEntityConfigurationsAsync(cancellationToken);
 
             foreach (var configuration in configurations)
             {
