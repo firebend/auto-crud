@@ -23,10 +23,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
             CancellationToken cancellationToken)
         {
             BaseMongoConfigureCollectionLogger.ConfiguringCollection(_logger, configuration.DatabaseName, configuration.CollectionName);
-            await _indexClient.CreateCollectionAsync(configuration, cancellationToken).ConfigureAwait(false);
+            await _indexClient.CreateCollectionAsync(configuration, cancellationToken);
 
             BaseMongoConfigureCollectionLogger.ConfiguringIndexes(_logger, configuration.DatabaseName, configuration.CollectionName);
-            await _indexClient.BuildIndexesAsync(configuration, cancellationToken).ConfigureAwait(false);
+            await _indexClient.BuildIndexesAsync(configuration, cancellationToken);
 
             BaseMongoConfigureCollectionLogger.Done(_logger, configuration.DatabaseName, configuration.CollectionName);
         }
