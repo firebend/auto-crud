@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.1.0"></a>
+## [7.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.1.0) (2023-3-23)
+
+### Features
+
+* code clean up and dependabot version bumps (#175) ([5c04935](https://www.github.com/firebend/auto-crud/commit/5c049350ab47c940311d841f93779f961c326473))
+
+### Other
+
+* **deps:** bump MassTransit from 8.0.13 to 8.0.14 (#171) ([bae7f93](https://www.github.com/firebend/auto-crud/commit/bae7f93943152b05d23b9c096a29a9dbb45f6234))
+* **deps:** bump Microsoft.AspNetCore.Authentication.JwtBearer from 7.0.3 to 7.0.4 (#172) ([24a7f19](https://www.github.com/firebend/auto-crud/commit/24a7f19d08152a88d49e41f9be910335f71b0b6b))
+* **deps:** bump Microsoft.EntityFrameworkCore from 7.0.3 to 7.0.4 (#174) ([45b0937](https://www.github.com/firebend/auto-crud/commit/45b0937075c3e667e12711379ca4d877319db082))
+* **deps:** bump Microsoft.EntityFrameworkCore.Design from 7.0.3 to 7.0.4 (#170) ([72d47fa](https://www.github.com/firebend/auto-crud/commit/72d47fa368de340c79ef7092cfc73dce6eae3e84))
+* **deps:** bump Microsoft.EntityFrameworkCore.SqlServer from 7.0.3 to 7.0.4 (#173) ([e98d33a](https://www.github.com/firebend/auto-crud/commit/e98d33a9fe8d7a840e13faa1c41c963022994303))
+* **deps:** bump Microsoft.OpenApi from 1.6.2 to 1.6.3 (#168) ([129c3ce](https://www.github.com/firebend/auto-crud/commit/129c3ce18b6662a094216d9f99d24f375e4feec8))
+* **deps:** bump Newtonsoft.Json from 13.0.2 to 13.0.3 (#167) ([5c6218a](https://www.github.com/firebend/auto-crud/commit/5c6218a7d8006d9d6bb7fc58aca90a6404dd28be))
+* **deps-dev:** bump webpack from 5.3.2 to 5.76.0 in /Firebend.AutoCrud.Web.Sample.LoadTest (#169) ([2880cf2](https://www.github.com/firebend/auto-crud/commit/2880cf2c4d9df2ec2625b5c47d022e5f44fa8a20))
+
 <a name="7.0.0"></a>
 ## [7.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.0.0) (2023-3-6)
 
