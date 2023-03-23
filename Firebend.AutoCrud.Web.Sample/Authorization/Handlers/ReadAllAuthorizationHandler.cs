@@ -24,6 +24,7 @@ public class
     {
         var entityDataAuths = resources as IEntityDataAuth[] ?? resources.ToArray();
         var authorizedResources = new List<IEntityDataAuth>();
+
         foreach (var entityDataAuth in entityDataAuths)
         {
             var isAuthorized = await _dataAuthService.AuthorizeAsync(context.User, entityDataAuth.DataAuth);

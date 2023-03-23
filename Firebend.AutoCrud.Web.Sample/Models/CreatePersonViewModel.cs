@@ -201,13 +201,11 @@ public class GetPersonViewModelV2 : PersonViewModelBaseV2, IEntityViewModelRead<
         entity?.CopyPropertiesTo(this);
         Name = new Name
         {
-            First = entity.FirstName,
-            Last = entity.LastName,
-            NickName = entity.NickName
+            First = entity?.FirstName,
+            Last = entity?.LastName,
+            NickName = entity?.NickName
         };
     }
-
-    public Name Name { get; set; }
 
     public Guid Id { get; set; }
 

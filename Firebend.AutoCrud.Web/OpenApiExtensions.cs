@@ -25,68 +25,64 @@ public static class OpenApiExtensions
         bool forwardNonDeprecatedEndpoints = false,
         Action<ApiVersioningOptions> configureVersioningOptions = null,
         Action<ApiExplorerOptions> configureExplorerOptions = null,
-        Action<SwaggerGenOptions> configureSwaggerGenOptions = null)
-    {
-        return services.AddApiVersioning(o =>
-            {
-                o.ReportApiVersions = false;
-                o.AssumeDefaultVersionWhenUnspecified = true;
+        Action<SwaggerGenOptions> configureSwaggerGenOptions = null) => services.AddApiVersioning(o =>
+        {
+            o.ReportApiVersions = false;
+            o.AssumeDefaultVersionWhenUnspecified = true;
 
-                configureVersioningOptions?.Invoke(o);
-            })
-            .AddVersionedApiExplorer(o =>
-            {
-                o.GroupNameFormat = "'v'VVV";
-                o.SubstituteApiVersionInUrl = true;
+            configureVersioningOptions?.Invoke(o);
+        })
+        .AddVersionedApiExplorer(o =>
+        {
+            o.GroupNameFormat = "'v'VVV";
+            o.SubstituteApiVersionInUrl = true;
 
-                configureExplorerOptions?.Invoke(o);
-            }).AddSwaggerGen(o =>
+            configureExplorerOptions?.Invoke(o);
+        }).AddSwaggerGen(o =>
+        {
+            var provider = services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
+            foreach (var description in provider.ApiVersionDescriptions)
             {
-                var provider = services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
-                foreach (var description in provider.ApiVersionDescriptions)
+                o.SwaggerDoc(
+                    description.GroupName,
+                    new OpenApiInfo { Title = getTitle(description), Version = description.ApiVersion.ToString() });
+            }
+
+            o.ResolveConflictingActions(actions =>
+            {
+                if (actions.All(apiDesc => apiDesc.ActionDescriptor
+                        .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit)
+                        .IsApiVersionNeutral))
                 {
-                    o.SwaggerDoc(
-                        description.GroupName,
-                        new OpenApiInfo { Title = getTitle(description), Version = description.ApiVersion.ToString() });
+                    return actions.First();
                 }
 
-                o.ResolveConflictingActions(actions =>
+                throw new Exception(
+                    $"Conflicting actions: {string.Join(", ", actions.Select(x => x.ActionDescriptor.DisplayName))}");
+            });
+
+            if (forwardNonDeprecatedEndpoints)
+            {
+                o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
                 {
-                    if (actions.All(apiDesc => apiDesc.ActionDescriptor
-                            .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit)
-                            .IsApiVersionNeutral))
+                    var versions = apiDesc.ActionDescriptor
+                        .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
+
+                    if (versions == null || versions.IsApiVersionNeutral)
                     {
-                        return actions.First();
+                        return true;
                     }
 
-                    throw new Exception(
-                        $"Conflicting actions: {string.Join(", ", actions.Select(x => x.ActionDescriptor.DisplayName))}");
-                });
+                    bool Predicate(ApiVersion v) => $"v{v}" == docName
+                                                    || $"v{v.MajorVersion}" == docName
+                                                    || ($"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated());
 
-                if (forwardNonDeprecatedEndpoints)
-                {
-                    o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
-                    {
-                        var versions = apiDesc.ActionDescriptor
-                            .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
+                    return versions.DeclaredApiVersions.Any()
+                        ? versions.DeclaredApiVersions.Any(Predicate)
+                        : versions.ImplementedApiVersions.Any(Predicate);
+                };
+            }
 
-                        if (versions == null || versions.IsApiVersionNeutral)
-                        {
-                            return true;
-                        }
-
-                        bool Predicate(ApiVersion v) => $"v{v}" == docName
-                                                        || $"v{v.MajorVersion}" == docName
-                                                        || ($"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated());
-
-                        return versions.DeclaredApiVersions.Any()
-                            ? versions.DeclaredApiVersions.Any(Predicate)
-                            : versions.ImplementedApiVersions.Any(Predicate);
-                    };
-                }
-
-                configureSwaggerGenOptions?.Invoke(o);
-            });
-    }
+            configureSwaggerGenOptions?.Invoke(o);
+        });
 }
-

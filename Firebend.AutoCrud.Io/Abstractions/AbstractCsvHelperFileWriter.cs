@@ -112,13 +112,13 @@ namespace Firebend.AutoCrud.Io.Abstractions
                 {
                     var itemType = propertyInfo.PropertyType.GetGenericArguments()[0];
                     var listProperty = recordEnumerator.Current
-                        .GetType()
+                        ?.GetType()
                         .GetProperty(propertyInfo.Name)
-                        .GetValue(recordEnumerator.Current);
+                        ?.GetValue(recordEnumerator.Current);
 
                     if (listProperty != null)
                     {
-                        var wasSubRowAdded = await (Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this, new[] { listProperty });
+                        var wasSubRowAdded = writeSubRowMethod != null && await ((Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this, new[] { listProperty }))!;
                         hasAddedSubRows = wasSubRowAdded || hasAddedSubRows;
                     }
                 }
@@ -129,19 +129,21 @@ namespace Firebend.AutoCrud.Io.Abstractions
             where T : class
         {
             var fields = _autoMapper.MapOutput<T>();
-            var records = listProperty as IEnumerable<T>;
-            if (!records.IsEmpty())
-            {
-                await _writer.NextRecordAsync().ConfigureAwait(false);
-                WriteHeader(fields);
-                await WriteRows(fields, records, false);
+            var records = (listProperty as IEnumerable<T> ?? Array.Empty<T>()).ToArray();
 
-                return true;
+            if (records.IsEmpty())
+            {
+                return false;
             }
-            return false;
+
+            await _writer.NextRecordAsync().ConfigureAwait(false);
+            WriteHeader(fields);
+            await WriteRows(fields, records, false);
+
+            return true;
         }
 
-        private void WriteHeader<T>(IFileFieldWrite<T>[] fields)
+        private void WriteHeader<T>(IEnumerable<IFileFieldWrite<T>> fields)
             where T : class
         {
             foreach (var t in fields)
