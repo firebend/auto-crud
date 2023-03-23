@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="8.0.13" />
+    <PackageReference Include="MassTransit" Version="8.0.14" />
     <PackageReference Include="MassTransit.Newtonsoft" Version="8.0.13" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.3" />
