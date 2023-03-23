@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Web.Implementations.Patching;
 using Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 using Firebend.AutoCrud.Web.Interfaces;
@@ -154,6 +153,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     /// </summary>
     /// <typeparam name="TViewModel">The type of the view model to use</typeparam>
     /// <typeparam name="TViewModelMapper">The type of the view model mapper to use</typeparam>
+    /// <typeparam name="TSearchModel">The type of Search Model</typeparam>
     /// <example>
     /// <code>
     /// forecast.WithDefaultDatabase("Samples")

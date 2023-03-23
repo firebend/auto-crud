@@ -91,11 +91,6 @@ namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers
         where TVersion : class, IAutoCrudApiVersion
         where TSearchModel : class
     {
-        public IdentitySearchViewModelMapper()
-        {
-
-        }
-
         public Task<TSearchModel> FromAsync(TSearchModel model, CancellationToken cancellationToken = default)
             => Task.FromResult(model);
     }

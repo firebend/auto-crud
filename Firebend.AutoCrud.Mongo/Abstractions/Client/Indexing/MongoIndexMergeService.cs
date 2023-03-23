@@ -102,7 +102,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
 
         private void HandleOtherIndexes(
             IMongoCollection<TEntity> mongoCollection,
-            IEnumerable<BsonDocument> indexes,
+            IReadOnlyCollection<BsonDocument> indexes,
             CreateIndexModel<TEntity> indexToAdd,
             ICollection<CreateIndexModel<TEntity>> adds,
             ICollection<string> drops)
