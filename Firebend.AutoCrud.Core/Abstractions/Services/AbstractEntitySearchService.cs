@@ -15,40 +15,46 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
         {
             var functions = new List<Expression<Func<TEntity, bool>>>();
 
-            if (search is IActiveEntitySearchRequest activeEntitySearchRequest)
+            if (search is IActiveEntitySearchRequest { IsDeleted: { } } activeEntitySearchRequest)
             {
-                if (activeEntitySearchRequest.IsDeleted.HasValue)
-                {
-                    var expression = activeEntitySearchRequest.IsDeleted.Value
-                        ? x => x.IsDeleted
-                        : (Expression<Func<IActiveEntity, bool>>)(x => !x.IsDeleted);
-                    functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
-                }
+                Expression<Func<IActiveEntity, bool>> expression = activeEntitySearchRequest.IsDeleted.Value
+                    ? x => x.IsDeleted
+                    : x => !x.IsDeleted;
+
+                functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
             }
 
             if (search is IModifiedEntitySearchRequest modifiedEntitySearchRequest)
             {
                 if (modifiedEntitySearchRequest.CreatedStartDate.HasValue)
                 {
-                    var expression = (Expression<Func<IModifiedEntity, bool>>)(x => x.CreatedDate >= modifiedEntitySearchRequest.CreatedStartDate);
+                    Expression<Func<IModifiedEntity, bool>> expression =
+                        x => x.CreatedDate >= modifiedEntitySearchRequest.CreatedStartDate;
+
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }
 
                 if (modifiedEntitySearchRequest.CreatedEndDate.HasValue)
                 {
-                    var expression = (Expression<Func<IModifiedEntity, bool>>)(x => x.CreatedDate <= modifiedEntitySearchRequest.CreatedEndDate);
+                    Expression<Func<IModifiedEntity, bool>> expression =
+                        x => x.CreatedDate <= modifiedEntitySearchRequest.CreatedEndDate;
+
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }
 
                 if (modifiedEntitySearchRequest.ModifiedStartDate.HasValue)
                 {
-                    var expression = (Expression<Func<IModifiedEntity, bool>>)(x => x.ModifiedDate >= modifiedEntitySearchRequest.ModifiedStartDate);
+                    Expression<Func<IModifiedEntity, bool>> expression =
+                        x => x.ModifiedDate >= modifiedEntitySearchRequest.ModifiedStartDate;
+
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }
 
                 if (modifiedEntitySearchRequest.ModifiedEndDate.HasValue)
                 {
-                    var expression = (Expression<Func<IModifiedEntity, bool>>)(x => x.ModifiedDate <= modifiedEntitySearchRequest.ModifiedEndDate);
+                    Expression<Func<IModifiedEntity, bool>> expression =
+                        x => x.ModifiedDate <= modifiedEntitySearchRequest.ModifiedEndDate;
+
                     functions.Add(Expression.Lambda<Func<TEntity, bool>>(expression.Body, expression.Parameters));
                 }
             }
@@ -58,7 +64,8 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services
                 functions.Add(customFilter);
             }
 
-            return functions.Aggregate(default(Expression<Func<TEntity, bool>>),
+            return functions.Aggregate(
+                default(Expression<Func<TEntity, bool>>),
                 (aggregate, filter) => aggregate.AndAlso(filter));
         }
     }

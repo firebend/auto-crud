@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver.Core.Events;
+using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
@@ -27,6 +28,14 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             var connectionString = await _connectionStringProvider.GetConnectionStringAsync(overrideShardKey);
 
             var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
+            //********************************************
+            // Author: JMA
+            // Date: 2023-03-27 02:04:09
+            // Comment: Mongo is planning on a version three of their driver.
+            // When using the V3 of the linq provider there are issues with having expressions that use
+            // object. For example: the AbstractEntitySearchService's GetSearchExpression function
+            //*******************************************
+            mongoClientSettings.LinqProvider = LinqProvider.V2;
 
             if (enableLogging)
             {

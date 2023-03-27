@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
+
+var objectSerializer = new ObjectSerializer(_ => true);
+BsonSerializer.RegisterSerializer(objectSerializer);
 
 var processId = Environment.ProcessId;
 Console.WriteLine($"Auto Crud Web Sample is running on process id {processId}");
