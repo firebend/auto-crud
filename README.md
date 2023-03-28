@@ -1,5 +1,6 @@
 ![Build, Test, and Release](https://github.com/firebend/auto-crud/workflows/Build,%20Test,%20and%20Release/badge.svg)
 
+
 - [Firebend.AutoCrud](#firebendautocrud)
 - [Firebend Nuget Page](#firebend-nuget-page)
 - [Getting Started](#getting-started)
