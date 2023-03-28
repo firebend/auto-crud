@@ -110,32 +110,10 @@ namespace Firebend.AutoCrud.Core.Extensions
                 .Take(1)
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Select(x => char.ToLower(x.First()))
-                .Select(x => x == 'd' || x == 'f')
+                .Select(x => x is 'd' or 'f')
                 .FirstOrDefault();
 
             return (expression, !descending);
-        }
-
-        public static string GetMemberName(this LambdaExpression source)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-
-            var body = source.Body;
-
-            if (body is UnaryExpression unaryExpression)
-            {
-                body = unaryExpression.Operand;
-            }
-
-            if (body is MemberExpression memberExpression)
-            {
-                return memberExpression.Member.Name;
-            }
-
-            return null;
         }
     }
 }
