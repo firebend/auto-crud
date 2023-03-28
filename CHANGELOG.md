@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.2.0"></a>
+## [7.2.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.2.0) (2023-3-28)
+
+### Features
+
+* version bump (#177) ([7258a0c](https://www.github.com/firebend/auto-crud/commit/7258a0cf97eb1dd83db3c198fab4da374ae97953))
+
+### Other
+
+* fixes for new mongo driver (#176) ([540f6b8](https://www.github.com/firebend/auto-crud/commit/540f6b8233236fb0dac1a27185ab1a2ba950fcd6))
+
 <a name="7.1.0"></a>
 ## [7.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.1.0) (2023-3-23)
 
