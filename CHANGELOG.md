@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.4.0"></a>
+## [7.4.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.0) (2023-4-10)
+
+### Features
+
+* closed xml version update (#184) ([89d2aa8](https://www.github.com/firebend/auto-crud/commit/89d2aa850f04b58540394a8458b6144b1db4755e))
+
+### Other
+
+* bump ClosedXML from 0.100.3 to 0.101.0 (#179) ([fd11b0d](https://www.github.com/firebend/auto-crud/commit/fd11b0d2c84a171280fdd1d6601fdd3475688a9d))
+* closed xml version update (#180) ([904d527](https://www.github.com/firebend/auto-crud/commit/904d527b5e6c06a09f249f06f9388f5212b40bcc))
+* closed xml version update (#181) ([3a904e1](https://www.github.com/firebend/auto-crud/commit/3a904e1eaaea0570deef7075939d46b3be633bd5))
+* closed xml version update (#182) ([85ed18a](https://www.github.com/firebend/auto-crud/commit/85ed18ac804dddbdd2ec9945712eab94b4094f72))
+* closed xml version update (#183) ([166d587](https://www.github.com/firebend/auto-crud/commit/166d587993b4b7ece4ce542a1b3839927dd95dbe))
+
 <a name="7.3.0"></a>
 ## [7.3.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.3.0) (2023-4-3)
 
