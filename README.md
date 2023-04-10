@@ -920,4 +920,4 @@ A "kitchen-sink" example can be found [in `Firebend.AutoCrud.Web.Sample`](https:
 
 Commits should be made using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
 
-√√
+√√√
