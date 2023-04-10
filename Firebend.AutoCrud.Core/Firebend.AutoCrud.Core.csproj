@@ -20,6 +20,7 @@
       <PackageLicenseUrl>https://github.com/firebend/auto-crud/blob/main/LICENSE</PackageLicenseUrl>
       <PackageProjectUrl>https://github.com/firebend/auto-crud</PackageProjectUrl>
       <PackageIconUrl>https://github.com/firebend/auto-crud/blob/main/nuget-image.png?raw=true</PackageIconUrl>
+      <ManualBump>√</ManualBump>
     </PropertyGroup>
 
     <ItemGroup>
