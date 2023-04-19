@@ -9,6 +9,11 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Implementations
 {
+    public static class MongoEntityTransactionsDefaults
+    {
+        public static int NumberOfRetries = 10;
+    }
+
     public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
     {
         public IClientSessionHandle ClientSessionHandle { get; }
@@ -33,7 +38,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             {
                 await ClientSessionHandle.CommitTransactionAsync(cancellationToken);
                 return true;
-            }, 10);
+            }, MongoEntityTransactionsDefaults.NumberOfRetries);
 
             await Outbox.InvokeEnrollmentsAsync(Id.ToString(), cancellationToken);
         }
@@ -44,7 +49,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             {
                 await ClientSessionHandle.AbortTransactionAsync(cancellationToken);
                 return true;
-            }, 10);
+            }, MongoEntityTransactionsDefaults.NumberOfRetries);
 
             await Outbox.ClearEnrollmentsAsync(Id.ToString(), cancellationToken);
         }

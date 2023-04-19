@@ -29,13 +29,21 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
     public async Task CompleteAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(_transactions.Select(x => x.CompleteAsync(cancellationToken)));
+        foreach (var transaction in _transactions)
+        {
+            await transaction.CompleteAsync(cancellationToken);
+        }
+
         ClearTransactions();
     }
 
     public async Task RollbackAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(_transactions.Select(x => x.RollbackAsync(cancellationToken)));
+        foreach (var transaction in _transactions)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+        }
+
         ClearTransactions();
     }
 
@@ -74,6 +82,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
                 self.AddTransaction(transaction);
                 return transaction;
             }, (this, transactionFactory, cancellationToken));
+
         return transaction;
     }
 
@@ -85,6 +94,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         }
 
         var existingTransaction = _transactions.Any(t => t.Id == transaction.Id);
+
         if (existingTransaction)
         {
             return;
@@ -95,9 +105,14 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
     private void ClearTransactions()
     {
-        _transactions.ToList().ForEach(x => x.Dispose());
+        foreach (var t in _transactions)
+        {
+            t.Dispose();
+        }
+
         _sharedTransactions.Clear();
         _transactions.Clear();
+
         TransactionStarted = false;
     }
 

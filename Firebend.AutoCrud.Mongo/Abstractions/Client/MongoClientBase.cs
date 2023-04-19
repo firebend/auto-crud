@@ -8,6 +8,11 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
+    public static class MongoClientBaseDefaults
+    {
+        public static int NumberOfRetries = 7;
+    }
+
     public abstract class MongoClientBase<TKey, TEntity> : BaseDisposable
         where TKey : struct
         where TEntity : class, IEntity<TKey>
@@ -45,11 +50,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             return true;
         });
 
-        protected virtual async Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int maxTries = 7)
+        protected virtual async Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int? maxTries = null)
         {
             try
             {
-                return await MongoRetryService.RetryErrorAsync(method, maxTries);
+                return await MongoRetryService.RetryErrorAsync(method, maxTries.GetValueOrDefault(MongoClientBaseDefaults.NumberOfRetries));
             }
             catch (Exception ex)
             {
