@@ -56,6 +56,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var searchRequest = await _searchViewModelMapper.FromAsync(searchViewModel, cancellationToken);
 
             var validationResult = searchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
+
             if (!validationResult.WasSuccessful)
             {
                 foreach (var error in validationResult.Errors)
@@ -76,17 +77,18 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return Ok(entities);
             }
 
-            var mapped = await _readViewModelMapper
-                .ToAsync(entities.Data, cancellationToken)
-                .ConfigureAwait(false);
+            var mapped = await _readViewModelMapper.ToAsync(entities.Data, cancellationToken);
 
             var result = new EntityPagedResponse<TReadViewModel>
             {
+                // ReSharper disable PossibleMultipleEnumeration
                 Data = mapped,
+                CurrentPageSize = mapped.Count(),
+                // ReSharper restore PossibleMultipleEnumeration
                 CurrentPage = entities.CurrentPage,
                 TotalRecords = entities.TotalRecords,
-                CurrentPageSize = mapped.Count()
             };
+
 
             return Ok(result);
         }

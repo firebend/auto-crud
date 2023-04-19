@@ -39,17 +39,10 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             var sessionOptions = new ClientSessionOptions { DefaultTransactionOptions = transactionOptions };
             var session = await client.StartSessionAsync(sessionOptions, cancellationToken);
             session.StartTransaction(transactionOptions);
-            return new MongoEntityTransaction(session, _outbox);
+            return new MongoEntityTransaction(session, _outbox, MongoRetryService);
         }
 
         public bool ValidateTransaction(IEntityTransaction transaction)
-        {
-            if (transaction is not MongoEntityTransaction mongoTransaction)
-            {
-                return false;
-            }
-
-            return mongoTransaction.ClientSessionHandle.IsInTransaction;
-        }
+            => transaction is MongoEntityTransaction mongoTransaction && mongoTransaction.ClientSessionHandle.IsInTransaction;
     }
 }

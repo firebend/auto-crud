@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+// ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
 namespace Firebend.AutoCrud.Web;
 
@@ -50,15 +51,17 @@ public static class OpenApiExtensions
 
             o.ResolveConflictingActions(actions =>
             {
-                if (actions.All(apiDesc => apiDesc.ActionDescriptor
+                var actionList = actions.ToList();
+
+                if (actionList.All(apiDesc => apiDesc.ActionDescriptor
                         .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit)
                         .IsApiVersionNeutral))
                 {
-                    return actions.First();
+                    return actionList.First();
                 }
 
                 throw new Exception(
-                    $"Conflicting actions: {string.Join(", ", actions.Select(x => x.ActionDescriptor.DisplayName))}");
+                    $"Conflicting actions: {string.Join(", ", actionList.Select(x => x.ActionDescriptor.DisplayName))}");
             });
 
             if (forwardNonDeprecatedEndpoints)
@@ -66,7 +69,7 @@ public static class OpenApiExtensions
                 o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
                 {
                     var versions = apiDesc.ActionDescriptor
-                        .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
+                        .GetApiVersionModel(ApiVersionMapping.Explicit  | ApiVersionMapping.Implicit);
 
                     if (versions == null || versions.IsApiVersionNeutral)
                     {
@@ -75,7 +78,7 @@ public static class OpenApiExtensions
 
                     bool Predicate(ApiVersion v) => $"v{v}" == docName
                                                     || $"v{v.MajorVersion}" == docName
-                                                    || ($"v{v}".CompareTo(docName) < 0 && !apiDesc.IsDeprecated());
+                                                    || (string.Compare($"v{v}", docName, StringComparison.Ordinal) < 0 && !apiDesc.IsDeprecated());
 
                     return versions.DeclaredApiVersions.Any()
                         ? versions.DeclaredApiVersions.Any(Predicate)

@@ -7,8 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
-public class
-    ReadAllAuthorizationHandler : AuthorizationHandler<ReadAllAuthorizationRequirement, IEnumerable<IEntityDataAuth>>
+public class ReadAllAuthorizationHandler : AuthorizationHandler<ReadAllAuthorizationRequirement, IEnumerable<IEntityDataAuth>>
 {
     private readonly DataAuthService _dataAuthService;
 
@@ -23,6 +22,7 @@ public class
         IEnumerable<IEntityDataAuth> resources)
     {
         var entityDataAuths = resources as IEntityDataAuth[] ?? resources.ToArray();
+        // ReSharper disable once CollectionNeverQueried.Local
         var authorizedResources = new List<IEntityDataAuth>();
 
         foreach (var entityDataAuth in entityDataAuths)
