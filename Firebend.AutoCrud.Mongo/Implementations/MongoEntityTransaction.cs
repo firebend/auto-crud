@@ -33,7 +33,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             {
                 await ClientSessionHandle.CommitTransactionAsync(cancellationToken);
                 return true;
-            }, 20);
+            }, 10);
 
             await Outbox.InvokeEnrollmentsAsync(Id.ToString(), cancellationToken);
         }
@@ -44,7 +44,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             {
                 await ClientSessionHandle.AbortTransactionAsync(cancellationToken);
                 return true;
-            }, 20);
+            }, 10);
 
             await Outbox.ClearEnrollmentsAsync(Id.ToString(), cancellationToken);
         }

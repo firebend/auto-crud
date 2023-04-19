@@ -71,7 +71,7 @@ public static class OpenApiExtensions
                     var versions = apiDesc.ActionDescriptor
                         .GetApiVersionModel(ApiVersionMapping.Explicit  | ApiVersionMapping.Implicit);
 
-                    if (versions == null || versions.IsApiVersionNeutral)
+                    if (versions.IsApiVersionNeutral)
                     {
                         return true;
                     }

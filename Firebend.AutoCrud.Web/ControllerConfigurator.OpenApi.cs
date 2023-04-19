@@ -1,6 +1,6 @@
 using System;
 using System.Reflection.Emit;
-using Firebend.AutoCrud.Core.Threading;
+using AsyncKeyedLock;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations.Options;
 using Humanizer;
@@ -10,6 +10,11 @@ using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web;
+
+internal static class ControllerConfiguratorStatics
+{
+    public static readonly AsyncKeyedLocker<string> Locker = new();
+}
 
 public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 {
@@ -82,7 +87,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
             return;
         }
 
-        using var locker = AsyncDuplicateLock.Lock(nameof(AddSwaggerGenOptionConfiguration));
+        using var locker = ControllerConfiguratorStatics.Locker.Lock(nameof(AddSwaggerGenOptionConfiguration));
         {
             if (ControllerConfiguratorCache.IsSwaggerApplied)
             {

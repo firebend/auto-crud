@@ -3,19 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Threading;
 
 namespace Firebend.AutoCrud.Core.Implementations.Entities
 {
+    internal static class InMemoryEntityTransactionOutboxStatics
+    {
+        public static readonly AsyncKeyedLocker<string> Locker = new();
+    }
     public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
     {
         private readonly Dictionary<string, List<IEntityTransactionOutboxEnrollment>> _enrollments = new();
 
         public async Task AddEnrollmentAsync(string transactionId, IEntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
         {
-            using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
+            using var loc = await InMemoryEntityTransactionOutboxStatics
+                .Locker
+                .LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!_enrollments.ContainsKey(transactionId))
@@ -35,7 +41,9 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
                 return;
             }
 
-            using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
+            using var loc = await InMemoryEntityTransactionOutboxStatics
+                .Locker
+                .LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!_enrollments.TryGetValue(transactionId, out var callbacks))
@@ -74,7 +82,9 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities
 
         public async Task ClearEnrollmentsAsync(string transactionId, CancellationToken cancellationToken)
         {
-            using var loc = await AsyncDuplicateLock.LockAsync(transactionId, cancellationToken)
+            using var loc = await InMemoryEntityTransactionOutboxStatics
+                .Locker
+                .LockAsync(transactionId, cancellationToken)
                 .ConfigureAwait(false);
 
             _enrollments.Remove(transactionId);
