@@ -63,6 +63,8 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models
         IEntityTransactionOutbox Outbox { get; }
 
         public EntityTransactionState State { get; set; }
+
+        public DateTimeOffset StartedDate { get; set; }
     }
 
     public static class EntityTransactionExtensions

@@ -22,6 +22,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         public IClientSessionHandle ClientSessionHandle { get; }
         public IEntityTransactionOutbox Outbox { get; }
         public EntityTransactionState State { get; set; }
+        public DateTimeOffset StartedDate { get; set; }
 
         private readonly IMongoRetryService _retry;
         private readonly AsyncKeyedLocker<Guid> _locker = new();
@@ -35,6 +36,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             _retry = retry;
             Id = CombGuid.New();
             State = EntityTransactionState.Started;
+            StartedDate = DateTimeOffset.UtcNow;
         }
 
         public Guid Id { get; }
@@ -47,10 +49,15 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             }
             catch (MongoCommandException ex)
             {
-                Console.WriteLine($"********* {ex.Code}");
-                Console.WriteLine($"********* {ex.CodeName}");
-                Console.WriteLine($"********* {string.Join("", ex.ErrorLabels)}");
-                Console.WriteLine($"********* {ex.ErrorMessage}");
+                //********************************************
+                // Author: JMA
+                // Date: 2023-04-19 06:49:36
+                // Comment: Transaction has been aborted error code
+                //*******************************************
+                if (ex.Code == 251)
+                {
+                    return false;
+                }
                 throw;
             }
 
@@ -134,8 +141,6 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             {
                 return;
             }
-
-            Console.WriteLine($"*************** rolling back");
 
             var wasRolledBack = await _retry.RetryErrorAsync(async () =>
             {

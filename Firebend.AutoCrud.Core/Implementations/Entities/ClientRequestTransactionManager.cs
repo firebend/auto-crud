@@ -29,7 +29,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
     public void Start() => TransactionStarted = true;
 
-    private IEnumerable<IEntityTransaction> GetTransactionsInOrder()
+    private IEnumerable<IEntityTransaction> GetTransactionsInOrder(bool ascending)
     {
         IEnumerable<IEntityTransaction> EntityTransactions()
         {
@@ -39,12 +39,17 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
             }
         }
 
-        return EntityTransactions().OrderBy(x => x.Id).ToArray();
+        if (ascending)
+        {
+            return EntityTransactions().OrderBy(x => x.StartedDate).ToArray();
+        }
+
+        return EntityTransactions().OrderByDescending(x => x.StartedDate).ToArray();
     }
 
     public async Task CompleteAsync(CancellationToken cancellationToken)
     {
-        foreach (var transaction in GetTransactionsInOrder())
+        foreach (var transaction in GetTransactionsInOrder(true))
         {
             await EntityTransactionMediator.TryCompleteAsync(transaction, cancellationToken);
         }
@@ -54,7 +59,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
     public async Task RollbackAsync(CancellationToken cancellationToken)
     {
-        foreach (var transaction in GetTransactionsInOrder())
+        foreach (var transaction in GetTransactionsInOrder(false))
         {
             await EntityTransactionMediator.TryRollbackAsync(transaction, cancellationToken);
         }

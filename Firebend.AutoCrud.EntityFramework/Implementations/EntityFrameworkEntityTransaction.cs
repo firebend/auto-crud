@@ -14,6 +14,7 @@ namespace Firebend.AutoCrud.EntityFramework.Implementations
         public IDbContextTransaction ContextTransaction { get; }
         public IEntityTransactionOutbox Outbox { get; }
         public EntityTransactionState State { get; set; }
+        public DateTimeOffset StartedDate { get; set; }
 
         public EntityFrameworkEntityTransaction(IDbContextTransaction contextTransaction, IEntityTransactionOutbox outbox)
         {
@@ -21,6 +22,7 @@ namespace Firebend.AutoCrud.EntityFramework.Implementations
             Outbox = outbox;
             Id = CombGuid.New();
             State = EntityTransactionState.Started;
+            StartedDate = DateTimeOffset.UtcNow;
         }
 
         public Guid Id { get; }
