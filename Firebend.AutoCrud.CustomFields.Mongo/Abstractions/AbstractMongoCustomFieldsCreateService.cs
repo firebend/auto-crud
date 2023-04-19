@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Ids;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
@@ -58,9 +59,10 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
         CancellationToken cancellationToken = default)
     {
         _transactionManager.AddTransaction(entityTransaction);
+
         if (customField.Id == default)
         {
-            customField.Id = MongoIdGeneratorComb.NewCombGuid(Guid.NewGuid(), DateTime.UtcNow);
+            customField.Id = CombGuid.New();
         }
 
         customField.CreatedDate = DateTimeOffset.UtcNow;

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -9,6 +10,24 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Implementations
 {
+    public static class MongoEntityTransactionFactoryDefaults
+    {
+        public static TransactionOptions TransactionOptions;
+        public static ClientSessionOptions SessionOptions;
+
+        static MongoEntityTransactionFactoryDefaults()
+        {
+            TransactionOptions = new TransactionOptions(
+                ReadConcern.Snapshot,
+                writeConcern: WriteConcern.WMajority,
+                maxCommitTime: TimeSpan.FromMinutes(5));
+
+            SessionOptions = new ClientSessionOptions
+            {
+                DefaultTransactionOptions = TransactionOptions,
+            };
+        }
+    }
     public class MongoEntityTransactionFactory<TKey, TEntity> :
         MongoClientBase<TKey, TEntity>, IEntityTransactionFactory<TKey, TEntity>
         where TKey : struct
@@ -35,10 +54,8 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
         {
             var client = await GetClientAsync();
-            var transactionOptions = new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority);
-            var sessionOptions = new ClientSessionOptions { DefaultTransactionOptions = transactionOptions };
-            var session = await client.StartSessionAsync(sessionOptions, cancellationToken);
-            session.StartTransaction(transactionOptions);
+            var session = await client.StartSessionAsync(MongoEntityTransactionFactoryDefaults.SessionOptions, cancellationToken);
+            session.StartTransaction(MongoEntityTransactionFactoryDefaults.TransactionOptions);
             return new MongoEntityTransaction(session, _outbox, MongoRetryService);
         }
 

@@ -297,5 +297,6 @@ public class ClientRequestTransactionManagerTests
         public abstract Task CompleteAsync(CancellationToken cancellationToken);
         public abstract Task RollbackAsync(CancellationToken cancellationToken);
         public IEntityTransactionOutbox Outbox => null;
+        public EntityTransactionState State { get; set; }
     }
 }
