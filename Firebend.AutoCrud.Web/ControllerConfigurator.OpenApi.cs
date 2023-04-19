@@ -1,6 +1,5 @@
 using System;
 using System.Reflection.Emit;
-using AsyncKeyedLock;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations.Options;
 using Humanizer;
@@ -13,7 +12,7 @@ namespace Firebend.AutoCrud.Web;
 
 internal static class ControllerConfiguratorStatics
 {
-    public static readonly AsyncKeyedLocker<string> Locker = new();
+    public static readonly object Locker = new();
 }
 
 public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
@@ -87,7 +86,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
             return;
         }
 
-        using var locker = ControllerConfiguratorStatics.Locker.Lock(nameof(AddSwaggerGenOptionConfiguration));
+        lock(ControllerConfiguratorStatics.Locker)
         {
             if (ControllerConfiguratorCache.IsSwaggerApplied)
             {
