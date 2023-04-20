@@ -68,8 +68,7 @@ public static class OpenApiExtensions
             {
                 o.SwaggerGeneratorOptions.DocInclusionPredicate = (docName, apiDesc) =>
                 {
-                    var versions = apiDesc.ActionDescriptor
-                        .GetApiVersionModel(ApiVersionMapping.Explicit  | ApiVersionMapping.Implicit);
+                    var versions = apiDesc.ActionDescriptor.GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
 
                     if (versions.IsApiVersionNeutral)
                     {

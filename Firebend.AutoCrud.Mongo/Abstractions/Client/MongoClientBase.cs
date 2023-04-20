@@ -10,7 +10,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
     public static class MongoClientBaseDefaults
     {
+#pragma warning disable CA2211, IDE1006
         public static int NumberOfRetries = 7;
+#pragma warning restore CA2211, IDE1006
     }
 
     public abstract class MongoClientBase<TKey, TEntity> : BaseDisposable

@@ -12,8 +12,10 @@ namespace Firebend.AutoCrud.Mongo.Implementations
 {
     public static class MongoEntityTransactionFactoryDefaults
     {
+#pragma warning disable CA2211, IDE1006
         public static TransactionOptions TransactionOptions;
         public static ClientSessionOptions SessionOptions;
+#pragma warning enable CA2211, IDE1006
 
         static MongoEntityTransactionFactoryDefaults()
         {

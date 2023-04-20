@@ -86,7 +86,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
             return;
         }
 
-        lock(ControllerConfiguratorStatics.Locker)
+        lock (ControllerConfiguratorStatics.Locker)
         {
             if (ControllerConfiguratorCache.IsSwaggerApplied)
             {
