@@ -49,6 +49,9 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             }
             catch (MongoCommandException ex)
             {
+                Console.WriteLine($"********* {ex.Code}");
+                Console.WriteLine($"********* {ex.CodeName}");
+                Console.WriteLine($"********* {ex.CodeName}");
                 //********************************************
                 // Author: JMA
                 // Date: 2023-04-19 06:49:36

@@ -19,7 +19,7 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models
         private static readonly AsyncKeyedLocker<Guid> Locker = new();
 
         private static async Task<bool> TryToggleStateAsync(IEntityTransaction transaction,
-            EntityTransactionState state,
+            EntityTransactionState desiredState,
             CancellationToken cancellationToken)
         {
             using var locked = await Locker.LockAsync(transaction.Id, cancellationToken);
@@ -29,19 +29,19 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models
                 return false;
             }
 
-            switch (state)
+            switch (desiredState)
             {
                 case EntityTransactionState.Completed:
                     await transaction.CompleteAsync(cancellationToken);
                     transaction.State = EntityTransactionState.Completed;
                     return true;
                 case EntityTransactionState.RolledBack:
-                    await transaction.CompleteAsync(cancellationToken);
+                    await transaction.RollbackAsync(cancellationToken);
                     transaction.State = EntityTransactionState.RolledBack;
                     return true;
                 case EntityTransactionState.Started:
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                    throw new ArgumentOutOfRangeException(nameof(desiredState), desiredState, null);
             }
         }
 

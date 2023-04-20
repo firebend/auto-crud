@@ -16,24 +16,26 @@ public class ReadAllAuthorizationHandler : AuthorizationHandler<ReadAllAuthoriza
         _dataAuthService = dataAuthService;
     }
 
-    protected override async Task HandleRequirementAsync(
+    protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         ReadAllAuthorizationRequirement requirement,
         IEnumerable<IEntityDataAuth> resources)
     {
-        var entityDataAuths = resources as IEntityDataAuth[] ?? resources.ToArray();
-        // ReSharper disable once CollectionNeverQueried.Local
-        var authorizedResources = new List<IEntityDataAuth>();
-
-        foreach (var entityDataAuth in entityDataAuths)
-        {
-            var isAuthorized = await _dataAuthService.AuthorizeAsync(context.User, entityDataAuth.DataAuth);
-            if (!isAuthorized)
-            {
-                authorizedResources.Add(entityDataAuth);
-            }
-        }
+        // var entityDataAuths = resources as IEntityDataAuth[] ?? resources.ToArray();
+        // // ReSharper disable once CollectionNeverQueried.Local
+        // var authorizedResources = new List<IEntityDataAuth>();
+        //
+        // foreach (var entityDataAuth in entityDataAuths)
+        // {
+        //     var isAuthorized = await _dataAuthService.AuthorizeAsync(context.User, entityDataAuth.DataAuth);
+        //     if (!isAuthorized)
+        //     {
+        //         authorizedResources.Add(entityDataAuth);
+        //     }
+        // }
 
         // TODO need to change response body
+
+        return Task.CompletedTask;
     }
 }

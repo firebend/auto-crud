@@ -11,7 +11,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Abstractions.Client;
-using Firebend.AutoCrud.Mongo.Configuration;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
