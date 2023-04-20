@@ -18,7 +18,8 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         static MongoEntityTransactionFactoryDefaults()
         {
             TransactionOptions = new TransactionOptions(
-                ReadConcern.Snapshot,
+                ReadConcern.Local,
+                readPreference: ReadPreference.Primary,
                 writeConcern: WriteConcern.WMajority,
                 maxCommitTime: TimeSpan.FromMinutes(5));
 
@@ -34,6 +35,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         where TEntity : class, IEntity<TKey>
     {
         private readonly IEntityTransactionOutbox _outbox;
+        private readonly ILoggerFactory _loggerFactory;
 
         public MongoEntityTransactionFactory(IMongoClientFactory<TKey, TEntity> factory,
             ILoggerFactory loggerFactory,
@@ -42,6 +44,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             base(factory, loggerFactory.CreateLogger<MongoEntityTransactionFactory<TKey, TEntity>>(), retryService)
         {
             _outbox = outbox;
+            _loggerFactory = loggerFactory;
         }
 
         public async Task<string> GetDbContextHashCode()
@@ -56,7 +59,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             var client = await GetClientAsync();
             var session = await client.StartSessionAsync(MongoEntityTransactionFactoryDefaults.SessionOptions, cancellationToken);
             session.StartTransaction(MongoEntityTransactionFactoryDefaults.TransactionOptions);
-            return new MongoEntityTransaction(session, _outbox, MongoRetryService);
+            return new MongoEntityTransaction(session, _outbox, MongoRetryService, _loggerFactory);
         }
 
         public bool ValidateTransaction(IEntityTransaction transaction)

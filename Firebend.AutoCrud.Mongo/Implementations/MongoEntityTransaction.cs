@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Bindings;
 
@@ -26,10 +27,12 @@ namespace Firebend.AutoCrud.Mongo.Implementations
 
         private readonly IMongoRetryService _retry;
         private readonly AsyncKeyedLocker<Guid> _locker = new();
+        private readonly ILogger<MongoEntityTransaction> _logger;
 
         public MongoEntityTransaction(IClientSessionHandle clientSessionHandle,
             IEntityTransactionOutbox outbox,
-            IMongoRetryService retry)
+            IMongoRetryService retry,
+            ILoggerFactory loggerFactory)
         {
             ClientSessionHandle = clientSessionHandle;
             Outbox = outbox;
@@ -37,6 +40,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             Id = CombGuid.New();
             State = EntityTransactionState.Started;
             StartedDate = DateTimeOffset.UtcNow;
+            _logger = loggerFactory.CreateLogger<MongoEntityTransaction>();
         }
 
         public Guid Id { get; }
@@ -49,18 +53,19 @@ namespace Firebend.AutoCrud.Mongo.Implementations
             }
             catch (MongoCommandException ex)
             {
-                Console.WriteLine($"********* {ex.Code}");
-                Console.WriteLine($"********* {ex.CodeName}");
-                Console.WriteLine($"********* {ex.CodeName}");
+                _logger.LogDebug("Transaction exception {Id}, {Code}, {CodeName} {Message}", Id, ex.Code, ex.CodeName, ex.Message);
+
                 //********************************************
                 // Author: JMA
-                // Date: 2023-04-19 06:49:36
-                // Comment: Transaction has been aborted error code
+                // Date: 2023-04-20 02:37:42
+                // Comment: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml
+                // Break out of a transaction is in an invalid state
                 //*******************************************
                 if (ex.Code == 251)
                 {
                     return false;
                 }
+
                 throw;
             }
 
