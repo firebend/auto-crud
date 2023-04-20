@@ -50,7 +50,10 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
     {
         foreach (var transaction in GetTransactionsInOrder(true))
         {
-            await EntityTransactionMediator.TryCompleteAsync(transaction, cancellationToken);
+            if (await EntityTransactionMediator.TryCompleteAsync(transaction, cancellationToken))
+            {
+                transaction.Dispose();
+            }
         }
 
         ClearTransactions();
@@ -60,7 +63,10 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
     {
         foreach (var transaction in GetTransactionsInOrder(false))
         {
-            await EntityTransactionMediator.TryRollbackAsync(transaction, cancellationToken);
+            if (await EntityTransactionMediator.TryRollbackAsync(transaction, cancellationToken))
+            {
+                transaction.Dispose();
+            }
         }
 
         ClearTransactions();
