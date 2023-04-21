@@ -265,6 +265,7 @@ public class MapperTests
     private class TargetModelD : TargetModelA
     {
         public NestedModel NestedModel { get; set; }
+        // ReSharper disable once CollectionNeverUpdated.Local
         public List<NestedModel> ListOfNestedModels { get; set; }
     }
 
@@ -350,12 +351,15 @@ public class MapperTests
 
     private class NestedModelB
     {
+        // ReSharper disable once UnusedMember.Local
         public int IntValue { get; set; }
     }
 
     private class TargetModelE : TargetModelA
     {
+        // ReSharper disable once MemberHidesStaticFromOuterClass
         public NestedModelB NestedModel { get; set; }
+        // ReSharper disable once CollectionNeverUpdated.Local
         public List<NestedModelB> ListOfNestedModels { get; set; }
     }
 

@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Implementations.Entities;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 
@@ -48,6 +49,14 @@ public class ClientRequestTransactionManagerTests
             .Returns(_efTransactionFactory.Object);
         _serviceProvider.Setup(x => x.GetService(typeof(IEntityTransactionFactory<Guid, TestClassMongo>)))
             .Returns(_mongoTransactionFactory.Object);
+
+        var serviceScope = _fixture.Freeze<Mock<IServiceScope>>();
+        serviceScope.Setup(x => x.ServiceProvider)
+            .Returns(_serviceProvider.Object);
+
+        var serviceFactoryScope = _fixture.Freeze<Mock<IServiceScopeFactory>>();
+        serviceFactoryScope.Setup(x => x.CreateScope())
+            .Returns(serviceScope.Object);
     }
 
     private Mock<TestTransaction> CreateMockTransaction()
@@ -297,5 +306,7 @@ public class ClientRequestTransactionManagerTests
         public abstract Task CompleteAsync(CancellationToken cancellationToken);
         public abstract Task RollbackAsync(CancellationToken cancellationToken);
         public IEntityTransactionOutbox Outbox => null;
+        public EntityTransactionState State { get; set; }
+        public DateTimeOffset StartedDate { get; set; }
     }
 }

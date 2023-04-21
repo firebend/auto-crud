@@ -1,6 +1,5 @@
 using System;
 using System.Reflection.Emit;
-using Firebend.AutoCrud.Core.Threading;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations.Options;
 using Humanizer;
@@ -10,6 +9,11 @@ using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web;
+
+internal static class ControllerConfiguratorStatics
+{
+    public static readonly object Locker = new();
+}
 
 public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 {
@@ -82,7 +86,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
             return;
         }
 
-        using var locker = AsyncDuplicateLock.Lock(nameof(AddSwaggerGenOptionConfiguration));
+        lock (ControllerConfiguratorStatics.Locker)
         {
             if (ControllerConfiguratorCache.IsSwaggerApplied)
             {
@@ -146,22 +150,6 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         return (attributeType, attributeBuilder);
     }
 
-    private static (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiOperationIdAttributeInfo(
-        string operationId)
-    {
-        var attributeType = typeof(OpenApiOperationIdAttribute);
-        var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
-
-        if (attributeCtor == null)
-        {
-            return default;
-        }
-
-        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { operationId });
-
-        return (attributeType, attributeBuilder);
-    }
-
     private void AddOpenApiGroupNameAttribute(Type controllerType, string openApiName)
     {
         var (attributeType, attributeBuilder) = GetOpenApiGroupAttributeInfo(openApiName);
@@ -171,12 +159,6 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     private void AddOpenApiEntityNameAttribute(Type controllerType, string name, string plural)
     {
         var (attributeType, attributeBuilder) = GetOpenApiEntityNameAttribute(name, plural);
-        Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
-    }
-
-    private void AddOpenApiOperationAttribute(Type controllerType, string operationId)
-    {
-        var (attributeType, attributeBuilder) = GetOpenApiOperationIdAttributeInfo(operationId);
         Builder.WithAttribute(controllerType, attributeType, attributeBuilder);
     }
 }

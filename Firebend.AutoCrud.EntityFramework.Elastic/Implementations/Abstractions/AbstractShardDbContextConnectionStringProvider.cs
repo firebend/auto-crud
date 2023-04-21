@@ -93,14 +93,13 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
 
             var shardConnectionString = NormalizeToLegacyConnectionString(rootConnectionStringBuilder.ConnectionString);
 
-            await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
+            await using var connection = await shard
+                .OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
                 .ConfigureAwait(false);
 
             var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString) { Password = rootConnectionStringBuilder.Password };
 
             var connectionString = connectionStringBuilder.ConnectionString;
-            connectionStringBuilder = null;
-            rootConnectionStringBuilder = null;
 
             return connectionString;
         }

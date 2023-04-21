@@ -13,29 +13,62 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities;
 
 public class ClientRequestTransactionManager : ISessionTransactionManager
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     private readonly ConcurrentDictionary<string, Task<IEntityTransaction>> _sharedTransactions = new();
-    private readonly ConcurrentBag<IEntityTransaction> _transactions = new();
+    private readonly ConcurrentQueue<IEntityTransaction> _transactions = new();
+
     public bool TransactionStarted { get; private set; }
     public ImmutableList<Guid> TransactionIds => _transactions.Select(x => x.Id).ToImmutableList();
 
-    public ClientRequestTransactionManager(IServiceProvider serviceProvider)
+    public ClientRequestTransactionManager(IServiceScopeFactory scopeFactory)
     {
-        _serviceProvider = serviceProvider;
+        _scopeFactory = scopeFactory;
     }
 
     public void Start() => TransactionStarted = true;
 
+    private IEnumerable<IEntityTransaction> GetTransactionsInOrder(bool ascending)
+    {
+        IEnumerable<IEntityTransaction> EntityTransactions()
+        {
+            while (_transactions.TryDequeue(out var t))
+            {
+                yield return t;
+            }
+        }
+
+        if (ascending)
+        {
+            return EntityTransactions().OrderBy(x => x.StartedDate).ToArray();
+        }
+
+        return EntityTransactions().OrderByDescending(x => x.StartedDate).ToArray();
+    }
+
     public async Task CompleteAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(_transactions.Select(x => x.CompleteAsync(cancellationToken)));
+        foreach (var transaction in GetTransactionsInOrder(true))
+        {
+            if (await EntityTransactionMediator.TryCompleteAsync(transaction, cancellationToken))
+            {
+                transaction.Dispose();
+            }
+        }
+
         ClearTransactions();
     }
 
     public async Task RollbackAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(_transactions.Select(x => x.RollbackAsync(cancellationToken)));
+        foreach (var transaction in GetTransactionsInOrder(false))
+        {
+            if (await EntityTransactionMediator.TryRollbackAsync(transaction, cancellationToken))
+            {
+                transaction.Dispose();
+            }
+        }
+
         ClearTransactions();
     }
 
@@ -48,7 +81,8 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
             return null;
         }
 
-        var transactionFactory = _serviceProvider.GetRequiredService<IEntityTransactionFactory<TKey, TEntity>>();
+        using var scope = _scopeFactory.CreateScope();
+        var transactionFactory = scope.ServiceProvider.GetRequiredService<IEntityTransactionFactory<TKey, TEntity>>();
         var key = await transactionFactory.GetDbContextHashCode();
 
         var transaction = await GetOrAddSharedTransaction(key, transactionFactory, cancellationToken);
@@ -74,6 +108,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
                 self.AddTransaction(transaction);
                 return transaction;
             }, (this, transactionFactory, cancellationToken));
+
         return transaction;
     }
 
@@ -85,19 +120,25 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         }
 
         var existingTransaction = _transactions.Any(t => t.Id == transaction.Id);
+
         if (existingTransaction)
         {
             return;
         }
 
-        _transactions.Add(transaction);
+        _transactions.Enqueue(transaction);
     }
 
     private void ClearTransactions()
     {
-        _transactions.ToList().ForEach(x => x.Dispose());
+        while (_transactions.TryDequeue(out var transaction))
+        {
+            transaction.Dispose();
+        }
+
         _sharedTransactions.Clear();
         _transactions.Clear();
+
         TransactionStarted = false;
     }
 
