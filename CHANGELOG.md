@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.4.1"></a>
+## [7.4.1](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.1) (2023-4-21)
+
+### Bug Fixes
+
+* mongo transaction updates (#192) ([0a49d28](https://www.github.com/firebend/auto-crud/commit/0a49d28c4e3025f78fe6fa57830dcb2ddcd339c1))
+
+### Other
+
+* changes for monog transactions, comb guid class, package updates, etc (#191) ([948bc9d](https://www.github.com/firebend/auto-crud/commit/948bc9d322678d74089e2a9bcfdd2334937a0ffb))
+* **deps:** bump AsyncKeyedLock from 6.2.0 to 6.2.1 (#186) ([923a1e3](https://www.github.com/firebend/auto-crud/commit/923a1e3ef7955104d426b5ed9d384144020552f4))
+* **deps:** bump Microsoft.AspNetCore.JsonPatch from 7.0.4 to 7.0.5 (#188) ([19eefc1](https://www.github.com/firebend/auto-crud/commit/19eefc109fe500d5e24fe50880f4b15ab5559bee))
+* **deps:** bump Microsoft.AspNetCore.Mvc.NewtonsoftJson from 7.0.4 to 7.0.5 (#187) ([3a7469a](https://www.github.com/firebend/auto-crud/commit/3a7469a99902b11ed82f84b3219a43a4ae6eb2ad))
+* **deps:** bump Microsoft.EntityFrameworkCore from 7.0.4 to 7.0.5 (#190) ([a380095](https://www.github.com/firebend/auto-crud/commit/a380095af59f88434134ee1d5da956b47bfea542))
+* **deps:** bump Microsoft.EntityFrameworkCore.Relational from 7.0.4 to 7.0.5 (#189) ([0bf8725](https://www.github.com/firebend/auto-crud/commit/0bf8725931e69595adb9c52f5c6925e906a58582))
+
 <a name="7.4.0"></a>
 ## [7.4.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.0) (2023-4-10)
 
