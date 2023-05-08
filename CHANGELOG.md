@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.4.2"></a>
+## [7.4.2](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.2) (2023-5-8)
+
+### Bug Fixes
+
+* **deps:** bump MassTransit.Newtonsoft from 8.0.14 to 8.0.15 (#194) ([e309844](https://www.github.com/firebend/auto-crud/commit/e3098447cbb16dbc1889ac5fb2ae6922aef40803))
+
+### Other
+
+* **deps:** bump FluentAssertions from 6.10.0 to 6.11.0 (#193) ([6fb40ce](https://www.github.com/firebend/auto-crud/commit/6fb40ceba9e01a54a0a892dd2c8e7364271e9d58))
+* **deps:** bump GitHubActionsTestLogger from 2.0.1 to 2.0.2 (#196) ([a76ce7f](https://www.github.com/firebend/auto-crud/commit/a76ce7f865e6df37c1c2e5390857f9a5d2c9c8a6))
+* **deps:** bump MassTransit from 8.0.14 to 8.0.15 (#195) ([63ae3a6](https://www.github.com/firebend/auto-crud/commit/63ae3a64c2d375ee26fa92c98276f2ced3918d95))
+
 <a name="7.4.1"></a>
 ## [7.4.1](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.1) (2023-4-21)
 
