@@ -149,8 +149,10 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return NotFound(new { id });
             }
 
+            var updated = await _readService.GetByKeyAsync(entity.Id, cancellationToken);
+
             var mapped = await _readViewModelMapper
-                .ToAsync(entity, cancellationToken);
+                .ToAsync(updated, cancellationToken);
 
             return Ok(mapped);
         }

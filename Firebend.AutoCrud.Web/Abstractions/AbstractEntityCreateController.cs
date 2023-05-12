@@ -20,6 +20,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TReadViewModel : class
     {
         private IEntityCreateService<TKey, TEntity> _createService;
+        private IEntityReadService<TKey, TEntity> _readService;
         private IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
         private ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> _mapper;
         private IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
@@ -28,12 +29,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
             IEntityValidationService<TKey, TEntity, TVersion> entityValidationService,
             ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> mapper,
             IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readMapper,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
+            IOptions<ApiBehaviorOptions> apiOptions,
+            IEntityReadService<TKey, TEntity> readService) : base(apiOptions)
         {
             _createService = createService;
             _entityValidationService = entityValidationService;
             _mapper = mapper;
             _readMapper = readMapper;
+            _readService = readService;
         }
 
         [HttpPost]
@@ -108,8 +111,10 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
+            var read = await _readService.GetByKeyAsync(created.Id, cancellationToken);
+
             var createdViewModel = await _readMapper
-                .ToAsync(created, cancellationToken)
+                .ToAsync(read, cancellationToken)
                 .ConfigureAwait(false);
 
             _createService = null;
