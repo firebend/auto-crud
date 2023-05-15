@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.4.3"></a>
+## [7.4.3](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.3) (2023-5-15)
+
+### Bug Fixes
+
+* **deps:** bump MassTransit.RabbitMQ from 8.0.14 to 8.0.15 (#197) ([fa2d4d9](https://www.github.com/firebend/auto-crud/commit/fa2d4d97929552475655c38b5c099e47448559b7))
+
 <a name="7.4.2"></a>
 ## [7.4.2](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.2) (2023-5-8)
 
