@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.4.4"></a>
+## [7.4.4](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.4) (2023-5-15)
+
+### Bug Fixes
+
+* **deps:** bump Microsoft.OpenApi from 1.6.3 to 1.6.4 (#199) ([7c597da](https://www.github.com/firebend/auto-crud/commit/7c597da12bc17974d6e68cafc6d5cd8857670aa2))
+
 <a name="7.4.3"></a>
 ## [7.4.3](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.3) (2023-5-15)
 
