@@ -19,11 +19,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TCreateViewModel : class
         where TReadViewModel : class
     {
-        private IEntityCreateService<TKey, TEntity> _createService;
-        private IEntityReadService<TKey, TEntity> _readService;
-        private IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
-        private ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> _mapper;
-        private IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
+        private readonly IEntityCreateService<TKey, TEntity> _createService;
+        private readonly IEntityReadService<TKey, TEntity> _readService;
+        private readonly IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
+        private readonly ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> _mapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
 
         public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
             IEntityValidationService<TKey, TEntity, TVersion> entityValidationService,
