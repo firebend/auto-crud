@@ -117,11 +117,6 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 .ToAsync(read, cancellationToken)
                 .ConfigureAwait(false);
 
-            _createService = null;
-            _mapper = null;
-            _readMapper = null;
-            _entityValidationService = null;
-
             return Created($"{Request.Path.Value}/{created.Id}", createdViewModel);
         }
     }
