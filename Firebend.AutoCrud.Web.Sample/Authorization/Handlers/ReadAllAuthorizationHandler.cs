@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Web.Implementations.Authorization.Requirements;
 using Firebend.AutoCrud.Web.Sample.Models;
@@ -9,12 +8,12 @@ namespace Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
 
 public class ReadAllAuthorizationHandler : AuthorizationHandler<ReadAllAuthorizationRequirement, IEnumerable<IEntityDataAuth>>
 {
-    private readonly DataAuthService _dataAuthService;
-
-    public ReadAllAuthorizationHandler(DataAuthService dataAuthService)
-    {
-        _dataAuthService = dataAuthService;
-    }
+    // private readonly DataAuthService _dataAuthService;
+    //
+    // public ReadAllAuthorizationHandler(DataAuthService dataAuthService)
+    // {
+    //     _dataAuthService = dataAuthService;
+    // }
 
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
