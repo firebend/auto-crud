@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.5.0"></a>
+## [7.5.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.5.0) (2023-5-18)
+
+### Features
+
+* Adds Ability to Better Handle EF Constraint Failures and Read Entity After Edit in Controllers (#200) ([67e1dc0](https://www.github.com/firebend/auto-crud/commit/67e1dc0301786dea60a1e23c3fc8af590cb1bb4f))
+
+### Other
+
+* **deps:** bump GitHubActionsTestLogger from 2.0.2 to 2.1.0 (#198) ([70d8f4e](https://www.github.com/firebend/auto-crud/commit/70d8f4e074d17083ef7bcda47f933e00bef23ab4))
+
 <a name="7.4.4"></a>
 ## [7.4.4](https://www.github.com/firebend/auto-crud/releases/tag/v7.4.4) (2023-5-15)
 
