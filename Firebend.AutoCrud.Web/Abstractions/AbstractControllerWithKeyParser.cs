@@ -70,5 +70,15 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             return false;
         }
+
+        protected bool HasIsDeletedChanged(object original, object toUpdate)
+        {
+            if (original is IActiveEntity originalActive && toUpdate is IActiveEntity toUpdateActive)
+            {
+                return originalActive.IsDeleted != toUpdateActive.IsDeleted;
+            }
+
+            return false;
+        }
     }
 }

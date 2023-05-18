@@ -111,6 +111,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             var original = await _readService.GetByKeyAsync(key.Value, cancellationToken);
 
+            if (HasIsDeletedChanged(original, entityUpdate))
+            {
+                ModelState.AddModelError(nameof(body),
+                    $"Modifying an entity's {nameof(IActiveEntity.IsDeleted)} is not allowed in this endpoint.");
+
+                return GetInvalidModelStateResult();
+            }
+
             var patch = original is null
                 ? null
                 : _jsonPatchGenerator.Generate(original, entityUpdate);
