@@ -83,8 +83,7 @@ public abstract class AbstractIoController<TKey, TEntity, TVersion, TSearch, TMa
                 entityExportType.GetValueOrDefault(),
                 filename,
                 searchRequest,
-                cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken);
 
         return fileResult;
     }

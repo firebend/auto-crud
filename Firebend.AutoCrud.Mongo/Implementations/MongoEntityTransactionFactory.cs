@@ -13,7 +13,11 @@ namespace Firebend.AutoCrud.Mongo.Implementations
     public static class MongoEntityTransactionFactoryDefaults
     {
 #pragma warning disable CA2211, IDE1006
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public static TransactionOptions TransactionOptions;
+        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public static ClientSessionOptions SessionOptions;
 #pragma warning restore CA2211, IDE1006
 

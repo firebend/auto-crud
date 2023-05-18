@@ -47,9 +47,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var createdViewModel = await _readMapper
-                .ToAsync(entity, cancellationToken)
-                .ConfigureAwait(false);
+            var createdViewModel = await _readMapper.ToAsync(entity, cancellationToken);
 
             _mapper = null;
             _readMapper = null;

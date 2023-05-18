@@ -49,18 +49,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var entity = await _readService
-                .GetByKeyAsync(key.Value, cancellationToken)
-                .ConfigureAwait(false);
+            var entity = await _readService.GetByKeyAsync(key.Value, cancellationToken);
 
             if (entity == null)
             {
                 return NotFound(new { id });
             }
 
-            var mapped = await _viewModelMapper
-                .ToAsync(entity, cancellationToken)
-                .ConfigureAwait(false);
+            var mapped = await _viewModelMapper.ToAsync(entity, cancellationToken);
 
             return Ok(mapped);
         }

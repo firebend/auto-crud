@@ -94,9 +94,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 entity = isValid.Model;
             }
 
-            var result = await _updateService
-                .UpdateAsync(rootKey.Value, entity, cancellationToken)
-                .ConfigureAwait(false);
+            var result = await _updateService.UpdateAsync(rootKey.Value, entity, cancellationToken);
 
             if (result == null)
             {
@@ -150,9 +148,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var isValid = await _customFieldsValidationService
-                .ValidateAsync(entityPatchDocument, cancellationToken)
-                .ConfigureAwait(false);
+            var isValid = await _customFieldsValidationService.ValidateAsync(entityPatchDocument, cancellationToken);
 
             if (!isValid.WasSuccessful)
             {
@@ -169,9 +165,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 entityPatchDocument = isValid.Model;
             }
 
-            var result = await _updateService
-                .PatchAsync(rootKey.Value, id, entityPatchDocument, cancellationToken)
-                .ConfigureAwait(false);
+            var result = await _updateService.PatchAsync(rootKey.Value, id, entityPatchDocument, cancellationToken);
 
             if (result == null)
             {

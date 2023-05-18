@@ -66,13 +66,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             foreach (var toCreate in body.Entities)
             {
-                var entityToCreate = await _multipleMapper
-                    .FromAsync(body, toCreate, cancellationToken)
-                    .ConfigureAwait(false);
+                var entityToCreate = await _multipleMapper.FromAsync(body, toCreate, cancellationToken);
 
-                var isValid = await _entityValidationService
-                    .ValidateAsync(null, entityToCreate, null, cancellationToken)
-                    .ConfigureAwait(false);
+                var isValid = await _entityValidationService.ValidateAsync(null, entityToCreate, null, cancellationToken);
 
                 if (!isValid.WasSuccessful)
                 {
@@ -107,9 +103,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
                 try
                 {
-                    entity = await _createService
-                        .CreateAsync(entityToCreate, cancellationToken)
-                        .ConfigureAwait(false);
+                    entity = await _createService.CreateAsync(entityToCreate, cancellationToken);
                 }
                 catch (AutoCrudEntityException ex)
                 {
@@ -131,9 +125,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                     continue;
                 }
 
-                var mappedEntity = await _readMapper
-                    .ToAsync(entity, cancellationToken)
-                    .ConfigureAwait(false);
+                var mappedEntity = await _readMapper.ToAsync(entity, cancellationToken);
 
                 createdEntities.Add(mappedEntity);
             }

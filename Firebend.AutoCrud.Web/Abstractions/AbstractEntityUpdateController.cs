@@ -20,6 +20,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
+    [Route("{id}")]
     public abstract class
         AbstractEntityUpdateController<TKey, TEntity, TVersion, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel> :
             AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
@@ -31,6 +32,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TUpdateViewModelBody : class
     {
         private const string IdPatchPath = $"/{nameof(IEntity<Guid>.Id)}";
+        private const string IsDeletedPatchPath = $"/{nameof(IActiveEntity.IsDeleted)}";
         private const string CustomFieldsPatchPath = $"/{nameof(ICustomFieldsEntity<Guid>.CustomFields)}";
 
         private readonly IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
@@ -60,7 +62,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             _copyOnPatchPropertyAccessor = copyOnPatchPropertyAccessor;
         }
 
-        [HttpPut("{id}")]
+        [HttpPut]
         [SwaggerOperation("Updates {entityNamePlural}")]
         [SwaggerResponse(200, "The {entityName} with a given key was updated.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
@@ -97,6 +99,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
+            if (HasIsDeletedPopulated(entityUpdate))
+            {
+                ModelState.AddModelError(nameof(body),
+                    $"Modifying an entity's {nameof(IActiveEntity.IsDeleted)} is not allowed in this endpoint. Please use the DELETE endpoint to soft delete this entity.");
+
+                return GetInvalidModelStateResult();
+            }
+
             entityUpdate.Id = key.Value;
 
             var original = await _readService.GetByKeyAsync(key.Value, cancellationToken);
@@ -105,8 +115,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 ? null
                 : _jsonPatchGenerator.Generate(original, entityUpdate);
 
-            var isValid = await _entityValidationService
-                .ValidateAsync(original, entityUpdate, patch, cancellationToken);
+            var isValid = await _entityValidationService.ValidateAsync(original, entityUpdate, patch, cancellationToken);
 
             if (!isValid.WasSuccessful)
             {
@@ -157,7 +166,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             return Ok(mapped);
         }
 
-        [HttpPatch("{id}")]
+        [HttpPatch]
         [SwaggerOperation("Updates {entityNamePlural} using a JSON Patch Document")]
         [SwaggerResponse(200, "The {entityName} with the given key was updated.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
@@ -179,16 +188,25 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            if (patch.Operations.Any(x => x.path.Equals(IdPatchPath, StringComparison.InvariantCultureIgnoreCase)))
+            if (PatchFieldsStartsWith(patch, IdPatchPath))
             {
                 ModelState.AddModelError(nameof(patch), "Modifying the entity's id during patch is not allowed.");
 
                 return GetInvalidModelStateResult();
             }
 
-            if (IsCustomFieldsEntity() && patch.Operations.Any(x => x.path.StartsWith(CustomFieldsPatchPath, StringComparison.InvariantCultureIgnoreCase)))
+            if (IsCustomFieldsEntity() && PatchFieldsStartsWith(patch, CustomFieldsPatchPath))
             {
                 ModelState.AddModelError(nameof(patch), "Modifying an entity's custom fields is not allowed in this endpoint. Please use the entity's custom fields endpoints.");
+
+                return GetInvalidModelStateResult();
+            }
+
+            if (IsActiveEntity() && PatchFieldsStartsWith(patch, IsDeletedPatchPath))
+            {
+
+                ModelState.AddModelError(nameof(patch),
+                    $"Modifying an entity's {nameof(IActiveEntity.IsDeleted)} is not allowed in this endpoint. Please use the DELETE endpoint to soft delete this entity.");
 
                 return GetInvalidModelStateResult();
             }
@@ -200,8 +218,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var entity = await _readService
-                .GetByKeyAsync(key.Value, cancellationToken);
+            var entity = await _readService.GetByKeyAsync(key.Value, cancellationToken);
 
             if (entity == null)
             {
@@ -239,8 +256,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var entityPatch = _jsonPatchGenerator.Generate(original, modifiedEntity);
 
 
-            var isValid = await _entityValidationService
-                .ValidateAsync(original, modifiedEntity, entityPatch, cancellationToken);
+            var isValid = await _entityValidationService.ValidateAsync(original, modifiedEntity, entityPatch, cancellationToken);
 
             if (!isValid.WasSuccessful)
             {
@@ -261,8 +277,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             try
             {
-                update = await _updateService
-                    .UpdateAsync(modifiedEntity, cancellationToken);
+                update = await _updateService.UpdateAsync(modifiedEntity, cancellationToken);
             }
             catch (AutoCrudEntityException ex)
             {
@@ -290,6 +305,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             return Ok(mapped);
         }
+
+        private static bool PatchFieldsStartsWith(JsonPatchDocument<TUpdateViewModelBody> patch, string path)
+            => patch.Operations.Any(x => x.path.StartsWith(path, StringComparison.InvariantCultureIgnoreCase));
 
         //********************************************
         // Author: JMA

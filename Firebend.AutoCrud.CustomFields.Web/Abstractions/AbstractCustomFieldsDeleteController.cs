@@ -54,9 +54,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var result = await _deleteService
-                .DeleteAsync(rootKey.Value, id, cancellationToken)
-                .ConfigureAwait(false);
+            var result = await _deleteService.DeleteAsync(rootKey.Value, id, cancellationToken);
 
             if (result == null)
             {

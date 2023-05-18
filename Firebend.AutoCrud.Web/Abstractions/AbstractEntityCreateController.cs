@@ -57,18 +57,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var entity = await _mapper
-                .FromAsync(body, cancellationToken)
-                .ConfigureAwait(false);
+            var entity = await _mapper.FromAsync(body, cancellationToken);
 
             if (!TryValidateModel(entity))
             {
                 return GetInvalidModelStateResult();
             }
 
-            var isValid = await _entityValidationService
-                .ValidateAsync(null, entity, null, cancellationToken)
-                .ConfigureAwait(false);
+            var isValid = await _entityValidationService.ValidateAsync(null, entity, null, cancellationToken);
 
             if (!isValid.WasSuccessful)
             {
@@ -89,9 +85,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             try
             {
-                created = await _createService
-                    .CreateAsync(entity, cancellationToken)
-                    .ConfigureAwait(false);
+                created = await _createService.CreateAsync(entity, cancellationToken);
             }
             catch (AutoCrudEntityException ex)
             {
@@ -113,9 +107,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             var read = await _readService.GetByKeyAsync(created.Id, cancellationToken);
 
-            var createdViewModel = await _readMapper
-                .ToAsync(read, cancellationToken)
-                .ConfigureAwait(false);
+            var createdViewModel = await _readMapper.ToAsync(read, cancellationToken);
 
             return Created($"{Request.Path.Value}/{created.Id}", createdViewModel);
         }

@@ -49,15 +49,11 @@ namespace Firebend.AutoCrud.Io.Web.Abstractions
                 throw new ArgumentNullException(nameof(search));
             }
 
-            var entities = await _searchService
-                .SearchAsync(search, cancellationToken)
-                .ConfigureAwait(false);
+            var entities = await _searchService.SearchAsync(search, cancellationToken);
 
             var records = MapRecords(entities);
 
-            var fileStream = await _exportService
-                .ExportAsync(fileType, records, cancellationToken)
-                .ConfigureAwait(false);
+            var fileStream = await _exportService.ExportAsync(fileType, records, cancellationToken);
 
             var mimeType = _entityFileTypeMimeTypeMapper.MapMimeType(fileType);
             var extension = _entityFileTypeMimeTypeMapper.GetExtension(fileType);
