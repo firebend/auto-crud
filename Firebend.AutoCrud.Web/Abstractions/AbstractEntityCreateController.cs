@@ -19,21 +19,24 @@ namespace Firebend.AutoCrud.Web.Abstractions
         where TCreateViewModel : class
         where TReadViewModel : class
     {
-        private IEntityCreateService<TKey, TEntity> _createService;
-        private IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
-        private ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> _mapper;
-        private IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
+        private readonly IEntityCreateService<TKey, TEntity> _createService;
+        private readonly IEntityReadService<TKey, TEntity> _readService;
+        private readonly IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
+        private readonly ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> _mapper;
+        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
 
         public AbstractEntityCreateController(IEntityCreateService<TKey, TEntity> createService,
             IEntityValidationService<TKey, TEntity, TVersion> entityValidationService,
             ICreateViewModelMapper<TKey, TEntity, TVersion, TCreateViewModel> mapper,
             IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readMapper,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
+            IOptions<ApiBehaviorOptions> apiOptions,
+            IEntityReadService<TKey, TEntity> readService) : base(apiOptions)
         {
             _createService = createService;
             _entityValidationService = entityValidationService;
             _mapper = mapper;
             _readMapper = readMapper;
+            _readService = readService;
         }
 
         [HttpPost]
@@ -108,14 +111,11 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var createdViewModel = await _readMapper
-                .ToAsync(created, cancellationToken)
-                .ConfigureAwait(false);
+            var read = await _readService.GetByKeyAsync(created.Id, cancellationToken);
 
-            _createService = null;
-            _mapper = null;
-            _readMapper = null;
-            _entityValidationService = null;
+            var createdViewModel = await _readMapper
+                .ToAsync(read, cancellationToken)
+                .ConfigureAwait(false);
 
             return Created($"{Request.Path.Value}/{created.Id}", createdViewModel);
         }

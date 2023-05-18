@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
     {
 #pragma warning disable CA2211, IDE1006
         public static int NumberOfRetries = 10;
-#pragma warning enable CA2211, IDE1006
+#pragma warning restore CA2211, IDE1006
     }
 
     public class MongoEntityTransaction : BaseDisposable, IEntityTransaction

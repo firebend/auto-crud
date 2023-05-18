@@ -20,7 +20,7 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    private const int SqlServerForeignKeyConstraintErrorCode = 547;
+    private const int SqlServerConstraintErrorCode = 547;
     private const int SqlServerUniqueConstraintErrorCode = 2601;
 
     public bool HandleException(IDbContext context, TEntity entity, DbUpdateException exception)
@@ -35,15 +35,17 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
             return false;
         }
 
-        var hasHandledForeignKeyConstraint = sqlException.Number == SqlServerForeignKeyConstraintErrorCode
-                                             && HandleForeignKeyConstraint(context, entity, sqlException);
+        var hasHandledForeignKeyConstraint = sqlException.Number == SqlServerConstraintErrorCode
+                                             && HandleConstraint(context, entity, sqlException);
+
         var hasHandledUniqueConstraint = sqlException.Number == SqlServerUniqueConstraintErrorCode
                                          && HandleUniqueConstraint(context, entity, sqlException);
 
         return hasHandledForeignKeyConstraint || hasHandledUniqueConstraint;
     }
 
-    private static bool HandleUniqueConstraint(IDbContext context, TEntity entity, Exception sqlException)
+
+    protected virtual bool HandleUniqueConstraint(IDbContext context, TEntity entity, SqlException sqlException)
     {
         if (context is not DbContext dbContext)
         {
@@ -54,7 +56,7 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
 
         if (constraintSplit.Length < 2)
         {
-            return false;
+            return OnUniqueConstraintUnresolved(entity, sqlException);
         }
 
         var constraint = constraintSplit[1][..constraintSplit[1].IndexOf("'", StringComparison.Ordinal)];
@@ -67,7 +69,7 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
 
         if (tableIndex == null)
         {
-            return false;
+            return OnUniqueConstraintUnresolved(entity, sqlException);
         }
 
         var errors = tableIndex
@@ -85,7 +87,18 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
 
     }
 
-    private static bool HandleForeignKeyConstraint(IDbContext context, TEntity entity, Exception sqlException)
+    /// <summary>
+    /// Occurs when the handler is unable to figure out the Unique Constraint.
+    /// Use for custom handling
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <param name="sqlException"></param>
+    /// <returns>
+    /// True if the error should be handled; otherwise, false
+    /// </returns>
+    protected virtual bool OnUniqueConstraintUnresolved(TEntity exception, SqlException sqlException) => false;
+
+    protected virtual bool HandleConstraint(IDbContext context, TEntity entity, SqlException sqlException)
     {
         if (context is not DbContext dbContext)
         {
@@ -96,7 +109,7 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
 
         if (constraintSplit.Length < 2)
         {
-            return false;
+            return OnConstraintUnresolved(entity, sqlException);
         }
 
         var constraint = constraintSplit[1][..constraintSplit[1].IndexOf("\"", StringComparison.Ordinal)];
@@ -109,7 +122,7 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
 
         if (foreignKey == null)
         {
-            return false;
+            return OnConstraintUnresolved(entity, sqlException);
         }
 
         var errors = foreignKey
@@ -126,7 +139,18 @@ public abstract class AbstractConstraintUpdateExceptionHandler<TKey, TEntity>
         );
     }
 
-    private static TConstraint GetConstraint<TConstraint, TConstrainList>(DbContext dbContext,
+    /// <summary>
+    /// Occurs when the handler is unable to figure out the Foreign Key.
+    /// Use for custom handling
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <param name="sqlException"></param>
+    /// <returns>
+    /// True if the error should be handled; otherwise, false
+    /// </returns>
+    protected virtual bool OnConstraintUnresolved(TEntity exception, SqlException sqlException) => false;
+
+    protected virtual TConstraint GetConstraint<TConstraint, TConstrainList>(DbContext dbContext,
         string constraintName,
         Func<IEntityType, IEnumerable<TConstrainList>> constraintListSelector,
         Func<TConstraint, string> nameSelector)
