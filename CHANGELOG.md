@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.6.0"></a>
+## [7.6.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.6.0) (2023-5-19)
+
+### Features
+
+* adds controller for undoing a delete operation on an entity (#201) ([6ea94e4](https://www.github.com/firebend/auto-crud/commit/6ea94e489e1d4e7418f2c455372f06754b23604b))
+
 <a name="7.5.0"></a>
 ## [7.5.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.5.0) (2023-5-18)
 
