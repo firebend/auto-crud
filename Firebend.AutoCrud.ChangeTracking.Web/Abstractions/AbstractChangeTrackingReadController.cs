@@ -73,9 +73,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
             changeSearchRequest.CopyPropertiesTo(changeRequest);
             changeRequest.EntityId = key.Value;
 
-            var changes = await _read
-                .GetChangesByEntityId(changeRequest, cancellationToken)
-                .ConfigureAwait(false);
+            var changes = await _read.GetChangesByEntityId(changeRequest, cancellationToken);
 
             if (!(changes?.Data?.Any() ?? false))
             {

@@ -68,9 +68,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             entityUpdate.Id = key.Value;
 
-            var mapped = await _readViewModelMapper
-                .ToAsync(entityUpdate, cancellationToken)
-                .ConfigureAwait(false);
+            var mapped = await _readViewModelMapper.ToAsync(entityUpdate, cancellationToken);
 
             return Ok(mapped);
         }

@@ -63,9 +63,7 @@ public abstract class AbstractCustomFieldsCreateController<TKey, TEntity, TVersi
             return GetInvalidModelStateResult();
         }
 
-        var isValid = await _customFieldsValidationService
-            .ValidateAsync(entity, cancellationToken)
-            .ConfigureAwait(false);
+        var isValid = await _customFieldsValidationService.ValidateAsync(entity, cancellationToken);
 
         if (!isValid.WasSuccessful)
         {
@@ -82,8 +80,7 @@ public abstract class AbstractCustomFieldsCreateController<TKey, TEntity, TVersi
             entity = isValid.Model;
         }
 
-        var result = await _createService
-            .CreateAsync(rootKey.Value, entity, cancellationToken).ConfigureAwait(false);
+        var result = await _createService.CreateAsync(rootKey.Value, entity, cancellationToken);
 
         if (result == null)
         {

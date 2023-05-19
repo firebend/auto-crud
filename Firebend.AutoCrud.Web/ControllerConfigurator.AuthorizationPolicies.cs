@@ -112,7 +112,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     /// </code>
     /// </example>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddDeleteAuthorizationPolicy(string policy)
-        => AddAuthorizationPolicy(DeleteControllerType(), policy);
+        => AddAuthorizationPolicy(DeleteControllerType(), policy)
+            .AddAuthorizationPolicy(UndoDeleteControllerType(), policy);
 
     /// <summary>
     /// Adds an authorization policy to GET requests using the abstract read controller

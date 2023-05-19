@@ -26,9 +26,7 @@ public static class ControllerExtensions
             return null;
         }
 
-        var entity = await mapper
-            .FromAsync(body, cancellationToken)
-            .ConfigureAwait(false);
+        var entity = await mapper.FromAsync(body, cancellationToken);
 
         if (entity == null)
         {

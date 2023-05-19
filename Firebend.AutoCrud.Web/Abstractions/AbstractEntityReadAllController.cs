@@ -39,18 +39,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
         {
             Response.RegisterForDispose(_readService);
 
-            var entities = await _readService
-                .GetAllAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var entities = await _readService.GetAllAsync(cancellationToken);
 
             if (entities == null || !entities.Any())
             {
                 return Ok();
             }
 
-            var mapped = await _viewModelMapper
-                .ToAsync(entities, cancellationToken)
-                .ConfigureAwait(false);
+            var mapped = await _viewModelMapper.ToAsync(entities, cancellationToken);
 
             return Ok(mapped);
         }

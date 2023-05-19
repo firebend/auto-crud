@@ -88,7 +88,7 @@ public partial class
         return (routeType, attributeBuilder);
     }
 
-    private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetApiVersionAttributeInfo(bool deprecated)
+    private static (Type attributeType, CustomAttributeBuilder attributeBuilder) GetApiVersionAttributeInfo(bool deprecated)
     {
         var type = typeof(ApiVersionAttribute);
         var ctor = type.GetConstructor(new[] { typeof(string) });
@@ -99,6 +99,11 @@ public partial class
         }
 
         var version = (IAutoCrudApiVersion)Activator.CreateInstance(typeof(TVersion));
+
+        if (version is null)
+        {
+            return (null, null);
+        }
 
         var propertyInfos = type.GetProperties().Where(x => x.Name == nameof(ApiVersionAttribute.Deprecated)).Take(1).ToArray();
 
@@ -152,7 +157,7 @@ public partial class
         string openApiName = null,
         params Type[] genericArgs)
     {
-        var hasGenerics = genericArgs != null && genericArgs.Length > 0;
+        var hasGenerics = genericArgs is { Length: > 0 };
         var registrationType = hasGenerics ? type.MakeGenericType(genericArgs) : type;
 
         var typeToCheckGeneric = hasGenerics ? typeToCheck.MakeGenericType(genericArgs) : typeToCheck;
@@ -286,7 +291,11 @@ public partial class
         AddAttributeToAllControllers(routeType, routeBuilder);
 
         var (apiVersionType, apiVersionBuilder) = GetApiVersionAttributeInfo(deprecated);
-        AddAttributeToAllControllers(apiVersionType, apiVersionBuilder);
+
+        if (apiVersionType is not null && apiVersionBuilder is not null)
+        {
+            AddAttributeToAllControllers(apiVersionType, apiVersionBuilder);
+        }
 
         return this;
     }
@@ -369,6 +378,10 @@ public partial class
     public Type SearchControllerType()
         => typeof(AbstractEntitySearchController<,,,,,>)
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), Builder.SearchRequestType, SearchViewModelType, ReadViewModelType);
+
+    public Type UndoDeleteControllerType()
+        => typeof(AbstractEntityUndoDeleteController<,,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion), ReadViewModelType);
 
     /// <summary>
     /// Registers a CREATE controller for the entity
@@ -1009,8 +1022,11 @@ public partial class
     ///          .WithAllControllers(true, true)
     /// </code>
     /// </example>
-    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithAllControllers(bool includeGetAll = false,
-        bool includeMultipleCreate = true, bool includeValidationController = true)
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithAllControllers(
+        bool includeGetAll = false,
+        bool includeMultipleCreate = true,
+        bool includeValidationController = true,
+        bool includeUndoDeleteControllerIfActiveEntity = true)
     {
         WithReadController();
         WithCreateController(includeValidationController);
@@ -1026,6 +1042,11 @@ public partial class
         if (includeMultipleCreate)
         {
             WithCreateMultipleController();
+        }
+
+        if (includeUndoDeleteControllerIfActiveEntity && Builder.IsActiveEntity)
+        {
+            WithUndoDeleteController();
         }
 
         return this;
@@ -1083,4 +1104,64 @@ public partial class
 
         return this;
     }
+
+    /// <summary>
+    /// Registers a POST controller that will undo a soft delete for a given entity
+    /// </summary>
+    /// <param name="registrationType"></param>
+    /// <param name="viewModelMapper"></param>
+    /// <param name="makeRegistrationTypeGeneric"></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithUndoDeleteController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUndoDeleteController(Type registrationType,
+        Type viewModelMapper = null,
+        bool makeRegistrationTypeGeneric = false) => WithControllerHelper(
+        typeof(AbstractEntityUndoDeleteController<,,,>),
+        typeof(IReadViewModelMapper<,,,>),
+        registrationType,
+        ReadViewModelType,
+        viewModelMapper,
+        makeRegistrationTypeGeneric);
+
+    /// <summary>
+    /// Registers a POST controller that will undo a soft delete for a given entity
+    /// </summary>
+    /// <typeparam name="TRegistrationType">The service type to use</typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithUndoDeleteController<>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUndoDeleteController<TRegistrationType>()
+        => WithUndoDeleteController(typeof(TRegistrationType));
+
+    /// <summary>
+    /// Registers a POST controller that will undo a soft delete for a given entity
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithUndoDeleteController()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithUndoDeleteController()
+        => WithUndoDeleteController(typeof(AbstractEntityUndoDeleteController<,,,>),
+            makeRegistrationTypeGeneric: true);
 }

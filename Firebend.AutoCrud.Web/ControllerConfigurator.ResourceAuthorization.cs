@@ -65,7 +65,9 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddDeleteResourceAuthorization(
         string policy = DeleteAuthorizationRequirement.DefaultPolicy)
         => this.AddResourceAuthorization(DeleteControllerType(),
-            typeof(EntityDeleteAuthorizationFilter<TKey, TEntity, TVersion>), policy);
+            typeof(EntityDeleteAuthorizationFilter<TKey, TEntity, TVersion>), policy)
+            .AddResourceAuthorization(UndoDeleteControllerType(),
+                typeof(EntityDeleteAuthorizationFilter<TKey, TEntity, TVersion>), policy);
 
     /// <summary>
     /// Adds resource authorization to GET requests using the abstract read controller

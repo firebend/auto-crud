@@ -131,7 +131,7 @@ public class PersonViewModelBaseV2 : IEntityViewModelBase
     public DataAuth DataAuth { get; set; }
 }
 
-public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<Guid>, ICustomFieldsEntity<Guid>
+public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<Guid>, ICustomFieldsEntity<Guid>, IActiveEntity
 {
     private static readonly string[] Ignores = { nameof(CustomFields) };
     public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }

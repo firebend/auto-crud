@@ -50,18 +50,14 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var deleted = await _deleteService
-                .DeleteAsync(key.Value, cancellationToken)
-                .ConfigureAwait(false);
+            var deleted = await _deleteService.DeleteAsync(key.Value, cancellationToken);
 
             if (deleted == null)
             {
                 return NotFound(new { id });
             }
 
-            var mapped = await _viewModelMapper
-                .ToAsync(deleted, cancellationToken)
-                .ConfigureAwait(false);
+            var mapped = await _viewModelMapper.ToAsync(deleted, cancellationToken);
 
             return Ok(mapped);
         }

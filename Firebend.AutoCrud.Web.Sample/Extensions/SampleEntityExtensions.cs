@@ -124,6 +124,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         CustomFieldValidationService<Guid, MongoTenantPerson, V1>>()
                 );
 
+        // ReSharper disable once UnusedMethodReturnValue.Local
         private static EntityCrudBuilder<Guid, MongoTenantPerson> AddMongoPersonApiV2(this EntityCrudBuilder<Guid, MongoTenantPerson> builder) =>
             builder
                 .AddIo<Guid, MongoTenantPerson, V2>(io => io.WithMapper(x => new PersonExport(x)))

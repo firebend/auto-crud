@@ -15,6 +15,9 @@ namespace Firebend.AutoCrud.Web.Abstractions
     {
         private readonly IEntityKeyParser<TKey, TEntity, TVersion> _keyParser;
 
+        private Type _entityType;
+        private Type EntityType => _entityType ??= typeof(TEntity);
+
         protected AbstractControllerWithKeyParser(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
             IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
         {
@@ -40,11 +43,13 @@ namespace Firebend.AutoCrud.Web.Abstractions
             return id;
         }
 
-        protected bool IsCustomFieldsEntity() => typeof(TEntity).IsAssignableToGenericType(typeof(ICustomFieldsEntity<>));
+        protected bool IsCustomFieldsEntity() => EntityType.IsAssignableToGenericType(typeof(ICustomFieldsEntity<>));
+
+        protected bool IsActiveEntity() => EntityType.IsAssignableTo(typeof(IActiveEntity));
 
         protected bool HasCustomFieldsPopulated(object o)
         {
-            var property = typeof(TEntity).GetProperty(nameof(ICustomFieldsEntity<Guid>.CustomFields));
+            var property = EntityType.GetProperty(nameof(ICustomFieldsEntity<Guid>.CustomFields));
 
             if (property == null)
             {
@@ -54,6 +59,26 @@ namespace Firebend.AutoCrud.Web.Abstractions
             var value = property.GetValue(o, null);
 
             return value != null;
+        }
+
+        protected bool HasIsDeletedPopulated(object o)
+        {
+            if (o is IActiveEntity activeEntity)
+            {
+                return activeEntity.IsDeleted;
+            }
+
+            return false;
+        }
+
+        protected bool HasIsDeletedChanged(object original, object toUpdate)
+        {
+            if (original is IActiveEntity originalActive && toUpdate is IActiveEntity toUpdateActive)
+            {
+                return originalActive.IsDeleted != toUpdateActive.IsDeleted;
+            }
+
+            return false;
         }
     }
 }
