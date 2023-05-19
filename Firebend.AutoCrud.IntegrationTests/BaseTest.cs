@@ -340,6 +340,48 @@ public abstract class BaseTest<
 
     protected virtual void DeleteAssertions(IFlurlResponse response, TReadResponse responseModel) { }
 
+
+    private async Task UndoDeleteAsync(TKey id)
+    {
+        id.Should().NotBeNull();
+        id.Should().NotBe(default(TKey));
+
+        var deleteResponse = await $"{Url}/{id}/undo-delete".WithAuth().PostAsync();
+
+        deleteResponse.Should().NotBeNull();
+        deleteResponse.StatusCode.Should().Be(200);
+
+        var deleteResponseModel = await deleteResponse.GetJsonAsync<TReadResponse>();
+        deleteResponseModel.Should().NotBeNull();
+
+        if (deleteResponseModel is IActiveEntity activeEntity)
+        {
+            activeEntity.IsDeleted.Should().BeFalse();
+        }
+
+        UndoDeleteAssertions(deleteResponse, deleteResponseModel);
+
+        SaveResponse(deleteResponse);
+    }
+
+    private async Task UndoDeleteUnauthorizedAsync(TKey id)
+    {
+        id.Should().NotBeNull();
+        id.Should().NotBe(default(TKey));
+
+        try
+        {
+            var response = await $"{Url}/{id}/undo-delete".WithAuth().PostAsync();
+            Assert.Fail($"Request should have return a 403 forbidden result but instead was {response.StatusCode}");
+        }
+        catch (FlurlHttpException e)
+        {
+            e.StatusCode.Should().Be(403);
+        }
+    }
+
+    protected virtual void UndoDeleteAssertions(IFlurlResponse response, TReadResponse responseModel) { }
+
     private async Task<TReadResponse> PatchAsync(TKey id, JsonPatchDocument patchDocument)
     {
         id.Should().NotBeNull();
@@ -792,35 +834,36 @@ public abstract class BaseTest<
         await TestRunner.Authenticate();
         var createRequest = await GenerateCreateRequestAsync();
 
-        var result = await PostAsync(createRequest);
+        var created = await PostAsync(createRequest);
 
         var updateRequest = await GenerateUpdateRequestAsync(createRequest);
-        await PutAsync(result.Id, updateRequest);
+        await PutAsync(created.Id, updateRequest);
 
         var pathRequest = await GeneratePatchAsync();
-        var patched = await PatchAsync(result.Id, pathRequest);
+        var patched = await PatchAsync(created.Id, pathRequest);
 
         var search = searchSelector(patched);
 
-        await GetAsync(result.Id);
+        await GetAsync(created.Id);
         await PageAsync();
         await SearchAsync(search);
+
         if (doExport)
         {
             await ExportToCsvAsync();
             await ExportToSpreadsheetAsync();
         }
 
-        var changes = await GetChangeTrackingAsync(result.Id, 3);
+        var changes = await GetChangeTrackingAsync(created.Id, 3);
 
         var added = changes
             .Data
             .FirstOrDefault(x => x.Action.EqualsIgnoreCaseAndWhitespace("added"));
 
         added.Should().NotBeNull();
-        added?.EntityId.Should().BeEquivalentTo(result.Id);
+        added?.EntityId.Should().BeEquivalentTo(created.Id);
 
-        var ids = new List<TKey> { result.Id };
+        var ids = new List<TKey> { created.Id };
 
         var tasks = Enumerable
             .Range(0, 5)
@@ -847,11 +890,20 @@ public abstract class BaseTest<
         await DeleteCustomFieldsAsync(CreatedKey, addedCustomField.Id);
         await AssertCustomFieldNotOnEntity(CreatedKey, addedCustomField.Id);
 
-        await CheckResourceAuthorizationAsync(result, search, addedCustomField);
+        await CheckResourceAuthorizationAsync(created, search, addedCustomField);
         await TestRunner.Authenticate();
+
         foreach (var id in ids)
         {
             await DeleteAsync(id);
+        }
+
+        if (created is IActiveEntity)
+        {
+            foreach (var id in ids)
+            {
+                await UndoDeleteAsync(id);
+            }
         }
     }
 
@@ -883,6 +935,7 @@ public abstract class BaseTest<
         var patchRequest = await GeneratePatchAsync();
         await PatchUnauthorizedAsync(result.Id, patchRequest);
         await DeleteUnauthorizedAsync(result.Id);
+        await UndoDeleteUnauthorizedAsync(result.Id);
 
         await GetUnauthorizedAsync(result.Id);
         await PageUnauthorizedAsync(TestConstants.UnauthorizedTestUser.Email);

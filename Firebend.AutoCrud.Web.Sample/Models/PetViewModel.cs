@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web.Sample.Models
 {
-    public class PetBaseViewModel : IEntityViewModelBase
+    public class PetBaseViewModel : IEntityViewModelBase, IActiveEntity
     {
         [Required]
         [MaxLength(205)]
@@ -18,6 +18,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models
         public string PetType { get; set; }
 
         public DataAuth DataAuth { get; set; }
+        public bool IsDeleted { get; set; }
     }
 
     public class CreatePetViewModel : IEntityViewModelCreate<PetBaseViewModel>

@@ -20,7 +20,6 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Firebend.AutoCrud.Web.Abstractions
 {
     [ApiController]
-    [Route("{id}")]
     public abstract class
         AbstractEntityUpdateController<TKey, TEntity, TVersion, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel> :
             AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
@@ -62,7 +61,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             _copyOnPatchPropertyAccessor = copyOnPatchPropertyAccessor;
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         [SwaggerOperation("Updates {entityNamePlural}")]
         [SwaggerResponse(200, "The {entityName} with a given key was updated.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
@@ -174,7 +173,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
             return Ok(mapped);
         }
 
-        [HttpPatch]
+        [HttpPatch("{id}")]
         [SwaggerOperation("Updates {entityNamePlural} using a JSON Patch Document")]
         [SwaggerResponse(200, "The {entityName} with the given key was updated.")]
         [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]

@@ -31,9 +31,9 @@ public class EfEndToEndTest : BaseTest<
         await TestRunner.Authenticate();
         var nickName = Guid.NewGuid().ToString();
 
-        var personHeader = "FirstName,LastName,FullName,Id,CreatedDate,ModifiedDate";
-        var petHeader = "Id,EfPersonId,PetName,PetType,CreatedDate,ModifiedDate";
-        var customFieldHeader = "EntityId,Key,Value,Id,CreatedDate,ModifiedDate";
+        const string personHeader = "FirstName,LastName,FullName,Id,CreatedDate,ModifiedDate";
+        const string petHeader = "Id,EfPersonId,PetName,PetType,CreatedDate,ModifiedDate";
+        const string customFieldHeader = "EntityId,Key,Value,Id,CreatedDate,ModifiedDate";
 
         var exportResult = await GetExportAsync(nickName);
         exportResult.Should().NotContain(nickName);
