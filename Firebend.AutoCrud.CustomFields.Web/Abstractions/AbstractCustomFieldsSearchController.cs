@@ -52,7 +52,7 @@ namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
                 return GetInvalidModelStateResult();
             }
 
-            var result = await _searchService.SearchAsync(searchRequest,cancellationToken);
+            var result = await _searchService.SearchAsync(searchRequest, cancellationToken);
 
             return Ok(result);
         }

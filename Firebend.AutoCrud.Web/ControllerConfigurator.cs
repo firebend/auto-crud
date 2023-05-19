@@ -1105,7 +1105,7 @@ public partial class
         return this;
     }
 
-     /// <summary>
+    /// <summary>
     /// Registers a POST controller that will undo a soft delete for a given entity
     /// </summary>
     /// <param name="registrationType"></param>
