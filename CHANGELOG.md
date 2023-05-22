@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="7.6.1"></a>
+## [7.6.1](https://www.github.com/firebend/auto-crud/releases/tag/v7.6.1) (2023-5-22)
+
+### Bug Fixes
+
+* checks if the entity is active before applying the undo delete p… (#205) ([1e10c7f](https://www.github.com/firebend/auto-crud/commit/1e10c7f277a50e38a0eb95a9f3abd290555523b7))
+
+### Other
+
+* **deps:** bump coverlet.collector from 3.2.0 to 6.0.0 (#203) ([a10b015](https://www.github.com/firebend/auto-crud/commit/a10b015b0cece7b7c1c31f262db6f8d85d97a224))
+* **deps:** bump GitHubActionsTestLogger from 2.1.0 to 2.2.1 (#202) ([08d13a8](https://www.github.com/firebend/auto-crud/commit/08d13a8bf5967bc305aa058aadf9821052d83da3))
+* **deps:** bump Microsoft.NET.Test.Sdk from 17.5.0 to 17.6.0 (#204) ([3e4404f](https://www.github.com/firebend/auto-crud/commit/3e4404ff744bfdddbaba83fad992368d8f9b267a))
+
 <a name="7.6.0"></a>
 ## [7.6.0](https://www.github.com/firebend/auto-crud/releases/tag/v7.6.0) (2023-5-19)
 
