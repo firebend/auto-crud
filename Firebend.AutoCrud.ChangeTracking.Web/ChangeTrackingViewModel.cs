@@ -24,6 +24,11 @@ namespace Firebend.AutoCrud.ChangeTracking.Web
         where TVersion : class, IAutoCrudApiVersion
         where TViewModel : class
     {
+        //todo: make this into an interface
+        //map entity to read view model
+        //map modified to read view model
+        //json diff
+        //return changes i.e. list of operations
         public async Task<ChangeTrackingViewModel<TKey, TEntity, TVersion, TViewModel>> MapAsync(ChangeTrackingEntity<TKey, TEntity> changeTrackingEntity,
             IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> mapper,
             CancellationToken cancellationToken = default)
