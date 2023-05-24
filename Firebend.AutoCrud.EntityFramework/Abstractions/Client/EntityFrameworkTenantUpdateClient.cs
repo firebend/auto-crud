@@ -7,7 +7,6 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
-using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
@@ -20,16 +19,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
         protected EntityFrameworkTenantUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityDomainEventPublisher domainEventPublisher,
-            IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchGenerator jsonPatchDocumentGenerator,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(
-            contextProvider,
-            domainEventPublisher,
-            domainEventContextProvider,
-            jsonPatchDocumentGenerator,
-            exceptionHandler)
+            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
+            IDomainEventPublisherService<TKey, TEntity> publisherService,
+            IEntityReadService<TKey, TEntity> readService,
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(contextProvider, exceptionHandler, publisherService, readService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

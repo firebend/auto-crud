@@ -5,17 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
-using Firebend.JsonPatch;
-using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 {
@@ -23,24 +19,19 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        private readonly IDomainEventContextProvider _domainEventContextProvider;
-        private readonly IEntityDomainEventPublisher _domainEventPublisher;
-        private readonly IJsonPatchGenerator _jsonPatchDocumentGenerator;
         private readonly IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> _exceptionHandler;
+        private readonly IDomainEventPublisherService<TKey, TEntity> _publisherService;
+        private readonly IEntityReadService<TKey, TEntity> _readService;
 
         protected EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityDomainEventPublisher domainEventPublisher,
-            IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchGenerator jsonPatchDocumentGenerator,
-            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(contextProvider)
+            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
+            IDomainEventPublisherService<TKey, TEntity> publisherService,
+            IEntityReadService<TKey, TEntity> readService) : base(contextProvider)
         {
-            _domainEventPublisher = domainEventPublisher;
-            _domainEventContextProvider = domainEventContextProvider;
-            _jsonPatchDocumentGenerator = jsonPatchDocumentGenerator;
             _exceptionHandler = exceptionHandler;
+            _publisherService = publisherService;
+            _readService = readService;
         }
-
-        protected virtual bool IsDefaultEventPublisher() => _domainEventPublisher is null or DefaultEntityDomainEventPublisher;
 
         /// <summary>
         /// Occurs when an entity is being PUT into the database and did not previously exist. Occurs before the entity is added.
@@ -113,6 +104,13 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
         {
+            var previous = await _readService.GetByKeyAsync(key, cancellationToken);
+
+            if (previous is null)
+            {
+                return null;
+            }
+
             await using var context = await GetDbContextAsync(entityTransaction, cancellationToken).ConfigureAwait(false);
             var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
 
@@ -121,88 +119,54 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                 return null;
             }
 
-            var original = entity.Clone();
-
             if (entity is IModifiedEntity)
             {
                 jsonPatchDocument.Operations.Add(new Operation<TEntity>(
                     "replace",
                     $"/{nameof(IModifiedEntity.ModifiedDate)}",
                     null,
-                    DateTimeOffset.Now));
+                    DateTimeOffset.UtcNow));
             }
 
             jsonPatchDocument.ApplyTo(entity);
 
             entity = await OnBeforePatchAsync(context, entity, entityTransaction, cancellationToken);
 
-            try
-            {
-                await context
-                    .SaveChangesAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (DbUpdateException ex)
-            {
-                if (!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
-                {
-                    throw;
-                }
-            }
+            await SaveUpdateChangesAsync(entity, context, cancellationToken);
 
-            await PublishDomainEventAsync(original, jsonPatchDocument, entityTransaction, cancellationToken);
+            var fetched = await _publisherService.ReadAndPublishUpdateEventAsync(entity.Id, previous, entityTransaction, jsonPatchDocument, cancellationToken);
 
-            return entity;
+            return fetched;
         }
 
         protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
         {
-            await using var context = await GetDbContextAsync(transaction, cancellationToken)
-                .ConfigureAwait(false);
+            var previous = await _readService.GetByKeyAsync(entity.Id, cancellationToken);
+            var isUpdating = previous is not null;
+            TKey id;
 
-            var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken)
-                .ConfigureAwait(false);
-
-            var original = model?.Clone();
-
-            if (original != null)
+            await using (var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false))
             {
-                model = entity.CopyPropertiesTo(model, GetMapperIgnores());
-
-                if (model is IModifiedEntity modified)
-                {
-                    modified.ModifiedDate = DateTimeOffset.Now;
-                }
-
-                model = await OnBeforeUpdateAsync(context, model, transaction, cancellationToken);
-            }
-            else
-            {
-                if (entity is IModifiedEntity modified)
-                {
-                    var now = DateTimeOffset.Now;
-                    modified.CreatedDate = now;
-                    modified.ModifiedDate = now;
-                }
-
-                var set = GetDbSet(context);
-
-                entity = await OnBeforeReplaceAsync(context, entity, transaction, cancellationToken);
-
-                var entry = await set
-                    .AddAsync(entity, cancellationToken)
-                    .ConfigureAwait(false);
-
-                model = entry.Entity;
+                id = isUpdating
+                    ? await UpdateEntityAsync(entity, transaction, context, cancellationToken)
+                    : await AddEntityAsync(entity, transaction, context, cancellationToken);
             }
 
+            if (isUpdating is false)
+            {
+                return await _publisherService.ReadAndPublishAddedEventAsync(id, transaction, cancellationToken);
+            }
+
+            return await _publisherService.ReadAndPublishUpdateEventAsync(id, previous, transaction, cancellationToken);
+        }
+
+        private async Task SaveUpdateChangesAsync(TEntity entity, IDbContext context, CancellationToken cancellationToken)
+        {
             try
             {
-                await context
-                    .SaveChangesAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (DbUpdateException ex)
             {
@@ -211,23 +175,44 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
                     throw;
                 }
             }
+        }
 
-            if (original == null)
+        private async Task<TKey> AddEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
+        {
+            if (entity is IModifiedEntity modified)
             {
-                await PublishAddedDomainEventAsync(model, transaction, cancellationToken);
-                return model;
+                var now = DateTimeOffset.UtcNow;
+                modified.CreatedDate = now;
+                modified.ModifiedDate = now;
             }
 
-            JsonPatchDocument<TEntity> jsonPatchDocument = null;
+            var set = GetDbSet(context);
 
-            if (!IsDefaultEventPublisher())
+            entity = await OnBeforeReplaceAsync(context, entity, transaction, cancellationToken);
+
+            await set.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+
+            await SaveUpdateChangesAsync(entity, context, cancellationToken);
+
+            return entity.Id;
+        }
+
+        private async Task<TKey> UpdateEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
+        {
+            var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
+
+            model = entity.CopyPropertiesTo(model, GetMapperIgnores());
+
+            if (model is IModifiedEntity modified)
             {
-                jsonPatchDocument = _jsonPatchDocumentGenerator.Generate(original, model);
+                modified.ModifiedDate = DateTimeOffset.UtcNow;
             }
 
-            await PublishDomainEventAsync(original, jsonPatchDocument, transaction, cancellationToken);
+            model = await OnBeforeUpdateAsync(context, model, transaction, cancellationToken);
 
-            return model;
+            await SaveUpdateChangesAsync(model, context, cancellationToken);
+
+            return model.Id;
         }
 
         private static string[] GetMapperIgnores() => typeof(TEntity)
@@ -257,38 +242,5 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             CancellationToken cancellationToken = default)
             => UpdateInternalAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
 
-        protected virtual Task PublishDomainEventAsync(TEntity previous,
-            JsonPatchDocument<TEntity> patch,
-            IEntityTransaction transaction,
-            CancellationToken cancellationToken = default)
-        {
-            if (IsDefaultEventPublisher())
-            {
-                return Task.CompletedTask;
-            }
-
-            var domainEvent = new EntityUpdatedDomainEvent<TEntity>
-            {
-                Previous = previous,
-                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }),
-                EventContext = _domainEventContextProvider?.GetContext()
-            };
-
-            return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, transaction, cancellationToken);
-
-        }
-
-        protected virtual Task PublishAddedDomainEventAsync(TEntity entity,
-            IEntityTransaction entityTransaction,
-            CancellationToken cancellationToken = default)
-        {
-            if (IsDefaultEventPublisher())
-            {
-                return Task.CompletedTask;
-            }
-
-            var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = entity, EventContext = _domainEventContextProvider?.GetContext() };
-            return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, entityTransaction, cancellationToken);
-        }
     }
 }

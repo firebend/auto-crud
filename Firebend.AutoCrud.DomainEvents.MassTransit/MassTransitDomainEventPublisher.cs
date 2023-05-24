@@ -7,7 +7,9 @@ using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit
 {
-    public abstract class MassTransitDomainEventPublisher : IEntityDomainEventPublisher
+    public abstract class MassTransitDomainEventPublisher<TKey, TEntity> : IEntityDomainEventPublisher<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
         private readonly IBus _bus;
 
@@ -16,22 +18,19 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit
             _bus = bus;
         }
 
-        public Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent,
+        public Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
-            where TEntity : class
             => PublishAsync(domainEvent, transaction, cancellationToken);
 
-        public Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent,
+        public Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
-            where TEntity : class
             => PublishAsync(domainEvent, transaction, cancellationToken);
 
-        public Task PublishEntityUpdatedEventAsync<TEntity>(EntityUpdatedDomainEvent<TEntity> domainEvent,
+        public Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
             IEntityTransaction transaction,
             CancellationToken cancellationToken = default)
-            where TEntity : class
             => PublishAsync(domainEvent, transaction, cancellationToken);
 
         private Task PublishAsync<TDomainEvent>(TDomainEvent domainEvent, IEntityTransaction transaction, CancellationToken cancellationToken)

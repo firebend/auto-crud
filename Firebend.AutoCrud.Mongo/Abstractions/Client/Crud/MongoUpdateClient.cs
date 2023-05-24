@@ -7,19 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Firebend.JsonPatch;
 using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 {
@@ -27,23 +23,17 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        private readonly IDomainEventContextProvider _domainEventContextProvider;
-        private readonly IEntityDomainEventPublisher _domainEventPublisher;
-        private readonly IJsonPatchGenerator _jsonPatchDocumentGenerator;
+        private readonly IDomainEventPublisherService<TKey, TEntity> _domainEventPublisher;
         private readonly IMongoCollectionKeyGenerator<TKey, TEntity> _keyGenerator;
 
         protected MongoUpdateClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoUpdateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
-            IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchGenerator jsonPatchDocumentGenerator,
-            IEntityDomainEventPublisher domainEventPublisher,
-            IMongoRetryService retryService) : base(clientFactory, logger, entityConfiguration, retryService)
+            IMongoRetryService retryService,
+            IDomainEventPublisherService<TKey, TEntity> domainEventPublisher) : base(clientFactory, logger, entityConfiguration, retryService)
         {
             _keyGenerator = keyGenerator;
-            _domainEventContextProvider = domainEventContextProvider;
-            _jsonPatchDocumentGenerator = jsonPatchDocumentGenerator;
             _domainEventPublisher = domainEventPublisher;
         }
 
@@ -146,8 +136,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                         cancellationToken)
                 .ConfigureAwait(false);
 
-            var entity = await queryable.FirstOrDefaultAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var entity = await queryable.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
             if (entity == null)
             {
@@ -230,18 +219,15 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (original != null)
             {
-                patchDocument ??= _jsonPatchDocumentGenerator.Generate(original, modified);
-
-                await PublishUpdatedDomainEventAsync(original, patchDocument, transaction, cancellationToken).ConfigureAwait(false);
-
-                return result;
+                return patchDocument is null
+                    ? await _domainEventPublisher.ReadAndPublishUpdateEventAsync(original.Id, original, transaction, cancellationToken)
+                    : await _domainEventPublisher.ReadAndPublishUpdateEventAsync(original.Id, original, transaction, patchDocument, cancellationToken);
             }
 
             if (doUpsert)
             {
-                await PublishAddedDomainEventAsync(result, transaction, cancellationToken).ConfigureAwait(false);
 
-                return result;
+                return await _domainEventPublisher.ReadAndPublishAddedEventAsync(result.Id, transaction, cancellationToken);
             }
 
             return null;
@@ -294,6 +280,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 }
 
                 entityUpdate.Entity.Id = id;
+
                 if (entityUpdate.Entity is IModifiedEntity modified)
                 {
                     var now = DateTimeOffset.Now;
@@ -331,42 +318,6 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             }
 
             return ids;
-        }
-
-        protected virtual Task PublishUpdatedDomainEventAsync(TEntity previous,
-            JsonPatchDocument<TEntity> patch,
-            IEntityTransaction entityTransaction,
-            CancellationToken cancellationToken = default)
-        {
-            if (_domainEventPublisher is null or DefaultEntityDomainEventPublisher)
-            {
-                return Task.CompletedTask;
-            }
-
-            var domainEvent = new EntityUpdatedDomainEvent<TEntity>
-            {
-                Previous = previous,
-                OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
-                EventContext = _domainEventContextProvider?.GetContext()
-            };
-
-            return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
-
-        }
-
-        protected virtual Task PublishAddedDomainEventAsync(TEntity entity,
-            IEntityTransaction entityTransaction,
-            CancellationToken cancellationToken = default)
-        {
-            if (_domainEventPublisher is null or DefaultEntityDomainEventPublisher)
-            {
-                return Task.CompletedTask;
-            }
-
-            var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = entity, EventContext = _domainEventContextProvider?.GetContext() };
-
-            return _domainEventPublisher.PublishEntityAddEventAsync(domainEvent, entityTransaction, cancellationToken);
-
         }
     }
 }

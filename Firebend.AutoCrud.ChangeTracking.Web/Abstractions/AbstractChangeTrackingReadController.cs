@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
+using Firebend.AutoCrud.ChangeTracking.Web.Interfaces;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -24,18 +24,19 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
         where TViewModel : class
     {
         private readonly IChangeTrackingReadService<TKey, TEntity> _read;
-        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> _viewModelMapper;
         private readonly IMaxPageSize<TKey, TEntity, TVersion> _maxPageSize;
+        private readonly IChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TViewModel> _mapper;
 
-        protected AbstractChangeTrackingReadController(IChangeTrackingReadService<TKey, TEntity> read,
+        protected AbstractChangeTrackingReadController(
             IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
-            IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> viewModelMapper,
+            IOptions<ApiBehaviorOptions> apiOptions,
+            IChangeTrackingReadService<TKey, TEntity> read,
             IMaxPageSize<TKey, TEntity, TVersion> maxPageSize,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
+            IChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TViewModel> mapper) : base(keyParser, apiOptions)
         {
             _read = read;
-            _viewModelMapper = viewModelMapper;
             _maxPageSize = maxPageSize;
+            _mapper = mapper;
         }
 
         [HttpGet("{entityId}/changes")]
@@ -43,7 +44,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
         [SwaggerResponse(200, "Change tracking history for the given entity key")]
         [SwaggerResponse(403, "Forbidden")]
         [Produces("application/json")]
-        public virtual async Task<ActionResult<EntityPagedResponse<ChangeTrackingViewModel<TKey, TEntity, TVersion, TViewModel>>>> GetChangesAsync(
+        public virtual async Task<ActionResult<EntityPagedResponse<ChangeTrackingModel<TKey, TViewModel>>>> GetChangesAsync(
             [Required][FromRoute] string entityId,
             [Required][FromQuery] ModifiedEntitySearchRequest changeSearchRequest,
             CancellationToken cancellationToken)
@@ -58,12 +59,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
             }
 
             var validationResult = changeSearchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
+
             if (!validationResult.WasSuccessful)
             {
                 foreach (var error in validationResult.Errors)
                 {
                     ModelState.AddModelError(error.PropertyPath, error.Error);
                 }
+
                 return GetInvalidModelStateResult();
             }
 
@@ -75,21 +78,16 @@ namespace Firebend.AutoCrud.ChangeTracking.Web.Abstractions
 
             var changes = await _read.GetChangesByEntityId(changeRequest, cancellationToken);
 
-            if (!(changes?.Data?.Any() ?? false))
+            if (changes.Data.IsEmpty())
             {
                 return Ok(changes);
             }
 
-            var tasks = changes
-                .Data
-                .Select(x => new ChangeTrackingViewModel<TKey, TEntity, TVersion, TViewModel>().MapAsync(x, _viewModelMapper, cancellationToken))
-                .ToArray();
+            var mapped = await _mapper.MapAsync(changes.Data, cancellationToken);
 
-            await Task.WhenAll(tasks);
-
-            return Ok(new EntityPagedResponse<ChangeTrackingViewModel<TKey, TEntity, TVersion, TViewModel>>
+            return Ok(new EntityPagedResponse<ChangeTrackingModel<TKey, TViewModel>>
             {
-                Data = tasks.Select(x => x.Result),
+                Data = mapped,
                 CurrentPage = changes.CurrentPage,
                 TotalRecords = changes.TotalRecords,
                 CurrentPageSize = changes.CurrentPageSize

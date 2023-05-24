@@ -14,18 +14,17 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IDomainEventContextProvider _domainEventContextProvider;
-        private readonly IEntityDomainEventPublisher _eventPublisher;
+
+        private readonly IDomainEventPublisherService<TKey, TEntity> _publisherService;
 
         protected MongoCreateClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoCreateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IEntityDomainEventPublisher eventPublisher,
-            IDomainEventContextProvider domainEventContextProvider,
-            IMongoRetryService mongoRetryService) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+            IMongoRetryService mongoRetryService,
+            IDomainEventPublisherService<TKey, TEntity> publisherService)
+            : base(clientFactory, logger, entityConfiguration, mongoRetryService)
         {
-            _eventPublisher = eventPublisher;
-            _domainEventContextProvider = domainEventContextProvider;
+            _publisherService = publisherService;
         }
 
         protected virtual async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
@@ -52,9 +51,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     .ConfigureAwait(false);
             }
 
-            await PublishDomainEventAsync(entity, transaction, cancellationToken).ConfigureAwait(false);
-
-            return entity;
+            return await _publisherService.ReadAndPublishAddedEventAsync(entity.Id, transaction, cancellationToken);
         }
 
         public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -62,17 +59,5 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
         public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
             => CreateInternalAsync(entity, entityTransaction, cancellationToken);
-
-        protected virtual Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
-        {
-            if (_eventPublisher == null || _eventPublisher is DefaultEntityDomainEventPublisher)
-            {
-                return Task.CompletedTask;
-            }
-
-            var domainEvent = new EntityAddedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
-
-            return _eventPublisher.PublishEntityAddEventAsync(domainEvent, entityTransaction, cancellationToken);
-        }
     }
 }

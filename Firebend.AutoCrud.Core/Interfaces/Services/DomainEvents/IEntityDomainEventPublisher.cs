@@ -5,21 +5,20 @@ using Firebend.AutoCrud.Core.Models.DomainEvents;
 
 namespace Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents
 {
-    public interface IEntityDomainEventPublisher
+    public interface IEntityDomainEventPublisher<TKey, TEntity>
+        where TEntity : class, IEntity<TKey>
+        where TKey : struct
     {
-        Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent,
+        Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
             IEntityTransaction entityTransaction,
-            CancellationToken cancellationToken = default)
-            where TEntity : class;
+            CancellationToken cancellationToken = default);
 
-        Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent,
+        Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
             IEntityTransaction entityTransaction,
-            CancellationToken cancellationToken = default)
-            where TEntity : class;
+            CancellationToken cancellationToken = default);
 
-        Task PublishEntityUpdatedEventAsync<TEntity>(EntityUpdatedDomainEvent<TEntity> domainEvent,
+        Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
             IEntityTransaction entityTransaction,
-            CancellationToken cancellationToken = default)
-            where TEntity : class;
+            CancellationToken cancellationToken = default);
     }
 }

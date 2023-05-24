@@ -83,8 +83,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions
 
             queryable = AddIncludes(queryable);
 
-            var filters = await BuildFilters(cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            var filters = await BuildFilters(cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return filters == null ? queryable : queryable.Where(filters);
         }

@@ -30,7 +30,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             where TKey : struct
             where TEntity : class, IEntity<TKey>
         {
-            source.WithDomainEventPublisher<MassTransitDomainEventPublisher>();
+            source.WithDomainEventPublisher<MassTransitDomainEventPublisher<TKey, TEntity>>();
 
             return source;
         }

@@ -18,10 +18,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
         protected EntityFrameworkTenantDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityDomainEventPublisher domainEventPublisher,
-            IDomainEventContextProvider domainEventContextProvider,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider) :
-            base(contextProvider, domainEventPublisher, domainEventContextProvider)
+            IDomainEventPublisherService<TKey, TEntity> publisherService,
+            IEntityReadService<TKey, TEntity> readService,
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(contextProvider, publisherService, readService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }
