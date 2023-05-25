@@ -1,12 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
-using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
@@ -19,9 +19,10 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
     {
         private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
 
-        protected AbstractEntityFrameworkChangeTrackingService(IDbContextProvider<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> provider,
-            IEntityFrameworkDbUpdateExceptionHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> exceptionHandler,
-            IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider) : base(provider, exceptionHandler, null)
+        protected AbstractEntityFrameworkChangeTrackingService(
+            IChangeTrackingDbContextProvider<TEntityKey, TEntity> provider,
+            IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider) :
+            base(provider, null)
         {
             _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
         }

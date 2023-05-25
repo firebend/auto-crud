@@ -21,7 +21,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             ILogger<MongoDeleteClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoRetryService mongoRetryService,
-            IDomainEventPublisherService<TKey, TEntity> publisherService) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
         {
             _publisherService = publisherService;
         }
@@ -50,7 +50,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     .ConfigureAwait(false);
             }
 
-            if (result != null)
+            if (result is not null && _publisherService is not null)
             {
                 await _publisherService.PublishDeleteEventAsync(result, transaction, cancellationToken);
             }

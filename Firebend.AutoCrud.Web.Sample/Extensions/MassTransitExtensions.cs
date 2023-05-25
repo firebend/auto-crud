@@ -1,17 +1,14 @@
 using System;
-using System.Text.RegularExpressions;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Web.Sample.Extensions
 {
     public static class MassTransitExtensions
     {
-        private static readonly Regex ConStringParser = new(
-            "^rabbitmq://([^:]+):(.+)@([^@]+)$",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static IServiceCollection AddSampleMassTransit(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
@@ -29,18 +26,19 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                 bus.UsingRabbitMq((context, configurator) =>
                 {
                     configurator.UseNewtonsoftJsonSerializer();
-
-                    var match = ConStringParser.Match(connString);
-
-                    var domain = match.Groups[3].Value;
-                    var uri = $"rabbitmq://{domain}";
-
-                    configurator.Host(new Uri(uri), h =>
+                    configurator.ConfigureNewtonsoftJsonDeserializer(x =>
                     {
-                        h.PublisherConfirmation = true;
-                        h.Username(match.Groups[1].Value);
-                        h.Password(match.Groups[2].Value);
+                        x.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                        return x;
                     });
+                    configurator.ConfigureNewtonsoftJsonSerializer(x =>
+                    {
+
+                        x.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                        return x;
+                    });
+
+                    configurator.Host(connString);
 
                     configurator.Lazy = true;
                     configurator.AutoDelete = true;

@@ -17,7 +17,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         protected EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider,
             IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
-            IDomainEventPublisherService<TKey, TEntity> publisherService) : base(provider)
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(provider)
         {
             _exceptionHandler = exceptionHandler;
             _publisherService = publisherService;

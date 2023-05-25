@@ -31,7 +31,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
             IMongoRetryService retryService,
-            IDomainEventPublisherService<TKey, TEntity> domainEventPublisher) : base(clientFactory, logger, entityConfiguration, retryService)
+            IDomainEventPublisherService<TKey, TEntity> domainEventPublisher = null) : base(clientFactory, logger, entityConfiguration, retryService)
         {
             _keyGenerator = keyGenerator;
             _domainEventPublisher = domainEventPublisher;
@@ -217,20 +217,19 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                         cancellationToken)).ConfigureAwait(false);
             }
 
-            if (original != null)
+            if (original is not null && _domainEventPublisher is not null)
             {
                 return patchDocument is null
                     ? await _domainEventPublisher.ReadAndPublishUpdateEventAsync(original.Id, original, transaction, cancellationToken)
                     : await _domainEventPublisher.ReadAndPublishUpdateEventAsync(original.Id, original, transaction, patchDocument, cancellationToken);
             }
 
-            if (doUpsert)
+            if (doUpsert && _domainEventPublisher is not null)
             {
-
                 return await _domainEventPublisher.ReadAndPublishAddedEventAsync(result.Id, transaction, cancellationToken);
             }
 
-            return null;
+            return result;
         }
 
         private static string[] GetMapperIgnores() => typeof(TEntity)

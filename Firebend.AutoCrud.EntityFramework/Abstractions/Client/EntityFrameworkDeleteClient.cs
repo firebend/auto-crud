@@ -21,8 +21,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly IEntityReadService<TKey, TEntity> _readService;
 
         protected EntityFrameworkDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IDomainEventPublisherService<TKey, TEntity> publisherService,
-            IEntityReadService<TKey, TEntity> readService) : base(contextProvider)
+            IEntityReadService<TKey, TEntity> readService,
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(contextProvider)
         {
             _publisherService = publisherService;
             _readService = readService;
@@ -64,7 +64,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            await _publisherService.PublishDeleteEventAsync(previous, transaction, cancellationToken);
+            if (_publisherService is not null)
+            {
+                await _publisherService.PublishDeleteEventAsync(previous, transaction, cancellationToken);
+            }
 
             return previous;
         }

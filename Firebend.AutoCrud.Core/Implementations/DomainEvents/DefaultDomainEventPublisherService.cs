@@ -100,7 +100,8 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
                 Formatting.None,
                 new JsonSerializerSettings
                 {
-                    TypeNameHandling = TypeNameHandling.All
+                    TypeNameHandling = TypeNameHandling.All,
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 });
 
     public Task<TEntity> ReadAndPublishUpdateEventAsync(TKey key,

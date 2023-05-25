@@ -1,10 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -21,7 +19,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             ILogger<MongoCreateClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoRetryService mongoRetryService,
-            IDomainEventPublisherService<TKey, TEntity> publisherService)
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null)
             : base(clientFactory, logger, entityConfiguration, mongoRetryService)
         {
             _publisherService = publisherService;
@@ -51,7 +49,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     .ConfigureAwait(false);
             }
 
-            return await _publisherService.ReadAndPublishAddedEventAsync(entity.Id, transaction, cancellationToken);
+
+            if (_publisherService is not null)
+            {
+                return await _publisherService.ReadAndPublishAddedEventAsync(entity.Id, transaction, cancellationToken);
+            }
+
+            return entity;
         }
 
         public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)

@@ -20,9 +20,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         protected EntityFrameworkTenantUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
-            IDomainEventPublisherService<TKey, TEntity> publisherService,
             IEntityReadService<TKey, TEntity> readService,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(contextProvider, exceptionHandler, publisherService, readService)
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(contextProvider, exceptionHandler, readService, publisherService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

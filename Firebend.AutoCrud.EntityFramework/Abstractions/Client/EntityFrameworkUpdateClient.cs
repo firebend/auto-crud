@@ -25,8 +25,8 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
         protected EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
             IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
-            IDomainEventPublisherService<TKey, TEntity> publisherService,
-            IEntityReadService<TKey, TEntity> readService) : base(contextProvider)
+            IEntityReadService<TKey, TEntity> readService,
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(contextProvider)
         {
             _exceptionHandler = exceptionHandler;
             _publisherService = publisherService;
@@ -145,21 +145,27 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             var previous = await _readService.GetByKeyAsync(entity.Id, cancellationToken);
             var isUpdating = previous is not null;
-            TKey id;
+            TEntity savedEntity;
 
             await using (var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false))
             {
-                id = isUpdating
+                savedEntity = isUpdating
                     ? await UpdateEntityAsync(entity, transaction, context, cancellationToken)
                     : await AddEntityAsync(entity, transaction, context, cancellationToken);
             }
 
-            if (isUpdating is false)
+
+            if (_publisherService is null)
             {
-                return await _publisherService.ReadAndPublishAddedEventAsync(id, transaction, cancellationToken);
+                return savedEntity;
             }
 
-            return await _publisherService.ReadAndPublishUpdateEventAsync(id, previous, transaction, cancellationToken);
+            if (isUpdating is false)
+            {
+                return await _publisherService.ReadAndPublishAddedEventAsync(savedEntity.Id, transaction, cancellationToken);
+            }
+
+            return await _publisherService.ReadAndPublishUpdateEventAsync(savedEntity.Id, previous, transaction, cancellationToken);
         }
 
         private async Task SaveUpdateChangesAsync(TEntity entity, IDbContext context, CancellationToken cancellationToken)
@@ -177,7 +183,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
             }
         }
 
-        private async Task<TKey> AddEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
+        private async Task<TEntity> AddEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
         {
             if (entity is IModifiedEntity modified)
             {
@@ -194,10 +200,10 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             await SaveUpdateChangesAsync(entity, context, cancellationToken);
 
-            return entity.Id;
+            return entity;
         }
 
-        private async Task<TKey> UpdateEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
+        private async Task<TEntity> UpdateEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
         {
             var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
 
@@ -212,7 +218,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             await SaveUpdateChangesAsync(model, context, cancellationToken);
 
-            return model.Id;
+            return model;
         }
 
         private static string[] GetMapperIgnores() => typeof(TEntity)

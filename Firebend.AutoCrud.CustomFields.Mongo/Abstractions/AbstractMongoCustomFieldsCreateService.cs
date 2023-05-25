@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Ids;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
-using Firebend.AutoCrud.Core.Implementations.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;

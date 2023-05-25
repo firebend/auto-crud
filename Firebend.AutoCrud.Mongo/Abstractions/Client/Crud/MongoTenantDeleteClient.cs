@@ -21,9 +21,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         protected MongoTenantDeleteClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoTenantDeleteClient<TKey, TEntity, TTenantKey>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IDomainEventPublisherService<TKey, TEntity> publisherService,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IMongoRetryService mongoRetryService) : base(clientFactory, logger, entityConfiguration, mongoRetryService, publisherService)
+            IMongoRetryService mongoRetryService,
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(clientFactory, logger, entityConfiguration, mongoRetryService, publisherService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }
