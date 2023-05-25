@@ -30,9 +30,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         {
             TEntity savedEntity;
 
-            await using(var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false))
+            await using (var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false))
             {
-                savedEntity = await AddEntityToDbContextAsync( entity, transaction, context, cancellationToken);
+                savedEntity = await AddEntityToDbContextAsync(entity, transaction, context, cancellationToken);
 
                 await SaveAddChangesAsync(entity, context, cancellationToken);
             }

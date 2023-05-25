@@ -13,13 +13,13 @@ public interface IDomainEventPublisherService<in TKey, TEntity>
         IEntityTransaction transaction,
         CancellationToken cancellationToken);
 
-    Task<TEntity>ReadAndPublishUpdateEventAsync(TKey key,
+    Task<TEntity> ReadAndPublishUpdateEventAsync(TKey key,
         TEntity previous,
         IEntityTransaction transaction,
         JsonPatchDocument<TEntity> patch,
         CancellationToken cancellationToken);
 
-    Task<TEntity>ReadAndPublishUpdateEventAsync(TKey key,
+    Task<TEntity> ReadAndPublishUpdateEventAsync(TKey key,
         TEntity previous,
         IEntityTransaction transaction,
         CancellationToken cancellationToken);
