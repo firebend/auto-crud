@@ -29,7 +29,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
     public DefaultDomainEventPublisherService(
         IEntityReadService<TKey, TEntity> readService,
         IJsonPatchGenerator patchGenerator,
-        ILogger<DefaultDomainEventPublisherService<TKey,TEntity>> logger,
+        ILogger<DefaultDomainEventPublisherService<TKey, TEntity>> logger,
         IEntityDomainEventPublisher<TKey, TEntity> publisher = null,
         IDomainEventContextProvider contextProvider = null)
     {
