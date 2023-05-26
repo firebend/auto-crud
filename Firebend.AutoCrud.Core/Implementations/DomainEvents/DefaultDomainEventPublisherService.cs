@@ -9,6 +9,8 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents;
 
@@ -20,12 +22,14 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
     private readonly IDomainEventContextProvider _contextProvider;
     private readonly IEntityReadService<TKey, TEntity> _readService;
     private readonly IJsonPatchGenerator _patchGenerator;
+    private readonly ILogger<DefaultDomainEventPublisherService<TKey, TEntity>> _logger;
     private readonly bool _hasPublisher;
     private readonly bool _hasDomainEventContextProvider;
 
     public DefaultDomainEventPublisherService(
         IEntityReadService<TKey, TEntity> readService,
         IJsonPatchGenerator patchGenerator,
+        ILogger<DefaultDomainEventPublisherService<TKey,TEntity>> logger,
         IEntityDomainEventPublisher<TKey, TEntity> publisher = null,
         IDomainEventContextProvider contextProvider = null)
     {
@@ -33,6 +37,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
         _contextProvider = contextProvider;
         _readService = readService;
         _patchGenerator = patchGenerator;
+        _logger = logger;
         _hasPublisher = publisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
         _hasDomainEventContextProvider = contextProvider is not null and not DefaultDomainEventContextProvider;
     }
@@ -109,8 +114,22 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
             previous,
             transaction,
             null,
-            (prev, curr) => _patchGenerator.Generate(prev, curr),
+            PatchGenerator,
             cancellationToken);
+
+    private JsonPatchDocument<TEntity> PatchGenerator(TEntity prev, TEntity curr)
+    {
+        var patch = _patchGenerator.Generate(prev, curr);
+
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug("Generated Patch {EntityType} {Json}",
+                typeof(TEntity).ToString(),
+                Newtonsoft.Json.JsonConvert.SerializeObject(patch.Operations, Formatting.Indented));
+        }
+
+        return patch;
+    }
 
     public async Task PublishDeleteEventAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
     {

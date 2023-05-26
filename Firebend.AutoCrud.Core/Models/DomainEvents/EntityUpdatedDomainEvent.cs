@@ -35,9 +35,9 @@ namespace Firebend.AutoCrud.Core.Models.DomainEvents
         [JsonIgnore]
         public T Modified => _modified ??= GetModified(Previous, Patch);
 
-        private static T GetModified(T previous,  JsonPatchDocument<T> patchDocument)
+        private static T GetModified(T previous, JsonPatchDocument<T> patchDocument)
         {
-            if(patchDocument is null || previous is null)
+            if (patchDocument is null || previous is null)
             {
                 return null;
             }
