@@ -504,6 +504,13 @@ public abstract class BaseTest<
             httpResponseModel.Data.Select(x => x.UserEmail).Should().NotContainNulls();
             httpResponseModel.Data.Select(x => x.Source).Should().NotContainNulls();
 
+            foreach (var data in httpResponseModel
+                         .Data
+                         .Where(x => x.Action.EqualsIgnoreCaseAndWhitespace("Update")))
+            {
+                data.Changes.Should().NotBeNullOrEmpty();
+            }
+
             return (httpResponse, httpResponseModel);
         }
 

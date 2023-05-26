@@ -6,6 +6,7 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Web.Sample.DbContexts;
 
@@ -42,9 +43,16 @@ public class PersonDbContext : DbContext, IDbContext
         }
     }
 
-    private static void ConfigureDataAuthEntity(EntityTypeBuilder<IEntityDataAuth> builder) =>
+    private static void ConfigureDataAuthEntity(EntityTypeBuilder<IEntityDataAuth> builder)
+    {
+        var settings = JsonPatch.JsonSerializationSettings.DefaultJsonSerializationSettings.Configure(new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Objects
+        });
+
         builder.Property(e => e.DataAuth)
-            .HasConversion(new EntityFrameworkJsonValueConverter<DataAuth>())
+            .HasConversion(new EntityFrameworkJsonValueConverter<DataAuth>(settings))
             .Metadata
-            .SetValueComparer(new EntityFrameworkJsonComparer<DataAuth>());
+            .SetValueComparer(new EntityFrameworkJsonComparer<DataAuth>(settings));
+    }
 }

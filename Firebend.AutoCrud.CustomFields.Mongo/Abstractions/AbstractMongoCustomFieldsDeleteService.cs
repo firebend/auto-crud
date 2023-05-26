@@ -14,7 +14,6 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions;
 
@@ -110,7 +109,7 @@ public class AbstractMongoCustomFieldsDeleteService<TKey, TEntity> :
         var domainEvent = new EntityUpdatedDomainEvent<TEntity>
         {
             Previous = previous,
-            OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
+            Operations = patch?.Operations,
             EventContext = _domainEventContextProvider?.GetContext()
         };
 

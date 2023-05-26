@@ -73,7 +73,7 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
 
             LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
 
-            if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityAddedDomainEvent<EfPerson>> consumeContext))
+            if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityUpdatedDomainEvent<EfPerson>> consumeContext))
             {
                 LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
             }

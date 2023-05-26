@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions;
 
@@ -237,7 +236,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
         var domainEvent = new EntityUpdatedDomainEvent<TEntity>
         {
             Previous = previous,
-            OperationsJson = JsonConvert.SerializeObject(patch?.Operations, Formatting.None, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
+            Operations = patch?.Operations,
             EventContext = _domainEventContextProvider?.GetContext()
         };
 

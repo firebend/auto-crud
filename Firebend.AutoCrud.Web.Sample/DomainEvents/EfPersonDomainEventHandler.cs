@@ -26,9 +26,9 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
         [LoggerMessage(EventId = 4, Message = "No Scope Context", Level = LogLevel.Debug)]
         public static partial void LogNoScopeContext(ILogger logger);
 
-        [LoggerMessage(EventId = 5, Message = "Person Updated! Original: {originalJson}. Modified: {modifiedJson}. Context: {contextJson}",
+        [LoggerMessage(EventId = 5, Message = "Person Updated! Operations: {operationsJson} Original: {originalJson}. Modified: {modifiedJson}. Context: {contextJson}",
             Level = LogLevel.Debug)]
-        public static partial void LogPersonUpdated(ILogger logger, string originalJson, string modifiedJson, string contextJson);
+        public static partial void LogPersonUpdated(ILogger logger, string operationsJson, string originalJson, string modifiedJson, string contextJson);
 
         private readonly ILogger _logger;
         private readonly ScopedConsumeContextProvider _scoped;
@@ -68,12 +68,13 @@ namespace Firebend.AutoCrud.Web.Sample.DomainEvents
             var originalJson = JsonConvert.SerializeObject(original, Formatting.Indented);
             var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
             var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
+            var operationsJson = JsonConvert.SerializeObject(domainEvent.Operations, Formatting.Indented);
 
-            LogPersonUpdated(_logger, originalJson, modifiedJson, contextJson);
+            LogPersonUpdated(_logger, operationsJson, originalJson, modifiedJson, contextJson);
 
             LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
 
-            if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityAddedDomainEvent<EfPerson>> consumeContext))
+            if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityUpdatedDomainEvent<EfPerson>> consumeContext))
             {
                 LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
             }

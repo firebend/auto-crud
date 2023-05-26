@@ -1,8 +1,11 @@
 using System;
+using System.Threading.Tasks;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using MassTransit;
+using MassTransit.Audit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Web.Sample.Extensions
@@ -29,12 +32,14 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     configurator.ConfigureNewtonsoftJsonDeserializer(x =>
                     {
                         x.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                        x.TypeNameHandling = TypeNameHandling.Objects;
                         return x;
                     });
                     configurator.ConfigureNewtonsoftJsonSerializer(x =>
                     {
 
                         x.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                        x.TypeNameHandling = TypeNameHandling.Objects;
                         return x;
                     });
 
@@ -45,8 +50,40 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     configurator.PurgeOnStartup = true;
 
                     context.RegisterFirebendAutoCrudDomainEventHandlerEndPoints(configurator, AutoCrudMassTransitQueueMode.OneQueue);
+
+                    var loggerFactory = context.GetRequiredService<ILoggerFactory>();
+                    var logger = new DebugMessageLogger(loggerFactory.CreateLogger<DebugMessageLogger>());
+                    configurator.ConnectConsumeAuditObserver(logger);
+                    configurator.ConnectSendAuditObservers(logger);
                 });
             });
+        }
+    }
+
+    public class DebugMessageLogger : IMessageAuditStore
+    {
+        private readonly ILogger<DebugMessageLogger> _logger;
+
+        public DebugMessageLogger(ILogger<DebugMessageLogger> logger)
+        {
+            _logger = logger;
+        }
+
+        public Task StoreMessage<T>(T message, MessageAuditMetadata metadata) where T : class
+        {
+            if (!_logger.IsEnabled(LogLevel.Debug))
+            {
+                return Task.CompletedTask;
+            }
+
+            _logger.LogDebug(
+                "{Action} Message Bus {@Message} with {@Context} {@Payload}",
+                metadata.ContextType, message, metadata, JsonConvert.SerializeObject(message, Formatting.Indented, new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                }));
+
+            return Task.CompletedTask;
         }
     }
 }

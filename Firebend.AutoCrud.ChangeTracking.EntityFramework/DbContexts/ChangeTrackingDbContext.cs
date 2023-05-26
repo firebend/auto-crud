@@ -10,6 +10,7 @@ using Firebend.AutoCrud.EntityFramework.Converters;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
 {
@@ -110,9 +111,17 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
         }
 
         private static void MapJson<TProperty>(EntityTypeBuilder<ChangeTrackingEntity<TKey, TEntity>> changes,
-            Expression<Func<ChangeTrackingEntity<TKey, TEntity>, TProperty>> func) => changes.Property(func)
-            .HasConversion(new EntityFrameworkJsonValueConverter<TProperty>())
-            .Metadata
-            .SetValueComparer(new EntityFrameworkJsonComparer<TProperty>());
+            Expression<Func<ChangeTrackingEntity<TKey, TEntity>, TProperty>> func)
+        {
+            var settings = JsonPatch.JsonSerializationSettings.DefaultJsonSerializationSettings.Configure(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            });
+
+            changes.Property(func)
+                .HasConversion(new EntityFrameworkJsonValueConverter<TProperty>(settings))
+                .Metadata
+                .SetValueComparer(new EntityFrameworkJsonComparer<TProperty>(settings));
+        }
     }
 }

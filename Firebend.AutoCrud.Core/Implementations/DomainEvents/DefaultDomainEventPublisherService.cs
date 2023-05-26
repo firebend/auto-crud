@@ -9,7 +9,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
-using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents;
 
@@ -82,7 +81,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
         var message = new EntityUpdatedDomainEvent<TEntity>
         {
             Previous = previous,
-            OperationsJson = GetJsonPatchOperationsJson(patch),
+            Operations = patch?.Operations,
             Time = entity is IModifiedEntity modifiedEntity ? modifiedEntity.ModifiedDate : DateTimeOffset.UtcNow,
             EventContext = _hasDomainEventContextProvider ? _contextProvider.GetContext() : null,
             MessageId = CombGuid.New(),
@@ -92,17 +91,6 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
 
         return entity;
     }
-
-    private static string GetJsonPatchOperationsJson(JsonPatchDocument<TEntity> patch)
-        => patch is null
-            ? null
-            : JsonConvert.SerializeObject(patch.Operations,
-                Formatting.None,
-                new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.All,
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                });
 
     public Task<TEntity> ReadAndPublishUpdateEventAsync(TKey key,
         TEntity previous,

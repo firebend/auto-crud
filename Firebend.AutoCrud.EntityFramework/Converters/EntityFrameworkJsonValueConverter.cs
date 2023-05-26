@@ -5,9 +5,9 @@ namespace Firebend.AutoCrud.EntityFramework.Converters
 {
     public class EntityFrameworkJsonValueConverter<T> : ValueConverter<T, string>
     {
-        public EntityFrameworkJsonValueConverter(ConverterMappingHints mappingHints = null) :
-            base(arg => JsonConvert.SerializeObject(arg),
-                arg => JsonConvert.DeserializeObject<T>(arg), mappingHints)
+        public EntityFrameworkJsonValueConverter(JsonSerializerSettings serializerSettings = null, ConverterMappingHints mappingHints = null) :
+            base(arg => JsonConvert.SerializeObject(arg, serializerSettings),
+                arg => JsonConvert.DeserializeObject<T>(arg, serializerSettings), mappingHints)
         {
         }
     }
