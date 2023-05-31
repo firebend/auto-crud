@@ -33,19 +33,19 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 
             if (typeof(IEntityAddedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
             {
-                consumerType = typeof(MassTransitEntityAddedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                consumerType = typeof(MassTransitEntityAddedDomainEventHandler<,>).MakeGenericType(listenerImplementationType!, entity);
                 description = "EntityAdded";
                 domainEventType = typeof(EntityAddedDomainEvent<>).MakeGenericType(entity);
             }
             else if (typeof(IEntityUpdatedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
             {
-                consumerType = typeof(MassTransitEntityUpdatedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                consumerType = typeof(MassTransitEntityUpdatedDomainEventHandler<,>).MakeGenericType(listenerImplementationType!, entity);
                 description = "EntityUpdated";
                 domainEventType = typeof(EntityUpdatedDomainEvent<>).MakeGenericType(entity);
             }
             else if (typeof(IEntityDeletedDomainEventSubscriber<>).MakeGenericType(entity) == serviceType)
             {
-                consumerType = typeof(MassTransitEntityDeletedDomainEventHandler<,>).MakeGenericType(listenerImplementationType, entity);
+                consumerType = typeof(MassTransitEntityDeletedDomainEventHandler<,>).MakeGenericType(listenerImplementationType!, entity);
                 description = "EntityDeleted";
                 domainEventType = typeof(EntityDeletedDomainEvent<>).MakeGenericType(entity);
             }

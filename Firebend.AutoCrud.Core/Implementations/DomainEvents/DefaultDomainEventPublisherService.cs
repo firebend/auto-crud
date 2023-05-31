@@ -9,8 +9,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents;
 

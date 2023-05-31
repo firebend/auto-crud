@@ -32,14 +32,14 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                     configurator.ConfigureNewtonsoftJsonDeserializer(x =>
                     {
                         x.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                        x.TypeNameHandling = TypeNameHandling.Objects;
+                        x.TypeNameHandling = TypeNameHandling.All;
                         return x;
                     });
                     configurator.ConfigureNewtonsoftJsonSerializer(x =>
                     {
 
                         x.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                        x.TypeNameHandling = TypeNameHandling.Objects;
+                        x.TypeNameHandling = TypeNameHandling.All;
                         return x;
                     });
 

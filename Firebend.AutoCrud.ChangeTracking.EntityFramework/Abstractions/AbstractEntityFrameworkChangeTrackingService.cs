@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
@@ -7,7 +8,7 @@ using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
-using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 {
@@ -49,14 +50,14 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                     "Update",
                     domainEvent.Previous,
                     domainEvent.Previous.Id,
-                    domainEvent.Patch),
+                    domainEvent.Operations),
                 cancellationToken);
 
         private ChangeTrackingEntity<TEntityKey, TEntity> GetChangeTrackingEntityBase(DomainEventBase domainEvent,
             string action,
             TEntity entity,
             TEntityKey id,
-            JsonPatchDocument<TEntity> patchDocument = null)
+            List<Operation<TEntity>> operations = null)
         {
             var changeEntity = new ChangeTrackingEntity<TEntityKey, TEntity>
             {
@@ -64,7 +65,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
                 Source = domainEvent.EventContext?.Source,
                 UserEmail = domainEvent.EventContext?.UserEmail,
                 Action = action,
-                Changes = patchDocument?.Operations,
+                Changes = operations,
                 Entity = entity,
                 EntityId = id,
                 DomainEventCustomContext = _changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false
