@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Attributes;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
-using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Implementations
 {

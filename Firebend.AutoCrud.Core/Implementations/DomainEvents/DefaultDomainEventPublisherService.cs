@@ -7,7 +7,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
-using Firebend.JsonPatch;
+using Firebend.JsonPatch.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents;

@@ -9,8 +9,8 @@ using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Web.Interfaces;
-using Firebend.JsonPatch;
 using Firebend.JsonPatch.Extensions;
+using Firebend.JsonPatch.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Newtonsoft.Json.Serialization;
 

@@ -9,7 +9,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
-using Firebend.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
@@ -37,7 +36,6 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
             WithRegistration<IEntityDomainEventPublisher<TKey, TEntity>, DefaultEntityDomainEventPublisher<TKey, TEntity>>(false);
             WithRegistration<IDomainEventPublisherService<TKey, TEntity>, DefaultDomainEventPublisherService<TKey, TEntity>>(false);
             WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
-            WithRegistration<IJsonPatchGenerator, JsonPatchGenerator>(false);
             WithRegistration<IEntityQueryOrderByHandler<TKey, TEntity>, DefaultEntityQueryOrderByHandler<TKey, TEntity>>(false);
             WithRegistration<IEntityTransactionOutbox, InMemoryEntityTransactionOutbox>(false);
             WithRegistration<IDistributedLockService, DistributedLockService>(false);
