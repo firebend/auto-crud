@@ -115,7 +115,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts
         {
             var settings = JsonPatch.JsonSerializationSettings.DefaultJsonSerializationSettings.Configure(new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.Objects
+                TypeNameHandling = TypeNameHandling.All
             });
 
             changes.Property(func)
