@@ -53,7 +53,7 @@ public static class Startup
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateIssuerSigningKey = false,
-                    SignatureValidator = delegate(string token,
+                    SignatureValidator = delegate (string token,
                         TokenValidationParameters _)
                     {
                         var jwt = new JwtSecurityToken(token);
@@ -85,10 +85,7 @@ public static class Startup
             .AddFirebendAutoCrudApiBehaviors()
             .AddScoped<IDistributedLockService, CustomLockService>()
             .AddControllers()
-            .AddNewtonsoftJson(options =>
-            {
-                SampleJsonSerializerSettings.Configure(options.SerializerSettings);
-            })
+            .AddNewtonsoftJson(options => SampleJsonSerializerSettings.Configure(options.SerializerSettings))
             .AddFirebendAutoCrudWeb(services)
             .Services
             .AddDefaultResourceAuthorizationRequirements()
