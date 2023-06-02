@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="8.0.0"></a>
+## [8.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v8.0.0) (2023-6-2)
+
+### Bug Fixes
+
+* centralizes domain publishing logic (#206) ([d6c5e00](https://www.github.com/firebend/auto-crud/commit/d6c5e000ad4c15ecf6576ef47fa1669eef443bdc))
+
+### Breaking Changes
+
+* centralizes domain publishing logic (#206) ([d6c5e00](https://www.github.com/firebend/auto-crud/commit/d6c5e000ad4c15ecf6576ef47fa1669eef443bdc))
+
+### Other
+
+* **deps:** bump MassTransit.Newtonsoft from 8.0.15 to 8.0.16 (#209) ([99adc7c](https://www.github.com/firebend/auto-crud/commit/99adc7c3b78ce168b4b204e891623b599e31cae4))
+* **deps:** bump Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer from 5.0.0 to 5.1.0 (#207) ([166966f](https://www.github.com/firebend/auto-crud/commit/166966fa82d914fdee0bcb97fbfe8ce6f3f59324))
+* **deps:** bump MongoDB.Driver from 2.19.1 to 2.19.2 (#211) ([e9a55fe](https://www.github.com/firebend/auto-crud/commit/e9a55fe0ddee8b334d2e2553d58ffbf4e221f945))
+* **deps:** bump MSTest.TestAdapter from 3.0.2 to 3.0.3 (#210) ([faa5a3e](https://www.github.com/firebend/auto-crud/commit/faa5a3ea4f69e67acaae75db103de53324cfb96b))
+
 <a name="7.6.1"></a>
 ## [7.6.1](https://www.github.com/firebend/auto-crud/releases/tag/v7.6.1) (2023-5-22)
 
