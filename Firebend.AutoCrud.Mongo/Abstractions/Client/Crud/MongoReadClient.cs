@@ -153,7 +153,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
 
             if (searchRequest is IOrderableSearchRequest orderableSearchRequest)
             {
-                queryable = _orderByHandler.OrderBy(queryable, orderableSearchRequest?.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
+                queryable = _orderByHandler.OrderBy(queryable, orderableSearchRequest.OrderBy?.ToOrderByGroups<TEntity>()?.ToList());
             }
 
             if (searchRequest?.PageNumber != null

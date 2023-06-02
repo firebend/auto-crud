@@ -2,10 +2,8 @@ using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -16,18 +14,16 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        private readonly IDomainEventContextProvider _domainEventContextProvider;
-        private readonly IEntityDomainEventPublisher _entityDomainEventPublisher;
+
+        private readonly IDomainEventPublisherService<TKey, TEntity> _publisherService;
 
         protected MongoDeleteClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoDeleteClient<TKey, TEntity>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IEntityDomainEventPublisher entityDomainEventPublisher,
-            IDomainEventContextProvider domainEventContextProvider,
-            IMongoRetryService mongoRetryService) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+            IMongoRetryService mongoRetryService,
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
         {
-            _entityDomainEventPublisher = entityDomainEventPublisher;
-            _domainEventContextProvider = domainEventContextProvider;
+            _publisherService = publisherService;
         }
 
         public async Task<TEntity> DeleteInternalAsync(Expression<Func<TEntity, bool>> filter,
@@ -54,9 +50,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                     .ConfigureAwait(false);
             }
 
-            if (result != null)
+            if (result is not null && _publisherService is not null)
             {
-                await PublishDomainEventAsync(result, transaction, cancellationToken).ConfigureAwait(false);
+                await _publisherService.PublishDeleteEventAsync(result, transaction, cancellationToken);
             }
 
             return result;
@@ -70,17 +66,5 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
             => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
-
-        protected virtual Task PublishDomainEventAsync(TEntity savedEntity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
-        {
-            if (_entityDomainEventPublisher is null or DefaultEntityDomainEventPublisher)
-            {
-                return Task.CompletedTask;
-            }
-
-            var domainEvent = new EntityDeletedDomainEvent<TEntity> { Entity = savedEntity, EventContext = _domainEventContextProvider?.GetContext() };
-
-            return _entityDomainEventPublisher.PublishEntityDeleteEventAsync(domainEvent, transaction, cancellationToken);
-        }
     }
 }

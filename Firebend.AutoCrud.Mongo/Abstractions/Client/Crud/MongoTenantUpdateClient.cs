@@ -7,7 +7,6 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using Firebend.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 
@@ -25,13 +24,10 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
             ILogger<MongoTenantUpdateClient<TKey, TEntity, TTenantKey>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
-            IDomainEventContextProvider domainEventContextProvider,
-            IJsonPatchGenerator jsonPatchDocumentGenerator,
-            IEntityDomainEventPublisher domainEventPublisher,
+            IMongoRetryService retryService,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IMongoRetryService retryService)
-            : base(clientFactory, logger, entityConfiguration, keyGenerator, domainEventContextProvider,
-                jsonPatchDocumentGenerator, domainEventPublisher, retryService)
+            IDomainEventPublisherService<TKey, TEntity> domainEventPublisher = null)
+            : base(clientFactory, logger, entityConfiguration, keyGenerator, retryService, domainEventPublisher)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }

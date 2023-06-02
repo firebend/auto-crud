@@ -1,6 +1,8 @@
 using System;
 using Firebend.AutoCrud.ChangeTracking.Web.Abstractions;
+using Firebend.AutoCrud.ChangeTracking.Web.Implementations;
 using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
+using Firebend.AutoCrud.ChangeTracking.Web.Interfaces;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -34,6 +36,14 @@ public static class Extensions
         where TEntity : class, IEntity<TKey>
         where TVersion : class, IAutoCrudApiVersion
     {
+        var mapperType = typeof(IChangeTrackingViewModelMapper<,,,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType, configurator.Builder.EntityType, typeof(TVersion), configurator.ReadViewModelType);
+
+        var defaultMapper = typeof(DefaultChangeTrackingViewModelMapper<,,,>)
+            .MakeGenericType(configurator.Builder.EntityKeyType, configurator.Builder.EntityType, typeof(TVersion), configurator.ReadViewModelType);
+
+        configurator.Builder.WithRegistration(mapperType, defaultMapper, mapperType, false);
+
         var controller = configurator.ChangeTrackingControllerType();
         return configurator.WithController(controller, controller, entityName, entityNamePlural, openApiName);
     }
@@ -67,15 +77,11 @@ public static class Extensions
             typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity, TVersion>), policy);
 
     public static IServiceCollection AddDefaultChangeTrackingResourceAuthorizationRequirement(this IServiceCollection serviceCollection)
-    {
-        serviceCollection.AddAuthorization(options =>
-        {
-            options.AddPolicy(ChangeTrackingAuthorizationRequirement.DefaultPolicy,
-                policy => policy.Requirements.Add(new ChangeTrackingAuthorizationRequirement()));
-        });
-
-        return serviceCollection;
-    }
+        => serviceCollection.AddAuthorization(options =>
+            {
+                options.AddPolicy(ChangeTrackingAuthorizationRequirement.DefaultPolicy,
+                    policy => policy.Requirements.Add(new ChangeTrackingAuthorizationRequirement()));
+            });
 
     public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddChangeTrackingAuthorizationPolicy<TBuilder, TKey, TEntity, TVersion>(
         this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator, string policy)
@@ -83,6 +89,5 @@ public static class Extensions
         where TKey : struct
         where TEntity : class, IEntity<TKey>
         where TVersion : class, IAutoCrudApiVersion
-        => configurator.AddAuthorizationPolicy(configurator.ChangeTrackingControllerType(),
-            policy);
+        => configurator.AddAuthorizationPolicy(configurator.ChangeTrackingControllerType(), policy);
 }

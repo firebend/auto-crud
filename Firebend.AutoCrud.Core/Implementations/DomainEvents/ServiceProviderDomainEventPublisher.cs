@@ -9,19 +9,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
 {
-    public class ServiceProviderDomainEventPublisher : IEntityDomainEventPublisher
+    public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainEventPublisher<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public ServiceProviderDomainEventPublisher(IServiceProvider serviceProvider)
+        public ServiceProviderDomainEventPublisher(IServiceScopeFactory serviceScopeFactory)
         {
-            _serviceProvider = serviceProvider;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public Task PublishEntityAddEventAsync<TEntity>(EntityAddedDomainEvent<TEntity> domainEvent,
+        public Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
-            where TEntity : class
         {
             Task PublishAsync(CancellationToken token) =>
                 ExecuteSubscribers<IEntityAddedDomainEventSubscriber<TEntity>, EntityAddedDomainEvent<TEntity>>(
@@ -34,10 +35,9 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
                 entityTransaction.AddFunctionEnrollmentAsync(PublishAsync, cancellationToken);
         }
 
-        public Task PublishEntityDeleteEventAsync<TEntity>(EntityDeletedDomainEvent<TEntity> domainEvent,
+        public Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
-            where TEntity : class
         {
             Task PublishAsync(CancellationToken token) =>
                 ExecuteSubscribers<IEntityDeletedDomainEventSubscriber<TEntity>, EntityDeletedDomainEvent<TEntity>>(
@@ -50,10 +50,9 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
                 entityTransaction.AddFunctionEnrollmentAsync(PublishAsync, cancellationToken);
         }
 
-        public Task PublishEntityUpdatedEventAsync<TEntity>(EntityUpdatedDomainEvent<TEntity> domainEvent,
+        public Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
             IEntityTransaction entityTransaction,
             CancellationToken cancellationToken = default)
-            where TEntity : class
         {
             Task PublishAsync(CancellationToken token) =>
                 ExecuteSubscribers<IEntityUpdatedDomainEventSubscriber<TEntity>, EntityUpdatedDomainEvent<TEntity>>(
@@ -72,7 +71,7 @@ namespace Firebend.AutoCrud.Core.Implementations.DomainEvents
             CancellationToken cancellationToken)
             where TSubscriber : IDisposable
         {
-            using var scope = _serviceProvider.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
 
             var subscribers = scope
                 .ServiceProvider

@@ -9,8 +9,8 @@ using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Web.Interfaces;
-using Firebend.JsonPatch;
 using Firebend.JsonPatch.Extensions;
+using Firebend.JsonPatch.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -143,8 +143,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
 
             try
             {
-                entity = await _updateService
-                    .UpdateAsync(entityUpdate, cancellationToken);
+                entity = await _updateService.UpdateAsync(entityUpdate, cancellationToken);
             }
             catch (AutoCrudEntityException ex)
             {
@@ -165,10 +164,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return NotFound(new { id });
             }
 
-            var updated = await _readService.GetByKeyAsync(entity.Id, cancellationToken);
-
-            var mapped = await _readViewModelMapper
-                .ToAsync(updated, cancellationToken);
+            var mapped = await _readViewModelMapper.ToAsync(entity, cancellationToken);
 
             return Ok(mapped);
         }
@@ -305,10 +301,7 @@ namespace Firebend.AutoCrud.Web.Abstractions
                 return NotFound(new { id });
             }
 
-            var updated = await _readService.GetByKeyAsync(update.Id, cancellationToken);
-
-            var mapped = await _readViewModelMapper
-                .ToAsync(updated, cancellationToken);
+            var mapped = await _readViewModelMapper.ToAsync(update, cancellationToken);
 
             return Ok(mapped);
         }

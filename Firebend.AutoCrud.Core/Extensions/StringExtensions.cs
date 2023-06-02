@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Core.Extensions
 {
@@ -25,21 +26,6 @@ namespace Firebend.AutoCrud.Core.Extensions
         }
 
         public static bool In(this string source, params string[] list) => list.Any(x => x.EqualsIgnoreCaseAndWhitespace(source));
-
-        public static bool EqualsIgnoreCaseAndWhitespace(this string source, string compare)
-        {
-            if (source == null && compare == null)
-            {
-                return true;
-            }
-
-            if (source == null || compare == null)
-            {
-                return false;
-            }
-
-            return source.SafeTrim().Equals(compare.SafeTrim(), StringComparison.OrdinalIgnoreCase);
-        }
 
         public static string SafeTrim(this string source) => string.IsNullOrEmpty(source) ? source : source.Trim();
 

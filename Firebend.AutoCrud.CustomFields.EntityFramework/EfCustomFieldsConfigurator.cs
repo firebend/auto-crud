@@ -11,6 +11,7 @@ using Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -198,6 +199,11 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework
 
             builder.WithRegistration<ICustomFieldsReadService<TKey, TEntity>>(
                 typeof(AbstractEfCustomFieldsReadService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+                false);
+
+            builder.WithRegistration(
+                typeof(IEntityReadService<,>).MakeGenericType(guidType, efModelType),
+                typeof(EntityFrameworkEntityReadService<,>).MakeGenericType(guidType, efModelType),
                 false);
 
             builder.WithRegistration(

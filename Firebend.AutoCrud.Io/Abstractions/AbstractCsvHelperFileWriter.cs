@@ -14,7 +14,6 @@ using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Implementations;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
-using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Io.Abstractions
 {

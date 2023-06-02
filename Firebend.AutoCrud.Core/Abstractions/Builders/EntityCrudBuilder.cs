@@ -2,19 +2,19 @@ using System;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Concurrency;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
+using Firebend.AutoCrud.Core.Implementations.DomainEvents;
 using Firebend.AutoCrud.Core.Implementations.Entities;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
-using Firebend.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders
 {
     public abstract class EntityCrudBuilder<TKey, TEntity> : EntityBuilder<TKey, TEntity>
         where TKey : struct
-        where TEntity : IEntity<TKey>
+        where TEntity : class, IEntity<TKey>
     {
         private bool? _isActiveEntity;
 
@@ -33,9 +33,9 @@ namespace Firebend.AutoCrud.Core.Abstractions.Builders
                 _ => IsModifiedEntity ? typeof(ModifiedEntitySearchRequest) : typeof(EntitySearchRequest)
             };
 
-            WithRegistration<IEntityDomainEventPublisher, DefaultEntityDomainEventPublisher>(false);
+            WithRegistration<IEntityDomainEventPublisher<TKey, TEntity>, DefaultEntityDomainEventPublisher<TKey, TEntity>>(false);
+            WithRegistration<IDomainEventPublisherService<TKey, TEntity>, DefaultDomainEventPublisherService<TKey, TEntity>>(false);
             WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
-            WithRegistration<IJsonPatchGenerator, JsonPatchGenerator>(false);
             WithRegistration<IEntityQueryOrderByHandler<TKey, TEntity>, DefaultEntityQueryOrderByHandler<TKey, TEntity>>(false);
             WithRegistration<IEntityTransactionOutbox, InMemoryEntityTransactionOutbox>(false);
             WithRegistration<IDistributedLockService, DistributedLockService>(false);

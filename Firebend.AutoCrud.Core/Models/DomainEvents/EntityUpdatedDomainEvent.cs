@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
@@ -11,46 +12,39 @@ namespace Firebend.AutoCrud.Core.Models.DomainEvents
         where T : class
     {
         private T _modified;
-        private string _operationsJson;
         private List<Operation<T>> _operations;
         private JsonPatchDocument<T> _patch;
 
         public T Previous { get; set; }
 
-        public string OperationsJson
+        public List<Operation<T>> Operations
         {
-            get => _operationsJson;
+            get => _operations;
             set
             {
-                _operationsJson = value;
-                _operations = null;
+                _operations = value;
                 _patch = null;
+                _modified = null;
             }
         }
 
         [JsonIgnore]
-        public List<Operation<T>> Operations => _operations ??=
-            JsonConvert.DeserializeObject(OperationsJson, typeof(List<Operation<T>>),
-                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All }) as List<Operation<T>>;
+        public JsonPatchDocument<T> Patch
+            => _patch ??= Operations?.HasValues() ?? false ? new JsonPatchDocument<T>(Operations, new DefaultContractResolver()) : null;
 
         [JsonIgnore]
-        public JsonPatchDocument<T> Patch => _patch ??= new JsonPatchDocument<T>(Operations, new DefaultContractResolver());
+        public T Modified => _modified ??= GetModified(Previous, Patch);
 
-        [JsonIgnore]
-        public T Modified
+        private static T GetModified(T previous, JsonPatchDocument<T> patchDocument)
         {
-            get
+            if (patchDocument is null || previous is null)
             {
-                if (_modified != null)
-                {
-                    return _modified;
-                }
-
-                var clone = Previous.Clone();
-                Patch.ApplyTo(clone);
-                _modified = clone;
-                return _modified;
+                return null;
             }
+
+            var clone = previous.Clone();
+            patchDocument.ApplyTo(clone);
+            return clone;
         }
     }
 }

@@ -50,7 +50,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
             foreach (var listener in GetListeners(serviceCollection))
             {
                 addConsumer
-                    .MakeGenericMethod(listener.ServiceDescriptor.ImplementationType, listener.DomainEventType, listener.ConsumerType)
+                    .MakeGenericMethod(listener.ServiceDescriptor.ImplementationType!, listener.DomainEventType, listener.ConsumerType)
                     .Invoke(null, new object[] { busConfigurator, serviceCollection });
             }
         }
@@ -78,7 +78,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 {
                     foreach (var consumerInfo in consumerInfos)
                     {
-                        configureConsumer.MakeGenericMethod(consumerInfo.ServiceDescriptor.ImplementationType,
+                        configureConsumer.MakeGenericMethod(consumerInfo.ServiceDescriptor.ImplementationType!,
                                 consumerInfo.DomainEventType,
                                 consumerInfo.ConsumerType)
                             .Invoke(null, new object[]

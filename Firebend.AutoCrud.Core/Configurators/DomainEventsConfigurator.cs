@@ -18,18 +18,18 @@ namespace Firebend.AutoCrud.Core.Configurators
 
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventPublisher(Type type)
         {
-            Builder.WithRegistration(typeof(IEntityDomainEventPublisher),
+            Builder.WithRegistration(typeof(IEntityDomainEventPublisher<TKey, TEntity>),
                 type,
-                typeof(IEntityDomainEventPublisher));
+                typeof(IEntityDomainEventPublisher<TKey, TEntity>));
 
             return this;
         }
 
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventPublisher<TPublisher>()
-            where TPublisher : IEntityDomainEventPublisher => WithDomainEventPublisher(typeof(TPublisher));
+            where TPublisher : IEntityDomainEventPublisher<TKey, TEntity> => WithDomainEventPublisher(typeof(TPublisher));
 
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventPublisherServiceProvider() =>
-            WithDomainEventPublisher(typeof(ServiceProviderDomainEventPublisher));
+            WithDomainEventPublisher(typeof(ServiceProviderDomainEventPublisher<TKey, TEntity>));
 
         public DomainEventsConfigurator<TBuilder, TKey, TEntity> WithDomainEventEntityAddedSubscriber(Type type)
         {

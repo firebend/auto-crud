@@ -21,13 +21,14 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
     {
         public object DomainEventCustomContext { get; set; }
 
-        public T GetDomainEventContext<T>() => DomainEventCustomContext switch
-        {
-            null => default,
-            T context => context,
-            JObject jObject => jObject.ToObject<T>(),
-            _ => (T)DomainEventCustomContext
-        };
+        public T GetDomainEventContext<T>()
+            where T : class => DomainEventCustomContext switch
+            {
+                null => default,
+                T context => context,
+                JObject jObject => jObject.ToObject<T>(),
+                _ => DomainEventCustomContext as T
+            };
     }
 
     public class ChangeTrackingModel<TKey, TEntity> : IEntity<Guid>, IModifiedEntity

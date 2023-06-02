@@ -18,14 +18,9 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
         private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
 
         protected EntityFrameworkTenantCreateClient(IDbContextProvider<TKey, TEntity> provider,
-            IEntityDomainEventPublisher domainEventPublisher,
-            IDomainEventContextProvider domainEventContextProvider,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(
-                provider,
-                domainEventPublisher,
-                domainEventContextProvider,
-                exceptionHandler)
+            IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
+            IDomainEventPublisherService<TKey, TEntity> publisherService,
+            ITenantEntityProvider<TTenantKey> tenantEntityProvider) : base(provider, exceptionHandler, publisherService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }
@@ -51,6 +46,7 @@ namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
 
             return await base.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         }
+
         public override async Task<TEntity> AddAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken)
         {
             var tenant = await _tenantEntityProvider

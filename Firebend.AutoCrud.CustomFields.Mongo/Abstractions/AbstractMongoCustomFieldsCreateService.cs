@@ -15,7 +15,6 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Abstractions;
 
@@ -26,22 +25,22 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
     private readonly IDomainEventContextProvider _domainEventContextProvider;
-    private readonly IEntityDomainEventPublisher _domainEventPublisher;
+    private readonly IEntityDomainEventPublisher<TKey, TEntity> _domainEventPublisher;
     private readonly ISessionTransactionManager _transactionManager;
-    private readonly bool _isDefaultPublisher;
+    private readonly bool _hasPublisher;
 
     public AbstractMongoCustomFieldsCreateService(IMongoClientFactory<TKey, TEntity> clientFactory,
         ILogger<AbstractMongoCustomFieldsCreateService<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
-        IEntityDomainEventPublisher domainEventPublisher,
+        IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
         ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;
         _transactionManager = transactionManager;
-        _isDefaultPublisher = domainEventPublisher is DefaultEntityDomainEventPublisher;
+        _hasPublisher = domainEventPublisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
     }
 
     public async Task<CustomFieldsEntity<TKey>>
@@ -124,7 +123,7 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        if (_domainEventPublisher == null || _isDefaultPublisher)
+        if (_hasPublisher is false)
         {
             return Task.CompletedTask;
         }
@@ -132,9 +131,7 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
         var domainEvent = new EntityUpdatedDomainEvent<TEntity>
         {
             Previous = previous,
-            OperationsJson =
-                JsonConvert.SerializeObject(patch?.Operations, Formatting.None,
-                    new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All }),
+            Operations = patch?.Operations,
             EventContext = _domainEventContextProvider?.GetContext()
         };
 

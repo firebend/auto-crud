@@ -21,11 +21,9 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
         protected MongoTenantDeleteClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             ILogger<MongoTenantDeleteClient<TKey, TEntity, TTenantKey>> logger,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-            IEntityDomainEventPublisher entityDomainEventPublisher,
-            IDomainEventContextProvider domainEventContextProvider,
             ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IMongoRetryService mongoRetryService) : base(clientFactory, logger, entityConfiguration, entityDomainEventPublisher, domainEventContextProvider,
-            mongoRetryService)
+            IMongoRetryService mongoRetryService,
+            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(clientFactory, logger, entityConfiguration, mongoRetryService, publisherService)
         {
             _tenantEntityProvider = tenantEntityProvider;
         }
@@ -37,6 +35,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Crud
                 .ConfigureAwait(false);
 
             Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
+
             return new[]
             {
                 tenantFilter
