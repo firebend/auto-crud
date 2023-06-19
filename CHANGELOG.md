@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="8.1.0"></a>
+## [8.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v8.1.0) (2023-6-19)
+
+### Features
+
+* package updates (#218) ([ffd9a53](https://www.github.com/firebend/auto-crud/commit/ffd9a530c55bb697baf0a5c74d7c22ac74e66d2c))
+
+### Other
+
+* **deps:** bump Microsoft.AspNetCore.Authentication.JwtBearer from 7.0.5 to 7.0.7 (#213) ([182138d](https://www.github.com/firebend/auto-crud/commit/182138ddeb410ced842b261052afa86f723024a0))
+* **deps:** bump Microsoft.AspNetCore.JsonPatch from 7.0.5 to 7.0.7 (#215) ([6dc9068](https://www.github.com/firebend/auto-crud/commit/6dc90680d20716566a839e0428a4602851f033a2))
+* **deps:** bump Microsoft.Extensions.Logging.Abstractions from 7.0.0 to 7.0.1 (#214) ([59e38ee](https://www.github.com/firebend/auto-crud/commit/59e38eed3876f2de1a9dcc611063de606f02827d))
+* **deps:** bump Microsoft.NET.Test.Sdk from 17.6.1 to 17.6.2 (#212) ([7aa94ac](https://www.github.com/firebend/auto-crud/commit/7aa94acb2f27a4c0811ee612889f1e37ad5463fb))
+
 <a name="8.0.0"></a>
 ## [8.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v8.0.0) (2023-6-2)
 
