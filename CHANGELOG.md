@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.0.0"></a>
+## [9.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.0.0) (2023-6-30)
+
+### Features
+
+* bump Microsoft.AspNetCore.Mvc.NewtonsoftJson from 7.0.7 to 7.0.8 (#221) ([840c7b1](https://www.github.com/firebend/auto-crud/commit/840c7b1f28b8e6bba7911eb3eb65335f8d561b99))
+
+### Breaking Changes
+
+* bump Microsoft.AspNetCore.Mvc.NewtonsoftJson from 7.0.7 to 7.0.8 (#221) ([840c7b1](https://www.github.com/firebend/auto-crud/commit/840c7b1f28b8e6bba7911eb3eb65335f8d561b99))
+
+### Other
+
+* **deps:** bump Microsoft.AspNetCore.Authentication.JwtBearer from 7.0.7 to 7.0.8 (#222) ([a1b8eb2](https://www.github.com/firebend/auto-crud/commit/a1b8eb26504397e1d258c86101e3ada2820ea996))
+* **deps:** bump Microsoft.EntityFrameworkCore from 7.0.7 to 7.0.8 (#220) ([e4f8cd8](https://www.github.com/firebend/auto-crud/commit/e4f8cd8e0526b636a5d6aeb847cd940ec7152b87))
+* **deps:** bump Microsoft.EntityFrameworkCore.Relational from 7.0.7 to 7.0.8 (#223) ([ad78a2a](https://www.github.com/firebend/auto-crud/commit/ad78a2ac2d14ff64b925e9b2487efe38bf11f213))
+
 <a name="8.1.0"></a>
 ## [8.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v8.1.0) (2023-6-19)
 
