@@ -28,7 +28,7 @@
     <PackageReference Include="MassTransit.Newtonsoft" Version="8.0.16" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.0.16" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="7.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="7.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
