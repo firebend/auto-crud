@@ -11,7 +11,7 @@
         <PackageReference Include="CsvHelper" Version="30.0.1" />
         <PackageReference Include="FluentAssertions" Version="6.11.0" />
         <PackageReference Include="Flurl.Http" Version="3.2.4" />
-        <PackageReference Include="GitHubActionsTestLogger" Version="2.3.2">
+        <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
