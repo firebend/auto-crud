@@ -30,8 +30,6 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
             AbstractDbCreatorLogger.CreatingDb(_logger, dbName, connBuilder.DataSource);
-
-            connBuilder = null;
         }
 
         protected abstract string GetSqlCommand(string dbName);

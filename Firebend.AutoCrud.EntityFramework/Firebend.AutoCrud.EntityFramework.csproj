@@ -32,4 +32,5 @@
       <ProjectReference Include="..\Firebend.AutoCrud.Generator\Firebend.AutoCrud.Generator.csproj" />
     </ItemGroup>
 
+
 </Project>
