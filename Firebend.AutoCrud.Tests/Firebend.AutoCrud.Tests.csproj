@@ -16,6 +16,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.10" />
         <PackageReference Include="Microsoft.OpenApi" Version="1.6.6" />
         <PackageReference Include="nunit" Version="3.13.3" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
@@ -28,9 +29,11 @@
     <ItemGroup>
       <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking.Web\Firebend.AutoCrud.ChangeTracking.Web.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.CustomFields.Web\Firebend.AutoCrud.CustomFields.Web.csproj" />
+      <ProjectReference Include="..\Firebend.AutoCrud.EntityFramework\Firebend.AutoCrud.EntityFramework.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.Io\Firebend.AutoCrud.Io.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.Mongo\Firebend.AutoCrud.Mongo.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.Web\Firebend.AutoCrud.Web.csproj" />
     </ItemGroup>
+
 
 </Project>

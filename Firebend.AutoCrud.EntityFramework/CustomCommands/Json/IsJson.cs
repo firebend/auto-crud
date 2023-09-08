@@ -12,7 +12,7 @@ public static class IsJson
             .GetMethod(nameof(EfJsonFunctions.IsJson),
                 new[] { typeof(string) });
 
-    public static ModelBuilder AddIsJonSupport(this ModelBuilder modelBuilder)
+    public static ModelBuilder AddIsJsonSupport(this ModelBuilder modelBuilder)
     {
         modelBuilder.HasDbFunction(Method)
             .HasTranslation(args =>
