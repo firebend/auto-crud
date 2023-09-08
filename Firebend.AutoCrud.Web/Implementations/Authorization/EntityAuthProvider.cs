@@ -33,7 +33,7 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
 
         var entityId = keyParser.ParseKey(entityIdString) ?? throw new ArgumentException($"Failed to parse id for {nameof(TEntity)}");
 
-        return entityId.Value;
+        return entityId;
     }
 
     protected virtual Task<TEntity> GetEntityAsync<TKey, TEntity>(TKey id, CancellationToken cancellationToken)
