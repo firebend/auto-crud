@@ -28,12 +28,7 @@ namespace Firebend.AutoCrud.Io.Implementations
             IEnumerable<T> records,
             CancellationToken cancellationToken = default)
         {
-            var writer = _fileWriterFactory.Get(exportType);
-
-            if (writer == null)
-            {
-                throw new Exception($"Could not find writer for type {exportType}");
-            }
+            var writer = _fileWriterFactory.Get(exportType) ?? throw new Exception($"Could not find writer for type {exportType}");
 
             using (writer)
             {
