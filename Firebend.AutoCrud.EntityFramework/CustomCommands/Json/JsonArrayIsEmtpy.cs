@@ -12,6 +12,7 @@ public static class JsonArrayIsEmpty
         = typeof(EfJsonFunctions)
             .GetMethod(nameof(EfJsonFunctions.JsonArrayIsEmpty),
                 new[] { typeof(string), typeof(string) });
+
     public static ModelBuilder AddJsonArrayIsEmptySupport(this ModelBuilder modelBuilder)
     {
         modelBuilder.HasDbFunction(Method)

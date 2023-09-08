@@ -29,17 +29,9 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         where TEntity : class, IEntity<TKey>
         where TVersion : class, IAutoCrudApiVersion
     {
-        var keyParser = _serviceProvider.GetService<IEntityKeyParser<TKey, TEntity, TVersion>>();
-        if (keyParser == null)
-        {
-            throw new DependencyResolverException($"Cannot resolve key parser for {nameof(TEntity)}");
-        }
+        var keyParser = _serviceProvider.GetService<IEntityKeyParser<TKey, TEntity, TVersion>>() ?? throw new DependencyResolverException($"Cannot resolve key parser for {nameof(TEntity)}");
 
-        var entityId = keyParser.ParseKey(entityIdString);
-        if (entityId == null)
-        {
-            throw new ArgumentException($"Failed to parse id for {nameof(TEntity)}");
-        }
+        var entityId = keyParser.ParseKey(entityIdString) ?? throw new ArgumentException($"Failed to parse id for {nameof(TEntity)}");
 
         return entityId.Value;
     }
@@ -48,12 +40,7 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        var readService = _serviceProvider.GetService<IEntityReadService<TKey, TEntity>>();
-
-        if (readService == null)
-        {
-            throw new DependencyResolverException($"Cannot resolve read service for {nameof(TEntity)}");
-        }
+        var readService = _serviceProvider.GetService<IEntityReadService<TKey, TEntity>>() ?? throw new DependencyResolverException($"Cannot resolve read service for {nameof(TEntity)}");
 
         using (readService)
         {

@@ -26,7 +26,7 @@ public class TestContext : DbContext
 {
     public DbSet<TestEntity> TestEntities { get; set; }
 
-    public TestContext(DbContextOptions<TestContext> opt):base(opt)
+    public TestContext(DbContextOptions<TestContext> opt) : base(opt)
     {
 
     }
