@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.2.0"></a>
+## [9.2.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.2.0) (2023-9-8)
+
+### Features
+
+* adds new JSON sql server support (#242) ([cf6ea0a](https://www.github.com/firebend/auto-crud/commit/cf6ea0a37f28ca45fcb848ffca100bac3a29c733))
+
 <a name="9.1.0"></a>
 ## [9.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.1.0) (2023-8-21)
 
