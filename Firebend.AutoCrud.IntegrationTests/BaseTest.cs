@@ -253,7 +253,7 @@ public abstract class BaseTest<
 
             var searchResponseModel = await searchResponse.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
             searchResponseModel.Should().NotBeNull();
-            searchResponseModel.Data.Should().NotBeNullOrEmpty();
+            searchResponseModel.Data.Should().NotBeNullOrEmpty("search should contain {0}", search);
             searchResponseModel.TotalRecords.Should().BeGreaterOrEqualTo(1);
 
             return (searchResponse, searchResponseModel);
