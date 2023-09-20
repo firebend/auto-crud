@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.3.1"></a>
+## [9.3.1](https://www.github.com/firebend/auto-crud/releases/tag/v9.3.1) (2023-09-20)
+
+### Bug Fixes
+
+* upgrade json patch generator package version (#249) ([5c15adc](https://www.github.com/firebend/auto-crud/commit/5c15adc18d8994e6bdd5a09767f3d4ebb47d185b))
+
 <a name="9.3.0"></a>
 ## [9.3.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.3.0) (2023-09-18)
 
