@@ -26,12 +26,7 @@ public static class ControllerExtensions
             return null;
         }
 
-        var entity = await mapper.FromAsync(body, cancellationToken);
-
-        if (entity == null)
-        {
-            throw new Exception("Update view model mapper did not map to entity.");
-        }
+        var entity = await mapper.FromAsync(body, cancellationToken) ?? throw new Exception("Update view model mapper did not map to entity.");
 
         if (!controller.TryValidateModel(entity))
         {

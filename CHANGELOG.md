@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.3.1"></a>
+## [9.3.1](https://www.github.com/firebend/auto-crud/releases/tag/v9.3.1) (2023-09-20)
+
+### Bug Fixes
+
+* upgrade json patch generator package version (#249) ([5c15adc](https://www.github.com/firebend/auto-crud/commit/5c15adc18d8994e6bdd5a09767f3d4ebb47d185b))
+
+<a name="9.3.0"></a>
+## [9.3.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.3.0) (2023-09-18)
+
+### Features
+
+* package upgrades and web sample resource auth fixes (#248) ([91db496](https://www.github.com/firebend/auto-crud/commit/91db496064344d369c74ec8aa927bfb61b927cf4))
+
+<a name="9.2.0"></a>
+## [9.2.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.2.0) (2023-9-8)
+
+### Features
+
+* adds new JSON sql server support (#242) ([cf6ea0a](https://www.github.com/firebend/auto-crud/commit/cf6ea0a37f28ca45fcb848ffca100bac3a29c733))
+
+<a name="9.1.0"></a>
+## [9.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.1.0) (2023-8-21)
+
+### Features
+
+* version bumps (#237) ([dfb3415](https://www.github.com/firebend/auto-crud/commit/dfb3415967c6a9186f3a2eb9827c1341635955cc))
+
+<a name="9.0.1"></a>
+## [9.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v9.0.1) (2023-7-20)
+
+### Bug Fixes
+
+* package updates (#230) ([8465352](https://www.github.com/firebend/auto-crud/commit/84653524b1b3ec31150bf01efded7a531ea8098d))
+
 <a name="9.0.0"></a>
 ## [9.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.0.0) (2023-6-30)
 

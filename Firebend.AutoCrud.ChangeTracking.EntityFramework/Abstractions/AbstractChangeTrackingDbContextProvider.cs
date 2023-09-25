@@ -86,12 +86,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
 
         private async Task<bool> ScaffoldAsync(DbContext context, CancellationToken cancellationToken)
         {
-            var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>));
-
-            if (type is null)
-            {
-                throw new Exception("Could not find entity type.");
-            }
+            var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>)) ?? throw new Exception("Could not find entity type.");
 
             var schema = type.GetSchema().Coalesce("dbo");
             var table = type.GetTableName();
