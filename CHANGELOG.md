@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.3.2"></a>
+## [9.3.2](https://www.github.com/firebend/auto-crud/releases/tag/v9.3.2) (2023-10-02)
+
+### Bug Fixes
+
+* bump MassTransit.Newtonsoft from 8.1.0 to 8.1.1 (#250) ([c234473](https://www.github.com/firebend/auto-crud/commit/c234473249a539c354a8d3e514244f5eed398506))
+
+### Other
+
+* **deps:** bump MassTransit from 8.1.0 to 8.1.1 (#253) ([39cd8d1](https://www.github.com/firebend/auto-crud/commit/39cd8d11cb86d1e446c42c05305d7b6436559424))
+* **deps:** bump MassTransit.RabbitMQ from 8.1.0 to 8.1.1 (#251) ([0b3d48c](https://www.github.com/firebend/auto-crud/commit/0b3d48c0c2471658587e147f4e3836d19125b94a))
+* **deps:** bump Microsoft.OpenApi from 1.6.8 to 1.6.9 (#252) ([7be8ff4](https://www.github.com/firebend/auto-crud/commit/7be8ff4d170b33c6d4fdd77bfd50007e68c6e3e8))
+* **deps:** bump semver from 5.7.1 to 5.7.2 in /Firebend.AutoCrud.Web.Sample.LoadTest (#224) ([fc61997](https://www.github.com/firebend/auto-crud/commit/fc61997d426df8e6a5ca330ab52e57de83febfe5))
+
 <a name="9.3.1"></a>
 ## [9.3.1](https://www.github.com/firebend/auto-crud/releases/tag/v9.3.1) (2023-09-20)
 
