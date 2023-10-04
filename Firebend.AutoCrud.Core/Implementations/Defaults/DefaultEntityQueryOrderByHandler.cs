@@ -8,13 +8,13 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 
 namespace Firebend.AutoCrud.Core.Implementations.Defaults
 {
-    public abstract class DefaultEntityQueryOrderByHandler<TKey, TEntity> : IEntityQueryOrderByHandler<TKey, TEntity>
+    public class DefaultEntityQueryOrderByHandler<TKey, TEntity> : IEntityQueryOrderByHandler<TKey, TEntity>
         where TEntity : IEntity<TKey>
         where TKey : struct
     {
         private readonly IDefaultEntityOrderByProvider<TKey, TEntity> _defaultEntityOrderByProvider;
 
-        protected DefaultEntityQueryOrderByHandler(IDefaultEntityOrderByProvider<TKey, TEntity> defaultEntityOrderByProvider = null)
+        public DefaultEntityQueryOrderByHandler(IDefaultEntityOrderByProvider<TKey, TEntity> defaultEntityOrderByProvider = null)
         {
             _defaultEntityOrderByProvider = defaultEntityOrderByProvider;
         }
