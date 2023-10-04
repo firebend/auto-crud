@@ -51,17 +51,18 @@ namespace Firebend.AutoCrud.Core.Extensions
             return list;
         }
 
-        public static IEnumerable<(Expression<Func<T, object>> order, bool ascending)> ToOrderByGroups<T>(
-            this IEnumerable<string> source)
+        public static (Expression<Func<T, object>> order, bool ascending)[] ToOrderByGroups<T>(
+            this string[] source)
         {
-            var orderFields = source?.ToList();
-
-            if (orderFields?.Any() != true)
+            if (source is null || source.Length <= 0)
             {
-                return new List<(Expression<Func<T, object>> order, bool ascending)>();
+                return Array.Empty<(Expression<Func<T, object>> order, bool ascending)>();
             }
 
-            return orderFields.Select(x => x.ToOrderByGroup<T>()).Where(x => x != default).ToList();
+            return source
+                .Select(x => x.ToOrderByGroup<T>())
+                .Where(x => x != default)
+                .ToArray();
         }
 
         public static (Expression<Func<T, object>> order, bool ascending) ToOrderByGroup<T>(this string source)
@@ -80,40 +81,22 @@ namespace Firebend.AutoCrud.Core.Extensions
                 return default;
             }
 
-            if (char.IsLower(name[0]))
-            {
-                name = $"{char.ToUpper(name[0])}{name[1..]}";
-            }
+            var expression = name.ToPropertyExpressionSelector<T>();
 
-            var type = typeof(T);
-
-            var propertyInfo = type.GetProperty(name);
-
-            if (propertyInfo == null)
+            if (expression is null)
             {
                 return default;
             }
-
-            var arg = Expression.Parameter(type, "x");
-
-            Expression expr = Expression.Property(arg, propertyInfo);
-
-            if (propertyInfo.PropertyType.IsValueType)
-            {
-                expr = Expression.Convert(expr, typeof(object));
-            }
-
-            var expression = Expression.Lambda<Func<T, object>>(expr, arg);
 
             var descending = spec
                 .Skip(1)
                 .Take(1)
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Select(x => char.ToLower(x.First()))
-                .Select(x => x is 'd' or 'f')
+                .Select(x => x is 'd')
                 .FirstOrDefault();
 
-            return (expression, !descending);
+            return (expression, descending is false);
         }
     }
 }
