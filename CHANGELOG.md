@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.4.0"></a>
+## [9.4.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.4.0) (2023-10-09)
+
+### Features
+
+* package updates ([51fbd25](https://www.github.com/firebend/auto-crud/commit/51fbd2507c685d0f6127a3f545285a02981cfdeb))
+
 <a name="9.3.3"></a>
 ## [9.3.3](https://www.github.com/firebend/auto-crud/releases/tag/v9.3.3) (2023-10-04)
 
