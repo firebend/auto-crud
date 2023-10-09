@@ -76,7 +76,7 @@ namespace Firebend.AutoCrud.Core.Extensions
 
                 try
                 {
-                    body = Expression.PropertyOrField(body, member);
+                    body = Expression.Convert(Expression.PropertyOrField(body, member), typeof(object));
                 }
                 catch (ArgumentException)
                 {
