@@ -15,24 +15,28 @@ namespace Firebend.AutoCrud.EntityFramework.Implementations
     {
         private readonly IDbContextProvider<TKey, TEntity> _dbContextProvider;
         private readonly IEntityTransactionOutbox _outbox;
+        private readonly IDbContextConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
 
-        public EntityFrameworkEntityTransactionFactory(IDbContextProvider<TKey, TEntity> dbContextProvider, IEntityTransactionOutbox outbox)
+        public EntityFrameworkEntityTransactionFactory(IDbContextProvider<TKey, TEntity> dbContextProvider,
+            IEntityTransactionOutbox outbox, IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider)
         {
             _dbContextProvider = dbContextProvider;
             _outbox = outbox;
+            _connectionStringProvider = connectionStringProvider;
         }
 
         public async Task<string> GetDbContextHashCode()
         {
-            var context = await _dbContextProvider.GetDbContextAsync();
-            var hashCode = context.Database.GetDbConnection().ConnectionString.GetHashCode();
+            var connectionString = await _connectionStringProvider.GetConnectionStringAsync();
+            var hashCode = connectionString.GetHashCode();
             return $"ef_{hashCode}";
         }
 
         public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
         {
             var context = await _dbContextProvider.GetDbContextAsync(cancellationToken);
-            var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+            var transaction =
+                await context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
             return new EntityFrameworkEntityTransaction(transaction, _outbox);
         }
 
@@ -42,6 +46,7 @@ namespace Firebend.AutoCrud.EntityFramework.Implementations
             {
                 return false;
             }
+
             var dbTransaction = efTransaction.ContextTransaction.GetDbTransaction();
             return dbTransaction.Connection is not null && dbTransaction.Connection.State == ConnectionState.Open;
         }
