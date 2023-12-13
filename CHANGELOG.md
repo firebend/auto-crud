@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.5.1"></a>
+## [9.5.1](https://www.github.com/firebend/auto-crud/releases/tag/v9.5.1) (2023-12-13)
+
+### Bug Fixes
+
+* Use connection string from provider to hash for transaction manager ([#272](https://www.github.com/firebend/auto-crud/issues/272)) ([f72c2bb](https://www.github.com/firebend/auto-crud/commit/f72c2bbf153f18ce5eb010d8e854c2298a9c0d6f))
+
 <a name="9.5.0"></a>
 ## [9.5.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.5.0) (2023-10-09)
 
