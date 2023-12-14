@@ -157,7 +157,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         }
 
         _logger.LogDebug("{SessionId}: Adding transaction {TransactionId} to session", _sessionId, transaction.Id);
-        _transactions.Add(new QueuedTransaction {Transaction = transaction, StartedDate = transaction.StartedDate});
+        _transactions.Add(new QueuedTransaction { Transaction = transaction, StartedDate = transaction.StartedDate });
     }
 
     private void RemoveTransaction(string key, Guid transactionId)
