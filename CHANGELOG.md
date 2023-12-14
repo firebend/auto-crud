@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.5.2"></a>
+## [9.5.2](https://www.github.com/firebend/auto-crud/releases/tag/v9.5.2) (2023-12-14)
+
+### Bug Fixes
+
+* Ensure transactions are managed in a thread safe way and add deb… ([#273](https://www.github.com/firebend/auto-crud/issues/273)) ([69f5247](https://www.github.com/firebend/auto-crud/commit/69f5247bb7d4351893acd5334bf4f007dc417d7a))
+
 <a name="9.5.1"></a>
 ## [9.5.1](https://www.github.com/firebend/auto-crud/releases/tag/v9.5.1) (2023-12-13)
 
