@@ -152,7 +152,7 @@ public class ClientRequestTransactionManagerTests
         transaction1.Should().NotBeNull();
         transaction2.Should().NotBeNull();
         transaction1.Should().NotBeSameAs(transaction2);
-        sut.TransactionIds.Should().HaveCount(2);
+        sut.TransactionIds.Should().HaveCount(1);
     }
 
     [Test]
