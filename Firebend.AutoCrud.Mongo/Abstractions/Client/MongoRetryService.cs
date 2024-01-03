@@ -37,7 +37,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             }
         }
 
-        // dont' retry MongoBulkWriteException or duplicate key exceptions
+        // don't retry MongoBulkWriteException or duplicate key exceptions
         private bool ShouldRetry(Exception exception) =>
             exception is MongoException
             && exception is not MongoBulkWriteException
