@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.5.3"></a>
+## [9.5.3](https://www.github.com/firebend/auto-crud/releases/tag/v9.5.3) (2024-01-03)
+
+### Bug Fixes
+
+* mongo retry service limit exceptions ([#277](https://www.github.com/firebend/auto-crud/issues/277)) ([43f8285](https://www.github.com/firebend/auto-crud/commit/43f8285e4240f7bfbf7839979c66faeb691d0024))
+
+### Other
+
+* mongo retry service limit exceptions (#276) ([52b8882](https://www.github.com/firebend/auto-crud/commit/52b88824082d1f4f7048e2fd5f50b4484280df59))
+
 <a name="9.5.2"></a>
 ## [9.5.2](https://www.github.com/firebend/auto-crud/releases/tag/v9.5.2) (2023-12-14)
 

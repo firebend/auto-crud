@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Version>9.5.2</Version>
+        <Version>9.5.3</Version>
         <TargetFramework>net7.0</TargetFramework>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
