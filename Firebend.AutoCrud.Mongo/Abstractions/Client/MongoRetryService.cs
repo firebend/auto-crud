@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Abstractions.Client
 {
@@ -17,11 +18,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
                 {
                     return await method();
                 }
-                catch
+                catch (Exception ex)
                 {
                     tries++;
 
-                    if (tries >= maxTries)
+                    if (!ShouldRetry(ex) || tries >= maxTries)
                     {
                         throw;
                     }
@@ -35,5 +36,11 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
                 }
             }
         }
+
+        // dont' retry MongoBulkWriteException or duplicate key exceptions
+        private bool ShouldRetry(Exception exception) =>
+            exception is MongoException
+            && exception is not MongoBulkWriteException
+            && !exception.Message.Contains("duplicate key");
     }
 }
