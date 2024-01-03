@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client
             var tries = 0;
             double delay = 100;
 
-            
+
             while (true)
             {
                 try
