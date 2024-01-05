@@ -94,16 +94,16 @@ namespace Firebend.AutoCrud.Mongo
             }
 
             WithRegistration<IMongoIndexClient<TKey, TEntity>, MongoIndexClient<TKey, TEntity>>(false);
-            WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
+            WithRegistration<IMongoIndexProvider<TKey, TEntity>, DefaultIndexProvider<TKey, TEntity>>(false);
 
             if (IsModifiedEntity)
             {
-                var type = typeof(ModifiedIndexProvider<>).MakeGenericType(EntityType);
-                WithRegistration<IMongoIndexProvider<TEntity>>(type, false);
+                var type = typeof(ModifiedIndexProvider<,>).MakeGenericType(EntityKeyType, EntityType);
+                WithRegistration<IMongoIndexProvider<TKey, TEntity>>(type, false);
             }
             else
             {
-                WithRegistration<IMongoIndexProvider<TEntity>, DefaultIndexProvider<TEntity>>(false);
+                WithRegistration<IMongoIndexProvider<TKey, TEntity>, DefaultIndexProvider<TKey, TEntity>>(false);
             }
 
             if (EntityKeyType == typeof(Guid))
@@ -319,12 +319,12 @@ namespace Firebend.AutoCrud.Mongo
         {
             if (IsModifiedEntity)
             {
-                var type = typeof(ModifiedFullTextIndexProvider<>).MakeGenericType(EntityType);
-                WithRegistration<IMongoIndexProvider<TEntity>>(type);
+                var type = typeof(ModifiedFullTextIndexProvider<,>).MakeGenericType(EntityKeyType, EntityType);
+                WithRegistration<IMongoIndexProvider<TKey, TEntity>>(type);
             }
             else
             {
-                WithRegistration<IMongoIndexProvider<TEntity>, FullTextIndexProvider<TEntity>>();
+                WithRegistration<IMongoIndexProvider<TKey, TEntity>, FullTextIndexProvider<TKey, TEntity>>();
             }
 
             _hasFullText = true;

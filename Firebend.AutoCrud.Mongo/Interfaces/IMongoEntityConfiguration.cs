@@ -34,6 +34,7 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        public string Locale { get; }
         public string ShardKey { get; }
     }
 }

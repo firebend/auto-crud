@@ -1,15 +1,18 @@
 using System.Collections.Generic;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Helpers;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Implementations
 {
-    public class FullTextIndexProvider<TEntity> : IMongoIndexProvider<TEntity>
+    public class FullTextIndexProvider<TKey, TEntity> : IMongoIndexProvider<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
-        public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder)
+        public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder, IMongoEntityIndexConfiguration<TKey, TEntity> configuration)
         {
-            yield return MongoIndexProviderHelpers.FullText(builder);
+            yield return MongoIndexProviderHelpers.FullText(builder, configuration.Locale);
         }
     }
 }

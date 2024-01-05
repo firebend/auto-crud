@@ -16,8 +16,8 @@ namespace Firebend.AutoCrud.ChangeTracking.Models
     /// The type of entity.
     /// </typeparam>
     public class ChangeTrackingEntity<TKey, TEntity> : ChangeTrackingModel<TKey, TEntity>
-        where TEntity : class, IEntity<TKey>
         where TKey : struct
+        where TEntity : class, IEntity<TKey>
     {
         public object DomainEventCustomContext { get; set; }
 

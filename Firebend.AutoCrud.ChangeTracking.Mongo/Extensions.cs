@@ -71,7 +71,7 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo
             configurator.Builder.WithRegistration<IMongoIndexClient<Guid, ChangeTrackingEntity<TKey, TEntity>>,
                 MongoIndexClient<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
-            configurator.Builder.WithRegistration<IMongoIndexProvider<ChangeTrackingEntity<TKey, TEntity>>,
+            configurator.Builder.WithRegistration<IMongoIndexProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
                 AbstractMongoChangeTrackingIndexProvider<TKey, TEntity>>(false);
 
             configurator.Builder.WithRegistration<IChangeTrackingReadService<TKey, TEntity>,

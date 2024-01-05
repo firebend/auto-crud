@@ -18,13 +18,13 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         where TEntity : class, IEntity<TKey>
     {
         private readonly IDistributedLockService _distributedLockService;
-        private readonly IMongoIndexProvider<TEntity> _indexProvider;
+        private readonly IMongoIndexProvider<TKey, TEntity> _indexProvider;
         private readonly IMongoIndexMergeService<TKey, TEntity> _mongoIndexMergeService;
 
         public MongoIndexClient(IMongoClientFactory<TKey, TEntity> clientFactory,
             IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
             ILogger<MongoIndexClient<TKey, TEntity>> logger,
-            IMongoIndexProvider<TEntity> indexProvider,
+            IMongoIndexProvider<TKey, TEntity> indexProvider,
             IMongoRetryService retryService,
             IDistributedLockService distributedLockService,
             IMongoIndexMergeService<TKey, TEntity> mongoIndexMergeService) : base(clientFactory, logger, entityConfiguration, retryService)
@@ -37,13 +37,12 @@ namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
         public async Task BuildIndexesAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
         {
             var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
-
             using var _ = await _distributedLockService
                 .LockAsync(key, cancellationToken)
                 .ConfigureAwait(false);
 
             var builder = Builders<TEntity>.IndexKeys;
-            var indexesToAdd = _indexProvider.GetIndexes(builder)?.ToArray();
+            var indexesToAdd = _indexProvider.GetIndexes(builder, configuration)?.ToArray();
             var hasIndexesToAdd = indexesToAdd?.Any() ?? false;
 
             if (!hasIndexesToAdd)

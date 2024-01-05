@@ -6,13 +6,14 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Implementations
 {
-    public class ModifiedFullTextIndexProvider<TEntity> : IMongoIndexProvider<TEntity>
-        where TEntity : IModifiedEntity
+    public class ModifiedFullTextIndexProvider<TKey, TEntity> : IMongoIndexProvider<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>, IModifiedEntity
     {
-        public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder)
+        public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder, IMongoEntityIndexConfiguration<TKey, TEntity> configuration)
         {
-            yield return MongoIndexProviderHelpers.DateTimeOffset(builder);
-            yield return MongoIndexProviderHelpers.FullText(builder);
+            yield return MongoIndexProviderHelpers.DateTimeOffset(builder, configuration.Locale);
+            yield return MongoIndexProviderHelpers.FullText(builder, configuration.Locale);
         }
     }
 }

@@ -38,15 +38,18 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         where TKey : struct
         where TEntity : IEntity<TKey>
     {
+        public string Locale { get; set; }
         public string ShardKey { get; set; }
 
         public MongoEntityIndexConfiguration(string collectionName,
             string databaseName,
             AggregateOptions aggregateOption,
             string shardKey,
-            MongoTenantShardMode tenantShardMode = MongoTenantShardMode.Unknown) : base(collectionName, databaseName, aggregateOption, tenantShardMode)
+            MongoTenantShardMode tenantShardMode = MongoTenantShardMode.Unknown,
+            string locale = "en") : base(collectionName, databaseName, aggregateOption, tenantShardMode)
         {
             ShardKey = shardKey;
+            Locale = locale;
         }
 
         public static MongoEntityIndexConfiguration<TKey, TEntity> FromConfiguration(IMongoEntityConfiguration<TKey, TEntity> configuration)
