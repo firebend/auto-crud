@@ -6,7 +6,7 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Implementations
 {
-    public class DefaultIndexProvider<TKey, TEntity>: IMongoIndexProvider<TKey, TEntity>
+    public class DefaultIndexProvider<TKey, TEntity> : IMongoIndexProvider<TKey, TEntity>
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {

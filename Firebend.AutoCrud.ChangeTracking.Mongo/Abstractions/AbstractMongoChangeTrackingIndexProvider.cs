@@ -15,10 +15,11 @@ namespace Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions
     {
         public IEnumerable<CreateIndexModel<ChangeTrackingEntity<TEntityKey, TEntity>>> GetIndexes(
             IndexKeysDefinitionBuilder<ChangeTrackingEntity<TEntityKey, TEntity>> builder,
-            IMongoEntityIndexConfiguration<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> configuration){
+            IMongoEntityIndexConfiguration<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> configuration)
+        {
             yield return new CreateIndexModel<ChangeTrackingEntity<TEntityKey, TEntity>>(
                 builder.Ascending(f => f.EntityId),
-                new CreateIndexOptions {Name = "changeTrackingEntityId"});
+                new CreateIndexOptions { Name = "changeTrackingEntityId" });
 
             yield return MongoIndexProviderHelpers.FullText(builder, configuration.Locale);
 
