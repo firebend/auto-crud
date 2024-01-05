@@ -16,8 +16,8 @@ namespace Firebend.AutoCrud.Mongo.Helpers
 
             return options;
         }
-        public static CreateIndexModel<T> FullText<T>(IndexKeysDefinitionBuilder<T> builder, string locale = null)
-            => new(builder.Text("$**"), new CreateIndexOptions { Name = "text" }.WithCollation(locale));
+        public static CreateIndexModel<T> FullText<T>(IndexKeysDefinitionBuilder<T> builder)
+            => new(builder.Text("$**"), new CreateIndexOptions { Name = "text" });
 
         public static CreateIndexModel<T> DateTimeOffset<T>(IndexKeysDefinitionBuilder<T> builder, string locale = null)
             where T : IModifiedEntity

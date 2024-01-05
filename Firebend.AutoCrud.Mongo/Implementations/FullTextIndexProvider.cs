@@ -12,7 +12,7 @@ namespace Firebend.AutoCrud.Mongo.Implementations
     {
         public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder, IMongoEntityIndexConfiguration<TKey, TEntity> configuration)
         {
-            yield return MongoIndexProviderHelpers.FullText(builder, configuration.Locale);
+            yield return MongoIndexProviderHelpers.FullText(builder);
         }
     }
 }
