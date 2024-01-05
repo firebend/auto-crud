@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.6.1"></a>
+## [9.6.1](https://www.github.com/firebend/auto-crud/releases/tag/v9.6.1) (2024-01-05)
+
+### Bug Fixes
+
+* Remove collation from text index ([#279](https://www.github.com/firebend/auto-crud/issues/279)) ([1a00c30](https://www.github.com/firebend/auto-crud/commit/1a00c300013bfbb3d9c5aacd722c757cd9719461))
+
 <a name="9.6.0"></a>
 ## [9.6.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.6.0) (2024-01-05)
 
