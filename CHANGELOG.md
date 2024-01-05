@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.6.0"></a>
+## [9.6.0](https://www.github.com/firebend/auto-crud/releases/tag/v9.6.0) (2024-01-05)
+
+### Features
+
+* Add mongo index collation locale support  ([#278](https://www.github.com/firebend/auto-crud/issues/278)) ([347618c](https://www.github.com/firebend/auto-crud/commit/347618c76ba30fe82014ef877b502f9ec0eb3972))
+
 <a name="9.5.3"></a>
 ## [9.5.3](https://www.github.com/firebend/auto-crud/releases/tag/v9.5.3) (2024-01-03)
 
