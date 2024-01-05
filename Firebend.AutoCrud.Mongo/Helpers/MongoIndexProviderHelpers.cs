@@ -7,10 +7,12 @@ namespace Firebend.AutoCrud.Mongo.Helpers
     {
         public static CreateIndexOptions WithCollation(this CreateIndexOptions options, string locale = null)
         {
-            if (locale is not null)
+            if (locale is null || options.Collation is not null)
             {
-                options.Collation = new Collation(locale);
+                return options;
             }
+
+            options.Collation = new Collation(locale);
 
             return options;
         }
