@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.6.2"></a>
+## [9.6.2](https://www.github.com/firebend/auto-crud/releases/tag/v9.6.2) (2024-01-09)
+
+### Bug Fixes
+
+* changes for queue name ([#280](https://www.github.com/firebend/auto-crud/issues/280)) ([520b8b8](https://www.github.com/firebend/auto-crud/commit/520b8b8ef351c7a556fe14bc31dfe38e9d892494))
+
 <a name="9.6.1"></a>
 ## [9.6.1](https://www.github.com/firebend/auto-crud/releases/tag/v9.6.1) (2024-01-05)
 
