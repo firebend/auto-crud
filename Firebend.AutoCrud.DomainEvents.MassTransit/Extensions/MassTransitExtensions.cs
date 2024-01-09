@@ -172,7 +172,7 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
 
         private static string GetQueueName(ICollection<string> queueNames,
             string receiveEndpointPrefix,
-            MemberInfo genericMessageType,
+            Type genericMessageType,
             MemberInfo listenerImplementationType,
             string handlerTypeDesc)
         {
@@ -192,6 +192,12 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
             }
 
+            foreach (var genericTypeArgument in genericMessageType.GenericTypeArguments)
+            {
+                sb.Append('_');
+                sb.Append(genericTypeArgument.Name);
+            }
+
             sb.Append('_');
             sb.Append(handlerTypeDesc);
             var sbBuilt = sb.ToString();
@@ -201,7 +207,12 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions
                 throw new Exception("Error building queue name");
             }
 
-            var queueName = sbBuilt.Replace("`2", null);
+            var queueName = sbBuilt
+                .Replace("`1", null)
+                .Replace("`2", null)
+                .Replace("`3", null)
+                .Replace("`4", null)
+                .Replace("`5", null);
 
             while (queueNames.Contains(queueName))
             {
