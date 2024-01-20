@@ -30,7 +30,11 @@ namespace Firebend.AutoCrud.Mongo.Implementations
         public DateTimeOffset StartedDate { get; set; }
 
         private readonly IMongoRetryService _retry;
-        private readonly AsyncKeyedLocker<Guid> _locker = new();
+        private readonly AsyncKeyedLocker<Guid> _locker = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
         private readonly ILogger<MongoEntityTransaction> _logger;
 
         public MongoEntityTransaction(IClientSessionHandle clientSessionHandle,

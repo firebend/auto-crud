@@ -16,7 +16,11 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models
 
     public static class EntityTransactionMediator
     {
-        private static readonly AsyncKeyedLocker<Guid> Locker = new();
+        private static readonly AsyncKeyedLocker<Guid> Locker = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
 
         private static async Task<bool> TryToggleStateAsync(IEntityTransaction transaction,
             EntityTransactionState desiredState,

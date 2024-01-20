@@ -8,7 +8,11 @@ namespace Firebend.AutoCrud.Core.Implementations.Concurrency
 {
     internal static class DistributedLockServiceStatics
     {
-        public static readonly AsyncKeyedLocker<string> Locker = new();
+        public static readonly AsyncKeyedLocker<string> Locker = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
     }
 
     public class DistributedLockService : IDistributedLockService
