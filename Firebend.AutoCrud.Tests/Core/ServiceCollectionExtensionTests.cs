@@ -25,17 +25,8 @@ public class ServiceCollectionExtensionTests
     }
 }
 
-public interface ITestService
-{
+public interface ITestService;
 
-}
+public class TestServiceA : ITestService;
 
-public class TestServiceA : ITestService
-{
-
-}
-
-public class TestServiceB : ITestService
-{
-
-}
+public class TestServiceB : ITestService;

@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Version>9.6.4</Version>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
@@ -25,7 +25,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
       <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
-      <PackageReference Include="System.Text.Encodings.Web" Version="7.0.0" />
+      <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>

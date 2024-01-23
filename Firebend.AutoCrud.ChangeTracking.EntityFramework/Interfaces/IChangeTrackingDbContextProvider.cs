@@ -17,7 +17,5 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces
     public interface IChangeTrackingDbContextProvider<TEntityKey, TEntity> :
         IDbContextProvider<Guid, ChangeTrackingEntity<TEntityKey, TEntity>>
         where TEntityKey : struct
-        where TEntity : class, IEntity<TEntityKey>
-    {
-    }
+        where TEntity : class, IEntity<TEntityKey>;
 }

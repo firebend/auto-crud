@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
         <Version>9.6.4</Version>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
@@ -23,7 +23,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ClosedXML" Version="0.102.1" />
+      <PackageReference Include="ClosedXML" Version="0.102.2" />
       <PackageReference Include="CsvHelper" Version="30.0.1" />
     </ItemGroup>
 

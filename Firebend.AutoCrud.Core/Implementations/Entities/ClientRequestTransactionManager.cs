@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,7 +55,11 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
     public async Task CompleteAsync(CancellationToken cancellationToken)
     {
-        _logger.LogDebug(() => $"{_sessionId}: Completing {TransactionIds.Count} transactions. {string.Join(',', TransactionIds)}");
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug("{SessionId}: Completing {TransactionIdsCount} transactions. {Join}", _sessionId, TransactionIds.Count, string.Join(',', TransactionIds));
+        }
+
         foreach (var transaction in GetTransactionsInOrder(true))
         {
             await EntityTransactionMediator.TryCompleteAsync(transaction, cancellationToken);
@@ -92,12 +95,27 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
 
         if (transactionFactory.ValidateTransaction(transaction))
         {
-            _logger.LogDebug(() => $"{_sessionId}: Transaction for {typeof(TEntity).Name} - {transaction.Id} is valid");
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug("{SessionId}: Transaction for {Name} - {TransactionId} is valid",
+                    _sessionId,
+                    typeof(TEntity).Name,
+                    transaction.Id);
+            }
+
             return transaction;
         }
 
-        _logger.LogDebug(() => $"{_sessionId}: Transaction for {typeof(TEntity).Name} - {transaction.Id} is invalid");
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug("{SessionId}: Transaction for {Name} - {TransactionId} is invalid",
+                _sessionId,
+                typeof(TEntity).Name,
+                transaction.Id);
+        }
+
         RemoveTransaction(key, transaction.Id);
+
         return await GetOrAddSharedTransaction(key, transactionFactory, cancellationToken);
     }
 
@@ -105,7 +123,14 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         IEntityTransactionFactory<TKey, TEntity> transactionFactory, CancellationToken cancellationToken)
         where TKey : struct where TEntity : IEntity<TKey>
     {
-        _logger.LogDebug(() => $"{_sessionId}: Getting or adding shared transaction for {typeof(TEntity).Name} using key {key}");
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug("{SessionId}: Getting or adding shared transaction for {Name} using key {Key}",
+                _sessionId,
+                typeof(TEntity).Name,
+                key);
+        }
+
         var transactionLazy = _sharedTransactions.GetOrAdd(key, (_, arg) =>
         {
             var (self, tf, ct) = arg;

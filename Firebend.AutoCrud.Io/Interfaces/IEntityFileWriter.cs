@@ -20,12 +20,8 @@ namespace Firebend.AutoCrud.Io.Interfaces
     }
 
     public interface IEntityFileWriterCsv<TVersion> : IEntityFileWriter<TVersion>
-        where TVersion : class, IAutoCrudApiVersion
-    {
-    }
+        where TVersion : class, IAutoCrudApiVersion;
 
     public interface IEntityFileWriterSpreadSheet<TVersion> : IEntityFileWriter<TVersion>
-        where TVersion : class, IAutoCrudApiVersion
-    {
-    }
+        where TVersion : class, IAutoCrudApiVersion;
 }

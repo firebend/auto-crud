@@ -181,6 +181,8 @@ csharp_using_directive_placement = outside_namespace:warning
 csharp_prefer_static_local_function = true:warning
 csharp_prefer_simple_using_statement = true:suggestion
 
+csharp_style_namespace_declarations=file_scoped:suggestion
+
 ##########################################
 # .NET Formatting Conventions
 # https://docs.microsoft.com/visualstudio/ide/editorconfig-code-style-settings-reference#formatting-conventions

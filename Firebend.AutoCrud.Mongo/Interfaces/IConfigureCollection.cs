@@ -12,7 +12,5 @@ namespace Firebend.AutoCrud.Mongo.Interfaces
     // ReSharper disable once UnusedTypeParameter
     public interface IConfigureCollection<TKey, TEntity> : IConfigureCollection
         where TEntity : IEntity<TKey>
-        where TKey : struct
-    {
-    }
+        where TKey : struct;
 }

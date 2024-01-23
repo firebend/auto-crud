@@ -6,9 +6,7 @@ using Firebend.AutoCrud.EntityFramework.Sample.Models;
 
 namespace Firebend.AutoCrud.EntityFramework.Sample
 {
-    public interface IPersonReadRepository : IEntityReadService<Guid, Person>
-    {
-    }
+    public interface IPersonReadRepository : IEntityReadService<Guid, Person>;
 
     public class PersonReadRepository : EntityFrameworkEntityReadService<Guid, Person>, IPersonReadRepository
     {

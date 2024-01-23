@@ -58,19 +58,19 @@ public class MongoCustomFieldsApiTests
     }
 
     private async Task<IFlurlResponse> PostCustomFieldAsync(Guid personId, CustomFieldViewModelCreate customField) =>
-        await $"{PersonUrl}/{personId}/custom-fields".WithAuth().AllowHttpStatus(HttpStatusCode.BadRequest)
+        await $"{PersonUrl}/{personId}/custom-fields".WithAuth().AllowHttpStatus((int)HttpStatusCode.BadRequest)
             .PostJsonAsync(customField);
 
     private async Task<IFlurlResponse> PutCustomFieldAsync(Guid personId, Guid customFieldId,
         CustomFieldViewModelCreate customField) =>
         await $"{PersonUrl}/{personId}/custom-fields/{customFieldId}".WithAuth()
-            .AllowHttpStatus(HttpStatusCode.BadRequest)
+            .AllowHttpStatus((int)HttpStatusCode.BadRequest)
             .PutJsonAsync(customField);
 
     private async Task<IFlurlResponse> PatchCustomFieldAsync(Guid personId, Guid customFieldId,
         JsonPatchDocument customField) =>
         await $"{PersonUrl}/{personId}/custom-fields/{customFieldId}".WithAuth()
-            .AllowHttpStatus(HttpStatusCode.BadRequest)
+            .AllowHttpStatus((int)HttpStatusCode.BadRequest)
             .PatchJsonAsync(customField);
 
     [TestMethod]

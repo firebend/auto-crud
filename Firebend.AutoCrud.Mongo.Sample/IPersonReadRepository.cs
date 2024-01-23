@@ -6,9 +6,7 @@ using Firebend.AutoCrud.Mongo.Sample.Models;
 
 namespace Firebend.AutoCrud.Mongo.Sample
 {
-    public interface IPersonReadRepository : IEntityReadService<Guid, Person>
-    {
-    }
+    public interface IPersonReadRepository : IEntityReadService<Guid, Person>;
 
     public class PersonReadRepository : MongoEntityReadService<Guid, Person>, IPersonReadRepository
     {

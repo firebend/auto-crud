@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using Firebend.AutoCrud.ChangeTracking.Web;
@@ -116,7 +117,7 @@ public static class Startup
         {
             if (context.Request.Headers.All(h => h.Key != AuthorizationHeaderKey))
             {
-                context.Request.Headers.Add(AuthorizationHeaderKey, AuthorizationHeaderValue);
+                context.Request.Headers.TryAdd(AuthorizationHeaderKey, AuthorizationHeaderValue);
             }
 
             await next(context);
