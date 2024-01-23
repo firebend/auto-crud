@@ -119,19 +119,17 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         {
             //todo: refactor this later to be more robust and not depend on sql server syntax
             const string columnName = nameof(ChangeTrackingEntity<TEntityKey, TEntity>.DomainEventCustomContext);
-            await context.Database.ExecuteSqlInterpolatedAsync($"""
-
-                                                                IF NOT EXISTS (
-                                                                  SELECT *
-                                                                  FROM   sys.columns
-                                                                  WHERE  object_id = OBJECT_ID(N'{fullTableName}')
-                                                                         AND name = '{columnName}'
-                                                                )
-                                                                BEGIN
-                                                                    ALTER TABLE {fullTableName}
-                                                                    ADD [{columnName}] nvarchar(max)
-                                                                END
-                                                                """, cancellationToken);
+            await context.Database.ExecuteSqlRawAsync($@"
+IF NOT EXISTS (
+  SELECT *
+  FROM   sys.columns
+  WHERE  object_id = OBJECT_ID(N'{fullTableName}')
+         AND name = '{columnName}'
+)
+BEGIN
+    ALTER TABLE {fullTableName}
+    ADD [{columnName}] nvarchar(max)
+END", cancellationToken);
         }
 
         private static async Task<bool> DoesTableExist(DbContext context,
