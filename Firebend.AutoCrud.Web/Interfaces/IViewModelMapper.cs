@@ -25,10 +25,7 @@ namespace Firebend.AutoCrud.Web.Interfaces
         where TEntity : IEntity<TKey>
         where TKey : struct
         where TVersion : class, IAutoCrudApiVersion
-        where TViewModel : class
-    {
-
-    }
+        where TViewModel : class;
 
     public interface ISearchViewModelMapper<TKey, TEntity, TVersion, in TViewModel, TSearchModel>
         where TEntity : IEntity<TKey>
@@ -43,19 +40,13 @@ namespace Firebend.AutoCrud.Web.Interfaces
         where TEntity : IEntity<TKey>
         where TKey : struct
         where TVersion : class, IAutoCrudApiVersion
-        where TViewModel : class
-    {
-
-    }
+        where TViewModel : class;
 
     public interface IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> : IViewModelMapper<TKey, TEntity, TVersion, TViewModel>
         where TEntity : IEntity<TKey>
         where TKey : struct
         where TVersion : class, IAutoCrudApiVersion
-        where TViewModel : class
-    {
-
-    }
+        where TViewModel : class;
 
     public interface ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TViewWrapper, TView>
         where TViewWrapper : IMultipleEntityViewModel<TView>

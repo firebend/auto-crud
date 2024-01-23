@@ -243,6 +243,7 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions
                         .WithMaxExportPageSize(50)
                         .WithVersionedRoute(routePrefix: "api")
                         .WithValidationService<PersonValidationService>()
+                        //.AddAuthorizationPolicies()
                         .Builder
                         .WithRegistration<ICustomFieldsValidationService<Guid, EfPerson, V1>,
                             CustomFieldValidationService<Guid, EfPerson, V1>>()

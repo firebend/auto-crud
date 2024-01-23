@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.EntityFramework.Comparers;
 using Firebend.AutoCrud.EntityFramework.Converters;
 using Firebend.AutoCrud.EntityFramework.CustomCommands;
@@ -11,6 +12,7 @@ namespace Firebend.AutoCrud.Tests.Ef;
 
 public class NestedClass
 {
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string StringField { get; set; }
     public List<Guid> GuidList { get; set; }
 }
@@ -18,6 +20,8 @@ public class NestedClass
 public class TestEntity
 {
     public Guid Id { get; set; }
+
+    [MaxLength(10000)]
     public string Name { get; set; }
     public NestedClass Nested { get; set; }
 }

@@ -112,13 +112,9 @@ public class MapperTests
         target.EnumValue.Should().Be(source.EnumValue);
     }
 
-    private class SourceModelC : TargetModelB
-    {
-    }
+    private class SourceModelC : TargetModelB;
 
-    private class TargetModelC : SourceModelB
-    {
-    }
+    private class TargetModelC : SourceModelB;
 
     [TestCase]
     public void Mapper_Should_Not_Copy_Nullable_Value_Types_To_Value_Types()
