@@ -12,339 +12,338 @@ using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Firebend.AutoCrud.Generator.Implementations
+namespace Firebend.AutoCrud.Generator.Implementations;
+
+public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
 {
-    public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
+    private readonly object _lock = new();
+    private bool _isGenerated;
+
+    private readonly IDynamicClassGenerator _classGenerator;
+
+    protected EntityCrudGenerator(IDynamicClassGenerator classGenerator, IServiceCollection serviceCollection)
     {
-        private readonly object _lock = new();
-        private bool _isGenerated;
+        _classGenerator = classGenerator;
+        ServiceCollection = serviceCollection;
+    }
 
-        private readonly IDynamicClassGenerator _classGenerator;
+    protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(new DynamicClassGenerator(), serviceCollection)
+    {
+    }
 
-        protected EntityCrudGenerator(IDynamicClassGenerator classGenerator, IServiceCollection serviceCollection)
+    public List<BaseBuilder> Builders { get; private set; } = new();
+
+    public IServiceCollection ServiceCollection { get; }
+
+    public IServiceCollection Generate()
+    {
+        if (_isGenerated)
         {
-            _classGenerator = classGenerator;
-            ServiceCollection = serviceCollection;
+            return ServiceCollection;
         }
 
-        protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(new DynamicClassGenerator(), serviceCollection)
-        {
-        }
-
-        public List<BaseBuilder> Builders { get; private set; } = new();
-
-        public IServiceCollection ServiceCollection { get; }
-
-        public IServiceCollection Generate()
+        lock (_lock)
         {
             if (_isGenerated)
             {
                 return ServiceCollection;
             }
 
-            lock (_lock)
+            OnGenerate();
+            _isGenerated = true;
+            return ServiceCollection;
+        }
+    }
+
+    private void OnGenerate()
+    {
+        var start = Stopwatch.GetTimestamp();
+
+        foreach (var builder in Builders)
+        {
+            var builderStart = Stopwatch.GetTimestamp();
+            Generate(ServiceCollection, builder);
+            Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {Stopwatch.GetElapsedTime(builderStart).Milliseconds} (ms)");
+            builder.Dispose();
+        }
+
+        Console.WriteLine($"All entities generated in {Stopwatch.GetElapsedTime(start).TotalMilliseconds} (ms)");
+    }
+
+    protected virtual void Generate(IServiceCollection serviceCollection, BaseBuilder builder)
+    {
+        builder.Build();
+        RegisterRegistrations(serviceCollection, builder);
+        CallServiceCollectionHooks(serviceCollection, builder);
+    }
+
+    private static void CallServiceCollectionHooks(IServiceCollection serviceCollection, BaseBuilder builder)
+    {
+        if (builder.ServiceCollectionHooks == null)
+        {
+            return;
+        }
+
+        foreach (var hook in builder.ServiceCollectionHooks)
+        {
+            hook(serviceCollection);
+        }
+    }
+
+    private void RegisterRegistrations(IServiceCollection serviceCollection, BaseBuilder builder)
+    {
+        var services = new Dictionary<Type, List<ServiceRegistration>>();
+
+        foreach (var (type, registrations) in builder.Registrations)
+        {
+            if (registrations == null)
             {
-                if (_isGenerated)
+                continue;
+            }
+
+            foreach (var reg in registrations)
+            {
+                switch (reg)
                 {
-                    return ServiceCollection;
-                }
-
-                OnGenerate();
-                _isGenerated = true;
-                return ServiceCollection;
-            }
-        }
-
-        private void OnGenerate()
-        {
-            var start = Stopwatch.GetTimestamp();
-
-            foreach (var builder in Builders)
-            {
-                var builderStart = Stopwatch.GetTimestamp();
-                Generate(ServiceCollection, builder);
-                Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {Stopwatch.GetElapsedTime(builderStart).Milliseconds} (ms)");
-                builder.Dispose();
-            }
-
-            Console.WriteLine($"All entities generated in {Stopwatch.GetElapsedTime(start).TotalMilliseconds} (ms)");
-        }
-
-        protected virtual void Generate(IServiceCollection serviceCollection, BaseBuilder builder)
-        {
-            builder.Build();
-            RegisterRegistrations(serviceCollection, builder);
-            CallServiceCollectionHooks(serviceCollection, builder);
-        }
-
-        private static void CallServiceCollectionHooks(IServiceCollection serviceCollection, BaseBuilder builder)
-        {
-            if (builder.ServiceCollectionHooks == null)
-            {
-                return;
-            }
-
-            foreach (var hook in builder.ServiceCollectionHooks)
-            {
-                hook(serviceCollection);
-            }
-        }
-
-        private void RegisterRegistrations(IServiceCollection serviceCollection, BaseBuilder builder)
-        {
-            var services = new Dictionary<Type, List<ServiceRegistration>>();
-
-            foreach (var (type, registrations) in builder.Registrations)
-            {
-                if (registrations == null)
-                {
-                    continue;
-                }
-
-                foreach (var reg in registrations)
-                {
-                    switch (reg)
+                    case DynamicClassRegistration classRegistration:
                     {
-                        case DynamicClassRegistration classRegistration:
+                        var instance = _classGenerator.ImplementInterface(
+                            classRegistration.Interface,
+                            classRegistration.Signature,
+                            classRegistration.Properties.ToArray());
+
+                        serviceCollection.AddSingleton(classRegistration.Interface, instance);
+                        break;
+                    }
+                    case InstanceRegistration instanceRegistration:
+                        serviceCollection.AddSingleton(type, instanceRegistration.Instance);
+                        break;
+                    case ServiceRegistration serviceRegistration:
+                        if (services.ContainsKey(type))
                         {
-                            var instance = _classGenerator.ImplementInterface(
-                                classRegistration.Interface,
-                                classRegistration.Signature,
-                                classRegistration.Properties.ToArray());
-
-                            serviceCollection.AddSingleton(classRegistration.Interface, instance);
-                            break;
+                            services[type] = services[type] ?? new List<ServiceRegistration>();
+                            services[type].Add(serviceRegistration);
                         }
-                        case InstanceRegistration instanceRegistration:
-                            serviceCollection.AddSingleton(type, instanceRegistration.Instance);
-                            break;
-                        case ServiceRegistration serviceRegistration:
-                            if (services.ContainsKey(type))
-                            {
-                                services[type] = services[type] ?? new List<ServiceRegistration>();
-                                services[type].Add(serviceRegistration);
-                            }
-                            else
-                            {
-                                services.Add(type, new List<ServiceRegistration> { serviceRegistration });
-                            }
-                            break;
-                        case BuilderRegistration builderRegistration:
-                            Generate(serviceCollection, builderRegistration.Builder);
-                            break;
-                    }
-                }
-            }
-
-            RegisterServiceRegistrations(serviceCollection, builder, services);
-        }
-
-        private void RegisterServiceRegistrations(IServiceCollection serviceCollection,
-            BaseBuilder builder,
-            IDictionary<Type, List<ServiceRegistration>> serviceRegistrations)
-        {
-            var signatureBase = builder.SignatureBase;
-            var implementedTypes = new List<Type>();
-
-            var extraInterfaces = GetCustomImplementations(serviceRegistrations);
-            var ordered = OrderByDependencies(serviceRegistrations).Distinct().ToArray();
-
-            foreach (var (key, value) in ordered)
-            {
-                var interfaceImplementations = extraInterfaces.FindAll(x =>
-                    x.IsAssignableFrom(value) && x.Name == $"I{value.Name}");
-
-                if (!key.IsAssignableFrom(value))
-                {
-                    throw new InvalidCastException($"Cannot use {value.Name} to implement {key.Name}");
-                }
-
-                var signature = $"{signatureBase}_{value.Name}";
-
-                if (key.IsInterface)
-                {
-                    interfaceImplementations.Add(key);
-                    interfaceImplementations.Add(_classGenerator.GenerateInterface(key, $"I{signature}"));
-                }
-
-                interfaceImplementations = interfaceImplementations.Distinct().ToList();
-
-                try
-                {
-                    var implementedType = _classGenerator.GenerateDynamicClass(
-                        value,
-                        signature,
-                        implementedTypes,
-                        interfaceImplementations.ToArray(),
-                        GetAttributes(value, builder.Attributes));
-
-
-                    interfaceImplementations.ForEach(iFace => serviceCollection.AddScoped(iFace, implementedType));
-
-                    if (interfaceImplementations.Count == 0)
-                    {
-                        serviceCollection.AddScoped(implementedType);
-                    }
-
-                    implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
+                        else
+                        {
+                            services.Add(type, new List<ServiceRegistration> { serviceRegistration });
+                        }
+                        break;
+                    case BuilderRegistration builderRegistration:
+                        Generate(serviceCollection, builderRegistration.Builder);
+                        break;
                 }
             }
         }
 
-        private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CrudBuilderAttributeModel>> builderAttributes)
+        RegisterServiceRegistrations(serviceCollection, builder, services);
+    }
+
+    private void RegisterServiceRegistrations(IServiceCollection serviceCollection,
+        BaseBuilder builder,
+        IDictionary<Type, List<ServiceRegistration>> serviceRegistrations)
+    {
+        var signatureBase = builder.SignatureBase;
+        var implementedTypes = new List<Type>();
+
+        var extraInterfaces = GetCustomImplementations(serviceRegistrations);
+        var ordered = OrderByDependencies(serviceRegistrations).Distinct().ToArray();
+
+        foreach (var (key, value) in ordered)
         {
-            if (builderAttributes == null)
+            var interfaceImplementations = extraInterfaces.FindAll(x =>
+                x.IsAssignableFrom(value) && x.Name == $"I{value.Name}");
+
+            if (!key.IsAssignableFrom(value))
             {
-                return null;
+                throw new InvalidCastException($"Cannot use {value.Name} to implement {key.Name}");
             }
 
-            var attributes = new List<CustomAttributeBuilder>();
+            var signature = $"{signatureBase}_{value.Name}";
 
-            foreach (var (type, attribute) in builderAttributes)
+            if (key.IsInterface)
             {
-                if (type.IsAssignableFrom(typeToImplement))
+                interfaceImplementations.Add(key);
+                interfaceImplementations.Add(_classGenerator.GenerateInterface(key, $"I{signature}"));
+            }
+
+            interfaceImplementations = interfaceImplementations.Distinct().ToList();
+
+            try
+            {
+                var implementedType = _classGenerator.GenerateDynamicClass(
+                    value,
+                    signature,
+                    implementedTypes,
+                    interfaceImplementations.ToArray(),
+                    GetAttributes(value, builder.Attributes));
+
+
+                interfaceImplementations.ForEach(iFace => serviceCollection.AddScoped(iFace, implementedType));
+
+                if (interfaceImplementations.Count == 0)
                 {
-                    attributes.AddRange(attribute.Select(x => x.AttributeBuilder));
+                    serviceCollection.AddScoped(implementedType);
                 }
+
+                implementedTypes = implementedTypes.Union(interfaceImplementations).Distinct().ToList();
             }
-
-            var attributeArray = attributes.Distinct().ToArray();
-
-            if (attributeArray.Any())
+            catch (Exception e)
             {
-                return attributeArray;
+                Console.WriteLine(e);
+                throw;
             }
+        }
+    }
 
+    private static CustomAttributeBuilder[] GetAttributes(Type typeToImplement, IDictionary<Type, List<CrudBuilderAttributeModel>> builderAttributes)
+    {
+        if (builderAttributes == null)
+        {
             return null;
         }
 
-        private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, List<ServiceRegistration>> source)
+        var attributes = new List<CustomAttributeBuilder>();
+
+        foreach (var (type, attribute) in builderAttributes)
         {
-            var orderedTypes = new List<KeyValuePair<Type, Type>>();
-
-            if (source != null)
+            if (type.IsAssignableFrom(typeToImplement))
             {
-                var maxVisits = source.Count;
-
-                var typesToAdd = source
-                    .SelectMany(x => x.Value, (pair, registration) => new KeyValuePair<Type, Type>(pair.Key, registration.ServiceType))
-                    .ToList();
-
-                while (typesToAdd.Count > 0)
-                {
-                    foreach (var type in typesToAdd.ToArray())
-                    {
-                        if (CanAddType(type, typesToAdd))
-                        {
-                            orderedTypes.Add(type);
-                            typesToAdd.Remove(type);
-                        }
-                    }
-
-                    maxVisits--;
-
-                    if (maxVisits < 0)
-                    {
-                        throw new ApplicationException("Cannot resolve dependencies for auto crud (do you have a circular reference?)");
-                    }
-                }
+                attributes.AddRange(attribute.Select(x => x.AttributeBuilder));
             }
-
-            return orderedTypes;
         }
 
-        private static bool CanAddType(KeyValuePair<Type, Type> type, List<KeyValuePair<Type, Type>> typesToAdd) => type.Value.GetConstructors(
-                BindingFlags.Public |
-                BindingFlags.NonPublic |
-                BindingFlags.Instance)
-            .All(
-                info => info
-                    .GetParameters()
-                    .All(parameterInfo =>
-                        typesToAdd.All(t => t.Key != parameterInfo.ParameterType)
-                        && typesToAdd.All(types => !parameterInfo.ParameterType.IsAssignableFrom(types.Key))
-                    )
-            );
+        var attributeArray = attributes.Distinct().ToArray();
 
-        private static List<Type> GetCustomImplementations(IDictionary<Type, List<ServiceRegistration>> configureRegistrations)
+        if (attributeArray.Any())
         {
-            var extraInterfaces = new List<Type>();
+            return attributeArray;
+        }
 
-            if (configureRegistrations == null)
-            {
-                return extraInterfaces;
-            }
+        return null;
+    }
 
-            foreach (var (key, regs) in configureRegistrations.ToArray())
+    private static IEnumerable<KeyValuePair<Type, Type>> OrderByDependencies(IDictionary<Type, List<ServiceRegistration>> source)
+    {
+        var orderedTypes = new List<KeyValuePair<Type, Type>>();
+
+        if (source != null)
+        {
+            var maxVisits = source.Count;
+
+            var typesToAdd = source
+                .SelectMany(x => x.Value, (pair, registration) => new KeyValuePair<Type, Type>(pair.Key, registration.ServiceType))
+                .ToList();
+
+            while (typesToAdd.Count > 0)
             {
-                foreach (var reg in regs.ToArray())
+                foreach (var type in typesToAdd.ToArray())
                 {
-
-                    if (!key.IsAssignableFrom(reg.ServiceType))
+                    if (CanAddType(type, typesToAdd))
                     {
-                        var args = reg.ServiceType.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
-                        var args2 = key.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
-
-                        var argsStr = args.Length > 0 ? args.ToString(0, args.Length - 1) : string.Empty;
-                        var args2Str = args2.Length > 0 ? args2.ToString(0, args2.Length - 1) : string.Empty;
-
-                        throw new InvalidCastException($"Cannot use custom configuration {reg.ServiceType.Name} to implement {key.Name}. {argsStr} {args2Str}");
-                    }
-
-                    var implementedInterfaces = reg.ServiceType.GetInterfaces();
-                    var matchingInterface = implementedInterfaces.FirstOrDefault(x => x.Name == $"I{reg.ServiceType.Name}");
-
-                    if (matchingInterface != null)
-                    {
-                        extraInterfaces.Add(matchingInterface);
-                    }
-
-                    if (configureRegistrations.ContainsKey(key))
-                    {
-                        configureRegistrations[key] ??= new List<ServiceRegistration>();
-                        configureRegistrations[key].Add(reg);
-                    }
-                    else
-                    {
-                        configureRegistrations.Add(key, new List<ServiceRegistration> { reg });
+                        orderedTypes.Add(type);
+                        typesToAdd.Remove(type);
                     }
                 }
-            }
 
+                maxVisits--;
+
+                if (maxVisits < 0)
+                {
+                    throw new ApplicationException("Cannot resolve dependencies for auto crud (do you have a circular reference?)");
+                }
+            }
+        }
+
+        return orderedTypes;
+    }
+
+    private static bool CanAddType(KeyValuePair<Type, Type> type, List<KeyValuePair<Type, Type>> typesToAdd) => type.Value.GetConstructors(
+            BindingFlags.Public |
+            BindingFlags.NonPublic |
+            BindingFlags.Instance)
+        .All(
+            info => info
+                .GetParameters()
+                .All(parameterInfo =>
+                    typesToAdd.All(t => t.Key != parameterInfo.ParameterType)
+                    && typesToAdd.All(types => !parameterInfo.ParameterType.IsAssignableFrom(types.Key))
+                )
+        );
+
+    private static List<Type> GetCustomImplementations(IDictionary<Type, List<ServiceRegistration>> configureRegistrations)
+    {
+        var extraInterfaces = new List<Type>();
+
+        if (configureRegistrations == null)
+        {
             return extraInterfaces;
         }
 
-        public EntityCrudGenerator AddBuilder<TBuilder>(TBuilder builder, Func<TBuilder, TBuilder> configure)
-            where TBuilder : BaseBuilder, new()
-
+        foreach (var (key, regs) in configureRegistrations.ToArray())
         {
-            configure(new TBuilder());
-
-            Builders.Add(builder);
-
-            return this;
-        }
-
-        protected override void DisposeManagedObjects()
-        {
-            _classGenerator?.Dispose();
-
-            if (Builders is not null)
+            foreach (var reg in regs.ToArray())
             {
-                foreach (var builder in Builders)
+
+                if (!key.IsAssignableFrom(reg.ServiceType))
                 {
-                    builder.Dispose();
+                    var args = reg.ServiceType.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+                    var args2 = key.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));
+
+                    var argsStr = args.Length > 0 ? args.ToString(0, args.Length - 1) : string.Empty;
+                    var args2Str = args2.Length > 0 ? args2.ToString(0, args2.Length - 1) : string.Empty;
+
+                    throw new InvalidCastException($"Cannot use custom configuration {reg.ServiceType.Name} to implement {key.Name}. {argsStr} {args2Str}");
                 }
 
-                Builders.Clear();
+                var implementedInterfaces = reg.ServiceType.GetInterfaces();
+                var matchingInterface = implementedInterfaces.FirstOrDefault(x => x.Name == $"I{reg.ServiceType.Name}");
+
+                if (matchingInterface != null)
+                {
+                    extraInterfaces.Add(matchingInterface);
+                }
+
+                if (configureRegistrations.ContainsKey(key))
+                {
+                    configureRegistrations[key] ??= new List<ServiceRegistration>();
+                    configureRegistrations[key].Add(reg);
+                }
+                else
+                {
+                    configureRegistrations.Add(key, new List<ServiceRegistration> { reg });
+                }
+            }
+        }
+
+        return extraInterfaces;
+    }
+
+    public EntityCrudGenerator AddBuilder<TBuilder>(TBuilder builder, Func<TBuilder, TBuilder> configure)
+        where TBuilder : BaseBuilder, new()
+
+    {
+        configure(new TBuilder());
+
+        Builders.Add(builder);
+
+        return this;
+    }
+
+    protected override void DisposeManagedObjects()
+    {
+        _classGenerator?.Dispose();
+
+        if (Builders is not null)
+        {
+            foreach (var builder in Builders)
+            {
+                builder.Dispose();
             }
 
-            Builders = null;
+            Builders.Clear();
         }
+
+        Builders = null;
     }
 }

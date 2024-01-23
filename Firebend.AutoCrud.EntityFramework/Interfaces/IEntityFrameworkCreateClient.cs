@@ -3,14 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace Firebend.AutoCrud.EntityFramework.Interfaces
-{
-    public interface IEntityFrameworkCreateClient<TKey, TEntity> : IDisposable
-        where TKey : struct
-        where TEntity : IEntity<TKey>
-    {
-        Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken);
+namespace Firebend.AutoCrud.EntityFramework.Interfaces;
 
-        Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken);
-    }
+public interface IEntityFrameworkCreateClient<TKey, TEntity> : IDisposable
+    where TKey : struct
+    where TEntity : IEntity<TKey>
+{
+    Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken);
+
+    Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken);
 }

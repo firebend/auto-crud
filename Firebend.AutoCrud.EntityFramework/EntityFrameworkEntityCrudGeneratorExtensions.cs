@@ -5,22 +5,21 @@ using Firebend.AutoCrud.Generator.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Firebend.AutoCrud.EntityFramework
+namespace Firebend.AutoCrud.EntityFramework;
+
+public static class EntityFrameworkEntityCrudGeneratorExtensions
 {
-    public static class EntityFrameworkEntityCrudGeneratorExtensions
+    public static EntityFrameworkEntityCrudGenerator UsingEfCrud(this IServiceCollection serviceCollection) =>
+        new(new DynamicClassGenerator(), serviceCollection);
+
+    public static IServiceCollection UsingEfCrud(this IServiceCollection serviceCollection,
+        Action<EntityFrameworkEntityCrudGenerator> configure)
     {
-        public static EntityFrameworkEntityCrudGenerator UsingEfCrud(this IServiceCollection serviceCollection) =>
-            new(new DynamicClassGenerator(), serviceCollection);
 
-        public static IServiceCollection UsingEfCrud(this IServiceCollection serviceCollection,
-            Action<EntityFrameworkEntityCrudGenerator> configure)
-        {
+        serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
 
-            serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
-
-            using var ef = UsingEfCrud(serviceCollection);
-            configure(ef);
-            return ef.Generate();
-        }
+        using var ef = UsingEfCrud(serviceCollection);
+        configure(ef);
+        return ef.Generate();
     }
 }

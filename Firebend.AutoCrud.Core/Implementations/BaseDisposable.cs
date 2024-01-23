@@ -1,47 +1,46 @@
 using System;
 
-namespace Firebend.AutoCrud.Core.Implementations
+namespace Firebend.AutoCrud.Core.Implementations;
+
+public class BaseDisposable : IDisposable
 {
-    public class BaseDisposable : IDisposable
+    protected bool Disposed { get; private set; }
+
+    ~BaseDisposable()
     {
-        protected bool Disposed { get; private set; }
+        Dispose(false);
+    }
 
-        ~BaseDisposable()
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void DisposeManagedObjects()
+    {
+
+    }
+
+    protected virtual void DisposeUnmanagedObjectsAndAssignNull()
+    {
+
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Disposed)
         {
-            Dispose(false);
+            return;
         }
 
-        public void Dispose()
+        if (disposing)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            DisposeManagedObjects();
         }
 
-        protected virtual void DisposeManagedObjects()
-        {
+        DisposeUnmanagedObjectsAndAssignNull();
 
-        }
-
-        protected virtual void DisposeUnmanagedObjectsAndAssignNull()
-        {
-
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (Disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                DisposeManagedObjects();
-            }
-
-            DisposeUnmanagedObjectsAndAssignNull();
-
-            Disposed = true;
-        }
+        Disposed = true;
     }
 }

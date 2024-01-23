@@ -5,25 +5,24 @@ using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration
+namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
+
+public abstract class MongoConfigureCollection<TKey, TEntity> : BaseMongoConfigureCollection<TKey, TEntity>, IConfigureCollection<TKey, TEntity>
+    where TEntity : IEntity<TKey>
+    where TKey : struct
 {
-    public abstract class MongoConfigureCollection<TKey, TEntity> : BaseMongoConfigureCollection<TKey, TEntity>, IConfigureCollection<TKey, TEntity>
-        where TEntity : IEntity<TKey>
-        where TKey : struct
+    private readonly IMongoEntityConfiguration<TKey, TEntity> _configuration;
+
+    protected MongoConfigureCollection(ILogger<MongoConfigureCollection<TKey, TEntity>> logger,
+        IMongoIndexClient<TKey, TEntity> indexClient,
+        IMongoEntityConfiguration<TKey, TEntity> configuration) : base(logger, indexClient)
     {
-        private readonly IMongoEntityConfiguration<TKey, TEntity> _configuration;
+        _configuration = configuration;
+    }
 
-        protected MongoConfigureCollection(ILogger<MongoConfigureCollection<TKey, TEntity>> logger,
-            IMongoIndexClient<TKey, TEntity> indexClient,
-            IMongoEntityConfiguration<TKey, TEntity> configuration) : base(logger, indexClient)
-        {
-            _configuration = configuration;
-        }
-
-        public virtual Task ConfigureAsync(CancellationToken cancellationToken)
-        {
-            var config = MongoEntityIndexConfiguration<TKey, TEntity>.FromConfiguration(_configuration);
-            return ConfigureAsync(config, cancellationToken);
-        }
+    public virtual Task ConfigureAsync(CancellationToken cancellationToken)
+    {
+        var config = MongoEntityIndexConfiguration<TKey, TEntity>.FromConfiguration(_configuration);
+        return ConfigureAsync(config, cancellationToken);
     }
 }

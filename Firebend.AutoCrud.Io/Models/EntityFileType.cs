@@ -1,9 +1,8 @@
-namespace Firebend.AutoCrud.Io.Models
+namespace Firebend.AutoCrud.Io.Models;
+
+public enum EntityFileType
 {
-    public enum EntityFileType
-    {
-        Unknown = 0,
-        Csv = 1,
-        Spreadsheet = 2
-    }
+    Unknown = 0,
+    Csv = 1,
+    Spreadsheet = 2
 }

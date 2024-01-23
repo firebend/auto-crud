@@ -1,9 +1,8 @@
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents
+namespace Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
+
+public interface IDomainEventContextProvider
 {
-    public interface IDomainEventContextProvider
-    {
-        DomainEventContext GetContext();
-    }
+    DomainEventContext GetContext();
 }

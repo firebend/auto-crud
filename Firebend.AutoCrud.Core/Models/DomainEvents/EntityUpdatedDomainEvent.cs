@@ -6,45 +6,44 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Firebend.AutoCrud.Core.Models.DomainEvents
+namespace Firebend.AutoCrud.Core.Models.DomainEvents;
+
+public class EntityUpdatedDomainEvent<T> : DomainEventBase
+    where T : class
 {
-    public class EntityUpdatedDomainEvent<T> : DomainEventBase
-        where T : class
+    private T _modified;
+    private List<Operation<T>> _operations;
+    private JsonPatchDocument<T> _patch;
+
+    public T Previous { get; set; }
+
+    public List<Operation<T>> Operations
     {
-        private T _modified;
-        private List<Operation<T>> _operations;
-        private JsonPatchDocument<T> _patch;
-
-        public T Previous { get; set; }
-
-        public List<Operation<T>> Operations
+        get => _operations;
+        set
         {
-            get => _operations;
-            set
-            {
-                _operations = value;
-                _patch = null;
-                _modified = null;
-            }
+            _operations = value;
+            _patch = null;
+            _modified = null;
+        }
+    }
+
+    [JsonIgnore]
+    public JsonPatchDocument<T> Patch
+        => _patch ??= Operations?.HasValues() ?? false ? new JsonPatchDocument<T>(Operations, new DefaultContractResolver()) : null;
+
+    [JsonIgnore]
+    public T Modified => _modified ??= GetModified(Previous, Patch);
+
+    private static T GetModified(T previous, JsonPatchDocument<T> patchDocument)
+    {
+        if (patchDocument is null || previous is null)
+        {
+            return null;
         }
 
-        [JsonIgnore]
-        public JsonPatchDocument<T> Patch
-            => _patch ??= Operations?.HasValues() ?? false ? new JsonPatchDocument<T>(Operations, new DefaultContractResolver()) : null;
-
-        [JsonIgnore]
-        public T Modified => _modified ??= GetModified(Previous, Patch);
-
-        private static T GetModified(T previous, JsonPatchDocument<T> patchDocument)
-        {
-            if (patchDocument is null || previous is null)
-            {
-                return null;
-            }
-
-            var clone = previous.Clone();
-            patchDocument.ApplyTo(clone);
-            return clone;
-        }
+        var clone = previous.Clone();
+        patchDocument.ApplyTo(clone);
+        return clone;
     }
 }

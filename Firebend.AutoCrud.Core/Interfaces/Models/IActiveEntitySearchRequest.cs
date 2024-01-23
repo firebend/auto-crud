@@ -1,7 +1,6 @@
-namespace Firebend.AutoCrud.Core.Interfaces.Models
+namespace Firebend.AutoCrud.Core.Interfaces.Models;
+
+public interface IActiveEntitySearchRequest
 {
-    public interface IActiveEntitySearchRequest
-    {
-        bool? IsDeleted { get; set; }
-    }
+    bool? IsDeleted { get; set; }
 }

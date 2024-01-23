@@ -4,15 +4,14 @@ using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Sample.Models;
 
-namespace Firebend.AutoCrud.EntityFramework.Sample
-{
-    public interface IPersonReadRepository : IEntityReadService<Guid, Person>;
+namespace Firebend.AutoCrud.EntityFramework.Sample;
 
-    public class PersonReadRepository : EntityFrameworkEntityReadService<Guid, Person>, IPersonReadRepository
+public interface IPersonReadRepository : IEntityReadService<Guid, Person>;
+
+public class PersonReadRepository : EntityFrameworkEntityReadService<Guid, Person>, IPersonReadRepository
+{
+    public PersonReadRepository(IEntityFrameworkQueryClient<Guid, Person> readClient,
+        ISessionTransactionManager transactionManager) : base(readClient, transactionManager)
     {
-        public PersonReadRepository(IEntityFrameworkQueryClient<Guid, Person> readClient,
-            ISessionTransactionManager transactionManager) : base(readClient, transactionManager)
-        {
-        }
     }
 }

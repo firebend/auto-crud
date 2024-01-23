@@ -2,14 +2,13 @@ using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services
+namespace Firebend.AutoCrud.Core.Interfaces.Services;
+
+public interface IEntityCrudGenerator
 {
-    public interface IEntityCrudGenerator
-    {
-        List<BaseBuilder> Builders { get; }
+    List<BaseBuilder> Builders { get; }
 
-        IServiceCollection ServiceCollection { get; }
+    IServiceCollection ServiceCollection { get; }
 
-        IServiceCollection Generate();
-    }
+    IServiceCollection Generate();
 }

@@ -1,26 +1,25 @@
 using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace Firebend.AutoCrud.Core.Models.Searching
+namespace Firebend.AutoCrud.Core.Models.Searching;
+
+public class ModifiedEntityRequest : EntityRequest, IModifiedEntitySearchRequest
 {
-    public class ModifiedEntityRequest : EntityRequest, IModifiedEntitySearchRequest
-    {
-        /// <inheritdoc />
-        public DateTimeOffset? CreatedStartDate { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset? CreatedStartDate { get; set; }
 
-        /// <inheritdoc />
-        public DateTimeOffset? CreatedEndDate { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset? CreatedEndDate { get; set; }
 
-        /// <inheritdoc />
-        public DateTimeOffset? ModifiedStartDate { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset? ModifiedStartDate { get; set; }
 
-        /// <inheritdoc />
-        public DateTimeOffset? ModifiedEndDate { get; set; }
-    }
+    /// <inheritdoc />
+    public DateTimeOffset? ModifiedEndDate { get; set; }
+}
 
-    public class ModifiedEntitySearchRequest : ModifiedEntityRequest, IFullTextSearchRequest
-    {
-        /// <inheritdoc />
-        public string Search { get; set; }
-    }
+public class ModifiedEntitySearchRequest : ModifiedEntityRequest, IFullTextSearchRequest
+{
+    /// <inheritdoc />
+    public string Search { get; set; }
 }

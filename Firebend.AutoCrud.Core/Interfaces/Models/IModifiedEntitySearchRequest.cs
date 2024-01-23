@@ -1,12 +1,11 @@
 using System;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Models
+namespace Firebend.AutoCrud.Core.Interfaces.Models;
+
+public interface IModifiedEntitySearchRequest
 {
-    public interface IModifiedEntitySearchRequest
-    {
-        DateTimeOffset? CreatedStartDate { get; set; }
-        DateTimeOffset? CreatedEndDate { get; set; }
-        DateTimeOffset? ModifiedStartDate { get; set; }
-        DateTimeOffset? ModifiedEndDate { get; set; }
-    }
+    DateTimeOffset? CreatedStartDate { get; set; }
+    DateTimeOffset? CreatedEndDate { get; set; }
+    DateTimeOffset? ModifiedStartDate { get; set; }
+    DateTimeOffset? ModifiedEndDate { get; set; }
 }

@@ -1,7 +1,6 @@
-namespace Firebend.AutoCrud.Mongo.Interfaces
+namespace Firebend.AutoCrud.Mongo.Interfaces;
+
+public interface IMongoDbConfigurator
 {
-    public interface IMongoDbConfigurator
-    {
-        void Configure();
-    }
+    void Configure();
 }

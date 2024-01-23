@@ -2,15 +2,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
-{
-    public interface IEntitySearchHandler<TKey, TEntity, in TSearch>
-        where TKey : struct
-        where TEntity : IEntity<TKey>
-        where TSearch : IEntitySearchRequest
-    {
-        IQueryable<TEntity> HandleSearch(IQueryable<TEntity> queryable, TSearch searchRequest) => null;
+namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 
-        Task<IQueryable<TEntity>> HandleSearchAsync(IQueryable<TEntity> queryable, TSearch searchRequest) => Task.FromResult((IQueryable<TEntity>)null);
-    }
+public interface IEntitySearchHandler<TKey, TEntity, in TSearch>
+    where TKey : struct
+    where TEntity : IEntity<TKey>
+    where TSearch : IEntitySearchRequest
+{
+    IQueryable<TEntity> HandleSearch(IQueryable<TEntity> queryable, TSearch searchRequest) => null;
+
+    Task<IQueryable<TEntity>> HandleSearchAsync(IQueryable<TEntity> queryable, TSearch searchRequest) => Task.FromResult((IQueryable<TEntity>)null);
 }

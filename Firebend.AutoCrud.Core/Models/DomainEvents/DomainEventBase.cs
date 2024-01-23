@@ -1,13 +1,12 @@
 using System;
 
-namespace Firebend.AutoCrud.Core.Models.DomainEvents
+namespace Firebend.AutoCrud.Core.Models.DomainEvents;
+
+public class DomainEventBase
 {
-    public class DomainEventBase
-    {
-        public Guid MessageId { get; set; } = Guid.NewGuid();
+    public Guid MessageId { get; set; } = Guid.NewGuid();
 
-        public DateTimeOffset Time { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset Time { get; set; } = DateTimeOffset.UtcNow;
 
-        public DomainEventContext EventContext { get; set; }
-    }
+    public DomainEventContext EventContext { get; set; }
 }

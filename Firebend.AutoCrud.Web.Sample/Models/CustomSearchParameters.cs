@@ -7,57 +7,56 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Firebend.AutoCrud.Web.Sample.Models
+namespace Firebend.AutoCrud.Web.Sample.Models;
+
+public class CustomSearchParameters : ModifiedEntitySearchRequest
 {
-    public class CustomSearchParameters : ModifiedEntitySearchRequest
+    public string NickName { get; set; }
+}
+
+public class
+    MongoCustomSearchHandler : EntitySearchAuthorizationHandler<Guid, MongoTenantPerson, CustomSearchParameters>
+{
+    public MongoCustomSearchHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
     {
-        public string NickName { get; set; }
     }
 
-    public class
-        MongoCustomSearchHandler : EntitySearchAuthorizationHandler<Guid, MongoTenantPerson, CustomSearchParameters>
+    public override IQueryable<MongoTenantPerson> HandleSearch(IQueryable<MongoTenantPerson> queryable,
+        CustomSearchParameters searchRequest)
     {
-        public MongoCustomSearchHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        if (!string.IsNullOrWhiteSpace(searchRequest?.NickName))
         {
+            queryable = queryable.Where(x => x.NickName == searchRequest.NickName);
         }
 
-        public override IQueryable<MongoTenantPerson> HandleSearch(IQueryable<MongoTenantPerson> queryable,
-            CustomSearchParameters searchRequest)
-        {
-            if (!string.IsNullOrWhiteSpace(searchRequest?.NickName))
-            {
-                queryable = queryable.Where(x => x.NickName == searchRequest.NickName);
-            }
+        return base.HandleSearch(queryable, searchRequest);
+    }
+}
 
-            return base.HandleSearch(queryable, searchRequest);
-        }
+public class EfCustomSearchHandler : EntitySearchAuthorizationHandler<Guid, EfPerson, CustomSearchParameters>
+{
+    public EfCustomSearchHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+    {
     }
 
-    public class EfCustomSearchHandler : EntitySearchAuthorizationHandler<Guid, EfPerson, CustomSearchParameters>
+    public override IQueryable<EfPerson> HandleSearch(IQueryable<EfPerson> queryable,
+        CustomSearchParameters searchRequest)
     {
-        public EfCustomSearchHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        if (!string.IsNullOrWhiteSpace(searchRequest?.NickName))
         {
+            queryable = queryable.Where(x => x.NickName == searchRequest.NickName);
         }
 
-        public override IQueryable<EfPerson> HandleSearch(IQueryable<EfPerson> queryable,
-            CustomSearchParameters searchRequest)
+        if (!string.IsNullOrWhiteSpace(searchRequest?.Search))
         {
-            if (!string.IsNullOrWhiteSpace(searchRequest?.NickName))
-            {
-                queryable = queryable.Where(x => x.NickName == searchRequest.NickName);
-            }
-
-            if (!string.IsNullOrWhiteSpace(searchRequest?.Search))
-            {
-                queryable = queryable.Where(x => EF.Functions.ContainsAny(x.FirstName, searchRequest.Search));
-            }
-
-            return base.HandleSearch(queryable, searchRequest);
+            queryable = queryable.Where(x => EF.Functions.ContainsAny(x.FirstName, searchRequest.Search));
         }
-    }
 
-    public class PetSearch : EntitySearchRequest
-    {
-        [FromRoute] public Guid? PersonId { get; set; }
+        return base.HandleSearch(queryable, searchRequest);
     }
+}
+
+public class PetSearch : EntitySearchRequest
+{
+    [FromRoute] public Guid? PersonId { get; set; }
 }

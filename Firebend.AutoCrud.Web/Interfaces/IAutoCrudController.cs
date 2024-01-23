@@ -1,4 +1,3 @@
-namespace Firebend.AutoCrud.Web.Interfaces
-{
-    public interface IAutoCrudController;
-}
+namespace Firebend.AutoCrud.Web.Interfaces;
+
+public interface IAutoCrudController;

@@ -1,10 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
+
+public interface IDbCreator
 {
-    public interface IDbCreator
-    {
-        Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default);
-    }
+    Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default);
 }

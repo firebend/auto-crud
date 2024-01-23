@@ -8,34 +8,33 @@ using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 
-namespace Firebend.AutoCrud.Io.Implementations
+namespace Firebend.AutoCrud.Io.Implementations;
+
+public class EntityExportService<T, TVersion> : BaseDisposable, IEntityExportService<T, TVersion>
+    where T : class
+    where TVersion : class, IAutoCrudApiVersion
 {
-    public class EntityExportService<T, TVersion> : BaseDisposable, IEntityExportService<T, TVersion>
-        where T : class
-        where TVersion : class, IAutoCrudApiVersion
+    private readonly IFileFieldAutoMapper<TVersion> _autoMapper;
+    private readonly IEntityFileWriterFactory<TVersion> _fileWriterFactory;
+
+    public EntityExportService(IEntityFileWriterFactory<TVersion> fileWriterFactory,
+        IFileFieldAutoMapper<TVersion> autoMapper)
     {
-        private readonly IFileFieldAutoMapper<TVersion> _autoMapper;
-        private readonly IEntityFileWriterFactory<TVersion> _fileWriterFactory;
+        _fileWriterFactory = fileWriterFactory;
+        _autoMapper = autoMapper;
+    }
 
-        public EntityExportService(IEntityFileWriterFactory<TVersion> fileWriterFactory,
-            IFileFieldAutoMapper<TVersion> autoMapper)
+    public Task<Stream> ExportAsync(EntityFileType exportType,
+        IEnumerable<T> records,
+        CancellationToken cancellationToken = default)
+    {
+        var writer = _fileWriterFactory.Get(exportType) ?? throw new Exception($"Could not find writer for type {exportType}");
+
+        using (writer)
         {
-            _fileWriterFactory = fileWriterFactory;
-            _autoMapper = autoMapper;
-        }
+            var fields = _autoMapper.MapOutput<T>();
 
-        public Task<Stream> ExportAsync(EntityFileType exportType,
-            IEnumerable<T> records,
-            CancellationToken cancellationToken = default)
-        {
-            var writer = _fileWriterFactory.Get(exportType) ?? throw new Exception($"Could not find writer for type {exportType}");
-
-            using (writer)
-            {
-                var fields = _autoMapper.MapOutput<T>();
-
-                return writer.WriteRecordsAsync(fields, records, cancellationToken);
-            }
+            return writer.WriteRecordsAsync(fields, records, cancellationToken);
         }
     }
 }

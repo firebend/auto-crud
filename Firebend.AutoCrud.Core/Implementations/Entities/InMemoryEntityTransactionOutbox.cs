@@ -7,91 +7,90 @@ using AsyncKeyedLock;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 
-namespace Firebend.AutoCrud.Core.Implementations.Entities
+namespace Firebend.AutoCrud.Core.Implementations.Entities;
+
+internal static class InMemoryEntityTransactionOutboxStatics
 {
-    internal static class InMemoryEntityTransactionOutboxStatics
+    public static readonly AsyncKeyedLocker<string> Locker = new(o =>
     {
-        public static readonly AsyncKeyedLocker<string> Locker = new(o =>
+        o.PoolSize = 20;
+        o.PoolInitialFill = 1;
+    });
+}
+public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
+{
+    private readonly Dictionary<string, List<IEntityTransactionOutboxEnrollment>> _enrollments = new();
+
+    public async Task AddEnrollmentAsync(string transactionId, IEntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
+    {
+        using var loc = await InMemoryEntityTransactionOutboxStatics
+            .Locker
+            .LockAsync(transactionId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!_enrollments.ContainsKey(transactionId))
         {
-            o.PoolSize = 20;
-            o.PoolInitialFill = 1;
-        });
+            _enrollments[transactionId] = new List<IEntityTransactionOutboxEnrollment> { enrollment };
+            return;
+        }
+
+        _enrollments[transactionId] ??= new List<IEntityTransactionOutboxEnrollment>();
+        _enrollments[transactionId].Add(enrollment);
     }
-    public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
+
+    public async Task InvokeEnrollmentsAsync(string transactionId, CancellationToken cancellationToken)
     {
-        private readonly Dictionary<string, List<IEntityTransactionOutboxEnrollment>> _enrollments = new();
-
-        public async Task AddEnrollmentAsync(string transactionId, IEntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
+        if (_enrollments.IsEmpty())
         {
-            using var loc = await InMemoryEntityTransactionOutboxStatics
-                .Locker
-                .LockAsync(transactionId, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (!_enrollments.ContainsKey(transactionId))
-            {
-                _enrollments[transactionId] = new List<IEntityTransactionOutboxEnrollment> { enrollment };
-                return;
-            }
-
-            _enrollments[transactionId] ??= new List<IEntityTransactionOutboxEnrollment>();
-            _enrollments[transactionId].Add(enrollment);
+            return;
         }
 
-        public async Task InvokeEnrollmentsAsync(string transactionId, CancellationToken cancellationToken)
+        using var loc = await InMemoryEntityTransactionOutboxStatics
+            .Locker
+            .LockAsync(transactionId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!_enrollments.TryGetValue(transactionId, out var callbacks))
         {
-            if (_enrollments.IsEmpty())
+            return;
+        }
+
+        if (callbacks.IsEmpty())
+        {
+            return;
+        }
+
+        var tasks = callbacks.Select(async x =>
             {
-                return;
-            }
-
-            using var loc = await InMemoryEntityTransactionOutboxStatics
-                .Locker
-                .LockAsync(transactionId, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (!_enrollments.TryGetValue(transactionId, out var callbacks))
-            {
-                return;
-            }
-
-            if (callbacks.IsEmpty())
-            {
-                return;
-            }
-
-            var tasks = callbacks.Select(async x =>
+                try
                 {
-                    try
-                    {
-                        await x
-                            .ActAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                    await x
+                        .ActAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
-                        return null;
-                    }
-                    catch (Exception ex)
-                    {
-                        return ex;
-                    }
-                })
-                .ToArray();
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    return ex;
+                }
+            })
+            .ToArray();
 
-            await Task
-                .WhenAll(tasks)
-                .ConfigureAwait(false);
+        await Task
+            .WhenAll(tasks)
+            .ConfigureAwait(false);
 
-            _enrollments.Remove(transactionId);
-        }
+        _enrollments.Remove(transactionId);
+    }
 
-        public async Task ClearEnrollmentsAsync(string transactionId, CancellationToken cancellationToken)
-        {
-            using var loc = await InMemoryEntityTransactionOutboxStatics
-                .Locker
-                .LockAsync(transactionId, cancellationToken)
-                .ConfigureAwait(false);
+    public async Task ClearEnrollmentsAsync(string transactionId, CancellationToken cancellationToken)
+    {
+        using var loc = await InMemoryEntityTransactionOutboxStatics
+            .Locker
+            .LockAsync(transactionId, cancellationToken)
+            .ConfigureAwait(false);
 
-            _enrollments.Remove(transactionId);
-        }
+        _enrollments.Remove(transactionId);
     }
 }

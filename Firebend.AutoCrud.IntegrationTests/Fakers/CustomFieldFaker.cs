@@ -1,23 +1,22 @@
 using Bogus;
 using Firebend.AutoCrud.CustomFields.Web.Models;
 
-namespace Firebend.AutoCrud.IntegrationTests.Fakers
+namespace Firebend.AutoCrud.IntegrationTests.Fakers;
+
+public static class CustomFieldFaker
 {
-    public static class CustomFieldFaker
+    private static Faker<CustomFieldViewModelCreate> _fakerViewModelBase;
+
+    public static Faker<CustomFieldViewModelCreate> Faker
     {
-        private static Faker<CustomFieldViewModelCreate> _fakerViewModelBase;
-
-        public static Faker<CustomFieldViewModelCreate> Faker
+        get
         {
-            get
-            {
-                _fakerViewModelBase ??= new Faker<CustomFieldViewModelCreate>()
-                    .StrictMode(true)
-                    .RuleFor(x => x.Key, f => f.Commerce.ProductMaterial())
-                    .RuleFor(x => x.Value, f => f.Commerce.Color());
+            _fakerViewModelBase ??= new Faker<CustomFieldViewModelCreate>()
+                .StrictMode(true)
+                .RuleFor(x => x.Key, f => f.Commerce.ProductMaterial())
+                .RuleFor(x => x.Value, f => f.Commerce.Color());
 
-                return _fakerViewModelBase;
-            }
+            return _fakerViewModelBase;
         }
     }
 }

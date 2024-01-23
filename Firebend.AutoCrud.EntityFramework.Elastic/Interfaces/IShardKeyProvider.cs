@@ -1,7 +1,6 @@
-namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
+
+public interface IShardKeyProvider
 {
-    public interface IShardKeyProvider
-    {
-        string GetShardKey();
-    }
+    string GetShardKey();
 }

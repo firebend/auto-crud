@@ -9,101 +9,100 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Firebend.AutoCrud.EntityFramework.CustomCommands
+namespace Firebend.AutoCrud.EntityFramework.CustomCommands;
+
+public class FullTextContainsAnyMethodCallTranslator : IMethodCallTranslator
 {
-    public class FullTextContainsAnyMethodCallTranslator : IMethodCallTranslator
+    private const string FreeTextFunctionName = "FREETEXT";
+    private const string ContainsFunctionName = "CONTAINS";
+
+    private static readonly MethodInfo FreeTextMethodInfo
+        = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
+            nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
+            new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+
+    private static readonly MethodInfo FreeTextMethodInfoWithLanguage
+        = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
+            nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
+            new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
+
+    private static readonly MethodInfo ContainsMethodInfo
+        = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
+            nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
+            new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+
+    private static readonly MethodInfo ContainsMethodInfoWithLanguage
+        = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
+            nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
+            new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
+
+    private static readonly IDictionary<MethodInfo, string> TypeMappings = new Dictionary<MethodInfo, string>
     {
-        private const string FreeTextFunctionName = "FREETEXT";
-        private const string ContainsFunctionName = "CONTAINS";
+        {FreeTextMethodInfo, FreeTextFunctionName},
+        {FreeTextMethodInfoWithLanguage, FreeTextFunctionName},
+        {ContainsMethodInfo, ContainsFunctionName},
+        {ContainsMethodInfoWithLanguage, ContainsFunctionName}
+    };
 
-        private static readonly MethodInfo FreeTextMethodInfo
-            = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
-                nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
-                new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+    private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
-        private static readonly MethodInfo FreeTextMethodInfoWithLanguage
-            = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
-                nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
-                new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
+    public FullTextContainsAnyMethodCallTranslator(ISqlExpressionFactory sqlExpressionFactory)
+    {
+        _sqlExpressionFactory = sqlExpressionFactory;
+    }
 
-        private static readonly MethodInfo ContainsMethodInfo
-            = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
-                nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
-                new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+    public SqlExpression Translate(SqlExpression instance,
+        MethodInfo method,
+        IReadOnlyList<SqlExpression> arguments,
+        IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+    {
 
-        private static readonly MethodInfo ContainsMethodInfoWithLanguage
-            = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
-                nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
-                new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
-
-        private static readonly IDictionary<MethodInfo, string> TypeMappings = new Dictionary<MethodInfo, string>
+        if (method == null)
         {
-            {FreeTextMethodInfo, FreeTextFunctionName},
-            {FreeTextMethodInfoWithLanguage, FreeTextFunctionName},
-            {ContainsMethodInfo, ContainsFunctionName},
-            {ContainsMethodInfoWithLanguage, ContainsFunctionName}
-        };
-
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
-
-        public FullTextContainsAnyMethodCallTranslator(ISqlExpressionFactory sqlExpressionFactory)
-        {
-            _sqlExpressionFactory = sqlExpressionFactory;
+            throw new ArgumentNullException(nameof(method));
         }
 
-        public SqlExpression Translate(SqlExpression instance,
-            MethodInfo method,
-            IReadOnlyList<SqlExpression> arguments,
-            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+        if (arguments == null)
         {
-
-            if (method == null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
-
-            if (arguments == null)
-            {
-                throw new ArgumentNullException(nameof(arguments));
-            }
-
-            if (TypeMappings == null)
-            {
-                return null;
-            }
-
-            if (!TypeMappings.TryGetValue(method, out var functionName))
-            {
-                return null;
-            }
-
-            var propertyReference = arguments[1];
-
-            if (propertyReference is not ColumnExpression columnExpression)
-            {
-                throw new InvalidOperationException("Invalid property");
-            }
-
-            var splatString = !string.IsNullOrWhiteSpace(columnExpression.Table.Alias)
-                ? $"[{columnExpression.Table.Alias}].*"
-                : "*";
-
-            var splat = _sqlExpressionFactory.Fragment(splatString);
-            var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true);
-            var freeText = _sqlExpressionFactory.ApplyTypeMapping(arguments[2], stringMap);
-            var functionArguments = new List<SqlExpression> { splat, freeText };
-
-            if (arguments.Count == 4)
-            {
-                functionArguments.Add(
-                    _sqlExpressionFactory.Fragment($"LANGUAGE {((SqlConstantExpression)arguments[3]).Value}"));
-            }
-
-            return _sqlExpressionFactory.Function(functionName,
-                functionArguments,
-                true,
-                functionArguments.Select(_ => false).ToList(),
-                typeof(bool));
+            throw new ArgumentNullException(nameof(arguments));
         }
+
+        if (TypeMappings == null)
+        {
+            return null;
+        }
+
+        if (!TypeMappings.TryGetValue(method, out var functionName))
+        {
+            return null;
+        }
+
+        var propertyReference = arguments[1];
+
+        if (propertyReference is not ColumnExpression columnExpression)
+        {
+            throw new InvalidOperationException("Invalid property");
+        }
+
+        var splatString = !string.IsNullOrWhiteSpace(columnExpression.Table.Alias)
+            ? $"[{columnExpression.Table.Alias}].*"
+            : "*";
+
+        var splat = _sqlExpressionFactory.Fragment(splatString);
+        var stringMap = new StringTypeMapping("nvarchar(max", DbType.String, true);
+        var freeText = _sqlExpressionFactory.ApplyTypeMapping(arguments[2], stringMap);
+        var functionArguments = new List<SqlExpression> { splat, freeText };
+
+        if (arguments.Count == 4)
+        {
+            functionArguments.Add(
+                _sqlExpressionFactory.Fragment($"LANGUAGE {((SqlConstantExpression)arguments[3]).Value}"));
+        }
+
+        return _sqlExpressionFactory.Function(functionName,
+            functionArguments,
+            true,
+            functionArguments.Select(_ => false).ToList(),
+            typeof(bool));
     }
 }

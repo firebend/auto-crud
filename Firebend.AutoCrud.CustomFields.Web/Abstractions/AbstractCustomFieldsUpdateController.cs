@@ -16,163 +16,162 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
+namespace Firebend.AutoCrud.CustomFields.Web.Abstractions;
+
+[ApiController]
+public abstract class
+    AbstractCustomFieldsUpdateController<TKey, TEntity, TVersion> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
 {
-    [ApiController]
-    public abstract class
-        AbstractCustomFieldsUpdateController<TKey, TEntity, TVersion> : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
-        where TVersion : class, IAutoCrudApiVersion
+    private readonly ICustomFieldsValidationService<TKey, TEntity, TVersion> _customFieldsValidationService;
+    private readonly ICustomFieldsUpdateService<TKey, TEntity> _updateService;
+
+    protected AbstractCustomFieldsUpdateController(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
+        ICustomFieldsValidationService<TKey, TEntity, TVersion> customFieldsValidationService,
+        ICustomFieldsUpdateService<TKey, TEntity> updateService,
+        IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
     {
-        private readonly ICustomFieldsValidationService<TKey, TEntity, TVersion> _customFieldsValidationService;
-        private readonly ICustomFieldsUpdateService<TKey, TEntity> _updateService;
+        _customFieldsValidationService = customFieldsValidationService;
+        _updateService = updateService;
+    }
 
-        protected AbstractCustomFieldsUpdateController(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
-            ICustomFieldsValidationService<TKey, TEntity, TVersion> customFieldsValidationService,
-            ICustomFieldsUpdateService<TKey, TEntity> updateService,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(keyParser, apiOptions)
+    [HttpPut("{entityId}/custom-fields/{id:guid}")]
+    [SwaggerOperation("Updates a custom field for a given {entityName}")]
+    [SwaggerResponse(200, "A custom field  was updated successfully.")]
+    [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(403, "Forbidden")]
+    [Produces("application/json")]
+    public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePutAsync(
+        [Required][FromRoute] string entityId,
+        [Required][FromRoute] Guid id,
+        [FromBody] CustomFieldViewModelCreate viewModel,
+        CancellationToken cancellationToken)
+    {
+        Response.RegisterForDispose(_updateService);
+
+        if (!ModelState.IsValid || !TryValidateModel(viewModel))
         {
-            _customFieldsValidationService = customFieldsValidationService;
-            _updateService = updateService;
+            return GetInvalidModelStateResult();
         }
 
-        [HttpPut("{entityId}/custom-fields/{id:guid}")]
-        [SwaggerOperation("Updates a custom field for a given {entityName}")]
-        [SwaggerResponse(200, "A custom field  was updated successfully.")]
-        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
-        [SwaggerResponse(403, "Forbidden")]
-        [Produces("application/json")]
-        public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePutAsync(
-            [Required][FromRoute] string entityId,
-            [Required][FromRoute] Guid id,
-            [FromBody] CustomFieldViewModelCreate viewModel,
-            CancellationToken cancellationToken)
+        var rootKey = GetKey(entityId);
+
+        if (rootKey == null)
         {
-            Response.RegisterForDispose(_updateService);
-
-            if (!ModelState.IsValid || !TryValidateModel(viewModel))
-            {
-                return GetInvalidModelStateResult();
-            }
-
-            var rootKey = GetKey(entityId);
-
-            if (rootKey == null)
-            {
-                return GetInvalidModelStateResult();
-            }
-
-            var entity = new CustomFieldsEntity<TKey>
-            {
-                Key = viewModel.Key,
-                Value = viewModel.Value,
-                EntityId = rootKey.Value,
-                Id = id
-            };
-
-            if (!ModelState.IsValid || !TryValidateModel(entity))
-            {
-                return GetInvalidModelStateResult();
-            }
-
-            var isValid = await _customFieldsValidationService
-                .ValidateAsync(entity, cancellationToken);
-
-            if (!isValid.WasSuccessful)
-            {
-                foreach (var modelError in isValid.Errors)
-                {
-                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
-                }
-
-                return GetInvalidModelStateResult();
-            }
-
-            if (isValid.Model != null)
-            {
-                entity = isValid.Model;
-            }
-
-            var result = await _updateService.UpdateAsync(rootKey.Value, entity, cancellationToken);
-
-            if (result == null)
-            {
-                return NotFound(new { key = entityId, id });
-            }
-
-            return Ok(result);
+            return GetInvalidModelStateResult();
         }
 
-        [HttpPatch("{entityId}/custom-fields/{id:guid}")]
-        [SwaggerOperation("Patches a custom field for a given {entityName}")]
-        [SwaggerResponse(201, "A custom field was patched successfully.")]
-        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
-        [SwaggerResponse(403, "Forbidden")]
-        [Produces("application/json")]
-        public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePatchAsync(
-            [Required][FromRoute] string entityId,
-            [Required][FromRoute] Guid id,
-            [FromBody] JsonPatchDocument<CustomFieldViewModelCreate> patchDocument,
-            CancellationToken cancellationToken)
+        var entity = new CustomFieldsEntity<TKey>
         {
-            Response.RegisterForDispose(_updateService);
+            Key = viewModel.Key,
+            Value = viewModel.Value,
+            EntityId = rootKey.Value,
+            Id = id
+        };
 
-            if (!ModelState.IsValid)
-            {
-                return GetInvalidModelStateResult();
-            }
-
-            if (!patchDocument.ValidatePatchModel(out var patchValidationResults))
-            {
-                foreach (var validationResult in patchValidationResults)
-                {
-                    ModelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage!);
-                }
-
-                return GetInvalidModelStateResult();
-            }
-
-            var rootKey = GetKey(entityId);
-
-            if (rootKey == null)
-            {
-                return GetInvalidModelStateResult();
-            }
-
-            var entityPatchDocument = new JsonPatchDocument<CustomFieldsEntity<TKey>>();
-            if (!patchDocument.TryCopyTo(entityPatchDocument, out var patchError))
-            {
-                ModelState.AddModelError(nameof(JsonPatchDocument<CustomFieldViewModelCreate>),
-                    $"Unable to make patch for {nameof(CustomFieldsEntity<TKey>)} using {nameof(CustomFieldViewModelCreate)}. {patchError}");
-                return GetInvalidModelStateResult();
-            }
-
-            var isValid = await _customFieldsValidationService.ValidateAsync(entityPatchDocument, cancellationToken);
-
-            if (!isValid.WasSuccessful)
-            {
-                foreach (var modelError in isValid.Errors)
-                {
-                    ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
-                }
-
-                return GetInvalidModelStateResult();
-            }
-
-            if (isValid.Model != null)
-            {
-                entityPatchDocument = isValid.Model;
-            }
-
-            var result = await _updateService.PatchAsync(rootKey.Value, id, entityPatchDocument, cancellationToken);
-
-            if (result == null)
-            {
-                return NotFound(new { key = entityId, id });
-            }
-
-            return Ok(result);
+        if (!ModelState.IsValid || !TryValidateModel(entity))
+        {
+            return GetInvalidModelStateResult();
         }
+
+        var isValid = await _customFieldsValidationService
+            .ValidateAsync(entity, cancellationToken);
+
+        if (!isValid.WasSuccessful)
+        {
+            foreach (var modelError in isValid.Errors)
+            {
+                ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+            }
+
+            return GetInvalidModelStateResult();
+        }
+
+        if (isValid.Model != null)
+        {
+            entity = isValid.Model;
+        }
+
+        var result = await _updateService.UpdateAsync(rootKey.Value, entity, cancellationToken);
+
+        if (result == null)
+        {
+            return NotFound(new { key = entityId, id });
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPatch("{entityId}/custom-fields/{id:guid}")]
+    [SwaggerOperation("Patches a custom field for a given {entityName}")]
+    [SwaggerResponse(201, "A custom field was patched successfully.")]
+    [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(403, "Forbidden")]
+    [Produces("application/json")]
+    public async Task<ActionResult<CustomFieldsEntity<TKey>>> CustomFieldsUpdatePatchAsync(
+        [Required][FromRoute] string entityId,
+        [Required][FromRoute] Guid id,
+        [FromBody] JsonPatchDocument<CustomFieldViewModelCreate> patchDocument,
+        CancellationToken cancellationToken)
+    {
+        Response.RegisterForDispose(_updateService);
+
+        if (!ModelState.IsValid)
+        {
+            return GetInvalidModelStateResult();
+        }
+
+        if (!patchDocument.ValidatePatchModel(out var patchValidationResults))
+        {
+            foreach (var validationResult in patchValidationResults)
+            {
+                ModelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage!);
+            }
+
+            return GetInvalidModelStateResult();
+        }
+
+        var rootKey = GetKey(entityId);
+
+        if (rootKey == null)
+        {
+            return GetInvalidModelStateResult();
+        }
+
+        var entityPatchDocument = new JsonPatchDocument<CustomFieldsEntity<TKey>>();
+        if (!patchDocument.TryCopyTo(entityPatchDocument, out var patchError))
+        {
+            ModelState.AddModelError(nameof(JsonPatchDocument<CustomFieldViewModelCreate>),
+                $"Unable to make patch for {nameof(CustomFieldsEntity<TKey>)} using {nameof(CustomFieldViewModelCreate)}. {patchError}");
+            return GetInvalidModelStateResult();
+        }
+
+        var isValid = await _customFieldsValidationService.ValidateAsync(entityPatchDocument, cancellationToken);
+
+        if (!isValid.WasSuccessful)
+        {
+            foreach (var modelError in isValid.Errors)
+            {
+                ModelState.AddModelError(modelError.PropertyPath, modelError.Error);
+            }
+
+            return GetInvalidModelStateResult();
+        }
+
+        if (isValid.Model != null)
+        {
+            entityPatchDocument = isValid.Model;
+        }
+
+        var result = await _updateService.PatchAsync(rootKey.Value, id, entityPatchDocument, cancellationToken);
+
+        if (result == null)
+        {
+            return NotFound(new { key = entityId, id });
+        }
+
+        return Ok(result);
     }
 }

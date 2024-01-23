@@ -1,8 +1,7 @@
-namespace Firebend.AutoCrud.Core.Interfaces.Models
+namespace Firebend.AutoCrud.Core.Interfaces.Models;
+
+public interface ITenantEntity<TKey>
+    where TKey : struct
 {
-    public interface ITenantEntity<TKey>
-        where TKey : struct
-    {
-        TKey TenantId { get; set; }
-    }
+    TKey TenantId { get; set; }
 }

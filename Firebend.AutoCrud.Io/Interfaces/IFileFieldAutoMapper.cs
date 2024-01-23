@@ -1,12 +1,11 @@
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Io.Models;
 
-namespace Firebend.AutoCrud.Io.Interfaces
+namespace Firebend.AutoCrud.Io.Interfaces;
+
+public interface IFileFieldAutoMapper<TVersion>
+    where TVersion : class, IAutoCrudApiVersion
 {
-    public interface IFileFieldAutoMapper<TVersion>
-        where TVersion : class, IAutoCrudApiVersion
-    {
-        IFileFieldWrite<T>[] MapOutput<T>()
-            where T : class;
-    }
+    IFileFieldWrite<T>[] MapOutput<T>()
+        where T : class;
 }

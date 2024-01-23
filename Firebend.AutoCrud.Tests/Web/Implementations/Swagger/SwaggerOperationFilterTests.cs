@@ -18,122 +18,121 @@ using Microsoft.OpenApi.Models;
 using NUnit.Framework;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Firebend.AutoCrud.Tests.Web.Implementations.Swagger
+namespace Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
+
+public class FakeEntity : IEntity<Guid>
 {
-    public class FakeEntity : IEntity<Guid>
+    public Guid Id { get; set; }
+}
+
+public class V1 : IAutoCrudApiVersion
+{
+    public int Version => 1;
+    public string Name => "Version 1";
+}
+
+public class FakeController : AbstractEntityReadController<Guid, FakeEntity, V1, FakeEntity>
+{
+    public FakeController(IEntityReadService<Guid, FakeEntity> readService,
+        IEntityKeyParser<Guid, FakeEntity, V1> entityKeyParser,
+        IReadViewModelMapper<Guid, FakeEntity, V1, FakeEntity> viewModelMapper,
+        IOptions<ApiBehaviorOptions> apiOptions) : base(readService, entityKeyParser, viewModelMapper, apiOptions)
     {
-        public Guid Id { get; set; }
+    }
+}
+
+[TestFixture]
+public class SwaggerOperationFilterTests
+{
+    [Test]
+    public void Swagger_Operation_Filter_Should_Assign_Operation_Id_Using_Entity_Name_Attribute()
+    {
+        //arrange
+        var openApiOperation = new OpenApiOperation();
+        var methodInfo = typeof(FakeController).GetMethod(nameof(FakeController.ReadByIdAsync));
+        var generator = new SchemaGenerator(new SchemaGeneratorOptions(), new JsonSerializerDataContractResolver(new JsonSerializerOptions()));
+        var apiDescription = new ApiDescription
+        {
+            ActionDescriptor = new ControllerActionDescriptor
+            {
+                EndpointMetadata = new List<object> { new OpenApiEntityNameAttribute("Fake", "Fakes") },
+                ControllerTypeInfo = typeof(FakeController).GetTypeInfo(),
+                ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
+            }
+        };
+        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
+        var filter = new SwaggerOperationFilter();
+
+        //act
+        filter.Apply(openApiOperation, context);
+
+        //assert
+        openApiOperation.OperationId.Should().NotBeNullOrWhiteSpace();
+        openApiOperation.OperationId.Should().Be("FakeReadById");
     }
 
-    public class V1 : IAutoCrudApiVersion
+    [Test]
+    public void Swagger_Operation_Filter_Should_Not_Assign_Operation_Id_When_No_Entity_Name_Attribute()
     {
-        public int Version => 1;
-        public string Name => "Version 1";
+        //arrange
+        var openApiOperation = new OpenApiOperation { OperationId = nameof(FakeController.ReadByIdAsync).Replace("Async", null) };
+        var methodInfo = typeof(FakeController).GetMethod(nameof(FakeController.ReadByIdAsync));
+        var generator = new SchemaGenerator(new SchemaGeneratorOptions(), new JsonSerializerDataContractResolver(new JsonSerializerOptions()));
+        var apiDescription = new ApiDescription
+        {
+            ActionDescriptor = new ControllerActionDescriptor
+            {
+                EndpointMetadata = new List<object>(),
+                ControllerTypeInfo = typeof(FakeController).GetTypeInfo(),
+                ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
+            }
+        };
+        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
+        var filter = new SwaggerOperationFilter();
+
+        //act
+        filter.Apply(openApiOperation, context);
+
+        //assert
+        openApiOperation.OperationId.Should().NotBeNullOrWhiteSpace();
+        openApiOperation.OperationId.Should().Be("ReadById");
     }
 
-    public class FakeController : AbstractEntityReadController<Guid, FakeEntity, V1, FakeEntity>
+    [Test]
+    public void Swagger_Operation_Filter_Should_Sanitize_Entity_Name_From_Operation_Summaries()
     {
-        public FakeController(IEntityReadService<Guid, FakeEntity> readService,
-            IEntityKeyParser<Guid, FakeEntity, V1> entityKeyParser,
-            IReadViewModelMapper<Guid, FakeEntity, V1, FakeEntity> viewModelMapper,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(readService, entityKeyParser, viewModelMapper, apiOptions)
+        //arrange
+        var openApiOperation = new OpenApiOperation
         {
-        }
-    }
-
-    [TestFixture]
-    public class SwaggerOperationFilterTests
-    {
-        [Test]
-        public void Swagger_Operation_Filter_Should_Assign_Operation_Id_Using_Entity_Name_Attribute()
+            OperationId = nameof(FakeController.ReadByIdAsync).Replace("Async", null),
+            Summary = "Gets a specific {entityName}.",
+            Responses = new OpenApiResponses
+            {
+                { "200", new OpenApiResponse { Description = "The {entityName} with the given key." } },
+                { "404", new OpenApiResponse { Description = "The {entityName} with the given key is not found." } }
+            }
+        };
+        var methodInfo = typeof(FakeController).GetMethod(nameof(FakeController.ReadByIdAsync));
+        var generator = new SchemaGenerator(new SchemaGeneratorOptions(), new JsonSerializerDataContractResolver(new JsonSerializerOptions()));
+        var apiDescription = new ApiDescription
         {
-            //arrange
-            var openApiOperation = new OpenApiOperation();
-            var methodInfo = typeof(FakeController).GetMethod(nameof(FakeController.ReadByIdAsync));
-            var generator = new SchemaGenerator(new SchemaGeneratorOptions(), new JsonSerializerDataContractResolver(new JsonSerializerOptions()));
-            var apiDescription = new ApiDescription
+            ActionDescriptor = new ControllerActionDescriptor
             {
-                ActionDescriptor = new ControllerActionDescriptor
-                {
-                    EndpointMetadata = new List<object> { new OpenApiEntityNameAttribute("Fake", "Fakes") },
-                    ControllerTypeInfo = typeof(FakeController).GetTypeInfo(),
-                    ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
-                }
-            };
-            var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
-            var filter = new SwaggerOperationFilter();
+                EndpointMetadata = new List<object> { new OpenApiEntityNameAttribute("Fake", "Fakes") },
+                ControllerTypeInfo = typeof(FakeController).GetTypeInfo(),
+                ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
+            }
+        };
+        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
+        var filter = new SwaggerOperationFilter();
 
-            //act
-            filter.Apply(openApiOperation, context);
+        //act
+        filter.Apply(openApiOperation, context);
 
-            //assert
-            openApiOperation.OperationId.Should().NotBeNullOrWhiteSpace();
-            openApiOperation.OperationId.Should().Be("FakeReadById");
-        }
-
-        [Test]
-        public void Swagger_Operation_Filter_Should_Not_Assign_Operation_Id_When_No_Entity_Name_Attribute()
-        {
-            //arrange
-            var openApiOperation = new OpenApiOperation { OperationId = nameof(FakeController.ReadByIdAsync).Replace("Async", null) };
-            var methodInfo = typeof(FakeController).GetMethod(nameof(FakeController.ReadByIdAsync));
-            var generator = new SchemaGenerator(new SchemaGeneratorOptions(), new JsonSerializerDataContractResolver(new JsonSerializerOptions()));
-            var apiDescription = new ApiDescription
-            {
-                ActionDescriptor = new ControllerActionDescriptor
-                {
-                    EndpointMetadata = new List<object>(),
-                    ControllerTypeInfo = typeof(FakeController).GetTypeInfo(),
-                    ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
-                }
-            };
-            var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
-            var filter = new SwaggerOperationFilter();
-
-            //act
-            filter.Apply(openApiOperation, context);
-
-            //assert
-            openApiOperation.OperationId.Should().NotBeNullOrWhiteSpace();
-            openApiOperation.OperationId.Should().Be("ReadById");
-        }
-
-        [Test]
-        public void Swagger_Operation_Filter_Should_Sanitize_Entity_Name_From_Operation_Summaries()
-        {
-            //arrange
-            var openApiOperation = new OpenApiOperation
-            {
-                OperationId = nameof(FakeController.ReadByIdAsync).Replace("Async", null),
-                Summary = "Gets a specific {entityName}.",
-                Responses = new OpenApiResponses
-                {
-                    { "200", new OpenApiResponse { Description = "The {entityName} with the given key." } },
-                    { "404", new OpenApiResponse { Description = "The {entityName} with the given key is not found." } }
-                }
-            };
-            var methodInfo = typeof(FakeController).GetMethod(nameof(FakeController.ReadByIdAsync));
-            var generator = new SchemaGenerator(new SchemaGeneratorOptions(), new JsonSerializerDataContractResolver(new JsonSerializerOptions()));
-            var apiDescription = new ApiDescription
-            {
-                ActionDescriptor = new ControllerActionDescriptor
-                {
-                    EndpointMetadata = new List<object> { new OpenApiEntityNameAttribute("Fake", "Fakes") },
-                    ControllerTypeInfo = typeof(FakeController).GetTypeInfo(),
-                    ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
-                }
-            };
-            var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
-            var filter = new SwaggerOperationFilter();
-
-            //act
-            filter.Apply(openApiOperation, context);
-
-            //assert
-            openApiOperation.OperationId.Should().NotBeNullOrWhiteSpace();
-            openApiOperation.OperationId.Should().Be("FakeReadById");
-            openApiOperation.Responses["200"].Description.Should().Be("The Fake with the given key.");
-            openApiOperation.Responses["404"].Description.Should().Be("The Fake with the given key is not found.");
-        }
+        //assert
+        openApiOperation.OperationId.Should().NotBeNullOrWhiteSpace();
+        openApiOperation.OperationId.Should().Be("FakeReadById");
+        openApiOperation.Responses["200"].Description.Should().Be("The Fake with the given key.");
+        openApiOperation.Responses["404"].Description.Should().Be("The Fake with the given key is not found.");
     }
 }

@@ -3,52 +3,51 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 
-namespace Firebend.AutoCrud.Mongo.Configuration
-{
-    public static class MongoBootstrapper
-    {
-        private static object BootStrapLock { get; set; } = new();
-        private static bool _isBootstrapped;
+namespace Firebend.AutoCrud.Mongo.Configuration;
 
-        public static IServiceCollection ConfigureMongoDb(
-            this IServiceCollection services,
-            IMongoDbConfigurator configurator)
+public static class MongoBootstrapper
+{
+    private static object BootStrapLock { get; set; } = new();
+    private static bool _isBootstrapped;
+
+    public static IServiceCollection ConfigureMongoDb(
+        this IServiceCollection services,
+        IMongoDbConfigurator configurator)
+    {
+        if (_isBootstrapped)
+        {
+            return services;
+        }
+
+        lock (BootStrapLock)
         {
             if (_isBootstrapped)
             {
                 return services;
             }
 
-            lock (BootStrapLock)
-            {
-                if (_isBootstrapped)
-                {
-                    return services;
-                }
+            DoBootstrapping(services, configurator);
 
-                DoBootstrapping(services, configurator);
+            _isBootstrapped = true;
 
-                _isBootstrapped = true;
-
-                return services;
-            }
+            return services;
         }
+    }
 
-        private static void DoBootstrapping(
-            this IServiceCollection services,
-            IMongoDbConfigurator configurator)
-        {
-            services.Scan(action => action.FromAssemblies()
-                .AddClasses(classes => classes.AssignableTo<IMongoMigration>())
-                .UsingRegistrationStrategy(RegistrationStrategy.Append)
-                .As<IMongoMigration>()
-                .WithTransientLifetime()
-            );
+    private static void DoBootstrapping(
+        this IServiceCollection services,
+        IMongoDbConfigurator configurator)
+    {
+        services.Scan(action => action.FromAssemblies()
+            .AddClasses(classes => classes.AssignableTo<IMongoMigration>())
+            .UsingRegistrationStrategy(RegistrationStrategy.Append)
+            .As<IMongoMigration>()
+            .WithTransientLifetime()
+        );
 
-            configurator.Configure();
+        configurator.Configure();
 
-            services.AddHostedService<ConfigureCollectionsHostedService>();
-            services.AddHostedService<MongoMigrationHostedService>();
-        }
+        services.AddHostedService<ConfigureCollectionsHostedService>();
+        services.AddHostedService<MongoMigrationHostedService>();
     }
 }

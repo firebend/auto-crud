@@ -12,49 +12,48 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace Firebend.AutoCrud.CustomFields.Web.Abstractions
+namespace Firebend.AutoCrud.CustomFields.Web.Abstractions;
+
+[ApiController]
+public abstract class AbstractCustomFieldsSearchController<TKey, TEntity, TVersion> : AbstractEntityControllerBase<TVersion>
+    where TKey : struct
+    where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
 {
-    [ApiController]
-    public abstract class AbstractCustomFieldsSearchController<TKey, TEntity, TVersion> : AbstractEntityControllerBase<TVersion>
-        where TKey : struct
-        where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
-        where TVersion : class, IAutoCrudApiVersion
+    private readonly ICustomFieldsSearchService<TKey, TEntity> _searchService;
+    private readonly IMaxPageSize<TKey, TEntity, TVersion> _maxPageSize;
+
+    protected AbstractCustomFieldsSearchController(ICustomFieldsSearchService<TKey, TEntity> searchService,
+        IMaxPageSize<TKey, TEntity, TVersion> maxPageSize,
+        IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
     {
-        private readonly ICustomFieldsSearchService<TKey, TEntity> _searchService;
-        private readonly IMaxPageSize<TKey, TEntity, TVersion> _maxPageSize;
+        _searchService = searchService;
+        _maxPageSize = maxPageSize;
+    }
 
-        protected AbstractCustomFieldsSearchController(ICustomFieldsSearchService<TKey, TEntity> searchService,
-            IMaxPageSize<TKey, TEntity, TVersion> maxPageSize,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
+    [HttpGet("custom-fields")]
+    [SwaggerOperation("Searches for custom fields assigned to a given {entityName}")]
+    [SwaggerResponse(200, "All the custom fields for {entityNamePlural} that match the search criteria.")]
+    [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
+    [SwaggerResponse(403, "Forbidden")]
+    public async Task<ActionResult<EntityPagedResponse<CustomFieldsEntity<TKey>>>> SearchCustomFieldsAsync(
+        [FromQuery] CustomFieldsSearchRequest searchRequest,
+        CancellationToken cancellationToken)
+    {
+        Response.RegisterForDispose(_searchService);
+
+        var validationResult = searchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
+        if (!validationResult.WasSuccessful)
         {
-            _searchService = searchService;
-            _maxPageSize = maxPageSize;
-        }
-
-        [HttpGet("custom-fields")]
-        [SwaggerOperation("Searches for custom fields assigned to a given {entityName}")]
-        [SwaggerResponse(200, "All the custom fields for {entityNamePlural} that match the search criteria.")]
-        [SwaggerResponse(400, "The request is invalid.", typeof(ValidationProblemDetails))]
-        [SwaggerResponse(403, "Forbidden")]
-        public async Task<ActionResult<EntityPagedResponse<CustomFieldsEntity<TKey>>>> SearchCustomFieldsAsync(
-            [FromQuery] CustomFieldsSearchRequest searchRequest,
-            CancellationToken cancellationToken)
-        {
-            Response.RegisterForDispose(_searchService);
-
-            var validationResult = searchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
-            if (!validationResult.WasSuccessful)
+            foreach (var error in validationResult.Errors)
             {
-                foreach (var error in validationResult.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyPath, error.Error);
-                }
-                return GetInvalidModelStateResult();
+                ModelState.AddModelError(error.PropertyPath, error.Error);
             }
-
-            var result = await _searchService.SearchAsync(searchRequest, cancellationToken);
-
-            return Ok(result);
+            return GetInvalidModelStateResult();
         }
+
+        var result = await _searchService.SearchAsync(searchRequest, cancellationToken);
+
+        return Ok(result);
     }
 }

@@ -4,17 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace Firebend.AutoCrud.Mongo.Interfaces
-{
-    public interface IMongoDeleteClient<TKey, TEntity>
-        where TKey : struct
-        where TEntity : IEntity<TKey>
-    {
-        Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
-            CancellationToken cancellationToken = default);
+namespace Firebend.AutoCrud.Mongo.Interfaces;
 
-        Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
-            IEntityTransaction entityTransaction,
-            CancellationToken cancellationToken = default);
-    }
+public interface IMongoDeleteClient<TKey, TEntity>
+    where TKey : struct
+    where TEntity : IEntity<TKey>
+{
+    Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+        CancellationToken cancellationToken = default);
+
+    Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+        IEntityTransaction entityTransaction,
+        CancellationToken cancellationToken = default);
 }

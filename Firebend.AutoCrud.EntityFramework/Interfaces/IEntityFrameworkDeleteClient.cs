@@ -5,18 +5,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace Firebend.AutoCrud.EntityFramework.Interfaces
+namespace Firebend.AutoCrud.EntityFramework.Interfaces;
+
+public interface IEntityFrameworkDeleteClient<TKey, TEntity> : IDisposable
+    where TKey : struct
+    where TEntity : IEntity<TKey>
 {
-    public interface IEntityFrameworkDeleteClient<TKey, TEntity> : IDisposable
-        where TKey : struct
-        where TEntity : IEntity<TKey>
-    {
-        Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken);
+    Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken);
 
-        Task<TEntity> DeleteAsync(TKey filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
+    Task<TEntity> DeleteAsync(TKey filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
 
-        Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
+    Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
 
-        Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
-    }
+    Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
 }

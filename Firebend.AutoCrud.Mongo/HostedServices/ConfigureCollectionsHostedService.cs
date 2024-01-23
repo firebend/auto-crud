@@ -8,39 +8,38 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Firebend.AutoCrud.Mongo.HostedServices
+namespace Firebend.AutoCrud.Mongo.HostedServices;
+
+public class ConfigureCollectionsHostedService : BackgroundService
 {
-    public class ConfigureCollectionsHostedService : BackgroundService
+    private readonly ILogger<ConfigureCollectionsHostedService> _logger;
+    private readonly IServiceProvider _serviceProvider;
+
+    public ConfigureCollectionsHostedService(IServiceProvider serviceProvider, ILogger<ConfigureCollectionsHostedService> logger)
     {
-        private readonly ILogger<ConfigureCollectionsHostedService> _logger;
-        private readonly IServiceProvider _serviceProvider;
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
 
-        public ConfigureCollectionsHostedService(IServiceProvider serviceProvider, ILogger<ConfigureCollectionsHostedService> logger)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var scope = _serviceProvider.CreateScope();
+
+        var collections = scope.ServiceProvider.GetService<IEnumerable<IConfigureCollection>>();
+
+        if (collections != null)
         {
-            _serviceProvider = serviceProvider;
-            _logger = logger;
+            ConfigureCollectionsHostedServiceLogger.Start(_logger);
+
+            var configureTasks = collections.Select(x => x.ConfigureAsync(stoppingToken));
+
+            await Task.WhenAll(configureTasks).ConfigureAwait(false);
+
+            ConfigureCollectionsHostedServiceLogger.Finish(_logger);
         }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        else
         {
-            using var scope = _serviceProvider.CreateScope();
-
-            var collections = scope.ServiceProvider.GetService<IEnumerable<IConfigureCollection>>();
-
-            if (collections != null)
-            {
-                ConfigureCollectionsHostedServiceLogger.Start(_logger);
-
-                var configureTasks = collections.Select(x => x.ConfigureAsync(stoppingToken));
-
-                await Task.WhenAll(configureTasks).ConfigureAwait(false);
-
-                ConfigureCollectionsHostedServiceLogger.Finish(_logger);
-            }
-            else
-            {
-                _logger.LogError("No Collections to Configure, but Mongo still registered");
-            }
+            _logger.LogError("No Collections to Configure, but Mongo still registered");
         }
     }
 }

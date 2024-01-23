@@ -1,12 +1,11 @@
 using System.Linq;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace Firebend.AutoCrud.EntityFramework.Interfaces
+namespace Firebend.AutoCrud.EntityFramework.Interfaces;
+
+public interface IEntityFrameworkIncludesProvider<TKey, TEntity>
+    where TKey : struct
+    where TEntity : IEntity<TKey>
 {
-    public interface IEntityFrameworkIncludesProvider<TKey, TEntity>
-        where TKey : struct
-        where TEntity : IEntity<TKey>
-    {
-        IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable);
-    }
+    IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable);
 }

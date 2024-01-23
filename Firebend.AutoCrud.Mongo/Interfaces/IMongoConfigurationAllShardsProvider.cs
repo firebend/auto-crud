@@ -3,12 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace Firebend.AutoCrud.Mongo.Interfaces
+namespace Firebend.AutoCrud.Mongo.Interfaces;
+
+public interface IMongoConfigurationAllShardsProvider<TKey, TEntity>
+    where TKey : struct
+    where TEntity : IEntity<TKey>
 {
-    public interface IMongoConfigurationAllShardsProvider<TKey, TEntity>
-        where TKey : struct
-        where TEntity : IEntity<TKey>
-    {
-        Task<IEnumerable<IMongoEntityIndexConfiguration<TKey, TEntity>>> GetAllEntityConfigurationsAsync(CancellationToken cancellationToken);
-    }
+    Task<IEnumerable<IMongoEntityIndexConfiguration<TKey, TEntity>>> GetAllEntityConfigurationsAsync(CancellationToken cancellationToken);
 }

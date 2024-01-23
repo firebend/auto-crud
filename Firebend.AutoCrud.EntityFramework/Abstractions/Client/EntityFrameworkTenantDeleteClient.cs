@@ -8,33 +8,32 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
-namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client
+namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+
+public abstract class EntityFrameworkTenantDeleteClient<TKey, TEntity, TTenantKey> : EntityFrameworkDeleteClient<TKey, TEntity>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>, new()
+    where TTenantKey : struct
 {
-    public abstract class EntityFrameworkTenantDeleteClient<TKey, TEntity, TTenantKey> : EntityFrameworkDeleteClient<TKey, TEntity>
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>, ITenantEntity<TTenantKey>, new()
-        where TTenantKey : struct
+    private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
+
+    protected EntityFrameworkTenantDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider,
+        IEntityReadService<TKey, TEntity> readService,
+        ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(contextProvider, readService, publisherService)
     {
-        private readonly ITenantEntityProvider<TTenantKey> _tenantEntityProvider;
-
-        protected EntityFrameworkTenantDeleteClient(IDbContextProvider<TKey, TEntity> contextProvider,
-            IEntityReadService<TKey, TEntity> readService,
-            ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-            IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(contextProvider, readService, publisherService)
-        {
-            _tenantEntityProvider = tenantEntityProvider;
-        }
+        _tenantEntityProvider = tenantEntityProvider;
+    }
 
 
-        protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
-        {
-            var tenant = await _tenantEntityProvider
-                .GetTenantAsync(cancellationToken)
-                .ConfigureAwait(false);
+    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
+    {
+        var tenant = await _tenantEntityProvider
+            .GetTenantAsync(cancellationToken)
+            .ConfigureAwait(false);
 
-            Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
+        Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-            return new[] { tenantFilter };
-        }
+        return new[] { tenantFilter };
     }
 }
