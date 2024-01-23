@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="9.6.4"></a>
+## [9.6.4](https://www.github.com/firebend/auto-crud/releases/tag/v9.6.4) (2024-01-23)
+
+### Bug Fixes
+
+* Bump AsyncKeyedLock to 6.3.4; performance improvement ([#283](https://www.github.com/firebend/auto-crud/issues/283)) ([7d29e2e](https://www.github.com/firebend/auto-crud/commit/7d29e2e7183d84c534749cf28337e9abd6c701f5))
+
 <a name="9.6.3"></a>
 ## [9.6.3](https://www.github.com/firebend/auto-crud/releases/tag/v9.6.3) (2024-01-21)
 
