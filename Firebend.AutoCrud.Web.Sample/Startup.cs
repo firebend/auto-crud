@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Threading.Tasks;
+using Amazon.Runtime.Internal;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
@@ -27,6 +29,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
@@ -43,6 +47,9 @@ public static class Startup
     // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
     public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+
+        services.ConfigureOptions<ConfigureBearerOptions>();
+
         // Do not use this code in production
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -54,15 +61,20 @@ public static class Startup
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateIssuerSigningKey = false,
+                    ValidateLifetime = false,
+                    ValidateActor = false,
+
+                    RequireSignedTokens = false,
+                    RequireAudience = false,
+                    RequireExpirationTime = false,
+
                     SignatureValidator = delegate (string token,
                         TokenValidationParameters _)
                     {
-                        var jwt = new JwtSecurityToken(token);
+                        var jwt = new JsonWebToken(token);
                         return jwt;
                     },
-                    ValidateLifetime = false,
                     ClockSkew = TimeSpan.Zero,
-                    RequireSignedTokens = false
                 };
             });
 
@@ -143,5 +155,39 @@ public static class Startup
                 opt.SwaggerEndpoint($"/open-api/{description.GroupName}/open-api.json", $"Firebend Auto Crud Web Sample {description.GroupName}");
             }
         });
+    }
+}
+
+
+public class ConfigureBearerOptions : IConfigureNamedOptions<JwtBearerOptions>
+{
+    public void Configure(JwtBearerOptions options)
+    {
+        this.InternalConfiguration(options);
+    }
+
+    public void Configure(string name, JwtBearerOptions options)
+    {
+        this.InternalConfiguration(options);
+    }
+
+    private void InternalConfiguration(JwtBearerOptions options)
+    {
+        options.Events ??= new();
+
+        options.Events.OnForbidden = context =>
+        {
+            return Task.CompletedTask;
+        };
+
+        options.Events.OnTokenValidated = context =>
+        {
+            return Task.CompletedTask;
+        };
+
+        options.Events.OnAuthenticationFailed = context =>
+        {
+            return Task.CompletedTask;
+        };
     }
 }
