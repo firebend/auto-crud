@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 
-namespace Firebend.AutoCrud.Web.Interfaces
+namespace Firebend.AutoCrud.Web.Interfaces;
+
+public interface IMultipleEntityViewModel<T>
 {
-    public interface IMultipleEntityViewModel<T>
-    {
-        IEnumerable<T> Entities { get; set; }
-    }
+    IEnumerable<T> Entities { get; set; }
 }

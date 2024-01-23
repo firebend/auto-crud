@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Firebend.AutoCrud.Mongo.Interfaces
+namespace Firebend.AutoCrud.Mongo.Interfaces;
+
+public interface IMongoAllShardsProvider
 {
-    public interface IMongoAllShardsProvider
-    {
-        Task<IEnumerable<string>> GetAllShardsAsync(CancellationToken cancellationToken = default);
-    }
+    Task<IEnumerable<string>> GetAllShardsAsync(CancellationToken cancellationToken = default);
 }

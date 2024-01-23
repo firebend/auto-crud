@@ -16,43 +16,43 @@ using MongoDB.Driver;
 using Moq;
 using NUnit.Framework;
 
-namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing
+namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing;
+
+[TestFixture]
+public class MongoIndexMergeServiceTests
 {
-    [TestFixture]
-    public class MongoIndexMergeServiceTests
+    public class FakeAsyncCursor<T> : IAsyncCursor<T>
     {
-        public class FakeAsyncCursor<T> : IAsyncCursor<T>
+        public FakeAsyncCursor(IEnumerable<T> enumerable)
         {
-            public FakeAsyncCursor(IEnumerable<T> enumerable)
-            {
-                Current = enumerable;
-                Enumerator = Current.GetEnumerator();
-            }
-
-            public void Dispose() { }
-
-            public bool MoveNext(CancellationToken cancellationToken = default) => Enumerator.MoveNext();
-
-            public Task<bool> MoveNextAsync(CancellationToken cancellationToken = default) => Task.FromResult(Enumerator.MoveNext());
-
-            public IEnumerable<T> Current { get; }
-
-            public IEnumerator<T> Enumerator { get; }
+            Current = enumerable;
+            Enumerator = Current.GetEnumerator();
         }
 
-        public IFixture Fixture { get; set; }
-        public Mock<IMongoCollection<FooIndexEntity>> Collection { get; set; }
+        public void Dispose() { }
 
-        [SetUp]
-        public void Setup()
-        {
-            new MongoDbConfigurator().Configure();
+        public bool MoveNext(CancellationToken cancellationToken = default) => Enumerator.MoveNext();
 
-            Fixture = new Fixture().Customize(new AutoMoqCustomization());
+        public Task<bool> MoveNextAsync(CancellationToken cancellationToken = default) => Task.FromResult(Enumerator.MoveNext());
 
-            Fixture.Inject<IMongoRetryService>(new MongoRetryService());
+        public IEnumerable<T> Current { get; }
 
-            var doc = BsonDocument.Parse(@"{
+        public IEnumerator<T> Enumerator { get; }
+    }
+
+    public IFixture Fixture { get; set; }
+    public Mock<IMongoCollection<FooIndexEntity>> Collection { get; set; }
+
+    [SetUp]
+    public void Setup()
+    {
+        new MongoDbConfigurator().Configure();
+
+        Fixture = new Fixture().Customize(new AutoMoqCustomization());
+
+        Fixture.Inject<IMongoRetryService>(new MongoRetryService());
+
+        var doc = BsonDocument.Parse(@"{
         ""v"" : 2,
             ""key"" : {
                 ""createdDate"" : 1,
@@ -62,171 +62,170 @@ namespace Firebend.AutoCrud.Tests.Mongo.Abstractions.Client.Indexing
             ""ns"" : ""fakeDb.fakeCollection""
         }");
 
-            Collection = Fixture.Freeze<Mock<IMongoCollection<FooIndexEntity>>>();
-            Collection.Setup(x => x.DocumentSerializer)
-                .Returns(new BsonClassMapSerializer<FooIndexEntity>(BsonClassMap.LookupClassMap(typeof(FooIndexEntity))));
+        Collection = Fixture.Freeze<Mock<IMongoCollection<FooIndexEntity>>>();
+        Collection.Setup(x => x.DocumentSerializer)
+            .Returns(new BsonClassMapSerializer<FooIndexEntity>(BsonClassMap.LookupClassMap(typeof(FooIndexEntity))));
 
-            Collection.Setup(x => x.Indexes.ListAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new FakeAsyncCursor<BsonDocument>(new[]
-                {
-                    doc
-                }));
+        Collection.Setup(x => x.Indexes.ListAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FakeAsyncCursor<BsonDocument>(new[]
+            {
+                doc
+            }));
 
-            Collection.Setup(x => x.Indexes.DropOneAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
+        Collection.Setup(x => x.Indexes.DropOneAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
-            Collection.Setup(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()))
-                .Returns<IEnumerable<CreateIndexModel<FooIndexEntity>>, CancellationToken>((models, _) => Task.FromResult(models.Select(x => x.Options.Name)));
-        }
+        Collection.Setup(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()))
+            .Returns<IEnumerable<CreateIndexModel<FooIndexEntity>>, CancellationToken>((models, _) => Task.FromResult(models.Select(x => x.Options.Name)));
+    }
 
-        [TestCase]
-        public async Task Mongo_Index_Merge_Service_Should_Create_Indexes()
-        {
-            //arrange
-            var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
-            compareService.Setup(x =>
-                    x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
-                .Returns(false);
+    [TestCase]
+    public async Task Mongo_Index_Merge_Service_Should_Create_Indexes()
+    {
+        //arrange
+        var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
+        compareService.Setup(x =>
+                x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
+            .Returns(false);
 
-            compareService.Setup(x =>
-                    x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
-                .Returns(true);
+        compareService.Setup(x =>
+                x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
+            .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
-            var keys = Builders<FooIndexEntity>.IndexKeys;
-            var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
-            date.Options.Name = "fake";
+        var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
+        var keys = Builders<FooIndexEntity>.IndexKeys;
+        var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
+        date.Options.Name = "fake";
 
-            //act
-            await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
+        //act
+        await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
 
-            //assert
-            Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
-        }
+        //assert
+        Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
 
-        [TestCase]
-        public async Task Mongo_Index_Merge_Service_Should_Drop_And_Create_Indexes()
-        {
-            //arrange
-            var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
-            compareService.Setup(x =>
-                    x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
-                .Returns(false);
+    [TestCase]
+    public async Task Mongo_Index_Merge_Service_Should_Drop_And_Create_Indexes()
+    {
+        //arrange
+        var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
+        compareService.Setup(x =>
+                x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
+            .Returns(false);
 
-            compareService.Setup(x =>
-                    x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
-                .Returns(true);
+        compareService.Setup(x =>
+                x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
+            .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
-            var keys = Builders<FooIndexEntity>.IndexKeys;
-            var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
+        var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
+        var keys = Builders<FooIndexEntity>.IndexKeys;
+        var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
 
-            //act
-            await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
+        //act
+        await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
 
-            //assert
-            Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
-            Collection.Verify(x => x.Indexes.DropOneAsync(It.Is<string>(str => str == date.Options.Name), It.IsAny<CancellationToken>()), Times.Once);
-        }
+        //assert
+        Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
+        Collection.Verify(x => x.Indexes.DropOneAsync(It.Is<string>(str => str == date.Options.Name), It.IsAny<CancellationToken>()), Times.Once);
+    }
 
-        [TestCase]
-        public async Task Mongo_Index_Merge_Service_Should_Add_All_When_No_Indexes_Exist()
-        {
-            //arrange
-            Collection.Setup(x => x.Indexes.ListAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new FakeAsyncCursor<BsonDocument>(ArraySegment<BsonDocument>.Empty));
+    [TestCase]
+    public async Task Mongo_Index_Merge_Service_Should_Add_All_When_No_Indexes_Exist()
+    {
+        //arrange
+        Collection.Setup(x => x.Indexes.ListAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FakeAsyncCursor<BsonDocument>(ArraySegment<BsonDocument>.Empty));
 
-            var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
+        var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
 
-            compareService.Setup(x =>
-                    x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
-                .Returns(true);
+        compareService.Setup(x =>
+                x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
+            .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
-            var keys = Builders<FooIndexEntity>.IndexKeys;
-            var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
+        var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
+        var keys = Builders<FooIndexEntity>.IndexKeys;
+        var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
 
-            //act
-            await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
+        //act
+        await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
 
-            //assert
-            Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
-            Collection.Verify(x => x.Indexes.DropOneAsync(It.Is<string>(str => str == date.Options.Name), It.IsAny<CancellationToken>()), Times.Never);
-        }
+        //assert
+        Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
+        Collection.Verify(x => x.Indexes.DropOneAsync(It.Is<string>(str => str == date.Options.Name), It.IsAny<CancellationToken>()), Times.Never);
+    }
 
-        [TestCase]
-        public async Task Mongo_Index_Merge_Service_Should_Do_Nothing()
-        {
-            //arrange
-            var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
-            compareService.Setup(x =>
-                    x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
-                .Returns(false);
+    [TestCase]
+    public async Task Mongo_Index_Merge_Service_Should_Do_Nothing()
+    {
+        //arrange
+        var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
+        compareService.Setup(x =>
+                x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
+            .Returns(false);
 
-            compareService.Setup(x =>
-                    x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
-                .Returns(true);
+        compareService.Setup(x =>
+                x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
+            .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
+        var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
 
-            //act
-            await sut.MergeIndexesAsync(Collection.Object, Array.Empty<CreateIndexModel<FooIndexEntity>>(), default);
+        //act
+        await sut.MergeIndexesAsync(Collection.Object, Array.Empty<CreateIndexModel<FooIndexEntity>>(), default);
 
-            //assert
-            Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Never);
-            Collection.Verify(x => x.Indexes.DropOneAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        }
+        //assert
+        Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Never);
+        Collection.Verify(x => x.Indexes.DropOneAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 
-        [TestCase]
-        public async Task Mongo_Index_Merge_Service_Should_Add_New_Index()
-        {
-            //arrange
-            var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
-            compareService.Setup(x =>
-                    x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
-                .Returns(true);
+    [TestCase]
+    public async Task Mongo_Index_Merge_Service_Should_Add_New_Index()
+    {
+        //arrange
+        var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
+        compareService.Setup(x =>
+                x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
+            .Returns(true);
 
-            compareService.Setup(x =>
-                    x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
-                .Returns(true);
+        compareService.Setup(x =>
+                x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
+            .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
-            var keys = Builders<FooIndexEntity>.IndexKeys;
-            var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
-            var fullText = MongoIndexProviderHelpers.FullText(keys);
+        var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
+        var keys = Builders<FooIndexEntity>.IndexKeys;
+        var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
+        var fullText = MongoIndexProviderHelpers.FullText(keys);
 
-            //act
-            await sut.MergeIndexesAsync(Collection.Object, new[] { date, fullText }, default);
+        //act
+        await sut.MergeIndexesAsync(Collection.Object, new[] { date, fullText }, default);
 
-            //assert
-            Collection.Verify(x => x.Indexes.CreateManyAsync(It.Is<IEnumerable<CreateIndexModel<FooIndexEntity>>>(e => e.Count() == 1), It.IsAny<CancellationToken>()), Times.Once);
-            Collection.Verify(x => x.Indexes.DropOneAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        }
+        //assert
+        Collection.Verify(x => x.Indexes.CreateManyAsync(It.Is<IEnumerable<CreateIndexModel<FooIndexEntity>>>(e => e.Count() == 1), It.IsAny<CancellationToken>()), Times.Once);
+        Collection.Verify(x => x.Indexes.DropOneAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 
-        [TestCase]
-        public async Task Mongo_Index_Merge_Service_Should_Add_New_Index_And_Drop_And_Recreate_Another()
-        {
-            //arrange
-            var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
-            compareService.Setup(x =>
-                    x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
-                .Returns(false);
+    [TestCase]
+    public async Task Mongo_Index_Merge_Service_Should_Add_New_Index_And_Drop_And_Recreate_Another()
+    {
+        //arrange
+        var compareService = Fixture.Freeze<Mock<IMongoIndexComparisonService>>();
+        compareService.Setup(x =>
+                x.DoesIndexMatch(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<BsonDocument>(), It.IsAny<CreateIndexModel<FooIndexEntity>>()))
+            .Returns(false);
 
-            compareService.Setup(x =>
-                    x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
-                .Returns(true);
+        compareService.Setup(x =>
+                x.EnsureUnique(It.IsAny<IMongoCollection<FooIndexEntity>>(), It.IsAny<CreateIndexModel<FooIndexEntity>[]>()))
+            .Returns(true);
 
-            var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
-            var keys = Builders<FooIndexEntity>.IndexKeys;
-            var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
-            var fullText = MongoIndexProviderHelpers.FullText(keys);
+        var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
+        var keys = Builders<FooIndexEntity>.IndexKeys;
+        var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
+        var fullText = MongoIndexProviderHelpers.FullText(keys);
 
-            //act
-            await sut.MergeIndexesAsync(Collection.Object, new[] { date, fullText }, default);
+        //act
+        await sut.MergeIndexesAsync(Collection.Object, new[] { date, fullText }, default);
 
-            //assert
-            Collection.Verify(x => x.Indexes.CreateManyAsync(It.Is<IEnumerable<CreateIndexModel<FooIndexEntity>>>(e => e.Count() == 2), It.IsAny<CancellationToken>()), Times.Once);
-            Collection.Verify(x => x.Indexes.DropOneAsync(It.Is<string>(e => e == date.Options.Name), It.IsAny<CancellationToken>()), Times.Once);
-        }
+        //assert
+        Collection.Verify(x => x.Indexes.CreateManyAsync(It.Is<IEnumerable<CreateIndexModel<FooIndexEntity>>>(e => e.Count() == 2), It.IsAny<CancellationToken>()), Times.Once);
+        Collection.Verify(x => x.Indexes.DropOneAsync(It.Is<string>(e => e == date.Options.Name), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

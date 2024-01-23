@@ -2,12 +2,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement;
 
-namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces
+namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
+
+public interface IShardManager
 {
-    public interface IShardManager
-    {
-        Task<ShardMap> RegisterShardAsync(string shardDatabaseName,
-            string key,
-            CancellationToken cancellationToken = default);
-    }
+    Task<ShardMap> RegisterShardAsync(string shardDatabaseName,
+        string key,
+        CancellationToken cancellationToken = default);
 }

@@ -1,10 +1,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Firebend.AutoCrud.Mongo.Interfaces
+namespace Firebend.AutoCrud.Mongo.Interfaces;
+
+public interface IMongoRetryService
 {
-    public interface IMongoRetryService
-    {
-        Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int maxTries);
-    }
+    Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int maxTries);
 }

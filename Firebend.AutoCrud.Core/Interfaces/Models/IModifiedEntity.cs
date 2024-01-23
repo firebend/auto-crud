@@ -1,10 +1,9 @@
 using System;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Models
+namespace Firebend.AutoCrud.Core.Interfaces.Models;
+
+public interface IModifiedEntity
 {
-    public interface IModifiedEntity
-    {
-        public DateTimeOffset CreatedDate { get; set; }
-        public DateTimeOffset ModifiedDate { get; set; }
-    }
+    public DateTimeOffset CreatedDate { get; set; }
+    public DateTimeOffset ModifiedDate { get; set; }
 }

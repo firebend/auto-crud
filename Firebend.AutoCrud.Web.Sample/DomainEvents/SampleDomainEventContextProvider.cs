@@ -4,43 +4,42 @@ using Firebend.AutoCrud.Web.Sample.Elastic;
 using MassTransit.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 
-namespace Firebend.AutoCrud.Web.Sample.DomainEvents
+namespace Firebend.AutoCrud.Web.Sample.DomainEvents;
+
+public class SampleDomainEventContext
 {
-    public class SampleDomainEventContext
+    public CatchPhraseModel CatchPhraseModel { get; set; }
+    public string Tenant { get; set; }
+}
+
+public class CatchPhraseModel
+{
+    public string CatchPhrase { get; set; }
+}
+
+public class SampleDomainEventContextProvider : IDomainEventContextProvider
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ScopedConsumeContextProvider _scopedConsumeContextProvider;
+
+    public SampleDomainEventContextProvider(IHttpContextAccessor httpContextAccessor,
+        ScopedConsumeContextProvider scopedConsumeContextProvider)
     {
-        public CatchPhraseModel CatchPhraseModel { get; set; }
-        public string Tenant { get; set; }
+        _httpContextAccessor = httpContextAccessor;
+        _scopedConsumeContextProvider = scopedConsumeContextProvider;
     }
 
-    public class CatchPhraseModel
+    public DomainEventContext GetContext() => new()
     {
-        public string CatchPhrase { get; set; }
-    }
-
-    public class SampleDomainEventContextProvider : IDomainEventContextProvider
-    {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ScopedConsumeContextProvider _scopedConsumeContextProvider;
-
-        public SampleDomainEventContextProvider(IHttpContextAccessor httpContextAccessor,
-            ScopedConsumeContextProvider scopedConsumeContextProvider)
+        Source = "My Sample",
+        UserEmail = "sample@firebend.com",
+        CustomContext = new SampleDomainEventContext
         {
-            _httpContextAccessor = httpContextAccessor;
-            _scopedConsumeContextProvider = scopedConsumeContextProvider;
-        }
-
-        public DomainEventContext GetContext() => new()
-        {
-            Source = "My Sample",
-            UserEmail = "sample@firebend.com",
-            CustomContext = new SampleDomainEventContext
+            CatchPhraseModel = new CatchPhraseModel
             {
-                CatchPhraseModel = new CatchPhraseModel
-                {
-                    CatchPhrase = "I Like Turtles",
-                },
-                Tenant = ShardKeyHelper.GetTenant(_httpContextAccessor, _scopedConsumeContextProvider)
-            }
-        };
-    }
+                CatchPhrase = "I Like Turtles",
+            },
+            Tenant = ShardKeyHelper.GetTenant(_httpContextAccessor, _scopedConsumeContextProvider)
+        }
+    };
 }

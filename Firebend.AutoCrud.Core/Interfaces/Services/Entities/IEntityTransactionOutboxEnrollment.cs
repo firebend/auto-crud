@@ -1,10 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
+namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+
+public interface IEntityTransactionOutboxEnrollment
 {
-    public interface IEntityTransactionOutboxEnrollment
-    {
-        Task ActAsync(CancellationToken cancellationToken);
-    }
+    Task ActAsync(CancellationToken cancellationToken);
 }

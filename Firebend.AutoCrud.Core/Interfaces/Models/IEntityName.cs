@@ -1,7 +1,6 @@
-namespace Firebend.AutoCrud.Core.Interfaces.Models
+namespace Firebend.AutoCrud.Core.Interfaces.Models;
+
+public interface IEntityName
 {
-    public interface IEntityName
-    {
-        string GetEntityName();
-    }
+    string GetEntityName();
 }

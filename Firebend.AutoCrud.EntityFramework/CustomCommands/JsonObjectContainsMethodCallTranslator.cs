@@ -8,116 +8,115 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace Firebend.AutoCrud.EntityFramework.CustomCommands
+namespace Firebend.AutoCrud.EntityFramework.CustomCommands;
+
+public class JsonObjectContainsMethodCallTranslator : IMethodCallTranslator
 {
-    public class JsonObjectContainsMethodCallTranslator : IMethodCallTranslator
+    private const char LikeEscapeChar = '\\';
+    private const string LikeEscapeString = "\\";
+
+    private static readonly MethodInfo MethodInfo
+        = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
+            nameof(FirebendAutoCrudDbFunctionExtensions.JsonContainsAny),
+            new[]
+            {
+                typeof(DbFunctions),
+                typeof(object),
+                typeof(string)
+            });
+
+    private readonly ISqlExpressionFactory _sqlExpressionFactory;
+
+    public JsonObjectContainsMethodCallTranslator(ISqlExpressionFactory sqlExpressionFactory)
     {
-        private const char LikeEscapeChar = '\\';
-        private const string LikeEscapeString = "\\";
+        _sqlExpressionFactory = sqlExpressionFactory;
+    }
 
-        private static readonly MethodInfo MethodInfo
-            = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
-                nameof(FirebendAutoCrudDbFunctionExtensions.JsonContainsAny),
-                new[]
-                {
-                    typeof(DbFunctions),
-                    typeof(object),
-                    typeof(string)
-                });
-
-        private readonly ISqlExpressionFactory _sqlExpressionFactory;
-
-        public JsonObjectContainsMethodCallTranslator(ISqlExpressionFactory sqlExpressionFactory)
+    public SqlExpression Translate(SqlExpression instance,
+        MethodInfo method,
+        IReadOnlyList<SqlExpression> arguments,
+        IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+    {
+        if (method == null)
         {
-            _sqlExpressionFactory = sqlExpressionFactory;
+            throw new ArgumentNullException(nameof(method));
         }
 
-        public SqlExpression Translate(SqlExpression instance,
-            MethodInfo method,
-            IReadOnlyList<SqlExpression> arguments,
-            IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+        if (arguments == null)
         {
-            if (method == null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
-
-            if (arguments == null)
-            {
-                throw new ArgumentNullException(nameof(arguments));
-            }
-
-            if (method != MethodInfo || arguments.Count < 3)
-            {
-                return null;
-            }
-
-            var pattern = arguments[2];
-            var jsonObjectExpression = arguments[1];
-
-            if (jsonObjectExpression is not ColumnExpression columnExpression)
-            {
-                return null;
-            }
-
-            var columnString = !string.IsNullOrWhiteSpace(columnExpression.Table.Alias)
-                ? $"[{columnExpression.Table.Alias}].{columnExpression.Name}"
-                : columnExpression.Name;
-
-            var columnFragment = _sqlExpressionFactory.Fragment(columnString);
-
-            var stringTypeMapping = ExpressionExtensions.InferTypeMapping(jsonObjectExpression);
-
-            switch (pattern)
-            {
-                case SqlConstantExpression constantPattern:
-                {
-                    if (constantPattern.Value is not string patternValue)
-                    {
-                        return _sqlExpressionFactory.Like(
-                            columnFragment,
-                            _sqlExpressionFactory.Constant(null!, stringTypeMapping));
-                    }
-
-                    if (patternValue.Length == 0)
-                    {
-                        return _sqlExpressionFactory.Constant(true);
-                    }
-
-                    return patternValue.Any(IsLikeWildChar)
-                        ? _sqlExpressionFactory.Like(
-                            columnFragment,
-                            _sqlExpressionFactory.Constant($"%{EscapeLikePattern(patternValue)}%"),
-                            _sqlExpressionFactory.Constant(LikeEscapeString))
-                        : _sqlExpressionFactory.Like(columnFragment, _sqlExpressionFactory.Constant($"%{patternValue}%"));
-                }
-                case SqlParameterExpression:
-                    return _sqlExpressionFactory.Like(columnFragment, pattern, _sqlExpressionFactory.Constant(LikeEscapeString));
-                default:
-                    return null;
-            }
+            throw new ArgumentNullException(nameof(arguments));
         }
 
-        private static bool IsLikeWildChar(char c) => c is '%' or '_' or '[';
-
-        private static string EscapeLikePattern(string pattern)
+        if (method != MethodInfo || arguments.Count < 3)
         {
-            var builder = new StringBuilder();
+            return null;
+        }
 
-            foreach (var c in pattern)
+        var pattern = arguments[2];
+        var jsonObjectExpression = arguments[1];
+
+        if (jsonObjectExpression is not ColumnExpression columnExpression)
+        {
+            return null;
+        }
+
+        var columnString = !string.IsNullOrWhiteSpace(columnExpression.Table.Alias)
+            ? $"[{columnExpression.Table.Alias}].{columnExpression.Name}"
+            : columnExpression.Name;
+
+        var columnFragment = _sqlExpressionFactory.Fragment(columnString);
+
+        var stringTypeMapping = ExpressionExtensions.InferTypeMapping(jsonObjectExpression);
+
+        switch (pattern)
+        {
+            case SqlConstantExpression constantPattern:
             {
-                if (IsLikeWildChar(c) || c == LikeEscapeChar)
+                if (constantPattern.Value is not string patternValue)
                 {
-                    builder.Append(LikeEscapeChar);
+                    return _sqlExpressionFactory.Like(
+                        columnFragment,
+                        _sqlExpressionFactory.Constant(null!, stringTypeMapping));
                 }
 
-                builder.Append(c);
+                if (patternValue.Length == 0)
+                {
+                    return _sqlExpressionFactory.Constant(true);
+                }
+
+                return patternValue.Any(IsLikeWildChar)
+                    ? _sqlExpressionFactory.Like(
+                        columnFragment,
+                        _sqlExpressionFactory.Constant($"%{EscapeLikePattern(patternValue)}%"),
+                        _sqlExpressionFactory.Constant(LikeEscapeString))
+                    : _sqlExpressionFactory.Like(columnFragment, _sqlExpressionFactory.Constant($"%{patternValue}%"));
+            }
+            case SqlParameterExpression:
+                return _sqlExpressionFactory.Like(columnFragment, pattern, _sqlExpressionFactory.Constant(LikeEscapeString));
+            default:
+                return null;
+        }
+    }
+
+    private static bool IsLikeWildChar(char c) => c is '%' or '_' or '[';
+
+    private static string EscapeLikePattern(string pattern)
+    {
+        var builder = new StringBuilder();
+
+        foreach (var c in pattern)
+        {
+            if (IsLikeWildChar(c) || c == LikeEscapeChar)
+            {
+                builder.Append(LikeEscapeChar);
             }
 
-            var ret = builder.ToString();
-            builder.Clear();
-
-            return ret;
+            builder.Append(c);
         }
+
+        var ret = builder.ToString();
+        builder.Clear();
+
+        return ret;
     }
 }

@@ -12,175 +12,174 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing
+namespace Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
+
+public class MongoIndexMergeService<TKey, TEntity> : MongoClientBase<TKey, TEntity>, IMongoIndexMergeService<TKey, TEntity>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>
 {
-    public class MongoIndexMergeService<TKey, TEntity> : MongoClientBase<TKey, TEntity>, IMongoIndexMergeService<TKey, TEntity>
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>
+    private readonly IMongoIndexComparisonService _comparisonService;
+
+    public MongoIndexMergeService(IMongoClientFactory<TKey, TEntity> clientFactory,
+        ILogger<MongoIndexMergeService<TKey, TEntity>> logger,
+        IMongoRetryService mongoRetryService,
+        IMongoIndexComparisonService comparisonService) : base(clientFactory, logger, mongoRetryService)
     {
-        private readonly IMongoIndexComparisonService _comparisonService;
+        _comparisonService = comparisonService;
+    }
 
-        public MongoIndexMergeService(IMongoClientFactory<TKey, TEntity> clientFactory,
-            ILogger<MongoIndexMergeService<TKey, TEntity>> logger,
-            IMongoRetryService mongoRetryService,
-            IMongoIndexComparisonService comparisonService) : base(clientFactory, logger, mongoRetryService)
+
+    public async Task MergeIndexesAsync(IMongoCollection<TEntity> dbCollection,
+        CreateIndexModel<TEntity>[] indexModels,
+        CancellationToken cancellationToken)
+    {
+        if (!_comparisonService.EnsureUnique(dbCollection, indexModels))
         {
-            _comparisonService = comparisonService;
+            throw new Exception($"Ensure index definitions are unique. Entity Type {typeof(TEntity)}");
         }
 
+        var indexesCursor = await dbCollection
+            .Indexes
+            .ListAsync(cancellationToken)
+            .ConfigureAwait(false);
 
-        public async Task MergeIndexesAsync(IMongoCollection<TEntity> dbCollection,
-            CreateIndexModel<TEntity>[] indexModels,
-            CancellationToken cancellationToken)
+        var indexes = await indexesCursor
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var hasExistingIndexes = indexes?.Any() ?? false;
+
+        if (hasExistingIndexes)
         {
-            if (!_comparisonService.EnsureUnique(dbCollection, indexModels))
+            await MergeIndexesAsync(dbCollection, indexModels, indexes, cancellationToken);
+        }
+        else
+        {
+            await CreateIndexesAsync(dbCollection, indexModels, cancellationToken);
+        }
+    }
+
+    protected virtual async Task MergeIndexesAsync(IMongoCollection<TEntity> dbCollection,
+        IEnumerable<CreateIndexModel<TEntity>> indexesToAdd,
+        IReadOnlyCollection<BsonDocument> indexes,
+        CancellationToken cancellationToken)
+    {
+        var adds = new List<CreateIndexModel<TEntity>>();
+        var drops = new List<string>();
+
+        foreach (var indexToAdd in indexesToAdd)
+        {
+            if (HandleTextIndex(dbCollection, indexes, indexToAdd, drops, adds))
             {
-                throw new Exception($"Ensure index definitions are unique. Entity Type {typeof(TEntity)}");
+                continue;
             }
 
-            var indexesCursor = await dbCollection
-                .Indexes
-                .ListAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            var indexes = await indexesCursor
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            var hasExistingIndexes = indexes?.Any() ?? false;
-
-            if (hasExistingIndexes)
-            {
-                await MergeIndexesAsync(dbCollection, indexModels, indexes, cancellationToken);
-            }
-            else
-            {
-                await CreateIndexesAsync(dbCollection, indexModels, cancellationToken);
-            }
+            HandleOtherIndexes(dbCollection, indexes, indexToAdd, adds, drops);
         }
 
-        protected virtual async Task MergeIndexesAsync(IMongoCollection<TEntity> dbCollection,
-            IEnumerable<CreateIndexModel<TEntity>> indexesToAdd,
-            IReadOnlyCollection<BsonDocument> indexes,
-            CancellationToken cancellationToken)
+        if (drops.HasValues())
         {
-            var adds = new List<CreateIndexModel<TEntity>>();
-            var drops = new List<string>();
-
-            foreach (var indexToAdd in indexesToAdd)
-            {
-                if (HandleTextIndex(dbCollection, indexes, indexToAdd, drops, adds))
-                {
-                    continue;
-                }
-
-                HandleOtherIndexes(dbCollection, indexes, indexToAdd, adds, drops);
-            }
-
-            if (drops.HasValues())
-            {
-                await DropIndexAsync(dbCollection, drops, cancellationToken);
-            }
-
-            if (adds.HasValues())
-            {
-                await CreateIndexesAsync(dbCollection, adds, cancellationToken);
-            }
+            await DropIndexAsync(dbCollection, drops, cancellationToken);
         }
 
-        private Task CreateIndexesAsync(IMongoCollection<TEntity> dbCollection,
-            IReadOnlyCollection<CreateIndexModel<TEntity>> adds,
-            CancellationToken cancellationToken)
-            => RetryErrorAsync(() => dbCollection.Indexes.CreateManyAsync(adds, cancellationToken));
-
-        private async Task DropIndexAsync(IMongoCollection<TEntity> dbCollection, List<string> indexNames, CancellationToken cancellationToken)
+        if (adds.HasValues())
         {
-            foreach (var indexName in indexNames)
-            {
-                await RetryErrorAsync(() => dbCollection.Indexes.DropOneAsync(indexName, cancellationToken));
-            }
+            await CreateIndexesAsync(dbCollection, adds, cancellationToken);
+        }
+    }
+
+    private Task CreateIndexesAsync(IMongoCollection<TEntity> dbCollection,
+        IReadOnlyCollection<CreateIndexModel<TEntity>> adds,
+        CancellationToken cancellationToken)
+        => RetryErrorAsync(() => dbCollection.Indexes.CreateManyAsync(adds, cancellationToken));
+
+    private async Task DropIndexAsync(IMongoCollection<TEntity> dbCollection, List<string> indexNames, CancellationToken cancellationToken)
+    {
+        foreach (var indexName in indexNames)
+        {
+            await RetryErrorAsync(() => dbCollection.Indexes.DropOneAsync(indexName, cancellationToken));
+        }
+    }
+
+    private void HandleOtherIndexes(
+        IMongoCollection<TEntity> mongoCollection,
+        IReadOnlyCollection<BsonDocument> indexes,
+        CreateIndexModel<TEntity> indexToAdd,
+        ICollection<CreateIndexModel<TEntity>> adds,
+        ICollection<string> drops)
+    {
+        if (indexToAdd is null)
+        {
+            return;
         }
 
-        private void HandleOtherIndexes(
-            IMongoCollection<TEntity> mongoCollection,
-            IReadOnlyCollection<BsonDocument> indexes,
-            CreateIndexModel<TEntity> indexToAdd,
-            ICollection<CreateIndexModel<TEntity>> adds,
-            ICollection<string> drops)
+        var indexName = indexToAdd.Options?.Name;
+
+        BsonDocument existingIndex = null;
+
+        if (!string.IsNullOrWhiteSpace(indexName))
         {
-            if (indexToAdd is null)
-            {
-                return;
-            }
+            existingIndex = indexes.FirstOrDefault(x => x["name"].AsString.EqualsIgnoreCaseAndWhitespace(indexName));
+        }
 
-            var indexName = indexToAdd.Options?.Name;
+        if (existingIndex is null)
+        {
+            var keys = indexToAdd.Keys
+                .Render(mongoCollection.DocumentSerializer, new BsonSerializerRegistry())
+                .ToJson();
 
-            BsonDocument existingIndex = null;
+            existingIndex = indexes.FirstOrDefault(x => x["key"].ToJson().EqualsIgnoreCaseAndWhitespace(keys));
+        }
 
-            if (!string.IsNullOrWhiteSpace(indexName))
-            {
-                existingIndex = indexes.FirstOrDefault(x => x["name"].AsString.EqualsIgnoreCaseAndWhitespace(indexName));
-            }
-
-            if (existingIndex is null)
-            {
-                var keys = indexToAdd.Keys
-                    .Render(mongoCollection.DocumentSerializer, new BsonSerializerRegistry())
-                    .ToJson();
-
-                existingIndex = indexes.FirstOrDefault(x => x["key"].ToJson().EqualsIgnoreCaseAndWhitespace(keys));
-            }
-
-            if (existingIndex == null)
-            {
-                adds.Add(indexToAdd);
-                return;
-            }
-
-            if (_comparisonService.DoesIndexMatch(mongoCollection, existingIndex, indexToAdd))
-            {
-                return;
-            }
-
+        if (existingIndex == null)
+        {
             adds.Add(indexToAdd);
-            drops.Add(existingIndex["name"].AsString);
+            return;
         }
 
-        private bool HandleTextIndex(
-            IMongoCollection<TEntity> dbCollection,
-            IEnumerable<BsonDocument> indexes,
-            CreateIndexModel<TEntity> indexToAdd,
-            ICollection<string> drops,
-            ICollection<CreateIndexModel<TEntity>> adds)
+        if (_comparisonService.DoesIndexMatch(mongoCollection, existingIndex, indexToAdd))
         {
-            var isIndexToAddTextIndex = indexToAdd
-                .Keys
-                .Render(dbCollection.DocumentSerializer, new BsonSerializerRegistry())
-                .Where(x => x.Value.IsString)
-                .Any(x => x.Value.AsString.EqualsIgnoreCaseAndWhitespace("text"));
+            return;
+        }
 
-            if (!isIndexToAddTextIndex)
-            {
-                return false;
-            }
+        adds.Add(indexToAdd);
+        drops.Add(existingIndex["name"].AsString);
+    }
 
-            var existingTextIndex = indexes.FirstOrDefault(y => y.Contains("textIndexVersion"));
+    private bool HandleTextIndex(
+        IMongoCollection<TEntity> dbCollection,
+        IEnumerable<BsonDocument> indexes,
+        CreateIndexModel<TEntity> indexToAdd,
+        ICollection<string> drops,
+        ICollection<CreateIndexModel<TEntity>> adds)
+    {
+        var isIndexToAddTextIndex = indexToAdd
+            .Keys
+            .Render(dbCollection.DocumentSerializer, new BsonSerializerRegistry())
+            .Where(x => x.Value.IsString)
+            .Any(x => x.Value.AsString.EqualsIgnoreCaseAndWhitespace("text"));
 
-            if (existingTextIndex == null)
-            {
-                adds.Add(indexToAdd);
-                return true;
-            }
+        if (!isIndexToAddTextIndex)
+        {
+            return false;
+        }
 
-            if (_comparisonService.DoesIndexMatch(dbCollection, existingTextIndex, indexToAdd))
-            {
-                return true;
-            }
+        var existingTextIndex = indexes.FirstOrDefault(y => y.Contains("textIndexVersion"));
 
-            drops.Add(existingTextIndex["name"].AsString);
+        if (existingTextIndex == null)
+        {
             adds.Add(indexToAdd);
-
             return true;
         }
+
+        if (_comparisonService.DoesIndexMatch(dbCollection, existingTextIndex, indexToAdd))
+        {
+            return true;
+        }
+
+        drops.Add(existingTextIndex["name"].AsString);
+        adds.Add(indexToAdd);
+
+        return true;
     }
 }

@@ -5,77 +5,76 @@ using AsyncKeyedLock;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Entities;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Models
+namespace Firebend.AutoCrud.Core.Interfaces.Models;
+
+public enum EntityTransactionState
 {
-    public enum EntityTransactionState
+    Started = 0,
+    Completed = 1,
+    RolledBack = 2
+}
+
+public static class EntityTransactionMediator
+{
+    private static readonly AsyncKeyedLocker<Guid> Locker = new(o =>
     {
-        Started = 0,
-        Completed = 1,
-        RolledBack = 2
-    }
+        o.PoolSize = 20;
+        o.PoolInitialFill = 1;
+    });
 
-    public static class EntityTransactionMediator
+    private static async Task<bool> TryToggleStateAsync(IEntityTransaction transaction,
+        EntityTransactionState desiredState,
+        CancellationToken cancellationToken)
     {
-        private static readonly AsyncKeyedLocker<Guid> Locker = new(o =>
+        using var locked = await Locker.LockAsync(transaction.Id, cancellationToken);
+
+        if (transaction.State != EntityTransactionState.Started)
         {
-            o.PoolSize = 20;
-            o.PoolInitialFill = 1;
-        });
-
-        private static async Task<bool> TryToggleStateAsync(IEntityTransaction transaction,
-            EntityTransactionState desiredState,
-            CancellationToken cancellationToken)
-        {
-            using var locked = await Locker.LockAsync(transaction.Id, cancellationToken);
-
-            if (transaction.State != EntityTransactionState.Started)
-            {
-                return false;
-            }
-
-            switch (desiredState)
-            {
-                case EntityTransactionState.Completed:
-                    await transaction.CompleteAsync(cancellationToken);
-                    transaction.State = EntityTransactionState.Completed;
-                    return true;
-                case EntityTransactionState.RolledBack:
-                    await transaction.RollbackAsync(cancellationToken);
-                    transaction.State = EntityTransactionState.RolledBack;
-                    return true;
-                case EntityTransactionState.Started:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(desiredState), desiredState, null);
-            }
+            return false;
         }
 
-        public static Task<bool> TryCompleteAsync(IEntityTransaction transaction, CancellationToken cancellationToken)
-            => TryToggleStateAsync(transaction, EntityTransactionState.Completed, cancellationToken);
-
-        public static Task<bool> TryRollbackAsync(IEntityTransaction transaction, CancellationToken cancellationToken)
-            => TryToggleStateAsync(transaction, EntityTransactionState.RolledBack, cancellationToken);
+        switch (desiredState)
+        {
+            case EntityTransactionState.Completed:
+                await transaction.CompleteAsync(cancellationToken);
+                transaction.State = EntityTransactionState.Completed;
+                return true;
+            case EntityTransactionState.RolledBack:
+                await transaction.RollbackAsync(cancellationToken);
+                transaction.State = EntityTransactionState.RolledBack;
+                return true;
+            case EntityTransactionState.Started:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(desiredState), desiredState, null);
+        }
     }
 
-    public interface IEntityTransaction : IDisposable
-    {
-        Guid Id { get; }
+    public static Task<bool> TryCompleteAsync(IEntityTransaction transaction, CancellationToken cancellationToken)
+        => TryToggleStateAsync(transaction, EntityTransactionState.Completed, cancellationToken);
 
-        Task CompleteAsync(CancellationToken cancellationToken);
+    public static Task<bool> TryRollbackAsync(IEntityTransaction transaction, CancellationToken cancellationToken)
+        => TryToggleStateAsync(transaction, EntityTransactionState.RolledBack, cancellationToken);
+}
 
-        Task RollbackAsync(CancellationToken cancellationToken);
+public interface IEntityTransaction : IDisposable
+{
+    Guid Id { get; }
 
-        IEntityTransactionOutbox Outbox { get; }
+    Task CompleteAsync(CancellationToken cancellationToken);
 
-        public EntityTransactionState State { get; set; }
+    Task RollbackAsync(CancellationToken cancellationToken);
 
-        public DateTimeOffset StartedDate { get; set; }
-    }
+    IEntityTransactionOutbox Outbox { get; }
 
-    public static class EntityTransactionExtensions
-    {
-        public static Task AddFunctionEnrollmentAsync(this IEntityTransaction source,
-            Func<CancellationToken, Task> func,
-            CancellationToken cancellationToken)
-            => source.Outbox.AddEnrollmentAsync(source.Id.ToString(), new FunctionTransactionOutboxEnrollment(func), cancellationToken);
-    }
+    public EntityTransactionState State { get; set; }
+
+    public DateTimeOffset StartedDate { get; set; }
+}
+
+public static class EntityTransactionExtensions
+{
+    public static Task AddFunctionEnrollmentAsync(this IEntityTransaction source,
+        Func<CancellationToken, Task> func,
+        CancellationToken cancellationToken)
+        => source.Outbox.AddEnrollmentAsync(source.Id.ToString(), new FunctionTransactionOutboxEnrollment(func), cancellationToken);
 }

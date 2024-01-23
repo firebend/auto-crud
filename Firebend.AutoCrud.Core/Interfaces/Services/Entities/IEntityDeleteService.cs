@@ -3,13 +3,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 
-namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities
+namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+
+public interface IEntityDeleteService<in TKey, TEntity> : IDisposable
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>
 {
-    public interface IEntityDeleteService<in TKey, TEntity> : IDisposable
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>
-    {
-        Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default);
-        Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default);
-    }
+    Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default);
+    Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default);
 }

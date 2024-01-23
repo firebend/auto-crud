@@ -10,115 +10,114 @@ using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 
-namespace Firebend.AutoCrud.Core.Abstractions.Builders
+namespace Firebend.AutoCrud.Core.Abstractions.Builders;
+
+public abstract class EntityCrudBuilder<TKey, TEntity> : EntityBuilder<TKey, TEntity>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>
 {
-    public abstract class EntityCrudBuilder<TKey, TEntity> : EntityBuilder<TKey, TEntity>
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>
+    private bool? _isActiveEntity;
+
+    private bool? _isModifiedEntity;
+
+    private bool? _isTenantEntity;
+
+    private Type _tenantEntityKeyType;
+
+    protected EntityCrudBuilder()
     {
-        private bool? _isActiveEntity;
-
-        private bool? _isModifiedEntity;
-
-        private bool? _isTenantEntity;
-
-        private Type _tenantEntityKeyType;
-
-        protected EntityCrudBuilder()
+        SearchRequestType = IsActiveEntity switch
         {
-            SearchRequestType = IsActiveEntity switch
-            {
-                true when IsModifiedEntity => typeof(ActiveModifiedEntitySearchRequest),
-                true => typeof(ActiveEntitySearchRequest),
-                _ => IsModifiedEntity ? typeof(ModifiedEntitySearchRequest) : typeof(EntitySearchRequest)
-            };
+            true when IsModifiedEntity => typeof(ActiveModifiedEntitySearchRequest),
+            true => typeof(ActiveEntitySearchRequest),
+            _ => IsModifiedEntity ? typeof(ModifiedEntitySearchRequest) : typeof(EntitySearchRequest)
+        };
 
-            WithRegistration<IEntityDomainEventPublisher<TKey, TEntity>, DefaultEntityDomainEventPublisher<TKey, TEntity>>(false);
-            WithRegistration<IDomainEventPublisherService<TKey, TEntity>, DefaultDomainEventPublisherService<TKey, TEntity>>(false);
-            WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
-            WithRegistration<IEntityQueryOrderByHandler<TKey, TEntity>, DefaultEntityQueryOrderByHandler<TKey, TEntity>>(false);
-            WithRegistration<IEntityTransactionOutbox, InMemoryEntityTransactionOutbox>(false);
-            WithRegistration<IDistributedLockService, DistributedLockService>(false);
+        WithRegistration<IEntityDomainEventPublisher<TKey, TEntity>, DefaultEntityDomainEventPublisher<TKey, TEntity>>(false);
+        WithRegistration<IDomainEventPublisherService<TKey, TEntity>, DefaultDomainEventPublisherService<TKey, TEntity>>(false);
+        WithRegistration<IDomainEventContextProvider, DefaultDomainEventContextProvider>(false);
+        WithRegistration<IEntityQueryOrderByHandler<TKey, TEntity>, DefaultEntityQueryOrderByHandler<TKey, TEntity>>(false);
+        WithRegistration<IEntityTransactionOutbox, InMemoryEntityTransactionOutbox>(false);
+        WithRegistration<IDistributedLockService, DistributedLockService>(false);
 
-            if (IsModifiedEntity)
-            {
-                WithRegistration<IDefaultEntityOrderByProvider<TKey, TEntity>>(typeof(DefaultEntityOrderByProviderModified<,>).MakeGenericType(EntityKeyType, EntityType));
-            }
-            else if (IsActiveEntity)
-            {
-                WithRegistration<IDefaultEntityOrderByProvider<TKey, TEntity>>(typeof(DefaultEntityOrderByProviderActive<,>).MakeGenericType(EntityKeyType, EntityType));
-            }
-            else
-            {
-                WithRegistrationInstance<IDefaultEntityOrderByProvider<TKey, TEntity>>(new DefaultDefaultEntityOrderByProvider<TKey, TEntity>());
-            }
+        if (IsModifiedEntity)
+        {
+            WithRegistration<IDefaultEntityOrderByProvider<TKey, TEntity>>(typeof(DefaultEntityOrderByProviderModified<,>).MakeGenericType(EntityKeyType, EntityType));
         }
-
-        public bool IsActiveEntity
+        else if (IsActiveEntity)
         {
-            get
-            {
-                _isActiveEntity ??= typeof(IActiveEntity).IsAssignableFrom(EntityType);
-                return _isActiveEntity.Value;
-            }
+            WithRegistration<IDefaultEntityOrderByProvider<TKey, TEntity>>(typeof(DefaultEntityOrderByProviderActive<,>).MakeGenericType(EntityKeyType, EntityType));
         }
-
-        public bool IsTenantEntity
+        else
         {
-            get
-            {
-                _isTenantEntity ??= EntityType.IsAssignableToGenericType(typeof(ITenantEntity<>));
-                return _isTenantEntity.Value;
-            }
+            WithRegistrationInstance<IDefaultEntityOrderByProvider<TKey, TEntity>>(new DefaultDefaultEntityOrderByProvider<TKey, TEntity>());
         }
+    }
 
-        public Type TenantEntityKeyType
+    public bool IsActiveEntity
+    {
+        get
         {
-            get
+            _isActiveEntity ??= typeof(IActiveEntity).IsAssignableFrom(EntityType);
+            return _isActiveEntity.Value;
+        }
+    }
+
+    public bool IsTenantEntity
+    {
+        get
+        {
+            _isTenantEntity ??= EntityType.IsAssignableToGenericType(typeof(ITenantEntity<>));
+            return _isTenantEntity.Value;
+        }
+    }
+
+    public Type TenantEntityKeyType
+    {
+        get
+        {
+            if (_tenantEntityKeyType != null)
             {
-                if (_tenantEntityKeyType != null)
-                {
-                    return _tenantEntityKeyType;
-                }
-
-                if (!IsTenantEntity)
-                {
-                    return null;
-                }
-
-                _tenantEntityKeyType = EntityType.GetProperty(nameof(ITenantEntity<int>.TenantId))
-                    ?.PropertyType;
                 return _tenantEntityKeyType;
             }
-        }
 
-        public bool IsModifiedEntity
-        {
-            get
+            if (!IsTenantEntity)
             {
-                _isModifiedEntity ??= typeof(IModifiedEntity).IsAssignableFrom(EntityType);
-                return _isModifiedEntity.Value;
+                return null;
             }
+
+            _tenantEntityKeyType = EntityType.GetProperty(nameof(ITenantEntity<int>.TenantId))
+                ?.PropertyType;
+            return _tenantEntityKeyType;
         }
+    }
 
-        public abstract Type CreateType { get; }
-
-        public abstract Type ReadType { get; }
-
-        public abstract Type SearchType { get; }
-
-        public abstract Type UpdateType { get; }
-
-        public abstract Type DeleteType { get; }
-
-        public Type SearchRequestType { get; set; }
-
-        protected abstract void ApplyPlatformTypes();
-
-        protected override void OnBuild()
+    public bool IsModifiedEntity
+    {
+        get
         {
-            base.OnBuild();
-            ApplyPlatformTypes();
+            _isModifiedEntity ??= typeof(IModifiedEntity).IsAssignableFrom(EntityType);
+            return _isModifiedEntity.Value;
         }
+    }
+
+    public abstract Type CreateType { get; }
+
+    public abstract Type ReadType { get; }
+
+    public abstract Type SearchType { get; }
+
+    public abstract Type UpdateType { get; }
+
+    public abstract Type DeleteType { get; }
+
+    public Type SearchRequestType { get; set; }
+
+    protected abstract void ApplyPlatformTypes();
+
+    protected override void OnBuild()
+    {
+        base.OnBuild();
+        ApplyPlatformTypes();
     }
 }

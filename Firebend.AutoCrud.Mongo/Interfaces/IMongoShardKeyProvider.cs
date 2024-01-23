@@ -1,7 +1,6 @@
-namespace Firebend.AutoCrud.Mongo.Interfaces
+namespace Firebend.AutoCrud.Mongo.Interfaces;
+
+public interface IMongoShardKeyProvider
 {
-    public interface IMongoShardKeyProvider
-    {
-        string GetShardKey();
-    }
+    string GetShardKey();
 }

@@ -1,14 +1,13 @@
 using System;
 
-namespace Firebend.AutoCrud.Web.Attributes
-{
-    public class OpenApiGroupNameAttribute : Attribute
-    {
-        public OpenApiGroupNameAttribute(string groupName)
-        {
-            GroupName = groupName;
-        }
+namespace Firebend.AutoCrud.Web.Attributes;
 
-        public string GroupName { get; set; }
+public class OpenApiGroupNameAttribute : Attribute
+{
+    public OpenApiGroupNameAttribute(string groupName)
+    {
+        GroupName = groupName;
     }
+
+    public string GroupName { get; set; }
 }

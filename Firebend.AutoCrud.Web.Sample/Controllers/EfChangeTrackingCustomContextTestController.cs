@@ -8,35 +8,34 @@ using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Firebend.AutoCrud.Web.Sample.Controllers
+namespace Firebend.AutoCrud.Web.Sample.Controllers;
+
+[ApiController]
+[ApiVersion("1.0")]
+[Route("/api/v{version:apiVersion}/ef/domain-event-custom-context")]
+public class EfChangeTrackingCustomContextTestController : ControllerBase
 {
-    [ApiController]
-    [ApiVersion("1.0")]
-    [Route("/api/v{version:apiVersion}/ef/domain-event-custom-context")]
-    public class EfChangeTrackingCustomContextTestController : ControllerBase
+    private readonly IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<Guid, EfPerson>> _readClient;
+
+    public EfChangeTrackingCustomContextTestController(IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<Guid, EfPerson>> readClient)
     {
-        private readonly IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<Guid, EfPerson>> _readClient;
+        _readClient = readClient;
+    }
 
-        public EfChangeTrackingCustomContextTestController(IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<Guid, EfPerson>> readClient)
+    [HttpGet]
+    public async Task<IActionResult> GetAsync(CancellationToken cancellationToken)
+    {
+        var all = await _readClient
+            .GetAllAsync(x => x.DomainEventCustomContext != null, true, cancellationToken);
+
+        return Ok(new
         {
-            _readClient = readClient;
-        }
+            all,
+            catchPhrases = all
+                .Select(x => x.GetDomainEventContext<CatchPhraseModel>()?.CatchPhrase)
+                .Distinct()
+                .ToArray()
+        });
 
-        [HttpGet]
-        public async Task<IActionResult> GetAsync(CancellationToken cancellationToken)
-        {
-            var all = await _readClient
-                .GetAllAsync(x => x.DomainEventCustomContext != null, true, cancellationToken);
-
-            return Ok(new
-            {
-                all,
-                catchPhrases = all
-                    .Select(x => x.GetDomainEventContext<CatchPhraseModel>()?.CatchPhrase)
-                    .Distinct()
-                    .ToArray()
-            });
-
-        }
     }
 }

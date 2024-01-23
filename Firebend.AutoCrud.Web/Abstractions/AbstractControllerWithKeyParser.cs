@@ -6,79 +6,78 @@ using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace Firebend.AutoCrud.Web.Abstractions
+namespace Firebend.AutoCrud.Web.Abstractions;
+
+public abstract class AbstractControllerWithKeyParser<TKey, TEntity, TVersion> : AbstractEntityControllerBase<TVersion>
+    where TKey : struct
+    where TEntity : IEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
 {
-    public abstract class AbstractControllerWithKeyParser<TKey, TEntity, TVersion> : AbstractEntityControllerBase<TVersion>
-        where TKey : struct
-        where TEntity : IEntity<TKey>
-        where TVersion : class, IAutoCrudApiVersion
+    private readonly IEntityKeyParser<TKey, TEntity, TVersion> _keyParser;
+
+    private Type _entityType;
+    private Type EntityType => _entityType ??= typeof(TEntity);
+
+    protected AbstractControllerWithKeyParser(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
+        IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
     {
-        private readonly IEntityKeyParser<TKey, TEntity, TVersion> _keyParser;
+        _keyParser = keyParser;
+    }
 
-        private Type _entityType;
-        private Type EntityType => _entityType ??= typeof(TEntity);
+    protected TKey? GetKey(string key)
+    {
+        var id = _keyParser.ParseKey(key);
 
-        protected AbstractControllerWithKeyParser(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
+        if (!id.HasValue)
         {
-            _keyParser = keyParser;
+            ModelState.AddModelError(nameof(id), "The id is not valid");
+            return null;
         }
 
-        protected TKey? GetKey(string key)
+        if (id.Value.Equals(default(TKey)) || id.Equals(null))
         {
-            var id = _keyParser.ParseKey(key);
-
-            if (!id.HasValue)
-            {
-                ModelState.AddModelError(nameof(id), "The id is not valid");
-                return null;
-            }
-
-            if (id.Value.Equals(default(TKey)) || id.Equals(null))
-            {
-                ModelState.AddModelError(nameof(id), "An id is required");
-                return null;
-            }
-
-            return id;
+            ModelState.AddModelError(nameof(id), "An id is required");
+            return null;
         }
 
-        protected bool IsCustomFieldsEntity() => EntityType.IsAssignableToGenericType(typeof(ICustomFieldsEntity<>));
+        return id;
+    }
 
-        protected bool IsActiveEntity() => EntityType.IsAssignableTo(typeof(IActiveEntity));
+    protected bool IsCustomFieldsEntity() => EntityType.IsAssignableToGenericType(typeof(ICustomFieldsEntity<>));
 
-        protected bool HasCustomFieldsPopulated(object o)
+    protected bool IsActiveEntity() => EntityType.IsAssignableTo(typeof(IActiveEntity));
+
+    protected bool HasCustomFieldsPopulated(object o)
+    {
+        var property = EntityType.GetProperty(nameof(ICustomFieldsEntity<Guid>.CustomFields));
+
+        if (property == null)
         {
-            var property = EntityType.GetProperty(nameof(ICustomFieldsEntity<Guid>.CustomFields));
-
-            if (property == null)
-            {
-                return false;
-            }
-
-            var value = property.GetValue(o, null);
-
-            return value != null;
-        }
-
-        protected bool HasIsDeletedPopulated(object o)
-        {
-            if (o is IActiveEntity activeEntity)
-            {
-                return activeEntity.IsDeleted;
-            }
-
             return false;
         }
 
-        protected bool HasIsDeletedChanged(object original, object toUpdate)
-        {
-            if (original is IActiveEntity originalActive && toUpdate is IActiveEntity toUpdateActive)
-            {
-                return originalActive.IsDeleted != toUpdateActive.IsDeleted;
-            }
+        var value = property.GetValue(o, null);
 
-            return false;
+        return value != null;
+    }
+
+    protected bool HasIsDeletedPopulated(object o)
+    {
+        if (o is IActiveEntity activeEntity)
+        {
+            return activeEntity.IsDeleted;
         }
+
+        return false;
+    }
+
+    protected bool HasIsDeletedChanged(object original, object toUpdate)
+    {
+        if (original is IActiveEntity originalActive && toUpdate is IActiveEntity toUpdateActive)
+        {
+            return originalActive.IsDeleted != toUpdateActive.IsDeleted;
+        }
+
+        return false;
     }
 }

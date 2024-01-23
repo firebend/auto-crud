@@ -1,13 +1,12 @@
 using System;
 
-namespace Firebend.AutoCrud.Mongo.Models
+namespace Firebend.AutoCrud.Mongo.Models;
+
+public class MongoDbMigrationVersion
 {
-    public class MongoDbMigrationVersion
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public DateTimeOffset Version { get; set; }
-    }
+    public DateTimeOffset Version { get; set; }
 }

@@ -1,9 +1,8 @@
-namespace Firebend.AutoCrud.Mongo.Models
+namespace Firebend.AutoCrud.Mongo.Models;
+
+public enum MongoTenantShardMode
 {
-    public enum MongoTenantShardMode
-    {
-        Unknown = 0,
-        Collection = 1,
-        Database = 2
-    }
+    Unknown = 0,
+    Collection = 1,
+    Database = 2
 }

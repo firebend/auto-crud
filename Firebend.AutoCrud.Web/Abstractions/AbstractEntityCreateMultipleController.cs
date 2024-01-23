@@ -13,142 +13,141 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace Firebend.AutoCrud.Web.Abstractions
+namespace Firebend.AutoCrud.Web.Abstractions;
+
+[ApiController]
+public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel>
+    : AbstractEntityControllerBase<TVersion>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
+    where TMultipleViewModel : class
+    where TReadViewModel : class
+    where TMultipleViewModelWrapper : IMultipleEntityViewModel<TMultipleViewModel>
 {
-    [ApiController]
-    public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel, TReadViewModel>
-        : AbstractEntityControllerBase<TVersion>
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>
-        where TVersion : class, IAutoCrudApiVersion
-        where TMultipleViewModel : class
-        where TReadViewModel : class
-        where TMultipleViewModelWrapper : IMultipleEntityViewModel<TMultipleViewModel>
+    private readonly IEntityCreateService<TKey, TEntity> _createService;
+    private readonly IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
+    private readonly ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel> _multipleMapper;
+    private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
+
+    protected AbstractEntityCreateMultipleController(IEntityCreateService<TKey, TEntity> createService,
+        IEntityValidationService<TKey, TEntity, TVersion> entityValidationService,
+        ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel> multipleMapper,
+        IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readMapper,
+        IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
     {
-        private readonly IEntityCreateService<TKey, TEntity> _createService;
-        private readonly IEntityValidationService<TKey, TEntity, TVersion> _entityValidationService;
-        private readonly ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel> _multipleMapper;
-        private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> _readMapper;
+        _createService = createService;
+        _entityValidationService = entityValidationService;
+        _multipleMapper = multipleMapper;
+        _readMapper = readMapper;
+    }
 
-        protected AbstractEntityCreateMultipleController(IEntityCreateService<TKey, TEntity> createService,
-            IEntityValidationService<TKey, TEntity, TVersion> entityValidationService,
-            ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TMultipleViewModelWrapper, TMultipleViewModel> multipleMapper,
-            IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readMapper,
-            IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
+    [HttpPost]
+    [Route("multiple")]
+    [SwaggerOperation("Creates multiple {entityNamePlural}")]
+    [SwaggerResponse(200, "Multiple {entityNamePlural} were created successfully.")]
+    [SwaggerResponse(400, "The request is invalid.")]
+    [SwaggerResponse(403, "Forbidden")]
+    [Produces("application/json")]
+    public virtual async Task<ActionResult<CreateMultipleActionResult<TReadViewModel>>> CreateMultipleAsync(
+        TMultipleViewModelWrapper body,
+        CancellationToken cancellationToken)
+    {
+        Response.RegisterForDispose(_createService);
+
+        if (body?.Entities?.IsEmpty() ?? true)
         {
-            _createService = createService;
-            _entityValidationService = entityValidationService;
-            _multipleMapper = multipleMapper;
-            _readMapper = readMapper;
+            ModelState.AddModelError("body", "A body is required");
+            return GetInvalidModelStateResult();
         }
 
-        [HttpPost]
-        [Route("multiple")]
-        [SwaggerOperation("Creates multiple {entityNamePlural}")]
-        [SwaggerResponse(200, "Multiple {entityNamePlural} were created successfully.")]
-        [SwaggerResponse(400, "The request is invalid.")]
-        [SwaggerResponse(403, "Forbidden")]
-        [Produces("application/json")]
-        public virtual async Task<ActionResult<CreateMultipleActionResult<TReadViewModel>>> CreateMultipleAsync(
-            TMultipleViewModelWrapper body,
-            CancellationToken cancellationToken)
+        var createdEntities = new List<TReadViewModel>();
+        var errorEntities = new List<ModelStateResult<TReadViewModel>>();
+
+        foreach (var toCreate in body.Entities)
         {
-            Response.RegisterForDispose(_createService);
+            var entityToCreate = await _multipleMapper.FromAsync(body, toCreate, cancellationToken);
 
-            if (body?.Entities?.IsEmpty() ?? true)
+            var isValid = await _entityValidationService.ValidateAsync(null, entityToCreate, null, cancellationToken);
+
+            if (!isValid.WasSuccessful)
             {
-                ModelState.AddModelError("body", "A body is required");
-                return GetInvalidModelStateResult();
+                var vm = await _readMapper.ToAsync(entityToCreate, cancellationToken);
+                var error = new ModelStateResult<TReadViewModel> { Message = isValid.Message };
+
+                foreach (var modelError in isValid.Errors)
+                {
+                    error.AddError(modelError.PropertyPath, modelError.Error);
+                }
+
+                error.Model = vm;
+                errorEntities.Add(error);
+                continue;
             }
 
-            var createdEntities = new List<TReadViewModel>();
-            var errorEntities = new List<ModelStateResult<TReadViewModel>>();
-
-            foreach (var toCreate in body.Entities)
+            if (isValid.Model != null)
             {
-                var entityToCreate = await _multipleMapper.FromAsync(body, toCreate, cancellationToken);
+                entityToCreate = isValid.Model;
+            }
 
-                var isValid = await _entityValidationService.ValidateAsync(null, entityToCreate, null, cancellationToken);
+            if (entityToCreate == null)
+            {
+                var result = new ModelStateResult<TReadViewModel>();
+                result.AddError("Entity", "The entity to create is null");
+                errorEntities.Add(result);
+                continue;
 
-                if (!isValid.WasSuccessful)
+            }
+
+            TEntity entity = null;
+
+            try
+            {
+                entity = await _createService.CreateAsync(entityToCreate, cancellationToken);
+            }
+            catch (AutoCrudEntityException ex)
+            {
+                var modelStateResult = new ModelStateResult<TReadViewModel>();
+
+                if (ex.PropertyErrors != null)
                 {
-                    var vm = await _readMapper.ToAsync(entityToCreate, cancellationToken);
-                    var error = new ModelStateResult<TReadViewModel> { Message = isValid.Message };
-
-                    foreach (var modelError in isValid.Errors)
+                    foreach (var (property, error) in ex.PropertyErrors)
                     {
-                        error.AddError(modelError.PropertyPath, modelError.Error);
+                        modelStateResult.AddError(property, error);
                     }
-
-                    error.Model = vm;
-                    errorEntities.Add(error);
-                    continue;
                 }
 
-                if (isValid.Model != null)
-                {
-                    entityToCreate = isValid.Model;
-                }
-
-                if (entityToCreate == null)
-                {
-                    var result = new ModelStateResult<TReadViewModel>();
-                    result.AddError("Entity", "The entity to create is null");
-                    errorEntities.Add(result);
-                    continue;
-
-                }
-
-                TEntity entity = null;
-
-                try
-                {
-                    entity = await _createService.CreateAsync(entityToCreate, cancellationToken);
-                }
-                catch (AutoCrudEntityException ex)
-                {
-                    var modelStateResult = new ModelStateResult<TReadViewModel>();
-
-                    if (ex.PropertyErrors != null)
-                    {
-                        foreach (var (property, error) in ex.PropertyErrors)
-                        {
-                            modelStateResult.AddError(property, error);
-                        }
-                    }
-
-                    errorEntities.Add(modelStateResult);
-                }
-
-                if (entity == null)
-                {
-                    continue;
-                }
-
-                var mappedEntity = await _readMapper.ToAsync(entity, cancellationToken);
-
-                createdEntities.Add(mappedEntity);
+                errorEntities.Add(modelStateResult);
             }
 
-            if (createdEntities.Count > 0)
+            if (entity == null)
             {
-                return Ok(new CreateMultipleActionResult<TReadViewModel>
-                {
-                    Created = createdEntities,
-                    Errors = errorEntities
-                });
+                continue;
             }
 
-            if (errorEntities.Count > 0)
-            {
-                return BadRequest(new CreateMultipleActionResult<TReadViewModel>
-                {
-                    Created = createdEntities,
-                    Errors = errorEntities
-                });
-            }
+            var mappedEntity = await _readMapper.ToAsync(entity, cancellationToken);
 
-            return BadRequest();
+            createdEntities.Add(mappedEntity);
         }
+
+        if (createdEntities.Count > 0)
+        {
+            return Ok(new CreateMultipleActionResult<TReadViewModel>
+            {
+                Created = createdEntities,
+                Errors = errorEntities
+            });
+        }
+
+        if (errorEntities.Count > 0)
+        {
+            return BadRequest(new CreateMultipleActionResult<TReadViewModel>
+            {
+                Created = createdEntities,
+                Errors = errorEntities
+            });
+        }
+
+        return BadRequest();
     }
 }
