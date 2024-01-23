@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="10.0.0"></a>
+## [10.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v10.0.0) (2024-01-23)
+
+### Features
+
+* dotnet 8 ([#285](https://www.github.com/firebend/auto-crud/issues/285)) ([634759c](https://www.github.com/firebend/auto-crud/commit/634759c830d49f4543f1a652806e8576dbc96bfb))
+
+### Breaking Changes
+
+* dotnet 8 ([#285](https://www.github.com/firebend/auto-crud/issues/285)) ([634759c](https://www.github.com/firebend/auto-crud/commit/634759c830d49f4543f1a652806e8576dbc96bfb))
+
+### Other
+
+* Forks/jacob/dotnet8.0 (#284) ([a641a4d](https://www.github.com/firebend/auto-crud/commit/a641a4def56b076c82d0b785d9c3d7fcc4c481c2))
+
 <a name="9.6.4"></a>
 ## [9.6.4](https://www.github.com/firebend/auto-crud/releases/tag/v9.6.4) (2024-01-23)
 
