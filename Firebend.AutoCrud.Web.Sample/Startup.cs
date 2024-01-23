@@ -173,19 +173,10 @@ public class ConfigureBearerOptions : IConfigureNamedOptions<JwtBearerOptions>
     {
         options.Events ??= new();
 
-        options.Events.OnForbidden = _ =>
-        {
-            return Task.CompletedTask;
-        };
+        options.Events.OnForbidden = _ => Task.CompletedTask;
 
-        options.Events.OnTokenValidated = _ =>
-        {
-            return Task.CompletedTask;
-        };
+        options.Events.OnTokenValidated = _ => Task.CompletedTask;
 
-        options.Events.OnAuthenticationFailed = _ =>
-        {
-            return Task.CompletedTask;
-        };
+        options.Events.OnAuthenticationFailed = _ => Task.CompletedTask;
     }
 }
