@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
-using Amazon.Runtime.Internal;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
@@ -163,29 +161,29 @@ public class ConfigureBearerOptions : IConfigureNamedOptions<JwtBearerOptions>
 {
     public void Configure(JwtBearerOptions options)
     {
-        this.InternalConfiguration(options);
+        InternalConfiguration(options);
     }
 
     public void Configure(string name, JwtBearerOptions options)
     {
-        this.InternalConfiguration(options);
+        InternalConfiguration(options);
     }
 
-    private void InternalConfiguration(JwtBearerOptions options)
+    private static void InternalConfiguration(JwtBearerOptions options)
     {
         options.Events ??= new();
 
-        options.Events.OnForbidden = context =>
+        options.Events.OnForbidden = _ =>
         {
             return Task.CompletedTask;
         };
 
-        options.Events.OnTokenValidated = context =>
+        options.Events.OnTokenValidated = _ =>
         {
             return Task.CompletedTask;
         };
 
-        options.Events.OnAuthenticationFailed = context =>
+        options.Events.OnAuthenticationFailed = _ =>
         {
             return Task.CompletedTask;
         };

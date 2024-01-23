@@ -36,14 +36,14 @@ public class TokenController : ControllerBase
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var claims = new[] {
-                        new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
+                        new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]!),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
                         new Claim("UserId", user.UserId.ToString()),
                         new Claim(JwtRegisteredClaimNames.Email, user.Email)
                     };
 
-                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:key"]);
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:key"]!);
 
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {

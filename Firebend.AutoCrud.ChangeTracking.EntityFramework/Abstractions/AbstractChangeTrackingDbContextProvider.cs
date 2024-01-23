@@ -119,6 +119,9 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions
         {
             //todo: refactor this later to be more robust and not depend on sql server syntax
             const string columnName = nameof(ChangeTrackingEntity<TEntityKey, TEntity>.DomainEventCustomContext);
+
+#pragma warning disable EF1002
+            // ReSharper disable once UseRawString
             await context.Database.ExecuteSqlRawAsync($@"
 IF NOT EXISTS (
   SELECT *
@@ -130,6 +133,8 @@ BEGIN
     ALTER TABLE {fullTableName}
     ADD [{columnName}] nvarchar(max)
 END", cancellationToken);
+
+#pragma warning restore EF1002
         }
 
         private static async Task<bool> DoesTableExist(DbContext context,
