@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.EntityFramework.Comparers;
 using Firebend.AutoCrud.EntityFramework.Converters;
 using Firebend.AutoCrud.EntityFramework.CustomCommands;
@@ -19,6 +20,8 @@ public class NestedClass
 public class TestEntity
 {
     public Guid Id { get; set; }
+
+    [MaxLength(10000)]
     public string Name { get; set; }
     public NestedClass Nested { get; set; }
 }
