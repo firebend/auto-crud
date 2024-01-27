@@ -47,7 +47,7 @@ public class MongoIndexMergeService<TKey, TEntity> : MongoClientBase<TKey, TEnti
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var hasExistingIndexes = indexes?.Any() ?? false;
+        var hasExistingIndexes = (indexes?.Count ?? 0) > 0;
 
         if (hasExistingIndexes)
         {
