@@ -72,7 +72,7 @@ public abstract class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<T
         var ids = await UpdateManyInternalAsync(collection, null, entities, cancellationToken)
             .ConfigureAwait(false);
 
-        if (ids.Any())
+        if (ids.Count != 0)
         {
             var filter = Builders<TEntity>.Filter.In(x => x.Id, ids);
 
@@ -103,7 +103,7 @@ public abstract class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<T
         var ids = await UpdateManyInternalAsync(collection, transaction, entities, cancellationToken)
             .ConfigureAwait(false);
 
-        if (ids.Any())
+        if (ids.Count != 0)
         {
             var filter = Builders<TEntity>.Filter.In(x => x.Id, ids);
 
@@ -244,7 +244,7 @@ public abstract class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<T
         List<EntityUpdate<TEntity>> entities,
         CancellationToken cancellationToken = default)
     {
-        if (entities == null || !entities.Any())
+        if (entities == null || entities.Count == 0)
         {
             throw new ArgumentException("There are no entities provided to update.", nameof(entities));
         }

@@ -43,7 +43,7 @@ public abstract class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TK
 
         var builder = Builders<TEntity>.IndexKeys;
         var indexesToAdd = _indexProvider.GetIndexes(builder, configuration)?.ToArray();
-        var hasIndexesToAdd = indexesToAdd?.Any() ?? false;
+        var hasIndexesToAdd = (indexesToAdd?.Length ?? 0) > 0;
 
         if (!hasIndexesToAdd)
         {
