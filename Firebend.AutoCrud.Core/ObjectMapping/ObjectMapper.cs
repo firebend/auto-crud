@@ -101,6 +101,6 @@ public class ObjectMapper : BaseObjectMapper
                 return dynamicMethod;
             }, (key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
 
-        dynamic.Invoke(null, new object[] { source, target });
+        dynamic.Invoke(null, [source, target]);
     }
 }
