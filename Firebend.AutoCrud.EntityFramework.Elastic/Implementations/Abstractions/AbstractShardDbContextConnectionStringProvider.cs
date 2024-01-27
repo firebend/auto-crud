@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,8 +10,6 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Data.SqlClient;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions;
-
-internal record SqlPropertyRenames(string NewName, string OldName);
 
 public abstract class AbstractShardDbContextConnectionStringProvider<TKey, TEntity> : IDbContextConnectionStringProvider<TKey, TEntity>
     where TEntity : IEntity<TKey>
@@ -37,24 +33,6 @@ public abstract class AbstractShardDbContextConnectionStringProvider<TKey, TEnti
         _shardNameProvider = shardNameProvider;
         _shardMapMangerConfiguration = shardMapMangerConfiguration;
         _memoizer = memoizer;
-    }
-
-    private static string NormalizeToLegacyConnectionString(string connectionString)
-        => string.IsNullOrWhiteSpace(connectionString)
-            ? connectionString
-            : GetRenames().Aggregate(connectionString,
-                    (connString, replace) => connString.Replace(replace.NewName, replace.OldName, StringComparison.OrdinalIgnoreCase));
-
-    private static IEnumerable<SqlPropertyRenames> GetRenames()
-    {
-        yield return new("Application Intent", "ApplicationIntent");
-        yield return new("Connect Retry Count", "ConnectRetryCount");
-        yield return new("Connect Retry Interval", "ConnectRetryInterval");
-        yield return new("Pool Blocking Period", "PoolBlockingPeriod");
-        yield return new("Multiple Active Result Sets", "MultipleActiveResultSets");
-        yield return new("Multi Subnet Failover", "MultiSubnetFailover");
-        yield return new("Transparent Network IP Resolution", "TransparentNetworkIPResolution");
-        yield return new("Trust Server Certificate", "TrustServerCertificate");
     }
 
     public async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default)
@@ -91,7 +69,7 @@ public abstract class AbstractShardDbContextConnectionStringProvider<TKey, TEnti
         rootConnectionStringBuilder.Remove("Data Source");
         rootConnectionStringBuilder.Remove("Initial Catalog");
 
-        var shardConnectionString = NormalizeToLegacyConnectionString(rootConnectionStringBuilder.ConnectionString);
+        var shardConnectionString = rootConnectionStringBuilder.ConnectionString;
 
         await using var connection = await shard
             .OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
