@@ -156,7 +156,7 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
 
             if (!key.IsAssignableFrom(value))
             {
-                throw new InvalidCastException($"Cannot use {value.Name} to implement {key.Name}");
+                throw new InvalidCastException($"Cannot use {value?.Name} to implement {key.Name}");
             }
 
             var signature = $"{signatureBase}_{value.Name}";
@@ -215,7 +215,7 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
 
         var attributeArray = attributes.Distinct().ToArray();
 
-        if (attributeArray.Any())
+        if (attributeArray.Length != 0)
         {
             return attributeArray;
         }
