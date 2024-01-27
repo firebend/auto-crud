@@ -16,14 +16,6 @@ using Newtonsoft.Json.Serialization;
 
 namespace Firebend.AutoCrud.ChangeTracking.Web.Implementations;
 
-internal static class DefaultChangeTrackingViewModelMapperCaches
-{
-    public static readonly string[] MapperIgnores = {
-        nameof(ChangeTrackingModel<Guid, FooEntity>.Changes),
-        nameof(ChangeTrackingModel<Guid, FooEntity>.Entity)
-    };
-}
-
 public class DefaultChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TViewModel> : IChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TViewModel>
     where TViewModel : class
     where TEntity : class, IEntity<TKey>
@@ -47,7 +39,11 @@ public class DefaultChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TView
         foreach (var changeTrackingEntity in trackingEntities)
         {
             var model = new ChangeTrackingModel<TKey, TViewModel>();
-            changeTrackingEntity.CopyPropertiesTo(model, DefaultChangeTrackingViewModelMapperCaches.MapperIgnores);
+
+            changeTrackingEntity.CopyPropertiesTo(model, [
+                nameof(ChangeTrackingModel<Guid, FooEntity>.Changes),
+                nameof(ChangeTrackingModel<Guid, FooEntity>.Entity)
+            ]);
 
             var before = await _mapper.ToAsync(changeTrackingEntity.Entity, cancellationToken);
             model.Entity = before;
