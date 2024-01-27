@@ -20,9 +20,10 @@ public class AbstractElasticDbContextProvider<TKey, TEntity, TContext> : Abstrac
     public AbstractElasticDbContextProvider(
         IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider,
         IDbContextOptionsProvider<TKey, TEntity> optionsProvider,
-        ILoggerFactory loggerFactory, IMemoizer memoizer,
+        ILogger<AbstractElasticDbContextProvider<TKey, TEntity, TContext>> logger,
+        IMemoizer memoizer,
         IShardNameProvider shardNameProvider,
-        IShardKeyProvider shardKeyProvider) : base(connectionStringProvider, optionsProvider, loggerFactory, memoizer)
+        IShardKeyProvider shardKeyProvider) : base(connectionStringProvider, optionsProvider, logger, memoizer)
     {
         _shardNameProvider = shardNameProvider;
         _shardKeyProvider = shardKeyProvider;

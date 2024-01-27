@@ -23,13 +23,13 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
 
     protected AbstractDbContextProvider(IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider,
         IDbContextOptionsProvider<TKey, TEntity> optionsProvider,
-        ILoggerFactory loggerFactory,
+        ILogger logger,
         IMemoizer memoizer)
     {
         _connectionStringProvider = connectionStringProvider;
         _optionsProvider = optionsProvider;
         _memoizer = memoizer;
-        _logger = loggerFactory.CreateLogger<AbstractDbContextProvider<TKey, TEntity, TContext>>();
+        _logger = logger;
     }
 
     protected async Task<IDbContext> CreateContextAsync(IDbContextFactory<TContext> factory,
@@ -54,15 +54,6 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
 
     protected virtual async Task<bool> InitContextAsync(DbContext dbContext, CancellationToken cancellationToken)
     {
-        try
-        {
-            await dbContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to call ensure created");
-        }
-
         try
         {
             await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
