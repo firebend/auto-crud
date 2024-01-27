@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces;
@@ -41,7 +40,7 @@ public abstract class AbstractEntityReadAllController<TKey, TEntity, TVersion, T
 
         var entities = await _readService.GetAllAsync(cancellationToken);
 
-        if (entities == null || !entities.Any())
+        if (entities == null || entities.Count == 0)
         {
             return Ok();
         }

@@ -285,8 +285,8 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         }
 
         var args = !string.IsNullOrWhiteSpace(authorizePolicy)
-            ? new object[] { authorizePolicy }
-            : new object[] { };
+            ? [authorizePolicy]
+            : Array.Empty<object>();
 
         return (authType, new CustomAttributeBuilder(authCtor, args));
     }

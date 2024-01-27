@@ -18,7 +18,7 @@ public class CopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel> : ICopyO
 
     public CopyOnPatchPropertyAccessor()
     {
-        _copyOnPatchPropertyNames = new[] { nameof(ICustomFieldsEntity<Guid>.CustomFields) };
+        _copyOnPatchPropertyNames = [nameof(ICustomFieldsEntity<Guid>.CustomFields)];
     }
 
     public string[] GetProperties() => _copyOnPatchPropertyNames;

@@ -33,7 +33,7 @@ public class ConfigureCollectionsHostedService : BackgroundService
 
             var configureTasks = collections.Select(x => x.ConfigureAsync(stoppingToken));
 
-            await Task.WhenAll(configureTasks).ConfigureAwait(false);
+            await Task.WhenAll(configureTasks);
 
             ConfigureCollectionsHostedServiceLogger.Finish(_logger);
         }

@@ -46,7 +46,7 @@ public static class AuthorizationFilterHelper
     /// </summary>
     /// <param name="authorizationResult">AuthorizationResult used to determine forbidden message</param>
     public static ObjectResult ForbiddenResult(AuthorizationResult authorizationResult) =>
-        new ObjectResult(authorizationResult.Failure?.FailureReasons.FirstOrDefault()?.Message ?? "Forbidden")
+        new(authorizationResult.Failure?.FailureReasons.FirstOrDefault()?.Message ?? "Forbidden")
         {
             StatusCode = 403
         };

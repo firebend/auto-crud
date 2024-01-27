@@ -283,6 +283,7 @@ public abstract class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<T
             if (entityUpdate.Entity is IModifiedEntity modified)
             {
                 var now = DateTimeOffset.Now;
+
                 if (isCreating)
                 {
                     modified.CreatedDate = now;
