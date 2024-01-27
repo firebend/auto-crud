@@ -25,8 +25,8 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
     public abstract EntityFileType FileType { get; }
 
     private IWriter _writer;
-    private TextWriter _textWriter;
-    private Stream _stream;
+    private StreamWriter _textWriter;
+    private MemoryStream _stream;
 
     private readonly IFileFieldAutoMapper<TVersion> _autoMapper;
 
@@ -57,7 +57,7 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
 
         if (_textWriter != null)
         {
-            await _textWriter.FlushAsync().ConfigureAwait(false);
+            await _textWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
 
         if (_writer is SpreadsheetWriter excelWriter)
