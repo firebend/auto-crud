@@ -21,15 +21,12 @@ public abstract class AbstractEfCustomFieldSearchService<TKey, TEntity, TCustomF
     where TCustomFieldsEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>
 {
     private readonly IEntityFrameworkQueryClient<TKey, TEntity> _queryClient;
-    private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
     private readonly IEntitySearchHandler<TKey, TEntity, CustomFieldsSearchRequest> _searchHandler;
 
     protected AbstractEfCustomFieldSearchService(IEntityFrameworkQueryClient<TKey, TEntity> queryClient,
-        ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator,
         IEntitySearchHandler<TKey, TEntity, CustomFieldsSearchRequest> searchHandler = null)
     {
         _queryClient = queryClient;
-        _customFieldsStorageCreator = customFieldsStorageCreator;
         _searchHandler = searchHandler;
     }
 
@@ -37,8 +34,6 @@ public abstract class AbstractEfCustomFieldSearchService<TKey, TEntity, TCustomF
     public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(CustomFieldsSearchRequest searchRequest,
         CancellationToken cancellationToken = default)
     {
-        await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
-
         var (query, context) = await _queryClient
             .GetQueryableAsync(true, cancellationToken)
             .ConfigureAwait(false);
@@ -90,6 +85,5 @@ public abstract class AbstractEfCustomFieldSearchService<TKey, TEntity, TCustomF
     protected override void DisposeManagedObjects()
     {
         _queryClient?.Dispose();
-        _customFieldsStorageCreator.Dispose();
     }
 }

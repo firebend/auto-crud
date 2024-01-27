@@ -18,16 +18,13 @@ public abstract class AbstractEfCustomFieldsCreateService<TKey, TEntity, TCustom
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
     where TCustomFieldsTEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>, new()
 {
-    private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
     private readonly ISessionTransactionManager _transactionManager;
     private readonly IEntityFrameworkCreateClient<Guid, TCustomFieldsTEntity> _createClient;
 
     protected AbstractEfCustomFieldsCreateService(IEntityFrameworkCreateClient<Guid, TCustomFieldsTEntity> createClient,
-        ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator,
         ISessionTransactionManager transactionManager)
     {
         _createClient = createClient;
-        _customFieldsStorageCreator = customFieldsStorageCreator;
         _transactionManager = transactionManager;
     }
 
@@ -44,7 +41,6 @@ public abstract class AbstractEfCustomFieldsCreateService<TKey, TEntity, TCustom
         CancellationToken cancellationToken = default)
     {
         _transactionManager.AddTransaction(entityTransaction);
-        await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var customFieldsEntity = new TCustomFieldsTEntity { EntityId = rootEntityKey };
 
@@ -60,8 +56,5 @@ public abstract class AbstractEfCustomFieldsCreateService<TKey, TEntity, TCustom
     }
 
     protected override void DisposeManagedObjects()
-    {
-        _createClient?.Dispose();
-        _customFieldsStorageCreator?.Dispose();
-    }
+        => _createClient?.Dispose();
 }

@@ -211,16 +211,6 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             typeof(DefaultEntityQueryOrderByHandler<,>).MakeGenericType(guidType, efModelType),
             false);
 
-        var creatorType = isTenantEntity
-            ? typeof(AbstractTenantSqlServerCustomFieldsStorageCreator<,,,>)
-                .MakeGenericType(builder.EntityKeyType, builder.EntityType, builder.TenantEntityKeyType, efModelType)
-            : typeof(AbstractSqlServerCustomFieldsStorageCreator<,,>)
-                .MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType);
-
-        builder.WithRegistration<ICustomFieldsStorageCreator<TKey, TEntity>>(creatorType, false);
-
-        builder.WithRegistration<IEntityTableCreator, EntityTableCreator>(false);
-
         return builder;
     }
 

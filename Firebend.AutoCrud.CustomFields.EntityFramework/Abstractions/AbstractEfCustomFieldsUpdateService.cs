@@ -23,15 +23,12 @@ public abstract class AbstractEfCustomFieldsUpdateService<TKey, TEntity, TCustom
     where TCustomFieldsEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>, new()
 {
     private readonly IEntityFrameworkUpdateClient<Guid, TCustomFieldsEntity> _updateClient;
-    private readonly ICustomFieldsStorageCreator<TKey, TEntity> _customFieldsStorageCreator;
     private readonly ISessionTransactionManager _transactionManager;
 
     protected AbstractEfCustomFieldsUpdateService(IEntityFrameworkUpdateClient<Guid, TCustomFieldsEntity> updateClient,
-        ICustomFieldsStorageCreator<TKey, TEntity> customFieldsStorageCreator,
         ISessionTransactionManager transactionManager)
     {
         _updateClient = updateClient;
-        _customFieldsStorageCreator = customFieldsStorageCreator;
         _transactionManager = transactionManager;
     }
 
@@ -49,7 +46,6 @@ public abstract class AbstractEfCustomFieldsUpdateService<TKey, TEntity, TCustom
         CancellationToken cancellationToken = default)
     {
         _transactionManager.AddTransaction(entityTransaction);
-        await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
         var efEntity = new TCustomFieldsEntity { EntityId = rootEntityKey };
         customField.CopyPropertiesTo(efEntity);
 
@@ -73,7 +69,6 @@ public abstract class AbstractEfCustomFieldsUpdateService<TKey, TEntity, TCustom
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        await _customFieldsStorageCreator.CreateIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var operations = jsonPatchDocument
             .Operations
@@ -90,9 +85,5 @@ public abstract class AbstractEfCustomFieldsUpdateService<TKey, TEntity, TCustom
         return retEntity;
     }
 
-    protected override void DisposeManagedObjects()
-    {
-        _updateClient?.Dispose();
-        _customFieldsStorageCreator.Dispose();
-    }
+    protected override void DisposeManagedObjects() => _updateClient?.Dispose();
 }
