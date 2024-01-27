@@ -17,11 +17,11 @@ public static class MassTransitExtensions
 {
     private const string QueuePrefix = "FB_AC_DV_";
 
-    private static List<AutoCrudMassTransitConsumerInfo> _listeners;
+    private static AutoCrudMassTransitConsumerInfo[] _listeners;
 
-    private static IEnumerable<AutoCrudMassTransitConsumerInfo> GetListeners(IServiceCollection serviceCollection)
+    private static AutoCrudMassTransitConsumerInfo[] GetListeners(IServiceCollection serviceCollection)
     {
-        if (_listeners != null && _listeners.Any())
+        if (_listeners != null && _listeners.Length != 0)
         {
             return _listeners;
         }
@@ -29,7 +29,7 @@ public static class MassTransitExtensions
         var listeners = serviceCollection
             .Where(x => IsMessageListener(x.ServiceType))
             .Select(x => new AutoCrudMassTransitConsumerInfo(x))
-            .ToList();
+            .ToArray();
 
         _listeners = listeners;
 
@@ -91,13 +91,12 @@ public static class MassTransitExtensions
             });
         }
 
-        _listeners.Clear();
         _listeners = null;
     }
 
-    private static Dictionary<string, List<AutoCrudMassTransitConsumerInfo>> GetQueues(AutoCrudMassTransitQueueMode queueMode,
+    private static Dictionary<string, AutoCrudMassTransitConsumerInfo[]> GetQueues(AutoCrudMassTransitQueueMode queueMode,
         string receiveEndpointPrefix,
-        List<AutoCrudMassTransitConsumerInfo> consumerInfos)
+        AutoCrudMassTransitConsumerInfo[] consumerInfos)
     {
         if (queueMode == AutoCrudMassTransitQueueMode.Unknown)
         {
@@ -114,20 +113,20 @@ public static class MassTransitExtensions
         switch (queueMode)
         {
             case AutoCrudMassTransitQueueMode.OneQueue:
-                return new Dictionary<string, List<AutoCrudMassTransitConsumerInfo>> { { prefix, consumerInfos } };
+                return new (){ { prefix, consumerInfos } };
 
             case AutoCrudMassTransitQueueMode.QueuePerAction:
                 return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityActionDescription}")
                     .ToDictionary(x => x.Key,
-                        x => x.ToList());
+                        x => x.ToArray());
 
             case AutoCrudMassTransitQueueMode.QueuePerEntity:
                 return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityType.Name}")
-                    .ToDictionary(x => x.Key, x => x.ToList());
+                    .ToDictionary(x => x.Key, x => x.ToArray());
 
             case AutoCrudMassTransitQueueMode.QueuePerEntityAction:
             {
-                var dictionary = new Dictionary<string, List<AutoCrudMassTransitConsumerInfo>>();
+                var dictionary = new Dictionary<string, AutoCrudMassTransitConsumerInfo[]>();
                 var queueNames = new List<string>();
 
                 foreach (var consumerInfo in consumerInfos)
@@ -138,7 +137,7 @@ public static class MassTransitExtensions
                         consumerInfo.ServiceDescriptor.ImplementationType,
                         consumerInfo.EntityActionDescription
                     );
-                    dictionary.Add(queueName, new List<AutoCrudMassTransitConsumerInfo> { consumerInfo });
+                    dictionary.Add(queueName, [consumerInfo ]);
                 }
 
                 return dictionary;
