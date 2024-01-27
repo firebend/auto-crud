@@ -1,3 +1,4 @@
+using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,8 @@ public abstract class AbstractCustomFieldEntityTypeConfiguration<TKey, TEntity, 
     public virtual void Configure(EntityTypeBuilder<TEfModel> builder)
     {
         builder.ToTable(_tableName, _schema);
+        builder.HasBaseType((Type)null);
+
         builder.Property(x => x.Id).HasAnnotation("SqlServer:Clustered", false);
 
         builder.Property(x => x.Key).IsRequired().HasMaxLength(250);
