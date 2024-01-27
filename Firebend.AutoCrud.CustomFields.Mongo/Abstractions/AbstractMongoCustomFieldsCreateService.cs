@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Ids;
@@ -106,7 +105,7 @@ public class AbstractMongoCustomFieldsCreateService<TKey, TEntity> :
 
         if ((result.CustomFields?.Count ?? 0) <= 0)
         {
-            patch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>> { customField });
+            patch.Replace(x => x.CustomFields, [customField]);
         }
         else
         {

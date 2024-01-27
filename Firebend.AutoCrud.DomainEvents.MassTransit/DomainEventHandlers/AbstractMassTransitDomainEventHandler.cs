@@ -19,7 +19,7 @@ public abstract class AbstractMassTransitDomainEventHandler<TDomainEvent, TDomai
 
     public async Task Consume(ConsumeContext<TDomainEvent> context)
     {
-        await ConsumeEvent(context).ConfigureAwait(false);
+        await ConsumeEvent(context);
         Handler.Dispose();
     }
 

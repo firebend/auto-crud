@@ -121,13 +121,9 @@ public class AbstractMongoCustomFieldsReadService<TKey, TEntity> : BaseDisposabl
         CancellationToken cancellationToken = default)
     {
         _transactionManager.AddTransaction(entityTransaction);
-        var result =
-            await _readClient.GetFirstOrDefaultAsync(FilterByEntityId(entityId), entityTransaction, cancellationToken);
-        if (result?.CustomFields is null)
-        {
-            return null;
-        }
 
-        return result.CustomFields.AsQueryable().Where(filter).FirstOrDefault();
+        var result = await _readClient.GetFirstOrDefaultAsync(FilterByEntityId(entityId), entityTransaction, cancellationToken);
+
+        return result?.CustomFields?.AsQueryable().Where(filter).FirstOrDefault();
     }
 }

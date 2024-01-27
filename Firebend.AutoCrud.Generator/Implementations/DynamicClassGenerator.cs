@@ -81,7 +81,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
             throw new ArgumentNullException(nameof(typeSignature));
         }
 
-        var tb = GetTypeBuilder(typeSignature, interfaces: new[] { interfaceType });
+        var tb = GetTypeBuilder(typeSignature, interfaces: [interfaceType]);
 
         tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
 
