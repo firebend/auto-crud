@@ -20,7 +20,7 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
                 .HasAnnotation("ProductVersion", "6.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Firebend.AutoCrud.CustomFields.EntityFramework.Models.EfCustomFieldsModelTenant<System.Guid, Firebend.AutoCrud.Web.Sample.Models.EfPerson, int>", b =>
                 {
@@ -140,7 +140,7 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
                         .IsUnique()
                         .HasFilter("[NotEmail] IS NOT NULL");
 
-                    b.ToTable("EfPeople");
+                    b.ToTable("EfPeople", (string)null);
                 });
 
             modelBuilder.Entity("Firebend.AutoCrud.Web.Sample.Models.EfPet", b =>
@@ -181,7 +181,7 @@ namespace Firebend.AutoCrud.Web.Sample.Migrations
 
                     b.HasIndex("EfPersonId");
 
-                    b.ToTable("Pets");
+                    b.ToTable("Pets", (string)null);
                 });
 
             modelBuilder.Entity("Firebend.AutoCrud.CustomFields.EntityFramework.Models.EfCustomFieldsModelTenant<System.Guid, Firebend.AutoCrud.Web.Sample.Models.EfPerson, int>", b =>
