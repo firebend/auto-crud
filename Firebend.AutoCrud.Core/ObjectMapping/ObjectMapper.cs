@@ -84,23 +84,37 @@ public class ObjectMapper : BaseObjectMapper
     /// It is best practice to have this as a static variable at all possible. Doing so will reduce
     /// memory allocations.
     /// </param>
-    public override void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, string[] propertiesToInclude = null, bool includeObjects = true)
+    public override void Copy<TSource, TTarget>(
+        TSource source,
+        TTarget target,
+        string[] propertiesToIgnore = null,
+        string[] propertiesToInclude = null,
+        bool includeObjects = true,
+        bool useMemoizer = true)
     {
         var sourceType = typeof(TSource);
         var targetType = typeof(TTarget);
 
         var key = MapTypes(sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects);
 
+        if (useMemoizer is false)
+        {
+            Factory((key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this)).Invoke(null, [source, target]);
+            return;
+        }
+
         var dynamic = Memoizer.Instance.Memoize<DynamicMethod, (string, Type, Type, string[], string[], bool, ObjectMapper)>(
-            key, static factoryArg =>
-            {
-                var (dictKey, s, t, ignores, includes, includeObjects, self) = factoryArg;
-
-                var dynamicMethod = self.DynamicMethodFactory(dictKey, s, t, ignores, includes, includeObjects);
-
-                return dynamicMethod;
-            }, (key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
+            key, Factory, (key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
 
         dynamic.Invoke(null, [source, target]);
+    }
+
+    private static DynamicMethod Factory((string, Type, Type, string[], string[], bool, ObjectMapper) factoryArg)
+    {
+        var (dictKey, s, t, ignores, includes, includeObjects, self) = factoryArg;
+
+        var dynamicMethod = self.DynamicMethodFactory(dictKey, s, t, ignores, includes, includeObjects);
+
+        return dynamicMethod;
     }
 }

@@ -12,7 +12,12 @@ public abstract class BaseObjectMapper
 
     protected abstract string MapTypes(Type source, Type target, string[] propertiesToIgnore, string[] propertiesToInclude, bool includeObjects);
 
-    public abstract void Copy<TSource, TTarget>(TSource source, TTarget target, string[] propertiesToIgnore = null, string[] propertiesToInclude = null, bool includeObjects = true);
+    public abstract void Copy<TSource, TTarget>(TSource source,
+        TTarget target,
+        string[] propertiesToIgnore = null,
+        string[] propertiesToInclude = null,
+        bool includeObjects = true,
+        bool useMemoizer = true);
 
     /// <summary>
     ///     This virtual function finds matching properties between given objects. It depends on their names, readability, and writability.
@@ -50,7 +55,11 @@ public abstract class BaseObjectMapper
     /// <param name="targetType">The target object type</param>
     /// <returns>Returns a key as string</returns>
     /// <exception cref="Exception">If there is no FullName property on sent objects, an exception will throw</exception>
-    protected virtual string GetMapKey(Type sourceType, Type targetType, string[] propertiesToIgnore, string[] propertiesToInclude, bool includeObjects)
+    protected virtual string GetMapKey(Type sourceType,
+        Type targetType,
+        string[] propertiesToIgnore,
+        string[] propertiesToInclude,
+        bool includeObjects)
     {
         var builder = new StringBuilder();
 
