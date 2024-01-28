@@ -19,11 +19,6 @@ public class SampleModel : IEntity<Guid>, ICustomFieldsEntity<Guid>
 [MemoryDiagnoser]
 public class ObjectMapperBenchmarks
 {
-    public ObjectMapperBenchmarks()
-    {
-
-    }
-
     [Benchmark]
     public void Map_Using_Object_Mapper() => Map(true);
 
@@ -37,7 +32,7 @@ public class ObjectMapperBenchmarks
 
         for (var i = 0; i < 50; i++)
         {
-            var copyTo = model.Clone();
+            _ = model.Clone();
         }
     }
 
@@ -48,7 +43,7 @@ public class ObjectMapperBenchmarks
 
         for (var i = 0; i < 50; i++)
         {
-            var copyTo = new SampleModel
+            _ = new SampleModel
             {
                 Id = model.Id,
                 FirstName = model.FirstName,
@@ -68,11 +63,12 @@ public class ObjectMapperBenchmarks
     private static void Map(bool useMemorizer)
     {
         var person = CreateSampleModel();
+        var objectMapper = new ObjectMapper();
 
         for (var i = 0; i < 50; i++)
         {
             var copyTo = new SampleModel();
-            ObjectMapper.Instance.Copy(person, copyTo, useMemoizer: useMemorizer);
+            objectMapper.Copy(person, copyTo, useMemoizer: useMemorizer);
         }
     }
 

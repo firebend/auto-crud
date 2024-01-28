@@ -51,7 +51,7 @@ public static class MongoCrudGeneratorExtensions
         Action<MongoEntityCrudGenerator> configure)
     {
         serviceCollection.TryAddScoped<IMongoIndexComparisonService, MongoIndexComparisonService>();
-        serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
+        serviceCollection.TryAddSingleton<IMemoizer>(new Memoizer());
 
         using var mongo = serviceCollection.UsingMongoCrud();
         configure(mongo);

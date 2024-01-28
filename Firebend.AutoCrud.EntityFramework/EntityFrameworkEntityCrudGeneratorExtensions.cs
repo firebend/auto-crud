@@ -16,7 +16,7 @@ public static class EntityFrameworkEntityCrudGeneratorExtensions
         Action<EntityFrameworkEntityCrudGenerator> configure)
     {
 
-        serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
+        serviceCollection.TryAddSingleton<IMemoizer>(new Memoizer());
 
         using var ef = UsingEfCrud(serviceCollection);
         configure(ef);

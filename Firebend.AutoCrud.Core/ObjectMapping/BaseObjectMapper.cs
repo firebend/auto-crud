@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Firebend.AutoCrud.Core.Extensions;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping;
@@ -74,7 +73,6 @@ public abstract class BaseObjectMapper
             keys.Add("propertiesToInclude");
             keys.AddRange(propertiesToInclude);
         }
-
 
         keys.Add($"_includeObjects_{includeObjects}");
 

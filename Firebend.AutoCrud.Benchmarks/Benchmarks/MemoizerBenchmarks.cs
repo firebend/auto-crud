@@ -7,17 +7,13 @@ namespace Firebend.AutoCrud.Benchmarks.Benchmarks;
 [MemoryDiagnoser]
 public class MemoizerBenchmarks
 {
-    public MemoizerBenchmarks()
-    {
-
-    }
-
     [Benchmark]
     public async Task Memoize_Standard()
     {
+        var memoizer = new Memoizer();
         for(var i = 0; i < 10; i++)
         {
-            var result = await Memoizer.Instance.MemoizeAsync("standard", async () =>
+            var result = await memoizer.MemoizeAsync("standard", async () =>
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 return true;

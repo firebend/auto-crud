@@ -12,15 +12,6 @@ namespace Firebend.AutoCrud.Core.ObjectMapping;
 public class ObjectMapper : BaseObjectMapper
 {
     /// <summary>
-    /// Easy access to mapper functions
-    /// </summary>
-    public static ObjectMapper Instance { get; } = new();
-
-    private ObjectMapper()
-    {
-    }
-
-    /// <summary>
     /// This function creates the mappings between objects and store the mappings in the private dictionary
     /// </summary>
     /// <param name="source">The type of the source object</param>
@@ -103,7 +94,7 @@ public class ObjectMapper : BaseObjectMapper
             return;
         }
 
-        var dynamic = Memoizer.Instance.Memoize<DynamicMethod, (string, Type, Type, string[], string[], bool, ObjectMapper)>(
+        var dynamic = new Memoizer().Memoize<DynamicMethod, (string, Type, Type, string[], string[], bool, ObjectMapper)>(
             key, Factory, (key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
 
         dynamic.Invoke(null, [source, target]);
