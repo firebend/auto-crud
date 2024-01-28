@@ -61,22 +61,23 @@ public abstract class BaseObjectMapper
         string[] propertiesToInclude,
         bool includeObjects)
     {
-        var builder = new StringBuilder();
-
-        builder.Append($"{ObjectMapperConst}_{sourceType.FullName}_{targetType.FullName}");
+        List<string> keys = [ObjectMapperConst, sourceType.FullName, targetType.FullName];
 
         if (!propertiesToIgnore.IsEmpty())
         {
-            builder.Append($"_propertiesToIgnore_{string.Join('_', propertiesToIgnore)}");
+            keys.Add("propertiesToIgnore");
+            keys.AddRange(propertiesToIgnore);
         }
 
         if (!propertiesToInclude.IsEmpty())
         {
-            builder.Append($"_propertiesToInclude_{string.Join('_', propertiesToInclude)}");
+            keys.Add("propertiesToInclude");
+            keys.AddRange(propertiesToInclude);
         }
 
-        builder.Append($"_includeObjects_{includeObjects}");
 
-        return builder.ToString();
+        keys.Add($"_includeObjects_{includeObjects}");
+
+        return string.Join('_', keys);
     }
 }
