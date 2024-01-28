@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Concurrency;
@@ -26,9 +27,11 @@ public class ObjectMapper : BaseObjectMapper
 
     private DynamicMethod DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore, string[] propertiesToInclude, bool includeObjects)
     {
-        var args = new[] { source, target };
+        var dm = new DynamicMethod(key,
+            null,
+            [source, target],
+            false);
 
-        var dm = new DynamicMethod(key, null, args);
         var il = dm.GetILGenerator();
         var maps = GetMatchingProperties(source, target, includeObjects);
 
@@ -90,7 +93,8 @@ public class ObjectMapper : BaseObjectMapper
 
         if (useMemoizer is false)
         {
-            Factory((key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this)).Invoke(null, [source, target]);
+           var dm = Factory((key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
+            dm.Invoke(null, [source, target]);
             return;
         }
 
