@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations.Concurrency;
@@ -93,23 +92,23 @@ public class ObjectMapper : BaseObjectMapper
 
         if (useMemoizer is false)
         {
-           var dm = Factory((key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
-            dm.Invoke(null, [source, target]);
+           var dm = Factory<TSource, TTarget>((key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
+            dm(source, target);
             return;
         }
 
-        var dynamic = new Memoizer().Memoize<DynamicMethod, (string, Type, Type, string[], string[], bool, ObjectMapper)>(
-            key, Factory, (key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
+        var dynamic = new Memoizer().Memoize<Action<TSource, TTarget>, (string, Type, Type, string[], string[], bool, ObjectMapper)>(
+            key, Factory<TSource, TTarget>, (key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
 
-        dynamic.Invoke(null, [source, target]);
+        dynamic(source, target);
     }
 
-    private static DynamicMethod Factory((string, Type, Type, string[], string[], bool, ObjectMapper) factoryArg)
+    private static Action<TSource, TTarget> Factory<TSource, TTarget>((string, Type, Type, string[], string[], bool, ObjectMapper) factoryArg)
     {
         var (dictKey, s, t, ignores, includes, includeObjects, self) = factoryArg;
 
         var dynamicMethod = self.DynamicMethodFactory(dictKey, s, t, ignores, includes, includeObjects);
-
-        return dynamicMethod;
+        var actionDelegate = dynamicMethod.CreateDelegate<Action<TSource, TTarget>>();
+        return actionDelegate;
     }
 }
