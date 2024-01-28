@@ -216,10 +216,10 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
 
             return new CustomAttributeBuilder(attribute.Constructor,
                 attributeArgs,
-                namedPropertyInfos,
-                namedPropertyValues,
-                namedFieldInfos,
-                namedFieldValues);
+                namedPropertyInfos!,
+                namedPropertyValues!,
+                namedFieldInfos!,
+                namedFieldValues!);
         })
         .ToArray();
 
