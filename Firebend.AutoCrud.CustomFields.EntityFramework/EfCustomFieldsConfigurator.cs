@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
