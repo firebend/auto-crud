@@ -6,11 +6,6 @@ public class BaseDisposable : IDisposable
 {
     protected bool Disposed { get; private set; }
 
-    ~BaseDisposable()
-    {
-        Dispose(false);
-    }
-
     public void Dispose()
     {
         Dispose(true);
