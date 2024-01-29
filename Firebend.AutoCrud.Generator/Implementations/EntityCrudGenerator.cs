@@ -31,7 +31,7 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
     {
     }
 
-    public List<BaseBuilder> Builders { get; private set; } = new();
+    public List<BaseBuilder> Builders { get; private set; } = [];
 
     public IServiceCollection ServiceCollection { get; }
 
@@ -121,12 +121,12 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
                     case ServiceRegistration serviceRegistration:
                         if (services.ContainsKey(type))
                         {
-                            services[type] = services[type] ?? new List<ServiceRegistration>();
+                            services[type] = services[type] ?? [];
                             services[type].Add(serviceRegistration);
                         }
                         else
                         {
-                            services.Add(type, new List<ServiceRegistration> { serviceRegistration });
+                            services.Add(type, [serviceRegistration]);
                         }
                         break;
                     case BuilderRegistration builderRegistration:
@@ -306,12 +306,12 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
 
                 if (configureRegistrations.ContainsKey(key))
                 {
-                    configureRegistrations[key] ??= new List<ServiceRegistration>();
+                    configureRegistrations[key] ??= [];
                     configureRegistrations[key].Add(reg);
                 }
                 else
                 {
-                    configureRegistrations.Add(key, new List<ServiceRegistration> { reg });
+                    configureRegistrations.Add(key, [reg]);
                 }
             }
         }

@@ -67,13 +67,9 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             DbContextType = Builder.DbContextType,
         };
         configure(customFieldsBuilder);
-        Builder.Registrations.Add(typeof(object), new List<Registration>
-        {
-            new BuilderRegistration
-            {
-                Builder = customFieldsBuilder
-            }
-        });
+        Builder.Registrations.Add(typeof(object), [
+            new BuilderRegistration { Builder = customFieldsBuilder }
+        ]);
 
         return this;
     }
@@ -106,13 +102,9 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             DbContextType = Builder.DbContextType,
         };
         configure(customFieldsBuilder);
-        Builder.Registrations.Add(typeof(object), new List<Registration>
-        {
-            new BuilderRegistration
-            {
-                Builder = customFieldsBuilder
-            }
-        });
+        Builder.Registrations.Add(typeof(object), [
+            new BuilderRegistration { Builder = customFieldsBuilder }
+        ]);
 
         return this;
     }

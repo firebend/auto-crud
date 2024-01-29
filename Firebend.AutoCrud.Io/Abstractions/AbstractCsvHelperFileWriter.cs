@@ -117,7 +117,8 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
 
                 if (listProperty != null)
                 {
-                    var wasSubRowAdded = writeSubRowMethod != null && await ((Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this, new[] { listProperty }))!;
+                    var wasSubRowAdded = writeSubRowMethod != null && await ((Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this,
+                        [listProperty]))!;
                     hasAddedSubRows = wasSubRowAdded || hasAddedSubRows;
                 }
             }

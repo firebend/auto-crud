@@ -276,7 +276,7 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         var authCtor = authorizePolicy == null
             ? null
             : authType.GetConstructor(!string.IsNullOrWhiteSpace(authorizePolicy)
-                ? new[] { typeof(string) }
+                ? [typeof(string)]
                 : Type.EmptyTypes);
 
         if (authCtor == null)

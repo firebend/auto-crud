@@ -111,14 +111,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         }
 
         var attributeType = typeof(OpenApiGroupNameAttribute);
-        var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
+        var attributeCtor = attributeType.GetConstructor([typeof(string)]);
 
         if (attributeCtor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { openApiName });
+        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, [openApiName]);
 
         return (attributeType, attributeBuilder);
     }
@@ -138,14 +138,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 
         var attributeType = typeof(OpenApiEntityNameAttribute);
 
-        var attributeCtor = attributeType.GetConstructor(new[] { typeof(string), typeof(string) });
+        var attributeCtor = attributeType.GetConstructor([typeof(string), typeof(string)]);
 
         if (attributeCtor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { name, plural });
+        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, [name, plural]);
 
         return (attributeType, attributeBuilder);
     }

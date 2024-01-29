@@ -30,11 +30,11 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
 
         if (!_enrollments.ContainsKey(transactionId))
         {
-            _enrollments[transactionId] = new List<IEntityTransactionOutboxEnrollment> { enrollment };
+            _enrollments[transactionId] = [enrollment];
             return;
         }
 
-        _enrollments[transactionId] ??= new List<IEntityTransactionOutboxEnrollment>();
+        _enrollments[transactionId] ??= [];
         _enrollments[transactionId].Add(enrollment);
     }
 

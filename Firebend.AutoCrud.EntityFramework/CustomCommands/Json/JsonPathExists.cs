@@ -10,7 +10,7 @@ public static class JsonPathExists
     private static readonly MethodInfo Method
         = typeof(EfJsonFunctions)
             .GetMethod(nameof(EfJsonFunctions.JsonPathExists),
-                new[] { typeof(string), typeof(string) });
+                [typeof(string), typeof(string)]);
 
     public static ModelBuilder AddJsonPathExistsSupport(this ModelBuilder modelBuilder)
     {

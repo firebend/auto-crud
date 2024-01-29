@@ -10,7 +10,7 @@ public static class IsJson
     private static readonly MethodInfo Method
         = typeof(EfJsonFunctions)
             .GetMethod(nameof(EfJsonFunctions.IsJson),
-                new[] { typeof(string) });
+                [typeof(string)]);
 
     public static ModelBuilder AddIsJsonSupport(this ModelBuilder modelBuilder)
     {

@@ -56,7 +56,7 @@ public class ObjectMapper : BaseObjectMapper
             if (targetIsNullable && targetUnderlyingType == map.SourceProperty.PropertyType)
             {
                 var constructor = typeof(Nullable<>).MakeGenericType(targetUnderlyingType)
-                    .GetConstructor(new[] { targetUnderlyingType }) ?? throw new Exception();
+                    .GetConstructor([targetUnderlyingType]) ?? throw new Exception();
 
                 il.Emit(OpCodes.Newobj, constructor);
             }

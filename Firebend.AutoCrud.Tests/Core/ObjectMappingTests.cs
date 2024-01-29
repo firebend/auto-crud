@@ -160,7 +160,7 @@ public class MapperTests
 
         // when
         new ObjectMapper().Copy(source, target,
-            new[] { nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue) });
+            [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
 
         // then
         target.Should().NotBeNull();
@@ -195,7 +195,7 @@ public class MapperTests
 
         // when
         new ObjectMapper().Copy(source, target,
-            propertiesToInclude: new[] { nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue) });
+            propertiesToInclude: [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
 
         // then
         target.Should().NotBeNull();
@@ -233,7 +233,7 @@ public class MapperTests
         var objectMapper = new ObjectMapper();
         objectMapper.Copy(source, dummy);
         objectMapper.Copy(source, target,
-            new[] { nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue) });
+            [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
 
         // then
         target.Should().NotBeNull();
@@ -282,7 +282,7 @@ public class MapperTests
             EnumValue = EntityFileType.Csv,
             NullableEnumValue = EntityFileType.Spreadsheet,
             NestedModel = new NestedModel { IntValue = 3 },
-            ListOfNestedModels = new List<NestedModel> { new NestedModel { IntValue = 4 } }
+            ListOfNestedModels = [new NestedModel { IntValue = 4 }]
         };
         var target = new TargetModelD();
 
@@ -321,7 +321,7 @@ public class MapperTests
             EnumValue = EntityFileType.Csv,
             NullableEnumValue = EntityFileType.Spreadsheet,
             NestedModel = new NestedModel { IntValue = 3 },
-            ListOfNestedModels = new List<NestedModel> { new NestedModel { IntValue = 4 } }
+            ListOfNestedModels = [new NestedModel { IntValue = 4 }]
         };
         var target = new TargetModelD();
 

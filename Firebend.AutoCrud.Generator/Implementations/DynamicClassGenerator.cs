@@ -64,7 +64,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
             throw new ArgumentNullException(nameof(typeSignature));
         }
 
-        var tb = GetTypeBuilder(typeSignature, interfaces: new[] { interfaceType }, isInterface: true);
+        var tb = GetTypeBuilder(typeSignature, interfaces: [interfaceType], isInterface: true);
 
         return tb.CreateType();
     }
@@ -297,7 +297,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
                 MethodAttributes.HideBySig |
                 MethodAttributes.Public,
                 null,
-                new[] { propertySet.Type });
+                [propertySet.Type]);
 
         var setMethodBody = setPropertyMethodBuilder.GetILGenerator();
         var modifyProperty = setMethodBody.DefineLabel();

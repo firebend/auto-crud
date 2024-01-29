@@ -112,7 +112,7 @@ public class EfEndToEndTest : BaseTest<
     private async Task<GetPetViewModel> CreatePetAsync(Guid personId)
     {
         var faked = PetFaker.Faker.Generate();
-        faked.DataAuth.UserEmails = new[] { "developer@test.com" };
+        faked.DataAuth.UserEmails = ["developer@test.com"];
         var response = await $"{Url}/{personId}/pets".WithAuth()
             .PostJsonAsync(faked);
 
@@ -132,7 +132,7 @@ public class EfEndToEndTest : BaseTest<
     protected override Task<PersonViewModelBase> GenerateCreateRequestAsync()
     {
         var faked = PersonFaker.Faker.Generate();
-        faked.DataAuth.UserEmails = new[] { "developer@test.com" };
+        faked.DataAuth.UserEmails = ["developer@test.com"];
         return Task.FromResult(faked);
     }
 

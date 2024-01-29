@@ -19,22 +19,22 @@ public class FullTextContainsAnyMethodCallTranslator : IMethodCallTranslator
     private static readonly MethodInfo FreeTextMethodInfo
         = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
             nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
-            new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+            [typeof(DbFunctions), typeof(string), typeof(string)]);
 
     private static readonly MethodInfo FreeTextMethodInfoWithLanguage
         = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
             nameof(FirebendAutoCrudDbFunctionExtensions.FreeTextAny),
-            new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
+            [typeof(DbFunctions), typeof(string), typeof(string), typeof(int)]);
 
     private static readonly MethodInfo ContainsMethodInfo
         = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
             nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
-            new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+            [typeof(DbFunctions), typeof(string), typeof(string)]);
 
     private static readonly MethodInfo ContainsMethodInfoWithLanguage
         = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
             nameof(FirebendAutoCrudDbFunctionExtensions.ContainsAny),
-            new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(int) });
+            [typeof(DbFunctions), typeof(string), typeof(string), typeof(int)]);
 
     private static readonly IDictionary<MethodInfo, string> TypeMappings = new Dictionary<MethodInfo, string>
     {

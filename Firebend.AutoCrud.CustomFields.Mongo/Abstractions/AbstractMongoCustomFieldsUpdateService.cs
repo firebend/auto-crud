@@ -114,7 +114,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
 
         if ((result.CustomFields?.Count ?? 0) <= 0)
         {
-            patch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>> { customField });
+            patch.Replace(x => x.CustomFields, [customField]);
         }
         else
         {
@@ -204,7 +204,7 @@ public class AbstractMongoCustomFieldsUpdateService<TKey, TEntity> :
 
         if (entity.CustomFields?.Count <= 0)
         {
-            entityPatch.Replace(x => x.CustomFields, new List<CustomFieldsEntity<TKey>> { entity.CustomFields[index] });
+            entityPatch.Replace(x => x.CustomFields, [entity.CustomFields[index]]);
         }
         else
         {

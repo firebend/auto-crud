@@ -10,7 +10,7 @@ public static class JsonValue
     private static readonly MethodInfo Method
         = typeof(EfJsonFunctions)
             .GetMethod(nameof(EfJsonFunctions.JsonValue),
-                new[] { typeof(string), typeof(string) });
+                [typeof(string), typeof(string)]);
 
     public static ModelBuilder AddJsonValueSupport(this ModelBuilder modelBuilder)
     {

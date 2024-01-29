@@ -133,7 +133,7 @@ public class PersonViewModelBaseV2 : IEntityViewModelBase
 
 public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<Guid>, ICustomFieldsEntity<Guid>, IActiveEntity
 {
-    private static readonly string[] Ignores = { nameof(CustomFields) };
+    private static readonly string[] Ignores = [nameof(CustomFields)];
     public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
 
     public GetPersonViewModel()
@@ -169,7 +169,7 @@ public class GetPersonViewModel : PersonViewModelBase, IEntityViewModelRead<Guid
 
 public class GetPersonViewModelV2 : PersonViewModelBaseV2, IEntityViewModelRead<Guid>, ICustomFieldsEntity<Guid>
 {
-    private static readonly string[] Ignores = { nameof(CustomFields) };
+    private static readonly string[] Ignores = [nameof(CustomFields)];
     public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
 
     public GetPersonViewModelV2()

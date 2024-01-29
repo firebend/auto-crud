@@ -56,7 +56,7 @@ public abstract class BaseBuilder : BaseDisposable
     {
         if (Registrations == null)
         {
-            Registrations = new Dictionary<Type, List<Registration>> { { type, new List<Registration> { registration } } };
+            Registrations = new Dictionary<Type, List<Registration>> { { type, [registration] } };
 
             return this;
         }
@@ -65,18 +65,18 @@ public abstract class BaseBuilder : BaseDisposable
         {
             if (allowMany)
             {
-                Registrations[type] ??= new List<Registration>();
+                Registrations[type] ??= [];
                 Registrations[type].Add(registration);
             }
             else if (replace)
             {
-                Registrations[type] = new List<Registration> { registration };
+                Registrations[type] = [registration];
             }
 
             return this;
         }
 
-        Registrations.Add(type, new List<Registration> { registration });
+        Registrations.Add(type, [registration]);
 
         return this;
     }
@@ -144,7 +144,7 @@ public abstract class BaseBuilder : BaseDisposable
 
         if (Attributes.ContainsKey(registrationType))
         {
-            Attributes[registrationType] ??= new List<CrudBuilderAttributeModel>();
+            Attributes[registrationType] ??= [];
             if (!allowMultiple)
             {
                 Attributes[registrationType].RemoveAll(x => x.AttributeType == attributeType);
@@ -153,14 +153,14 @@ public abstract class BaseBuilder : BaseDisposable
         }
         else
         {
-            Attributes.Add(registrationType, new List<CrudBuilderAttributeModel> { model });
+            Attributes.Add(registrationType, [model]);
         }
         return this;
     }
 
     public BaseBuilder WithServiceCollectionHook(Action<IServiceCollection> action)
     {
-        ServiceCollectionHooks ??= new List<Action<IServiceCollection>>();
+        ServiceCollectionHooks ??= [];
         ServiceCollectionHooks.Add(action);
         return this;
     }

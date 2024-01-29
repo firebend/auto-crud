@@ -51,7 +51,7 @@ public static class MassTransitExtensions
         {
             addConsumer
                 .MakeGenericMethod(listener.ServiceDescriptor.ImplementationType!, listener.DomainEventType, listener.ConsumerType)
-                .Invoke(null, new object[] { busConfigurator, serviceCollection });
+                .Invoke(null, [busConfigurator, serviceCollection]);
         }
     }
 
@@ -81,11 +81,10 @@ public static class MassTransitExtensions
                     configureConsumer.MakeGenericMethod(consumerInfo.ServiceDescriptor.ImplementationType!,
                             consumerInfo.DomainEventType,
                             consumerInfo.ConsumerType)
-                        .Invoke(null, new object[]
-                        {
+                        .Invoke(null, [
                             busRegistrationContext,
                             re
-                        });
+                        ]);
                 }
                 configureReceiveEndpoint?.Invoke(re);
             });

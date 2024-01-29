@@ -106,7 +106,7 @@ public class MongoEndToEndTest : BaseTest<
     protected override Task<PersonViewModelBase> GenerateCreateRequestAsync()
     {
         var faked = PersonFaker.Faker.Generate();
-        faked.DataAuth.UserEmails = new[] { "developer@test.com" };
+        faked.DataAuth.UserEmails = ["developer@test.com"];
         return Task.FromResult(faked);
     }
 

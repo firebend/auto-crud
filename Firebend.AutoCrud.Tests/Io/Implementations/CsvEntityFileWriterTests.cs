@@ -102,9 +102,9 @@ public class CsvEntityFileWriterTests
 
         var fields = fileFieldAutoMapper.MapOutput<Parent>();
         var parents = Fixture.CreateMany<Parent>(3).ToList();
-        parents[0].Children = new List<Child> { parents[0].Children[0] };
+        parents[0].Children = [parents[0].Children[0]];
         parents[1].Children = null;
-        parents[2].Children = new List<Child>();
+        parents[2].Children = [];
 
         var writer = new CsvEntityFileWriter<V1>(fileFieldAutoMapper);
 
