@@ -57,7 +57,7 @@ public class MapperTests
         var target = new TargetModelA();
 
         // when
-        new ObjectMapper().Copy(source, target);
+        ObjectMapper.Copy(source.GetType(), target.GetType());
 
         // then
         target.Should().NotBeNull();
@@ -102,7 +102,7 @@ public class MapperTests
         var target = new TargetModelB();
 
         // when
-        new ObjectMapper().Copy(source, target);
+        ObjectMapper.Copy(source, target);
 
         // then
         target.Should().NotBeNull();
@@ -130,7 +130,7 @@ public class MapperTests
         var target = new TargetModelC();
 
         // when
-        new ObjectMapper().Copy(source, target);
+        ObjectMapper.Copy(source, target);
 
         // then
         target.Should().NotBeNull();
@@ -159,8 +159,7 @@ public class MapperTests
         var target = new TargetModelA();
 
         // when
-        new ObjectMapper().Copy(source, target,
-            [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
+        ObjectMapper.Copy(source, target, [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
 
         // then
         target.Should().NotBeNull();
@@ -194,8 +193,7 @@ public class MapperTests
         var target = new TargetModelA();
 
         // when
-        new ObjectMapper().Copy(source, target,
-            propertiesToInclude: [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
+        ObjectMapper.Copy(source, target, propertiesToInclude: [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
 
         // then
         target.Should().NotBeNull();
@@ -230,10 +228,8 @@ public class MapperTests
         var dummy = new TargetModelA();
 
         // when
-        var objectMapper = new ObjectMapper();
-        objectMapper.Copy(source, dummy);
-        objectMapper.Copy(source, target,
-            [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
+        ObjectMapper.Copy(source, dummy);
+        ObjectMapper.Copy(source, target, [nameof(SourceModelA.IntValue), nameof(SourceModelA.NullableEnumValue)]);
 
         // then
         target.Should().NotBeNull();
@@ -287,7 +283,7 @@ public class MapperTests
         var target = new TargetModelD();
 
         // when
-        new ObjectMapper().Copy(source, target, includeObjects: false);
+        ObjectMapper.Copy(source, target, includeObjects: false);
 
         // then
         target.Should().NotBeNull();
@@ -326,7 +322,7 @@ public class MapperTests
         var target = new TargetModelD();
 
         // when
-        new ObjectMapper().Copy(source, target, includeObjects: true);
+        ObjectMapper.Copy(source, target, includeObjects: true);
 
         // then
         target.Should().NotBeNull();
@@ -379,7 +375,7 @@ public class MapperTests
         var target = new TargetModelE();
 
         // when
-        new ObjectMapper().Copy(source, target, includeObjects: true);
+        ObjectMapper.Copy(source, target, includeObjects: true);
 
         // then
         target.Should().NotBeNull();

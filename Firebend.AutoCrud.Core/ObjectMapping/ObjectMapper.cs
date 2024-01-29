@@ -1,51 +1,85 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Implementations.Concurrency;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping;
+
+public record ObjectMapperContext(
+    Type SourceType,
+    Type TargetType,
+    string[] PropertiesToIgnore,
+    string[] PropertiesToInclude,
+    bool IncludeObjects)
+{
+    public string GetMapKey()
+    {
+        List<string> keys = ["ObjectMapper", SourceType.FullName, TargetType.FullName];
+
+        if (!PropertiesToIgnore.IsEmpty())
+        {
+            keys.Add("propertiesToIgnore");
+            keys.AddRange(PropertiesToIgnore);
+        }
+
+        if (!PropertiesToInclude.IsEmpty())
+        {
+            keys.Add("propertiesToInclude");
+            keys.AddRange(PropertiesToInclude);
+        }
+
+        keys.Add($"_includeObjects_{IncludeObjects}");
+
+        return string.Join('_', keys);
+    }
+}
 
 /// <summary>
 /// This mapper class finds the matching properties and copies them from source object to target object. The copy function has IL codes to do this task.
 /// </summary>
-public class ObjectMapper : BaseObjectMapper
+public static class ObjectMapper
 {
-    /// <summary>
-    /// This function creates the mappings between objects and store the mappings in the private dictionary
-    /// </summary>
-    /// <param name="source">The type of the source object</param>
-    /// <param name="target">The type of the target object</param>
-    /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process</param>
-    /// <exception cref="InvalidOperationException">The Invalid Operation Exception will be thrown if it can't find the given property in source/target objects.</exception>
-    protected override string MapTypes(Type source, Type target, string[] propertiesToIgnore, string[] propertiesToInclude, bool includeObjects)
+    private static readonly ConcurrentDictionary<ObjectMapperContext, DynamicMethod> Caches = new();
+
+    public static IEnumerable<PropertyMap> GetMatchingProperties(ObjectMapperContext context)
     {
-        var key = GetMapKey(source, target, propertiesToIgnore, propertiesToInclude, includeObjects);
-        return key;
+        var sourceProperties = context.SourceType.GetProperties()
+            .Where(x => context.PropertiesToIgnore?.Contains(x.Name) is not false
+                        && (context.PropertiesToInclude is null || context.PropertiesToInclude.Contains(x.Name)));
+
+        var targetProperties = context.TargetType.GetProperties();
+
+        var properties = sourceProperties.Join(
+                targetProperties,
+                x => x.Name,
+                x => x.Name,
+                (source, target) => new PropertyMap(source, target))
+            .Where(x => x.SourceProperty.CanRead)
+            .Where(x => x.TargetProperty.CanWrite)
+            .Where(x => context.IncludeObjects
+                        || x.SourceProperty.PropertyType.IsValueType
+                        || x.SourceProperty.PropertyType == typeof(string))
+            .Where(x => (x.SourceProperty.PropertyType.IsValueType
+                         && x.SourceProperty.PropertyType.IsAssignableTo(x.TargetProperty.PropertyType))
+                        || x.SourceProperty.PropertyType == x.TargetProperty.PropertyType);
+
+        return properties;
     }
 
-    private DynamicMethod DynamicMethodFactory(string key, Type source, Type target, string[] propertiesToIgnore, string[] propertiesToInclude, bool includeObjects)
+    private static DynamicMethod DynamicMethodFactory(ObjectMapperContext context)
     {
-        var dm = new DynamicMethod(key,
+        var dm = new DynamicMethod(context.GetMapKey(),
             null,
-            [source, target],
+            [context.SourceType, context.TargetType],
             false);
 
         var il = dm.GetILGenerator();
-        var maps = GetMatchingProperties(source, target, includeObjects);
+        var maps = GetMatchingProperties(context);
 
         foreach (var map in maps)
         {
-            if (propertiesToIgnore?.Contains(map.SourceProperty.Name) ?? false)
-            {
-                continue;
-            }
-
-            if (!propertiesToInclude.IsEmpty() && !propertiesToInclude.Contains(map.SourceProperty.Name))
-            {
-                continue;
-            }
-
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Ldarg_0);
             il.EmitCall(OpCodes.Callvirt, map.SourceProperty.GetGetMethod() ?? throw new InvalidOperationException(), null);
@@ -68,16 +102,7 @@ public class ObjectMapper : BaseObjectMapper
         return dm;
     }
 
-    /// <summary>
-    /// This function copies all matched property values from source object to target object
-    /// </summary>
-    /// <param name="source">The original object that keeps the actual values/properties</param>
-    /// <param name="target">The object that will get the related values from the given object</param>
-    /// <param name="propertiesToIgnore">These string parameters will be ignored during matching process.
-    /// It is best practice to have this as a static variable at all possible. Doing so will reduce
-    /// memory allocations.
-    /// </param>
-    public override void Copy<TSource, TTarget>(
+    public static void Copy<TSource, TTarget>(
         TSource source,
         TTarget target,
         string[] propertiesToIgnore = null,
@@ -85,30 +110,18 @@ public class ObjectMapper : BaseObjectMapper
         bool includeObjects = true,
         bool useMemoizer = true)
     {
-        var sourceType = typeof(TSource);
-        var targetType = typeof(TTarget);
-
-        var key = MapTypes(sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects);
+        var context = new ObjectMapperContext(source.GetType(), target.GetType(), propertiesToIgnore, propertiesToInclude, includeObjects);
 
         if (useMemoizer is false)
         {
-           var dm = Factory<TSource, TTarget>((key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
-            dm(source, target);
+            var dm = DynamicMethodFactory(context);
+            var action = dm.CreateDelegate<Action<TSource, TTarget>>();
+            action(source, target);
             return;
         }
 
-        var dynamic = new Memoizer().Memoize<Action<TSource, TTarget>, (string, Type, Type, string[], string[], bool, ObjectMapper)>(
-            key, Factory<TSource, TTarget>, (key, sourceType, targetType, propertiesToIgnore, propertiesToInclude, includeObjects, this));
-
-        dynamic(source, target);
-    }
-
-    private static Action<TSource, TTarget> Factory<TSource, TTarget>((string, Type, Type, string[], string[], bool, ObjectMapper) factoryArg)
-    {
-        var (dictKey, s, t, ignores, includes, includeObjects, self) = factoryArg;
-
-        var dynamicMethod = self.DynamicMethodFactory(dictKey, s, t, ignores, includes, includeObjects);
-        var actionDelegate = dynamicMethod.CreateDelegate<Action<TSource, TTarget>>();
-        return actionDelegate;
+        var cache = Caches.GetOrAdd(context, DynamicMethodFactory);
+        var act = cache.CreateDelegate<Action<TSource, TTarget>>();
+        act(source, target);
     }
 }

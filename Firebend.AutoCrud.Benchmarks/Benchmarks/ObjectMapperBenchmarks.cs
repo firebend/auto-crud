@@ -1,4 +1,5 @@
 using BenchmarkDotNet.Attributes;
+using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.ObjectMapping;
@@ -24,6 +25,18 @@ public class ObjectMapperBenchmarks
 
     [Benchmark]
     public void Map_Using_Object_Mapper_Without_Memoization() => Map(false);
+
+    [Benchmark]
+    public void Map_Using_Reflection()
+    {
+        var person = CreateSampleModel();
+
+        for (var i = 0; i < 50; i++)
+        {
+            var copyTo = new SampleModel();
+            person.CopyPropertiesToReflection(copyTo);
+        }
+    }
 
     [Benchmark]
     public void Map_Using_Clone()
@@ -63,12 +76,11 @@ public class ObjectMapperBenchmarks
     private static void Map(bool useMemorizer)
     {
         var person = CreateSampleModel();
-        var objectMapper = new ObjectMapper();
 
         for (var i = 0; i < 50; i++)
         {
             var copyTo = new SampleModel();
-            objectMapper.Copy(person, copyTo, useMemoizer: useMemorizer);
+            person.CopyPropertiesToObjectMapper(copyTo, useMemoizer: useMemorizer);
         }
     }
 
