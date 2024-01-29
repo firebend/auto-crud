@@ -175,31 +175,32 @@ public static class MassTransitExtensions
         MemberInfo listenerImplementationType,
         string handlerTypeDesc)
     {
-        var sb = new StringBuilder();
+        var sb = new List<string>();
 
         if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
         {
-            sb.Append(receiveEndpointPrefix);
-            sb.Append('-');
+            sb.Add(receiveEndpointPrefix);
+            sb.Add("-");
         }
 
-        sb.Append(genericMessageType.Name);
+        sb.Add(genericMessageType.Name);
 
         if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
         {
-            sb.Append('_');
-            sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
+            sb.Add("_");
+            sb.Add(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
         }
 
         foreach (var genericTypeArgument in genericMessageType.GenericTypeArguments)
         {
-            sb.Append('_');
-            sb.Append(genericTypeArgument.Name);
+            sb.Add("_");
+            sb.Add(genericTypeArgument.Name);
         }
 
-        sb.Append('_');
-        sb.Append(handlerTypeDesc);
-        var sbBuilt = sb.ToString();
+        sb.Add("_");
+        sb.Add(handlerTypeDesc);
+
+        var sbBuilt = string.Join(string.Empty, sb);
 
         if (string.IsNullOrWhiteSpace(sbBuilt))
         {
