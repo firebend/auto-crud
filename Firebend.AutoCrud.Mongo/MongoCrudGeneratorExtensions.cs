@@ -1,6 +1,4 @@
 using System;
-using Firebend.AutoCrud.Core.Implementations.Concurrency;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,7 +49,6 @@ public static class MongoCrudGeneratorExtensions
         Action<MongoEntityCrudGenerator> configure)
     {
         serviceCollection.TryAddScoped<IMongoIndexComparisonService, MongoIndexComparisonService>();
-        serviceCollection.TryAddSingleton<IMemoizer>(new Memoizer());
 
         using var mongo = serviceCollection.UsingMongoCrud();
         configure(mongo);

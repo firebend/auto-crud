@@ -14,7 +14,9 @@ public record ObjectMapperContext(
     string[] PropertiesToInclude,
     bool IncludeObjects)
 {
-    public string GetMapKey()
+    private string _key;
+    public string Key => _key ??= GetMapKey();
+    private string GetMapKey()
     {
         List<string> keys = ["ObjectMapper", SourceType.FullName, TargetType.FullName];
 
@@ -30,7 +32,8 @@ public record ObjectMapperContext(
             keys.AddRange(PropertiesToInclude);
         }
 
-        keys.Add($"_includeObjects_{IncludeObjects}");
+        keys.Add("includeObject");
+        keys.Add(IncludeObjects.ToString());
 
         return string.Join('_', keys);
     }
@@ -41,13 +44,14 @@ public record ObjectMapperContext(
 /// </summary>
 public static class ObjectMapper
 {
-    private static readonly ConcurrentDictionary<ObjectMapperContext, DynamicMethod> Caches = new();
+    private static readonly ConcurrentDictionary<string, DynamicMethod> Caches = new();
 
     public static IEnumerable<PropertyMap> GetMatchingProperties(ObjectMapperContext context)
     {
         var sourceProperties = context.SourceType.GetProperties()
-            .Where(x => context.PropertiesToIgnore?.Contains(x.Name) is not false
-                        && (context.PropertiesToInclude is null || context.PropertiesToInclude.Contains(x.Name)));
+            .Where(x =>
+                (context.PropertiesToIgnore is null || context.PropertiesToIgnore.Contains(x.Name) is false)
+                 && (context.PropertiesToInclude is null || context.PropertiesToInclude.Contains(x.Name)));
 
         var targetProperties = context.TargetType.GetProperties();
 
@@ -68,12 +72,12 @@ public static class ObjectMapper
         return properties;
     }
 
-    private static DynamicMethod DynamicMethodFactory(ObjectMapperContext context)
+    private static DynamicMethod DynamicMethodFactory(string key, ObjectMapperContext context)
     {
-        var dm = new DynamicMethod(context.GetMapKey(),
+        var dm = new DynamicMethod(key,
             null,
             [context.SourceType, context.TargetType],
-            false);
+            true);
 
         var il = dm.GetILGenerator();
         var maps = GetMatchingProperties(context);
@@ -114,14 +118,12 @@ public static class ObjectMapper
 
         if (useMemoizer is false)
         {
-            var dm = DynamicMethodFactory(context);
-            var action = dm.CreateDelegate<Action<TSource, TTarget>>();
-            action(source, target);
+            var dm = DynamicMethodFactory(context.Key, context);
+            dm.Invoke(null, [source, target]);
             return;
         }
 
-        var cache = Caches.GetOrAdd(context, DynamicMethodFactory);
-        var act = cache.CreateDelegate<Action<TSource, TTarget>>();
-        act(source, target);
+        var cache = Caches.GetOrAdd(context.Key, DynamicMethodFactory, context);
+        cache.Invoke(null, [source, target]);
     }
 }

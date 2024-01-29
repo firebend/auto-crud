@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -9,13 +10,17 @@ using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions;
+
+internal static class AbstractChangeTrackingDbContextProviderCache
+{
+    public static readonly ConcurrentDictionary<string, Task<bool>> ScaffoldCache = new();
+}
 
 public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> :
     IChangeTrackingDbContextProvider<TEntityKey, TEntity>
@@ -26,17 +31,15 @@ public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntit
     private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
     private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
     private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
-    private readonly IMemoizer _memoizer;
+    private record ScaffoldContext(DbContext DbContext, bool PersistCustomContext, CancellationToken CancellationToken);
 
     protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
         IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
-        IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider,
-        IMemoizer memoizer)
+        IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
     {
         _optionsProvider = optionsProvider;
         _connectionStringProvider = connectionStringProvider;
         _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
-        _memoizer = memoizer;
     }
 
     public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
@@ -65,49 +68,39 @@ public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntit
     {
         var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options, _changeTrackingOptionsProvider);
 
-        var key = GetScaffoldingKey(typeof(TEntity));
-
-        await _memoizer.MemoizeAsync<bool, (
-            AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> self,
-            ChangeTrackingDbContext<TEntityKey, TEntity> context,
-            CancellationToken cancellationToken
-            )>(
-            key,
-            static arg => arg.self.ScaffoldAsync(arg.context, arg.cancellationToken),
-            (this, context, cancellationToken),
-            cancellationToken);
+        await AbstractChangeTrackingDbContextProviderCache.ScaffoldCache.GetOrAdd(typeof(TEntity).FullName,
+            ScaffoldAsync,
+            new ScaffoldContext(context, _changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false, cancellationToken)
+        );
 
         return context;
     }
 
-    private string _scaffoldKey;
-
-    protected virtual string GetScaffoldingKey(Type type) => _scaffoldKey ??= $"{type.FullName}.Changes.Scaffolding";
-
-    private async Task<bool> ScaffoldAsync(DbContext context, CancellationToken cancellationToken)
+    private static async Task<bool> ScaffoldAsync(string typeName, ScaffoldContext context)
     {
-        var type = context.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>)) ?? throw new Exception("Could not find entity type.");
+        var type = context.DbContext.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>))
+                   ?? throw new Exception("Could not find entity type.");
 
         var schema = type.GetSchema().Coalesce("dbo");
         var table = type.GetTableName();
 
         var fullTableName = $"[{schema}].[{table}]";
 
-        if (context.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
+        if (context.DbContext.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
         {
-            var exists = await DoesTableExist(context, schema, table, cancellationToken);
+            var exists = await DoesTableExist(context.DbContext, schema, table, context.CancellationToken);
 
             if (!exists)
             {
                 await dbCreator
-                    .CreateTablesAsync(cancellationToken)
+                    .CreateTablesAsync(context.CancellationToken)
                     .ConfigureAwait(false);
             }
         }
 
-        if (_changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false)
+        if (context.PersistCustomContext)
         {
-            await AddMigrationFieldsAsync(context, fullTableName, cancellationToken);
+            await AddMigrationFieldsAsync(context.DbContext, fullTableName, context.CancellationToken);
         }
 
         return true;

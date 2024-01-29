@@ -1,15 +1,20 @@
 using System;
+using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+
+internal static class AbstractDbContextProviderCache
+{
+    public static readonly ConcurrentDictionary<string, Task<bool>> InitCache = new();
+}
 
 public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
     where TKey : struct
@@ -19,16 +24,17 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
     private readonly ILogger _logger;
     private readonly IDbContextConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
     private readonly IDbContextOptionsProvider<TKey, TEntity> _optionsProvider;
-    private readonly IMemoizer _memoizer;
+
+    private static readonly ConcurrentDictionary<string, PooledDbContextFactory<TContext>> PoolCache = new();
+
+    private record InitContext(DbContext DbContext, ILogger Logger, CancellationToken CancellationToken);
 
     protected AbstractDbContextProvider(IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider,
         IDbContextOptionsProvider<TKey, TEntity> optionsProvider,
-        ILogger logger,
-        IMemoizer memoizer)
+        ILogger logger)
     {
         _connectionStringProvider = connectionStringProvider;
         _optionsProvider = optionsProvider;
-        _memoizer = memoizer;
         _logger = logger;
     }
 
@@ -39,28 +45,23 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
 
         if (context is DbContext dbContext)
         {
-            await _memoizer.MemoizeAsync<
-                bool,
-                (AbstractDbContextProvider<TKey, TEntity, TContext> self, DbContext dbContext, CancellationToken
-                cancellationToken)>(
-                GetMemoizeKey(typeof(TContext)),
-                static arg => arg.self.InitContextAsync(arg.dbContext, arg.cancellationToken),
-                (this, dbContext, cancellationToken),
-                cancellationToken);
+            await AbstractDbContextProviderCache.InitCache.GetOrAdd(context.Database.GetConnectionString(),
+                InitContextAsync,
+                new InitContext(dbContext, _logger, cancellationToken));
         }
 
         return context;
     }
 
-    protected virtual async Task<bool> InitContextAsync(DbContext dbContext, CancellationToken cancellationToken)
+    private static async Task<bool> InitContextAsync(string connectionString, InitContext context)
     {
         try
         {
-            await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+            await context.DbContext.Database.MigrateAsync(context.CancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Fail to call migrations");
+            context.Logger.LogError(ex, "Fail to call migrations");
         }
 
         return true;
@@ -68,16 +69,13 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
 
     public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
     {
-        var connectionString = await _connectionStringProvider
-            .GetConnectionStringAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var connectionString = await _connectionStringProvider.GetConnectionStringAsync(cancellationToken);
 
         var options = _optionsProvider.GetDbContextOptions<TContext>(connectionString);
 
-        var factory = _memoizer.Memoize(
-                GetPooledKey(typeof(TContext)),
-                static opts => new PooledDbContextFactory<TContext>(opts),
-                options);
+        var factory = PoolCache.GetOrAdd(connectionString,
+            static (_, options) => new PooledDbContextFactory<TContext>(options),
+            options);
 
         return await CreateContextAsync(factory, cancellationToken);
     }
@@ -87,12 +85,10 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
     {
         var options = _optionsProvider.GetDbContextOptions<TContext>(connection);
 
-        return await CreateContextAsync(new PooledDbContextFactory<TContext>(options), cancellationToken);
+        var factory = PoolCache.GetOrAdd(connection.ConnectionString,
+            static (_, options) => new PooledDbContextFactory<TContext>(options),
+            options);
+
+        return await CreateContextAsync(factory, cancellationToken);
     }
-
-    private string _memoizeKey;
-    protected virtual string GetMemoizeKey(Type dbContextType) => _memoizeKey ??= $"{dbContextType.FullName}.Init";
-
-    private string _poolKey;
-    protected virtual string GetPooledKey(Type dbContextType) => _poolKey ??= $"{dbContextType.FullName}.Pooled";
 }

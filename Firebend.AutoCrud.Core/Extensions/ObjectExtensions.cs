@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Firebend.AutoCrud.Core.ObjectMapping;
 
 namespace Firebend.AutoCrud.Core.Extensions;
@@ -15,7 +14,7 @@ public static class ObjectExtensions
         string[] propertiesToIgnore = null,
         string[] propertiesToInclude = null,
         bool includeObjects = true)
-        => CopyPropertiesToObjectMapper(source, dest, propertiesToIgnore, propertiesToInclude, includeObjects);
+        => CopyPropertiesToReflection(source, dest, propertiesToIgnore, propertiesToInclude, includeObjects);
 
     public static TU CopyPropertiesToObjectMapper<T, TU>(this T source,
         TU dest,

@@ -2,7 +2,6 @@ using BenchmarkDotNet.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
-using Firebend.AutoCrud.Core.ObjectMapping;
 using Firebend.JsonPatch.Extensions;
 
 namespace Firebend.AutoCrud.Benchmarks.Benchmarks;

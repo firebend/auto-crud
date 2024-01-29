@@ -1,8 +1,5 @@
-using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
-using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,26 +11,10 @@ public class AbstractElasticDbContextProvider<TKey, TEntity, TContext> : Abstrac
     where TEntity : IEntity<TKey>
     where TContext : DbContext, IDbContext
 {
-    private readonly IShardNameProvider _shardNameProvider;
-    private readonly IShardKeyProvider _shardKeyProvider;
-
     public AbstractElasticDbContextProvider(
         IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider,
         IDbContextOptionsProvider<TKey, TEntity> optionsProvider,
-        ILogger<AbstractElasticDbContextProvider<TKey, TEntity, TContext>> logger,
-        IMemoizer memoizer,
-        IShardNameProvider shardNameProvider,
-        IShardKeyProvider shardKeyProvider) : base(connectionStringProvider, optionsProvider, logger, memoizer)
+        ILogger<AbstractElasticDbContextProvider<TKey, TEntity, TContext>> logger) : base(connectionStringProvider, optionsProvider, logger)
     {
-        _shardNameProvider = shardNameProvider;
-        _shardKeyProvider = shardKeyProvider;
     }
-
-    private string _memoizeKey;
-    protected override string GetMemoizeKey(Type dbContextType)
-        => _memoizeKey ??= $"{dbContextType.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Init";
-
-    private string _poolKey;
-    protected override string GetPooledKey(Type dbContextType)
-        => _poolKey ??= $"{dbContextType.FullName}.{_shardNameProvider.GetShardName(_shardKeyProvider.GetShardKey())}.Pooled";
 }

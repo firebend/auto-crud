@@ -57,7 +57,7 @@ public class MapperTests
         var target = new TargetModelA();
 
         // when
-        ObjectMapper.Copy(source.GetType(), target.GetType());
+        ObjectMapper.Copy(source, target);
 
         // then
         target.Should().NotBeNull();
