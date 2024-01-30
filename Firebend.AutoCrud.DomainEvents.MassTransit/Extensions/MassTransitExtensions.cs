@@ -111,7 +111,7 @@ public static class MassTransitExtensions
         switch (queueMode)
         {
             case AutoCrudMassTransitQueueMode.OneQueue:
-                return new (){ { prefix, consumerInfos } };
+                return new() { { prefix, consumerInfos } };
 
             case AutoCrudMassTransitQueueMode.QueuePerAction:
                 return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityActionDescription}")
@@ -135,7 +135,7 @@ public static class MassTransitExtensions
                         consumerInfo.ServiceDescriptor.ImplementationType,
                         consumerInfo.EntityActionDescription
                     );
-                    dictionary.Add(queueName, [consumerInfo ]);
+                    dictionary.Add(queueName, [consumerInfo]);
                 }
 
                 return dictionary;

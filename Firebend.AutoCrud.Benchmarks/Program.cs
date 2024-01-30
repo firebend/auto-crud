@@ -1,4 +1,4 @@
-﻿
+
 using BenchmarkDotNet.Running;
 using Firebend.AutoCrud.Benchmarks.Benchmarks;
 
