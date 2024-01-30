@@ -85,10 +85,12 @@ public abstract class AbstractDbContextProvider<TKey, TEntity, TContext> : IDbCo
     {
         var options = _optionsProvider.GetDbContextOptions<TContext>(connection);
 
-        var factory = PoolCache.GetOrAdd(connection.ConnectionString,
-            static (_, options) => new PooledDbContextFactory<TContext>(options),
-            options);
+        var instance = Activator.CreateInstance(typeof(TContext), options) as TContext;
 
-        return await CreateContextAsync(factory, cancellationToken);
+        await AbstractDbContextProviderCache.InitCache.GetOrAdd(connection.ConnectionString,
+            InitContextAsync,
+            new InitContext(instance, _logger, cancellationToken));
+
+        return instance;
     }
 }
