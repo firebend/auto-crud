@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Web.Implementations.Authorization.ActionFilters;
 
-public abstract class EntityAuthorizationFilter<TKey, TEntity, TVersion> : IAsyncActionFilter, IAsyncResultFilter
+public class EntityAuthorizationFilter<TKey, TEntity, TVersion> : IAsyncActionFilter, IAsyncResultFilter
     where TKey : struct
     where TEntity : class, IEntity<TKey>
     where TVersion : class, IAutoCrudApiVersion
@@ -18,7 +18,7 @@ public abstract class EntityAuthorizationFilter<TKey, TEntity, TVersion> : IAsyn
     private readonly string _policy;
     private IEntityAuthProvider _entityAuthProvider;
 
-    protected EntityAuthorizationFilter(string policy)
+    public EntityAuthorizationFilter(string policy)
     {
         _policy = policy;
     }

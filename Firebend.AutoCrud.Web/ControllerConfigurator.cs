@@ -158,7 +158,7 @@ public partial class
             throw new Exception($"Registration type {registrationType} is not assignable to {typeToCheckGeneric}");
         }
 
-        Builder.WithRegistration(registrationType, registrationType);
+        Builder.WithRegistration(registrationType, registrationType, isDynamic: true);
 
         AddRouteAttribute(registrationType);
         AddOpenApiGroupNameAttribute(registrationType, openApiName);

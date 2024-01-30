@@ -11,6 +11,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services;
 using Firebend.AutoCrud.Core.Interfaces.Services.ClassGeneration;
 using Firebend.AutoCrud.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Firebend.AutoCrud.Generator.Implementations;
 
@@ -88,24 +89,16 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
                 continue;
             }
 
-            foreach (var reg in registrations)
+            for (var index = 0; index < registrations.Count; index++)
             {
+                var reg = registrations[index];
+
                 switch (reg)
                 {
-                    case DynamicClassRegistration classRegistration:
-                    {
-                        var instance = _classGenerator.ImplementInterface(
-                            classRegistration.Interface,
-                            classRegistration.Signature,
-                            classRegistration.Properties.ToArray());
-
-                        serviceCollection.AddSingleton(classRegistration.Interface, instance);
-                        break;
-                    }
                     case InstanceRegistration instanceRegistration:
                         serviceCollection.AddSingleton(type, instanceRegistration.Instance);
                         break;
-                    case ServiceRegistration serviceRegistration:
+                    case DynamicServiceRegistration serviceRegistration:
                         if (services.ContainsKey(type))
                         {
                             services[type] = services[type] ?? [];
@@ -115,6 +108,23 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
                         {
                             services.Add(type, [serviceRegistration]);
                         }
+
+                        break;
+                    case ServiceRegistration serviceRegistration:
+
+                        if (index <= 0)
+                        {
+                            serviceCollection.TryAdd(new ServiceDescriptor(type,
+                                serviceRegistration.ServiceType,
+                                serviceRegistration.Lifetime));
+                        }
+                        else
+                        {
+                            serviceCollection.Add(new ServiceDescriptor(type,
+                                serviceRegistration.ServiceType,
+                                serviceRegistration.Lifetime));
+                        }
+
                         break;
                     case BuilderRegistration builderRegistration:
                         Generate(serviceCollection, builderRegistration.Builder);
@@ -271,7 +281,6 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
         {
             foreach (var reg in regs.ToArray())
             {
-
                 if (!key.IsAssignableFrom(reg.ServiceType))
                 {
                     var args = reg.ServiceType.GenericTypeArguments.Aggregate(new StringBuilder(), (a, b) => a.Append(b.Name).Append(","));

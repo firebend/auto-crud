@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework;
 
-public abstract class AbstractCustomFieldEntityTypeConfiguration<TKey, TEntity, TEfModel> : IEntityTypeConfiguration<TEfModel>
+public class CustomFieldEntityTypeConfiguration<TKey, TEntity, TEfModel> : IEntityTypeConfiguration<TEfModel>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     where TEfModel : EfCustomFieldsModel<TKey, TEntity>
@@ -14,7 +14,7 @@ public abstract class AbstractCustomFieldEntityTypeConfiguration<TKey, TEntity, 
     private readonly string _tableName;
     private readonly string _schema;
 
-    protected AbstractCustomFieldEntityTypeConfiguration(string tableName, string schema)
+    public CustomFieldEntityTypeConfiguration(string tableName, string schema)
     {
         _tableName = tableName;
         _schema = schema;

@@ -6,17 +6,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Firebend.AutoCrud.Web.Sample.DomainEvents;
 
-public class SampleDomainEventContext
-{
-    public CatchPhraseModel CatchPhraseModel { get; set; }
-    public string Tenant { get; set; }
-}
-
-public class CatchPhraseModel
-{
-    public string CatchPhrase { get; set; }
-}
-
 public class SampleDomainEventContextProvider : IDomainEventContextProvider
 {
     private readonly IHttpContextAccessor _httpContextAccessor;

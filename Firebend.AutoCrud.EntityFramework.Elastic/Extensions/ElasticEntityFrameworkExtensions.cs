@@ -1,6 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.EntityFramework.Elastic.Implementations.Abstractions;
+using Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
@@ -45,7 +45,7 @@ public static class ElasticEntityFrameworkExtensions
 
         config.Builder.WithRegistration<
             IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity>,
-            AbstractConstraintUpdateExceptionHandler<TKey, TEntity>>();
+            ConstraintUpdateExceptionHandler<TKey, TEntity>>();
 
         configure(config);
 

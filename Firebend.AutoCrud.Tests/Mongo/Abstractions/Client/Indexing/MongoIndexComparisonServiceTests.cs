@@ -1,6 +1,6 @@
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
+using Firebend.AutoCrud.Mongo.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Configuration;
 using Firebend.AutoCrud.Mongo.Helpers;
 using FluentAssertions;

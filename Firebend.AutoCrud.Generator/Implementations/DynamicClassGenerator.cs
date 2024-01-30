@@ -243,7 +243,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
         }
 
         var an = new AssemblyName(typeSignature);
-        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(an, AssemblyBuilderAccess.RunAndCollect);
         var moduleBuilder = assemblyBuilder.DefineDynamicModule("Firebend.AutoCrud.Dynamic");
         var tb = moduleBuilder.DefineType(
             typeSignature,

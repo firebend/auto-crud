@@ -3,20 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AsyncKeyedLock;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 
 namespace Firebend.AutoCrud.Core.Implementations.Entities;
 
-internal static class InMemoryEntityTransactionOutboxStatics
-{
-    public static readonly AsyncKeyedLocker<string> Locker = new(o =>
-    {
-        o.PoolSize = 20;
-        o.PoolInitialFill = 1;
-    });
-}
 public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
 {
     private readonly Dictionary<string, List<IEntityTransactionOutboxEnrollment>> _enrollments = new();

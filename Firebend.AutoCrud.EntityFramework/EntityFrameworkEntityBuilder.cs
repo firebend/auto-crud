@@ -3,13 +3,13 @@ using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
-using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
+using Firebend.AutoCrud.EntityFramework.Client;
 using Firebend.AutoCrud.EntityFramework.Connections;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
 using Firebend.AutoCrud.EntityFramework.Implementations;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Firebend.AutoCrud.EntityFramework.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -82,9 +82,8 @@ public class EntityFrameworkEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKe
 
         WithRegistration<IEntityTransactionFactory<TKey, TEntity>,
             EntityFrameworkEntityTransactionFactory<TKey, TEntity>>();
-        
 
-        var dbContextProvider = typeof(AbstractDbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, DbContextType);
+        var dbContextProvider = typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, DbContextType);
 
         WithRegistration<IDbContextProvider<TKey, TEntity>>(dbContextProvider);
     }

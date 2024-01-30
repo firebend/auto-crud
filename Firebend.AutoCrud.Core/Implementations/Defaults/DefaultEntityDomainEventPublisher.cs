@@ -6,7 +6,7 @@ using Firebend.AutoCrud.Core.Models.DomainEvents;
 
 namespace Firebend.AutoCrud.Core.Implementations.Defaults;
 
-public abstract class DefaultEntityDomainEventPublisher<TKey, TEntity> : IEntityDomainEventPublisher<TKey, TEntity>
+public class DefaultEntityDomainEventPublisher<TKey, TEntity> : IEntityDomainEventPublisher<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {

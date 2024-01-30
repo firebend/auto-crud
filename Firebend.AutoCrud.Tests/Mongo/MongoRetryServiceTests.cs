@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using AutoFixture;
-using Firebend.AutoCrud.Mongo.Abstractions.Client;
+using Firebend.AutoCrud.Mongo.Client;
 using FluentAssertions;
 using Microsoft.AspNetCore.Connections;
 using MongoDB.Driver;

@@ -59,38 +59,3 @@ public class FunctionViewModelMapper<TKey, TEntity, TVersion, TViewModel> : ICre
     public Task<IEnumerable<TViewModel>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken = default)
         => _to == null ? Task.FromResult((IEnumerable<TViewModel>)null) : Task.FromResult(entity.Select(ToViewModel));
 }
-
-public class FunctionSearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>
-    : ISearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, TSearchModel>
-    where TViewModel : class
-    where TEntity : class, IEntity<TKey>
-    where TKey : struct
-    where TVersion : class, IAutoCrudApiVersion
-    where TSearchModel : class
-{
-    private static Func<TViewModel, TSearchModel> _from;
-
-    public FunctionSearchViewModelMapper()
-    {
-
-    }
-
-    public FunctionSearchViewModelMapper(Func<TViewModel, TSearchModel> from)
-    {
-        _from = from;
-    }
-
-    public Task<TSearchModel> FromAsync(TViewModel model, CancellationToken cancellationToken = default)
-        => Task.FromResult(_from?.Invoke(model));
-}
-
-public class IdentitySearchViewModelMapper<TKey, TEntity, TVersion, TSearchModel>
-    : ISearchViewModelMapper<TKey, TEntity, TVersion, TSearchModel, TSearchModel>
-    where TEntity : class, IEntity<TKey>
-    where TKey : struct
-    where TVersion : class, IAutoCrudApiVersion
-    where TSearchModel : class
-{
-    public Task<TSearchModel> FromAsync(TSearchModel model, CancellationToken cancellationToken = default)
-        => Task.FromResult(model);
-}

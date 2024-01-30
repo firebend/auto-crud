@@ -1,40 +1,13 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Mongo.Abstractions.Client;
+using Firebend.AutoCrud.Mongo.Client;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Implementations;
 
-public static class MongoEntityTransactionFactoryDefaults
-{
-#pragma warning disable CA2211, IDE1006
-    // ReSharper disable once InconsistentNaming
-    // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public static TransactionOptions TransactionOptions;
-    // ReSharper disable once InconsistentNaming
-    // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public static ClientSessionOptions SessionOptions;
-#pragma warning restore CA2211, IDE1006
-
-    static MongoEntityTransactionFactoryDefaults()
-    {
-        TransactionOptions = new TransactionOptions(
-            ReadConcern.Local,
-            readPreference: ReadPreference.Primary,
-            writeConcern: WriteConcern.WMajority,
-            maxCommitTime: TimeSpan.FromMinutes(5));
-
-        SessionOptions = new ClientSessionOptions
-        {
-            DefaultTransactionOptions = TransactionOptions,
-        };
-    }
-}
 public class MongoEntityTransactionFactory<TKey, TEntity> :
     MongoClientBase<TKey, TEntity>, IEntityTransactionFactory<TKey, TEntity>
     where TKey : struct

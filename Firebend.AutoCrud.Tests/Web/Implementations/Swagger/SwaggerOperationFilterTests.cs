@@ -1,45 +1,16 @@
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json;
-using Firebend.AutoCrud.Core.Interfaces;
-using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Web.Abstractions;
 using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Implementations.Swagger;
-using Firebend.AutoCrud.Web.Interfaces;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using NUnit.Framework;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
-
-public class FakeEntity : IEntity<Guid>
-{
-    public Guid Id { get; set; }
-}
-
-public class V1 : IAutoCrudApiVersion
-{
-    public int Version => 1;
-    public string Name => "Version 1";
-}
-
-public class FakeController : AbstractEntityReadController<Guid, FakeEntity, V1, FakeEntity>
-{
-    public FakeController(IEntityReadService<Guid, FakeEntity> readService,
-        IEntityKeyParser<Guid, FakeEntity, V1> entityKeyParser,
-        IReadViewModelMapper<Guid, FakeEntity, V1, FakeEntity> viewModelMapper,
-        IOptions<ApiBehaviorOptions> apiOptions) : base(readService, entityKeyParser, viewModelMapper, apiOptions)
-    {
-    }
-}
 
 [TestFixture]
 public class SwaggerOperationFilterTests

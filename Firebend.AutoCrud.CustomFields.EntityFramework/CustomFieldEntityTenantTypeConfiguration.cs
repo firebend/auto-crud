@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Firebend.AutoCrud.CustomFields.EntityFramework;
 
 public class CustomFieldEntityTenantTypeConfiguration<TKey, TEntity, TTenantKey> :
-    AbstractCustomFieldEntityTypeConfiguration<TKey, TEntity, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>
+    CustomFieldEntityTypeConfiguration<TKey, TEntity, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     where TTenantKey : struct

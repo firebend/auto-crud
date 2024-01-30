@@ -6,14 +6,14 @@ using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models;
 using Firebend.AutoCrud.Core.Models.CustomFields;
-using Firebend.AutoCrud.CustomFields.EntityFramework.Abstractions;
+using Firebend.AutoCrud.CustomFields.EntityFramework.Implementations;
 using Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 using Firebend.AutoCrud.EntityFramework;
-using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
-using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
+using Firebend.AutoCrud.EntityFramework.Client;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Firebend.AutoCrud.EntityFramework.Services;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework;
 
@@ -127,7 +127,7 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
 
         builder.WithRegistration(
             typeof(IDbContextConnectionStringProvider<,>).MakeGenericType(guidType, efModelType),
-            typeof(AbstractCustomFieldsConnectionStringProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+            typeof(CustomFieldsConnectionStringProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
             false);
 
         builder.WithRegistration(
@@ -141,7 +141,7 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             false);
 
         builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>>(
-            typeof(AbstractEfCustomFieldsCreateService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+            typeof(EfCustomFieldsCreateService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
             false);
 
         builder.WithRegistration(
@@ -152,7 +152,7 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             false);
 
         builder.WithRegistration<ICustomFieldsUpdateService<TKey, TEntity>>(
-            typeof(AbstractEfCustomFieldsUpdateService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+            typeof(EfCustomFieldsUpdateService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
             false);
 
         builder.WithRegistration(
@@ -163,7 +163,7 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             false);
 
         builder.WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>>(
-            typeof(AbstractEfCustomFieldsDeleteService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+            typeof(EfCustomFieldsDeleteService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
             false);
 
         builder.WithRegistration(
@@ -174,7 +174,7 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             false);
 
         builder.WithRegistration<ICustomFieldsSearchService<TKey, TEntity>>(
-            typeof(AbstractEfCustomFieldSearchService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+            typeof(EfCustomFieldSearchService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
             false);
 
         builder.WithRegistration(
@@ -185,7 +185,7 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             false);
 
         builder.WithRegistration<ICustomFieldsReadService<TKey, TEntity>>(
-            typeof(AbstractEfCustomFieldsReadService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
+            typeof(EfCustomFieldsReadService<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
             false);
 
         builder.WithRegistration(

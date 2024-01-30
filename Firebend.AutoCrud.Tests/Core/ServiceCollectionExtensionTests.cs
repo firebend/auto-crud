@@ -24,9 +24,3 @@ public class ServiceCollectionExtensionTests
         testService.Should().NotBeNull();
     }
 }
-
-public interface ITestService;
-
-public class TestServiceA : ITestService;
-
-public class TestServiceB : ITestService;

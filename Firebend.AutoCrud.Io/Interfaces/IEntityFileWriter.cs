@@ -18,9 +18,3 @@ public interface IEntityFileWriter<TVersion> : IDisposable
         CancellationToken cancellationToken)
         where T : class;
 }
-
-public interface IEntityFileWriterCsv<TVersion> : IEntityFileWriter<TVersion>
-    where TVersion : class, IAutoCrudApiVersion;
-
-public interface IEntityFileWriterSpreadSheet<TVersion> : IEntityFileWriter<TVersion>
-    where TVersion : class, IAutoCrudApiVersion;

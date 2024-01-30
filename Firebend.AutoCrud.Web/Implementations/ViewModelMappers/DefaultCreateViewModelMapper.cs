@@ -6,7 +6,7 @@ using Firebend.AutoCrud.Web.Models;
 namespace Firebend.AutoCrud.Web.Implementations.ViewModelMappers;
 
 public class DefaultCreateViewModelMapper<TKey, TEntity, TVersion> :
-    AbstractDefaultCreateUpdateViewModelMapper<TKey, TEntity>,
+    DefaultCreateUpdateViewModelMapper<TKey, TEntity>,
     ICreateViewModelMapper<TKey, TEntity, TVersion, DefaultCreateUpdateViewModel<TKey, TEntity>>
     where TVersion : class, IAutoCrudApiVersion
     where TEntity : class, IEntity<TKey>

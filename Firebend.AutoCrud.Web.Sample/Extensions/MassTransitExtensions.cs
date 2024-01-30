@@ -1,8 +1,6 @@
 using System;
-using System.Threading.Tasks;
 using Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 using MassTransit;
-using MassTransit.Audit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -62,32 +60,5 @@ public static class MassTransitExtensions
                 }
             });
         });
-    }
-}
-
-public class DebugMessageLogger : IMessageAuditStore
-{
-    private readonly ILogger<DebugMessageLogger> _logger;
-
-    public DebugMessageLogger(ILogger<DebugMessageLogger> logger)
-    {
-        _logger = logger;
-    }
-
-    public Task StoreMessage<T>(T message, MessageAuditMetadata metadata) where T : class
-    {
-        if (!_logger.IsEnabled(LogLevel.Debug))
-        {
-            return Task.CompletedTask;
-        }
-
-        _logger.LogDebug(
-            "{Action} Message Bus {@Message} with {@Context} {@Payload}",
-            metadata.ContextType, message, metadata, JsonConvert.SerializeObject(message, Formatting.Indented, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            }));
-
-        return Task.CompletedTask;
     }
 }

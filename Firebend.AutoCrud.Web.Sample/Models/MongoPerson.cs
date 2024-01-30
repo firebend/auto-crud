@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
-using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Core.Models.CustomFields;
 
 namespace Firebend.AutoCrud.Web.Sample.Models;
 
@@ -35,10 +32,4 @@ public class MongoPerson : IPerson, IEntityDataAuth
     public DateTimeOffset ModifiedDate { get; set; }
     public string NickName { get; set; }
     public DataAuth DataAuth { get; set; }
-}
-
-public class MongoTenantPerson : MongoPerson, ITenantEntity<int>, ICustomFieldsEntity<Guid>
-{
-    public int TenantId { get; set; }
-    public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
 }

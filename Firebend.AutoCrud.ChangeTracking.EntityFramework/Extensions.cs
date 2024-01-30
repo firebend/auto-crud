@@ -1,9 +1,9 @@
 using System;
-using Firebend.AutoCrud.ChangeTracking.Abstractions;
-using Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
+using Firebend.AutoCrud.ChangeTracking.EntityFramework.Implementations;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Searching;
+using Firebend.AutoCrud.ChangeTracking.Implementations;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
@@ -12,7 +12,7 @@ using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.EntityFramework;
-using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
+using Firebend.AutoCrud.EntityFramework.Client;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,10 +23,10 @@ public static class Extensions
 {
     /// <summary>
     /// Adds change tracking for a given entity and persists it to a data store using Entity Framework.
-    /// This function registers a <see cref="AbstractEntityFrameworkChangeTrackingService{TEntityKey,TEntity}"/> to track changes and
-    /// a <see cref="AbstractEntityFrameworkChangeTrackingReadService{TEntityKey,TEntity}"/> to read changes.
-    /// It also registers <see cref="AbstractChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="AbstractChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
-    /// and <see cref="AbstractChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
+    /// This function registers a <see cref="EntityFrameworkChangeTrackingService{TEntityKey,TEntity}"/> to track changes and
+    /// a <see cref="EntityFrameworkChangeTrackingReadService{TEntityKey,TEntity}"/> to read changes.
+    /// It also registers <see cref="ChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="ChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
+    /// and <see cref="ChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
     /// A <see cref="ChangeTrackingDbContextProvider{TEntityKey,TEntity}"/> is registered so that a special change tracking Entity Framework context
     /// can be used to persist the changes.
     /// </summary>
@@ -71,13 +71,14 @@ public static class Extensions
 
         efBuilder.Services.AddPooledDbContextFactory<ChangeTrackingDbContext<TKey, TEntity>>(efBuilder.DbContextOptionsBuilder);
 
+        configurator.Builder.WithRegistration<IDbContextProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>, ChangeTrackingDbContextProvider<TKey, TEntity>>();
         configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>, ChangeTrackingDbContextProvider<TKey, TEntity>>();
 
         configurator.Builder.WithRegistration<IChangeTrackingReadService<TKey, TEntity>,
-            AbstractEntityFrameworkChangeTrackingReadService<TKey, TEntity>>();
+            EntityFrameworkChangeTrackingReadService<TKey, TEntity>>();
 
         configurator.Builder.WithRegistration<IChangeTrackingService<TKey, TEntity>,
-            AbstractEntityFrameworkChangeTrackingService<TKey, TEntity>>();
+            EntityFrameworkChangeTrackingService<TKey, TEntity>>();
 
         configurator.Builder.WithRegistration<IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TKey, TEntity>>,
             EntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
@@ -94,9 +95,9 @@ public static class Extensions
         configurator.Builder.WithRegistration<IEntityFrameworkIncludesProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
             DefaultEntityFrameworkIncludesProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>>();
 
-        configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
-        configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
-        configurator.WithDomainEventEntityDeletedSubscriber<AbstractChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
+        configurator.WithDomainEventEntityAddedSubscriber<ChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
+        configurator.WithDomainEventEntityUpdatedSubscriber<ChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
+        configurator.WithDomainEventEntityDeletedSubscriber<ChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
 
         configurator.Builder.WithRegistrationInstance<IChangeTrackingOptionsProvider<TKey, TEntity>>(
                 new DefaultChangeTrackingOptionsProvider<TKey, TEntity>(changeTrackingOptions ?? new ChangeTrackingOptions()));

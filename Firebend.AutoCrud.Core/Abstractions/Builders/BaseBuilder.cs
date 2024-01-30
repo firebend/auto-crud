@@ -90,24 +90,35 @@ public abstract class BaseBuilder : BaseDisposable
         Type serviceType,
         bool replace = true,
         bool allowMany = false,
-        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        ServiceLifetime lifetime = ServiceLifetime.Scoped,
+        bool isDynamic = false)
     {
-        var registration = new ServiceRegistration { ServiceType = serviceType, Lifetime = lifetime };
+        var registration = isDynamic
+            ? new DynamicServiceRegistration { ServiceType = serviceType, Lifetime = lifetime }
+            : new ServiceRegistration { ServiceType = serviceType, Lifetime = lifetime };
 
         return WithRegistration(registrationType, registration, replace, allowMany);
     }
 
-    public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true, bool allowMany = false, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
-        => WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany, serviceLifetime);
+    public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true,
+        bool allowMany = false,
+        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped,
+        bool isDynamic = false)
+        => WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany, serviceLifetime, isDynamic);
 
-    public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true, bool allowMany = false, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
-        => WithRegistration(typeof(TRegistration), type, replace, allowMany, serviceLifetime);
+    public BaseBuilder WithRegistration<TRegistration>(Type type,
+        bool replace = true,
+        bool allowMany = false,
+        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped,
+        bool isDynamic = false)
+        => WithRegistration(typeof(TRegistration), type, replace, allowMany, serviceLifetime, isDynamic);
 
     public BaseBuilder WithRegistration(Type registrationType,
         Type serviceType,
         Type typeToCheck,
         bool replace = true,
-        bool allowMany = false)
+        bool allowMany = false,
+        bool isDynamic = false)
     {
         if (!typeToCheck.IsAssignableFrom(serviceType))
         {
@@ -119,7 +130,7 @@ public abstract class BaseBuilder : BaseDisposable
             throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
         }
 
-        return WithRegistration(registrationType, serviceType, replace, allowMany);
+        return WithRegistration(registrationType, serviceType, replace, allowMany, ServiceLifetime.Scoped, isDynamic);
     }
 
     public BaseBuilder WithRegistrationInstance(Type registrationType, object instance, bool replace = true, bool allowMany = false)
@@ -132,13 +143,6 @@ public abstract class BaseBuilder : BaseDisposable
     public BaseBuilder WithRegistrationInstance<TInstance>(TInstance instance) => WithRegistrationInstance(typeof(TInstance), instance);
 
     public BaseBuilder WithRegistrationInstance<TInstance>(object instance) => WithRegistrationInstance(typeof(TInstance), instance);
-
-    public BaseBuilder WithDynamicClass(Type type, DynamicClassRegistration classRegistration)
-    {
-        WithRegistration(type, classRegistration);
-
-        return this;
-    }
 
     public BaseBuilder WithAttribute(Type registrationType, Type attributeType, CustomAttributeBuilder attribute,
         bool allowMultiple = false)

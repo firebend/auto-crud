@@ -69,7 +69,7 @@ public static class Extensions
             configurator.Builder.SearchRequestType,
             configurator.Builder.ExportType);
 
-        var impl = typeof(AbstractEntityExportControllerService<,,,,>).MakeGenericType(
+        var impl = typeof(EntityExportControllerService<,,,,>).MakeGenericType(
             configurator.Builder.EntityKeyType,
             configurator.Builder.EntityType,
             typeof(TVersion),

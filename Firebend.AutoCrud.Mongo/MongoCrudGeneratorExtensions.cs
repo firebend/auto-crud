@@ -1,5 +1,5 @@
 using System;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
+using Firebend.AutoCrud.Mongo.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
