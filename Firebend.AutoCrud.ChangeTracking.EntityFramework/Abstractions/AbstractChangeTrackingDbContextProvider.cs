@@ -39,7 +39,7 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
         IDbContextFactory<ChangeTrackingDbContext<TEntityKey, TEntity>> contextFactory,
         IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider = null,
         IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider = null) :
-        base(logger, contextFactory, null)
+        base(logger, contextFactory)
     {
         _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
         _rootConnectionStringProvider = connectionStringProvider;
