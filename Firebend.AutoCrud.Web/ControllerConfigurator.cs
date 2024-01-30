@@ -1,7 +1,3 @@
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedMember.Global
-// ReSharper disable UnusedMethodReturnValue.Global
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,11 +19,6 @@ using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web;
-
-public static class ControllerConfiguratorCache
-{
-    public static bool IsSwaggerApplied { get; set; }
-}
 
 public partial class
     ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>

@@ -20,8 +20,6 @@ public abstract class BaseBuilder : BaseDisposable
 
     public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
 
-    public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
-
     public virtual string SignatureBase { get; set; }
 
     public IServiceCollection Services { get; }
@@ -165,13 +163,6 @@ public abstract class BaseBuilder : BaseDisposable
         return this;
     }
 
-    public BaseBuilder WithServiceCollectionHook(Action<IServiceCollection> action)
-    {
-        ServiceCollectionHooks ??= [];
-        ServiceCollectionHooks.Add(action);
-        return this;
-    }
-
     public bool HasRegistration(Type type) => Registrations != null && Registrations.ContainsKey(type);
 
     public bool HasRegistration<TRegistration>() => HasRegistration(typeof(TRegistration));
@@ -203,9 +194,6 @@ public abstract class BaseBuilder : BaseDisposable
 
         Attributes?.Clear();
         Attributes = null;
-
-        ServiceCollectionHooks?.Clear();
-        ServiceCollectionHooks = null;
 
         SignatureBase = null;
     }

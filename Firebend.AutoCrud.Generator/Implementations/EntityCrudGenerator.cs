@@ -75,20 +75,6 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
     {
         builder.Build();
         RegisterRegistrations(serviceCollection, builder);
-        CallServiceCollectionHooks(serviceCollection, builder);
-    }
-
-    private static void CallServiceCollectionHooks(IServiceCollection serviceCollection, BaseBuilder builder)
-    {
-        if (builder.ServiceCollectionHooks == null)
-        {
-            return;
-        }
-
-        foreach (var hook in builder.ServiceCollectionHooks)
-        {
-            hook(serviceCollection);
-        }
     }
 
     private void RegisterRegistrations(IServiceCollection serviceCollection, BaseBuilder builder)
