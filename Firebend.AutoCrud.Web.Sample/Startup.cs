@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.EntityFramework;
+using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.Authorization;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
@@ -79,17 +80,21 @@ public static class Startup
         services
             .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
             .AddHttpContextAccessor()
-            .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer")))
             .AddScoped<IJsonPatchWriter, JsonPatchWriter>()
             .UsingMongoCrud(mongo => mongo
                 .WithMigrationConnectionString(configuration.GetConnectionString("Mongo"))
                 .AddMongoPerson(configuration))
-            .UsingEfCrud(ef =>
-            {
-                ef.AddEfPerson(configuration)
-                    .AddEfPets(configuration)
-                    .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
-            })
+            .UsingEfCrud<PersonDbContext>(
+                (_, opt) => opt
+                    .UseSqlServer(configuration.GetConnectionString("SqlServer"))
+                    .AddFirebendFunctions()
+                    .EnableSensitiveDataLogging(),
+                ef =>
+                {
+                    ef.AddEfPerson(configuration)
+                        .AddEfPets(configuration)
+                        .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
+                })
             .AddSampleMassTransit(configuration)
             .AddRouting()
             .AddAutoCrudOpenApi(description => $"Firebend Auto Crud Web Sample {description.GroupName}", true)

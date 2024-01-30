@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Data;
-using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
@@ -10,73 +9,65 @@ using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions;
 
 internal static class AbstractChangeTrackingDbContextProviderCache
 {
-    public static readonly ConcurrentDictionary<string, Task<bool>> ScaffoldCache = new();
+    public static readonly ConcurrentDictionary<string, bool> ScaffoldCache = new();
 }
 
-public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntity, TContext> :
+public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
+    AbstractDbContextProvider<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingDbContext<TEntityKey, TEntity>>,
     IChangeTrackingDbContextProvider<TEntityKey, TEntity>
     where TEntity : class, IEntity<TEntityKey>
     where TEntityKey : struct
-    where TContext : DbContext, IDbContext
 {
     private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
-    private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _connectionStringProvider;
-    private readonly IDbContextOptionsProvider<TEntityKey, TEntity> _optionsProvider;
-    private record ScaffoldContext(DbContext DbContext, bool PersistCustomContext, CancellationToken CancellationToken);
+    private readonly IDbContextConnectionStringProvider<TEntityKey,TEntity> _rootConnectionStringProvider;
 
-    protected AbstractChangeTrackingDbContextProvider(IDbContextOptionsProvider<TEntityKey, TEntity> optionsProvider,
-        IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider,
-        IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
+    private record ScaffoldContext(DbContext DbContext, bool PersistCustomContext);
+
+    public ChangeTrackingDbContextProvider(
+        ILogger<ChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
+        IDbContextFactory<ChangeTrackingDbContext<TEntityKey, TEntity>> contextFactory,
+        IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider = null,
+        IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider = null) :
+        base(logger, contextFactory, null)
     {
-        _optionsProvider = optionsProvider;
-        _connectionStringProvider = connectionStringProvider;
         _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
+        _rootConnectionStringProvider = connectionStringProvider;
     }
 
-    public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+    protected override void InitDb(DbContext dbContext)
     {
-        var connectionString = await _connectionStringProvider
-            .GetConnectionStringAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        var options = _optionsProvider.GetDbContextOptions<ChangeTrackingDbContext<TEntityKey, TEntity>>(connectionString);
-
-        var context = await GetDbContextAsync(options, cancellationToken);
-
-        return context;
+        base.InitDb(dbContext);
+        ScaffoldDbContext(_changeTrackingOptionsProvider?.Options, dbContext);
     }
 
-    public async Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default)
+    protected override async Task<string> ProvideConnectionString(CancellationToken cancellationToken)
     {
-        var options = _optionsProvider.GetDbContextOptions<ChangeTrackingDbContext<TEntityKey, TEntity>>(connection);
+        if (_rootConnectionStringProvider is null)
+        {
+            return null;
+        }
 
-        var context = await GetDbContextAsync(options, cancellationToken);
-
-        return context;
+        return await _rootConnectionStringProvider.GetConnectionStringAsync(cancellationToken);
     }
 
-    private async Task<IDbContext> GetDbContextAsync(DbContextOptions options, CancellationToken cancellationToken)
-    {
-        var context = new ChangeTrackingDbContext<TEntityKey, TEntity>(options, _changeTrackingOptionsProvider);
+    private static void ScaffoldDbContext(ChangeTrackingOptions changeTrackingOptions, DbContext context )
+        => AbstractChangeTrackingDbContextProviderCache.ScaffoldCache.GetOrAdd(typeof(TEntity).FullName,
+        ScaffoldCacheFactory,
+        new ScaffoldContext(context, changeTrackingOptions?.PersistCustomContext ?? false)
+    );
 
-        await AbstractChangeTrackingDbContextProviderCache.ScaffoldCache.GetOrAdd(typeof(TEntity).FullName,
-            ScaffoldAsync,
-            new ScaffoldContext(context, _changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false, cancellationToken)
-        );
-
-        return context;
-    }
-
-    private static async Task<bool> ScaffoldAsync(string typeName, ScaffoldContext context)
+    private static bool ScaffoldCacheFactory(string typeName, ScaffoldContext context)
     {
         var type = context.DbContext.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>))
                    ?? throw new Exception("Could not find entity type.");
@@ -88,34 +79,30 @@ public abstract class AbstractChangeTrackingDbContextProvider<TEntityKey, TEntit
 
         if (context.DbContext.Database.GetService<IDatabaseCreator>() is RelationalDatabaseCreator dbCreator)
         {
-            var exists = await DoesTableExist(context.DbContext, schema, table, context.CancellationToken);
+            var exists = DoesTableExist(context.DbContext, schema, table);
 
             if (!exists)
             {
-                await dbCreator
-                    .CreateTablesAsync(context.CancellationToken)
-                    .ConfigureAwait(false);
+                dbCreator.CreateTables();
             }
         }
 
         if (context.PersistCustomContext)
         {
-            await AddMigrationFieldsAsync(context.DbContext, fullTableName, context.CancellationToken);
+            AddMigrationFields(context.DbContext, fullTableName);
         }
 
         return true;
     }
 
-    private static async Task AddMigrationFieldsAsync(DbContext context,
-        string fullTableName,
-        CancellationToken cancellationToken)
+    private static void AddMigrationFields(DbContext context, string fullTableName)
     {
         //todo: refactor this later to be more robust and not depend on sql server syntax
         const string columnName = nameof(ChangeTrackingEntity<TEntityKey, TEntity>.DomainEventCustomContext);
 
 #pragma warning disable EF1002
         // ReSharper disable once UseRawString
-        await context.Database.ExecuteSqlRawAsync($@"
+        context.Database.ExecuteSqlRaw($@"
 IF NOT EXISTS (
   SELECT *
   FROM   sys.columns
@@ -125,31 +112,30 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE {fullTableName}
     ADD [{columnName}] nvarchar(max)
-END", cancellationToken);
+END");
 
 #pragma warning restore EF1002
     }
 
-    private static async Task<bool> DoesTableExist(DbContext context,
-        string schemaName,
-        string tableName,
-        CancellationToken cancellationToken)
+    private static bool DoesTableExist(DbContext context, string schemaName, string tableName)
     {
         var conn = context.Database.GetDbConnection();
 
         if (conn.State == ConnectionState.Closed)
         {
-            await conn.OpenAsync(cancellationToken);
+            conn.Open();
         }
 
-        await using var command = conn.CreateCommand();
+        using var command = conn.CreateCommand();
 
-        command.CommandText = $@"
-    SELECT 1 FROM sys.tables AS T
-        INNER JOIN sys.schemas AS S ON T.schema_id = S.schema_id
-    WHERE S.Name = '{schemaName}' AND T.Name = '{tableName}'";
+        command.CommandText = $"""
 
-        var exists = await command.ExecuteScalarAsync(cancellationToken) != null;
+                                   SELECT 1 FROM sys.tables AS T
+                                       INNER JOIN sys.schemas AS S ON T.schema_id = S.schema_id
+                                   WHERE S.Name = '{schemaName}' AND T.Name = '{tableName}'
+                               """;
+
+        var exists = command.ExecuteScalar() != null;
 
         return exists;
     }

@@ -1,6 +1,7 @@
 using System;
 using Firebend.AutoCrud.ChangeTracking.Abstractions;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Abstractions;
+using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Searching;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
@@ -14,6 +15,7 @@ using Firebend.AutoCrud.EntityFramework;
 using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework;
 
@@ -25,7 +27,7 @@ public static class Extensions
     /// a <see cref="AbstractEntityFrameworkChangeTrackingReadService{TEntityKey,TEntity}"/> to read changes.
     /// It also registers <see cref="AbstractChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="AbstractChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
     /// and <see cref="AbstractChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
-    /// A <see cref="AbstractChangeTrackingDbContextProvider{TEntityKey,TEntity,TContext}"/> is registered so that a special change tracking Entity Framework context
+    /// A <see cref="ChangeTrackingDbContextProvider{TEntityKey,TEntity}"/> is registered so that a special change tracking Entity Framework context
     /// can be used to persist the changes.
     /// </summary>
     /// <param name="configurator">
@@ -67,12 +69,9 @@ public static class Extensions
             throw new Exception("Please configure the builder's db context first.");
         }
 
-        var providerType = (efBuilder.IsTenantEntity ?
-            typeof(AbstractElasticChangeTrackingDbContextProvider<,,>) :
-            typeof(AbstractChangeTrackingDbContextProvider<,,>))
-            .MakeGenericType(efBuilder.EntityKeyType, efBuilder.EntityType, efBuilder.DbContextType);
+        efBuilder.Services.AddPooledDbContextFactory<ChangeTrackingDbContext<TKey, TEntity>>(efBuilder.DbContextOptionsBuilder);
 
-        configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>>(providerType);
+        configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>, ChangeTrackingDbContextProvider<TKey, TEntity>>();
 
         configurator.Builder.WithRegistration<IChangeTrackingReadService<TKey, TEntity>,
             AbstractEntityFrameworkChangeTrackingReadService<TKey, TEntity>>();

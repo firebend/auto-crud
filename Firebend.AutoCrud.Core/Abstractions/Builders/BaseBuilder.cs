@@ -24,6 +24,13 @@ public abstract class BaseBuilder : BaseDisposable
 
     public virtual string SignatureBase { get; set; }
 
+    public IServiceCollection Services { get; }
+
+    public BaseBuilder(IServiceCollection serviceCollection)
+    {
+        Services = serviceCollection;
+    }
+
     public void Build()
     {
         if (IsBuilt)

@@ -21,37 +21,38 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
 
     private readonly IDynamicClassGenerator _classGenerator;
 
-    protected EntityCrudGenerator(IDynamicClassGenerator classGenerator, IServiceCollection serviceCollection)
+
+    protected EntityCrudGenerator(IDynamicClassGenerator classGenerator, IServiceCollection services)
     {
         _classGenerator = classGenerator;
-        ServiceCollection = serviceCollection;
+        Services = services;
     }
 
-    protected EntityCrudGenerator(IServiceCollection serviceCollection) : this(new DynamicClassGenerator(), serviceCollection)
+    protected EntityCrudGenerator(IServiceCollection services) : this(new DynamicClassGenerator(), services)
     {
     }
 
     public List<BaseBuilder> Builders { get; private set; } = [];
 
-    public IServiceCollection ServiceCollection { get; }
+    public IServiceCollection Services { get; }
 
     public IServiceCollection Generate()
     {
         if (_isGenerated)
         {
-            return ServiceCollection;
+            return Services;
         }
 
         lock (_lock)
         {
             if (_isGenerated)
             {
-                return ServiceCollection;
+                return Services;
             }
 
             OnGenerate();
             _isGenerated = true;
-            return ServiceCollection;
+            return Services;
         }
     }
 
@@ -62,7 +63,7 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
         foreach (var builder in Builders)
         {
             var builderStart = Stopwatch.GetTimestamp();
-            Generate(ServiceCollection, builder);
+            Generate(Services, builder);
             Console.WriteLine($"Generated entity crud for {builder.SignatureBase} in {Stopwatch.GetElapsedTime(builderStart).Milliseconds} (ms)");
             builder.Dispose();
         }

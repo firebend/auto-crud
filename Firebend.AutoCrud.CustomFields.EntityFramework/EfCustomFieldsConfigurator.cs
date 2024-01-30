@@ -60,12 +60,16 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             return this;
         }
 
-        var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>
+        var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>(
+            Builder.Services,
+            Builder.DbContextType,
+            Builder.DbContextOptionsBuilder)
         {
             SignatureBase = $"{typeof(TEntity).Name}_CustomFields",
-            DbContextType = Builder.DbContextType,
         };
+
         configure(customFieldsBuilder);
+
         Builder.Registrations.Add(typeof(object), [
             new BuilderRegistration { Builder = customFieldsBuilder }
         ]);
@@ -95,10 +99,12 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
             return this;
         }
 
-        var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>
+        var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>(
+            Builder.Services,
+            Builder.DbContextType,
+            Builder.DbContextOptionsBuilder)
         {
-            SignatureBase = $"{typeof(TEntity).Name}_CustomFields",
-            DbContextType = Builder.DbContextType,
+            SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
         };
         configure(customFieldsBuilder);
         Builder.Registrations.Add(typeof(object), [
@@ -118,16 +124,6 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
         var efModelType = isTenantEntity
             ? typeof(EfCustomFieldsModelTenant<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, builder.TenantEntityKeyType)
             : typeof(EfCustomFieldsModel<,>).MakeGenericType(builder.EntityKeyType, builder.EntityType);
-
-        builder.WithRegistration(
-            typeof(IDbContextProvider<,>).MakeGenericType(guidType, efModelType),
-            typeof(AbstractCustomFieldsDbContextProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
-            false);
-
-        builder.WithRegistration(
-            typeof(IDbContextOptionsProvider<,>).MakeGenericType(guidType, efModelType),
-            typeof(AbstractCustomFieldsDbContextOptionsProvider<,,>).MakeGenericType(builder.EntityKeyType, builder.EntityType, efModelType),
-            false);
 
         builder.WithRegistration(
             typeof(IDbContextConnectionStringProvider<,>).MakeGenericType(guidType, efModelType),

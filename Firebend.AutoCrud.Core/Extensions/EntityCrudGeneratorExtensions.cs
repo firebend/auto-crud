@@ -9,7 +9,7 @@ public static class EntityCrudGeneratorExtensions
     public static IEntityCrudGenerator WithDomainEventContextProvider<TProvider>(this IEntityCrudGenerator generator)
         where TProvider : class, IDomainEventContextProvider
     {
-        generator.ServiceCollection.TryAddScoped<IDomainEventContextProvider, TProvider>();
+        generator.Services.TryAddScoped<IDomainEventContextProvider, TProvider>();
 
         if (generator.Builders == null)
         {

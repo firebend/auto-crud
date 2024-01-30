@@ -24,7 +24,7 @@ public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEnti
 {
     private bool _hasFullText;
 
-    public MongoDbEntityBuilder()
+    public MongoDbEntityBuilder(IServiceCollection services) : base(services)
     {
         CreateType = typeof(MongoEntityCreateService<TKey, TEntity>);
         ReadType = typeof(MongoEntityReadService<TKey, TEntity>);

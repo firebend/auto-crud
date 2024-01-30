@@ -26,7 +26,6 @@ using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Mongo.Models;
 using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
-using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
@@ -186,9 +185,7 @@ public static class SampleEntityExtensions
     public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,
         IConfiguration configuration) =>
         generator.AddEntity<Guid, EfPerson>(person =>
-            person.WithDbContext<PersonDbContext>()
-                .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPerson>>()
-                .WithIncludes(x => x.Include(y => y.CustomFields)
+            person.WithIncludes(x => x.Include(y => y.CustomFields)
                     .Include(y => y.Pets)
                     .ThenInclude(y => y.CustomFields))
                 .AddElasticPool(manager =>
@@ -252,9 +249,7 @@ public static class SampleEntityExtensions
     public static EntityFrameworkEntityCrudGenerator AddEfPets(this EntityFrameworkEntityCrudGenerator generator,
         IConfiguration configuration) =>
         generator.AddEntity<Guid, EfPet>(person =>
-            person.WithDbContext<PersonDbContext>()
-                .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPet>>()
-                .WithIncludes(pets => pets.Include(x => x.Person))
+            person.WithIncludes(pets => pets.Include(x => x.Person))
                 .AddElasticPool(manager =>
                     {
                         manager.ConnectionString = configuration.GetConnectionString("Elastic");
