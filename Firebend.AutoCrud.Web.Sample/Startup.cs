@@ -95,7 +95,7 @@ public static class Startup
                         .AddEfPets(configuration)
                         .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
                 })
-            .AddSampleMassTransit(configuration)
+            .AddSampleMassTransit(configuration, false)
             .AddRouting()
             .AddAutoCrudOpenApi(description => $"Firebend Auto Crud Web Sample {description.GroupName}", true)
             .AddFirebendAutoCrudApiBehaviors()

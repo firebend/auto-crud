@@ -13,7 +13,9 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions;
 public static class MassTransitExtensions
 {
 
-    public static IServiceCollection AddSampleMassTransit(this IServiceCollection serviceCollection, IConfiguration configuration)
+    public static IServiceCollection AddSampleMassTransit(this IServiceCollection serviceCollection,
+        IConfiguration configuration,
+        bool doMessageLogging)
     {
         var connString = configuration.GetConnectionString("ServiceBus");
 
@@ -51,10 +53,13 @@ public static class MassTransitExtensions
 
                 context.RegisterFirebendAutoCrudDomainEventHandlerEndPoints(configurator, AutoCrudMassTransitQueueMode.OneQueue);
 
-                var loggerFactory = context.GetRequiredService<ILoggerFactory>();
-                var logger = new DebugMessageLogger(loggerFactory.CreateLogger<DebugMessageLogger>());
-                configurator.ConnectConsumeAuditObserver(logger);
-                configurator.ConnectSendAuditObservers(logger);
+                if (doMessageLogging)
+                {
+                    var loggerFactory = context.GetRequiredService<ILoggerFactory>();
+                    var logger = new DebugMessageLogger(loggerFactory.CreateLogger<DebugMessageLogger>());
+                    configurator.ConnectConsumeAuditObserver(logger);
+                    configurator.ConnectSendAuditObservers(logger);
+                }
             });
         });
     }
