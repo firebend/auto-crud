@@ -11,15 +11,15 @@ public static class ObjectExtensions
 
     public static TU CopyPropertiesTo<T, TU>(this T source,
         TU dest,
-        string[] propertiesToIgnore = null,
-        string[] propertiesToInclude = null,
+        HashSet<string> propertiesToIgnore = null,
+        HashSet<string> propertiesToInclude = null,
         bool includeObjects = true)
         => CopyPropertiesToReflection(source, dest, propertiesToIgnore, propertiesToInclude, includeObjects);
 
     public static TU CopyPropertiesToObjectMapper<T, TU>(this T source,
         TU dest,
-        string[] propertiesToIgnore = null,
-        string[] propertiesToInclude = null,
+        HashSet<string> propertiesToIgnore = null,
+        HashSet<string> propertiesToInclude = null,
         bool includeObjects = true,
         bool useMemoizer = true)
     {
@@ -28,8 +28,8 @@ public static class ObjectExtensions
     }
 
     public static TU CopyPropertiesToReflection<T, TU>(this T source, TU dest,
-        string[] propertiesToIgnore = null,
-        string[] propertiesToInclude = null,
+        HashSet<string> propertiesToIgnore = null,
+        HashSet<string> propertiesToInclude = null,
         bool includeObjects = true)
     {
         var ctx = new ObjectMapperContext(typeof(T), typeof(TU), propertiesToIgnore, propertiesToInclude, includeObjects);

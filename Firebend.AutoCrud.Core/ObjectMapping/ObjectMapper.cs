@@ -15,28 +15,56 @@ public static class ObjectMapper
 
     public static IEnumerable<PropertyMap> GetMatchingProperties(ObjectMapperContext context)
     {
-        var sourceProperties = context.SourceType.GetProperties()
-            .Where(x =>
-                (context.PropertiesToIgnore is null || context.PropertiesToIgnore.Contains(x.Name) is false)
-                 && (context.PropertiesToInclude is null || context.PropertiesToInclude.Contains(x.Name)));
+        var dict = context.TargetType.GetProperties().ToDictionary(x => x.Name);
 
-        var targetProperties = context.TargetType.GetProperties();
+        foreach(var sourceProperty in context.SourceType.GetProperties())
+        {
+            if(context.PropertiesToIgnore is not null
+               && context.PropertiesToIgnore.Count > 0
+               && context.PropertiesToIgnore.Contains(sourceProperty.Name))
+            {
+                continue;
+            }
 
-        var properties = sourceProperties.Join(
-                targetProperties,
-                x => x.Name,
-                x => x.Name,
-                (source, target) => new PropertyMap(source, target))
-            .Where(x => x.SourceProperty.CanRead)
-            .Where(x => x.TargetProperty.CanWrite)
-            .Where(x => context.IncludeObjects
-                        || x.SourceProperty.PropertyType.IsValueType
-                        || x.SourceProperty.PropertyType == typeof(string))
-            .Where(x => (x.SourceProperty.PropertyType.IsValueType
-                         && x.SourceProperty.PropertyType.IsAssignableTo(x.TargetProperty.PropertyType))
-                        || x.SourceProperty.PropertyType == x.TargetProperty.PropertyType);
+            if(context.PropertiesToInclude is not null
+               && context.PropertiesToInclude.Count > 0
+               && context.PropertiesToInclude.Contains(sourceProperty.Name) is false)
+            {
+                continue;
+            }
 
-        return properties;
+            var isValidType = context.IncludeObjects
+                              || sourceProperty.PropertyType.IsValueType
+                              || sourceProperty.PropertyType == typeof(string);
+
+            if(isValidType is false)
+            {
+                continue;
+            }
+
+            //var targetProperty = context.TargetType.GetProperty(sourceProperty.Name);
+
+            if(dict.TryGetValue(sourceProperty.Name, out var targetProperty) is false)
+            {
+                continue;
+            }
+
+            if (targetProperty is null)
+            {
+                continue;
+            }
+
+            var canAssign = (sourceProperty.PropertyType.IsValueType
+                             && sourceProperty.PropertyType.IsAssignableTo(targetProperty.PropertyType))
+                            || sourceProperty.PropertyType == targetProperty.PropertyType;
+
+            if(canAssign is false)
+            {
+                continue;
+            }
+
+            yield return new PropertyMap(sourceProperty, targetProperty);
+        }
     }
 
     private static DynamicMethod DynamicMethodFactory(string key, ObjectMapperContext context)
@@ -76,8 +104,8 @@ public static class ObjectMapper
     public static void Copy<TSource, TTarget>(
         TSource source,
         TTarget target,
-        string[] propertiesToIgnore = null,
-        string[] propertiesToInclude = null,
+        HashSet<string> propertiesToIgnore = null,
+        HashSet<string> propertiesToInclude = null,
         bool includeObjects = true,
         bool useMemoizer = true)
     {

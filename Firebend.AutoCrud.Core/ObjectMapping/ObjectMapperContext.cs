@@ -7,8 +7,8 @@ namespace Firebend.AutoCrud.Core.ObjectMapping;
 public record ObjectMapperContext(
     Type SourceType,
     Type TargetType,
-    string[] PropertiesToIgnore,
-    string[] PropertiesToInclude,
+    HashSet<string> PropertiesToIgnore,
+    HashSet<string> PropertiesToInclude,
     bool IncludeObjects)
 {
     private string _key;
