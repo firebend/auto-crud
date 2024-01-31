@@ -14,7 +14,7 @@ public static class ObjectExtensions
         HashSet<string> propertiesToIgnore = null,
         HashSet<string> propertiesToInclude = null,
         bool includeObjects = true)
-        => CopyPropertiesToReflection(source, dest, propertiesToIgnore, propertiesToInclude, includeObjects);
+        => CopyPropertiesToObjectMapper(source, dest, propertiesToIgnore, propertiesToInclude, includeObjects);
 
     public static TU CopyPropertiesToObjectMapper<T, TU>(this T source,
         TU dest,
