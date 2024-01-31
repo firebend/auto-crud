@@ -42,8 +42,6 @@ public static class ObjectMapper
                 continue;
             }
 
-            //var targetProperty = context.TargetType.GetProperty(sourceProperty.Name);
-
             if (dict.TryGetValue(sourceProperty.Name, out var targetProperty) is false)
             {
                 continue;
