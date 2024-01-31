@@ -17,16 +17,16 @@ public static class ObjectMapper
     {
         var dict = context.TargetType.GetProperties().ToDictionary(x => x.Name);
 
-        foreach(var sourceProperty in context.SourceType.GetProperties())
+        foreach (var sourceProperty in context.SourceType.GetProperties())
         {
-            if(context.PropertiesToIgnore is not null
+            if (context.PropertiesToIgnore is not null
                && context.PropertiesToIgnore.Count > 0
                && context.PropertiesToIgnore.Contains(sourceProperty.Name))
             {
                 continue;
             }
 
-            if(context.PropertiesToInclude is not null
+            if (context.PropertiesToInclude is not null
                && context.PropertiesToInclude.Count > 0
                && context.PropertiesToInclude.Contains(sourceProperty.Name) is false)
             {
@@ -37,14 +37,14 @@ public static class ObjectMapper
                               || sourceProperty.PropertyType.IsValueType
                               || sourceProperty.PropertyType == typeof(string);
 
-            if(isValidType is false)
+            if (isValidType is false)
             {
                 continue;
             }
 
             //var targetProperty = context.TargetType.GetProperty(sourceProperty.Name);
 
-            if(dict.TryGetValue(sourceProperty.Name, out var targetProperty) is false)
+            if (dict.TryGetValue(sourceProperty.Name, out var targetProperty) is false)
             {
                 continue;
             }
@@ -58,7 +58,7 @@ public static class ObjectMapper
                              && sourceProperty.PropertyType.IsAssignableTo(targetProperty.PropertyType))
                             || sourceProperty.PropertyType == targetProperty.PropertyType;
 
-            if(canAssign is false)
+            if (canAssign is false)
             {
                 continue;
             }
