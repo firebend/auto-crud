@@ -9,7 +9,7 @@ namespace Firebend.AutoCrud.Web.Sample.Models;
 
 public class GetPersonViewModelV2 : PersonViewModelBaseV2, IEntityViewModelRead<Guid>, ICustomFieldsEntity<Guid>
 {
-    private static readonly string[] Ignores = [nameof(CustomFields)];
+    private static readonly HashSet<string> Ignores = [nameof(CustomFields)];
     public List<CustomFieldsEntity<Guid>> CustomFields { get; set; }
 
     public GetPersonViewModelV2()

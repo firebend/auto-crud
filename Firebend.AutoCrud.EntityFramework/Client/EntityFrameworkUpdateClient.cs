@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
@@ -15,6 +15,11 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Client;
+
+internal static class EntityFrameworkUpdateClientStatics
+{
+    public static readonly HashSet<string> MapperIgnores = [nameof(IModifiedEntity.CreatedDate)];
+}
 
 public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
     where TKey : struct
@@ -208,7 +213,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
     {
         var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
 
-        model = entity.CopyPropertiesTo(model, GetMapperIgnores());
+        model = entity.CopyPropertiesTo(model, EntityFrameworkUpdateClientStatics.MapperIgnores);
 
         if (model is IModifiedEntity modified)
         {
@@ -221,13 +226,6 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
 
         return model;
     }
-
-    private static string[] GetMapperIgnores() => typeof(TEntity)
-        .GetProperties()
-        .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
-        .Select(x => x.Name)
-        .Append(nameof(IModifiedEntity.CreatedDate))
-        .ToArray();
 
     public virtual Task<TEntity> UpdateAsync(TEntity entity,
         CancellationToken cancellationToken = default)

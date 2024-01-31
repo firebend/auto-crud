@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
 
 namespace Firebend.AutoCrud.Web.Sample.Models;
@@ -23,7 +22,6 @@ public class MongoPerson : IPerson, IEntityDataAuth
     [Required]
     public string LastName { get; set; }
 
-    [AutoCrudIgnoreUpdate]
     public string IgnoreMe { get; set; }
 
     public bool IsDeleted { get; set; }

@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Attributes;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
@@ -18,6 +16,11 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Client.Crud;
+
+internal static class MongoUpdateClientStatics
+{
+    public static readonly HashSet<string> MapperIgnores = [nameof(IModifiedEntity.CreatedDate)];
+}
 
 public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoUpdateClient<TKey, TEntity>
     where TKey : struct
@@ -187,7 +190,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
 
         var modified = original == null ? new TEntity() : original.Clone();
 
-        entity.CopyPropertiesTo(modified, GetMapperIgnores());
+        entity.CopyPropertiesTo(modified, MongoUpdateClientStatics.MapperIgnores);
 
         if (original == null && modified is IModifiedEntity mod)
         {
@@ -231,13 +234,6 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
 
         return result;
     }
-
-    private static string[] GetMapperIgnores() => typeof(TEntity)
-        .GetProperties()
-        .Where(x => x.GetCustomAttribute<AutoCrudIgnoreUpdate>() != null)
-        .Select(x => x.Name)
-        .Append(nameof(IModifiedEntity.CreatedDate))
-        .ToArray();
 
     protected virtual async Task<List<TKey>> UpdateManyInternalAsync(IMongoCollection<TEntity> mongoCollection,
         IEntityTransaction entityTransaction,
