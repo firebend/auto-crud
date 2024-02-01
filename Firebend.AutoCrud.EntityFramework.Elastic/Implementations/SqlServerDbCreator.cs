@@ -5,7 +5,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 
 public class SqlServerDbCreator : AbstractDbCreator
 {
-    public SqlServerDbCreator(ILogger<SqlServerDbCreator> logger) : base(logger)
+    public SqlServerDbCreator(ILogger logger) : base(logger)
     {
     }
 

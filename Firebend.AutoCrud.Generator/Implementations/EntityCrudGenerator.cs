@@ -101,7 +101,7 @@ public abstract class EntityCrudGenerator : BaseDisposable, IEntityCrudGenerator
                     case DynamicServiceRegistration serviceRegistration:
                         if (services.ContainsKey(type))
                         {
-                            services[type] = services[type] ?? [];
+                            services[type] ??= [];
                             services[type].Add(serviceRegistration);
                         }
                         else

@@ -26,12 +26,12 @@ public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
         o.PoolSize = 20;
         o.PoolInitialFill = 1;
     });
-    private readonly ILogger<MongoEntityTransaction> _logger;
+    private readonly ILogger _logger;
 
     public MongoEntityTransaction(IClientSessionHandle clientSessionHandle,
         IEntityTransactionOutbox outbox,
         IMongoRetryService retry,
-        ILoggerFactory loggerFactory)
+        ILogger logger)
     {
         ClientSessionHandle = clientSessionHandle;
         Outbox = outbox;
@@ -39,7 +39,7 @@ public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
         Id = CombGuid.New();
         State = EntityTransactionState.Started;
         StartedDate = DateTimeOffset.UtcNow;
-        _logger = loggerFactory.CreateLogger<MongoEntityTransaction>();
+        _logger = logger;
     }
 
     public Guid Id { get; }
@@ -106,11 +106,6 @@ public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
         var canAct = isRollback
          ? state is CoreTransactionState.Starting or CoreTransactionState.InProgress
          : state is CoreTransactionState.Starting or CoreTransactionState.InProgress or CoreTransactionState.Committed;
-
-        if (canAct is false)
-        {
-            Console.WriteLine($"**************** can act is false {state} {(isRollback ? "rollback" : "commit")}");
-        }
 
         return canAct;
     }

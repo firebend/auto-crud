@@ -13,7 +13,8 @@ public static class EntityFrameworkEntityCrudGeneratorExtensions
         Action<EntityFrameworkEntityCrudGenerator> configure)
         where TContext : DbContext
     {
-        serviceCollection.AddPooledDbContextFactory<TContext>(dbContextOptionsBuilder);
+        serviceCollection.AddDbContextFactory<TContext>(dbContextOptionsBuilder);
+        //serviceCollection.AddPooledDbContextFactory<TContext>(dbContextOptionsBuilder);
 
         using var ef = new EntityFrameworkEntityCrudGenerator(
             new DynamicClassGenerator(),

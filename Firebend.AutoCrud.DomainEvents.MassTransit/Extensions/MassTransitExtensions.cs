@@ -95,7 +95,7 @@ public static class MassTransitExtensions
                         x => x.ToList());
 
             case AutoCrudMassTransitQueueMode.QueuePerEntity:
-                return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityType.Name}")
+                return consumerInfos.GroupBy(x => CleanseQueueName($"{prefix}_{x.EntityType.Name}"))
                     .ToDictionary(x => x.Key, x => x.ToList());
 
             case AutoCrudMassTransitQueueMode.QueuePerEntityAction:
@@ -124,6 +124,22 @@ public static class MassTransitExtensions
                     nameof(queueMode));
         }
     }
+
+    private static string CleanseQueueName(string queueName) => queueName
+        .Replace("`1", null)
+        .Replace("`2", null)
+        .Replace("`3", null)
+        .Replace("`4", null)
+        .Replace("`5", null)
+        .Replace("`6", null)
+        .Replace("`7", null)
+        .Replace("`8", null)
+        .Replace("`9", null)
+        .Replace("`10", null)
+        .Replace("<", string.Empty)
+        .Replace(">", string.Empty)
+        .Replace(",", string.Empty)
+        .Replace(" ", string.Empty);
 
     private static string GetQueueName(ICollection<string> queueNames,
         string receiveEndpointPrefix,
@@ -163,12 +179,7 @@ public static class MassTransitExtensions
             throw new Exception("Error building queue name");
         }
 
-        var queueName = sbBuilt
-            .Replace("`1", null)
-            .Replace("`2", null)
-            .Replace("`3", null)
-            .Replace("`4", null)
-            .Replace("`5", null);
+        var queueName = CleanseQueueName(sbBuilt);
 
         while (queueNames.Contains(queueName))
         {

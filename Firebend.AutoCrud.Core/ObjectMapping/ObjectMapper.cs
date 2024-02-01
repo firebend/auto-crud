@@ -15,7 +15,7 @@ public static class ObjectMapper
 
     public static IEnumerable<PropertyMap> GetMatchingProperties(ObjectMapperContext context)
     {
-        var dict = context.TargetType.GetProperties().ToDictionary(x => x.Name);
+        var targetProperties = context.TargetType.GetProperties();
 
         foreach (var sourceProperty in context.SourceType.GetProperties())
         {
@@ -42,10 +42,7 @@ public static class ObjectMapper
                 continue;
             }
 
-            if (dict.TryGetValue(sourceProperty.Name, out var targetProperty) is false)
-            {
-                continue;
-            }
+            var targetProperty = targetProperties.FirstOrDefault(x => x.Name == sourceProperty.Name);
 
             if (targetProperty is null)
             {

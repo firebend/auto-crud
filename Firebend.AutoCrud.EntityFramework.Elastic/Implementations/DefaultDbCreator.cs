@@ -9,19 +9,19 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 public class DefaultDbCreator : IDbCreator
 {
     private readonly ShardMapMangerConfiguration _configuration;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger<DefaultDbCreator> _logger;
 
-    public DefaultDbCreator(ShardMapMangerConfiguration configuration, ILoggerFactory loggerFactory)
+    public DefaultDbCreator(ShardMapMangerConfiguration configuration, ILogger<DefaultDbCreator> logger)
     {
         _configuration = configuration;
-        _loggerFactory = loggerFactory;
+        _logger = logger;
     }
 
     public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
     {
         var creator = rootConnectionString.Contains("database.windows.net")
-            ? (IDbCreator)new ElasticPoolDbCreator(_loggerFactory.CreateLogger<ElasticPoolDbCreator>(), _configuration)
-            : new SqlServerDbCreator(_loggerFactory.CreateLogger<SqlServerDbCreator>());
+            ? (IDbCreator)new ElasticPoolDbCreator(_logger, _configuration)
+            : new SqlServerDbCreator(_logger);
 
         return creator.EnsureCreatedAsync(rootConnectionString, dbName, cancellationToken);
     }

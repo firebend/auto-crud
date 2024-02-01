@@ -9,7 +9,7 @@ public class ElasticPoolDbCreator : AbstractDbCreator
 {
     private readonly ShardMapMangerConfiguration _shardMapMangerConfiguration;
 
-    public ElasticPoolDbCreator(ILogger<ElasticPoolDbCreator> logger, ShardMapMangerConfiguration shardMapMangerConfiguration)
+    public ElasticPoolDbCreator(ILogger logger, ShardMapMangerConfiguration shardMapMangerConfiguration)
         : base(logger)
     {
         _shardMapMangerConfiguration = shardMapMangerConfiguration;

@@ -15,18 +15,18 @@ public class MongoEntityTransactionFactory<TKey, TEntity> :
 {
     private readonly IEntityTransactionOutbox _outbox;
     private readonly IMongoConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger<MongoEntityTransactionFactory<TKey, TEntity>> _logger;
 
     public MongoEntityTransactionFactory(IMongoClientFactory<TKey, TEntity> factory,
-        ILoggerFactory loggerFactory,
+        ILogger<MongoEntityTransactionFactory<TKey, TEntity>> logger,
         IEntityTransactionOutbox outbox,
         IMongoRetryService retryService,
         IMongoConnectionStringProvider<TKey, TEntity> connectionStringProvider) :
-        base(factory, loggerFactory.CreateLogger<MongoEntityTransactionFactory<TKey, TEntity>>(), retryService)
+        base(factory, logger, retryService)
     {
         _outbox = outbox;
         _connectionStringProvider = connectionStringProvider;
-        _loggerFactory = loggerFactory;
+        _logger = logger;
     }
 
     public async Task<string> GetDbContextHashCode()
@@ -41,7 +41,7 @@ public class MongoEntityTransactionFactory<TKey, TEntity> :
         var client = await GetClientAsync();
         var session = await client.StartSessionAsync(MongoEntityTransactionFactoryDefaults.SessionOptions, cancellationToken);
         session.StartTransaction(MongoEntityTransactionFactoryDefaults.TransactionOptions);
-        return new MongoEntityTransaction(session, _outbox, MongoRetryService, _loggerFactory);
+        return new MongoEntityTransaction(session, _outbox, MongoRetryService, _logger);
     }
 
     public bool ValidateTransaction(IEntityTransaction transaction)
