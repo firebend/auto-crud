@@ -31,9 +31,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
         if (entityTransaction == null)
         {
-            context = await _provider
-                .GetDbContextAsync(cancellationToken)
-                .ConfigureAwait(false);
+            context = await _provider.GetDbContextAsync(cancellationToken);
         }
         else
         {
@@ -59,8 +57,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
     protected virtual async Task<TEntity> GetByEntityKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
     {
-        var queryable = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken)
-            .ConfigureAwait(false);
+        var queryable = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken);
 
         var first = await queryable.FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
 
@@ -83,7 +80,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
         queryable = AddIncludes(queryable);
 
-        var filters = await BuildFilters(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var filters = await BuildFilters(cancellationToken: cancellationToken);
 
         return filters == null ? queryable : queryable.Where(filters);
     }

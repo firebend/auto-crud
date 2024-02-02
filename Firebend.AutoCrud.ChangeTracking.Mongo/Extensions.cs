@@ -31,9 +31,6 @@ public static class Extensions
     /// <param name="configure">
     /// A function to configure mongo change tracking.
     /// </param>
-    /// <param name="changeTrackingOptions">
-    /// The <see cref="ChangeTrackingOptions"/> to configure change tracking.
-    /// </param>
     /// <typeparam name="TBuilder">
     /// The type of <see cref="MongoDbEntityBuilder{TKey,TEntity}"/> builder. Must inherit <see cref="MongoDbEntityBuilder{TKey,TEntity}"/>
     /// </typeparam>
@@ -51,8 +48,7 @@ public static class Extensions
     /// </exception>
     public static DomainEventsConfigurator<TBuilder, TKey, TEntity> WithMongoChangeTracking<TBuilder, TKey, TEntity>(
         this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator,
-        Action<MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure,
-        ChangeTrackingOptions changeTrackingOptions = null)
+        Action<MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure)
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
@@ -131,9 +127,6 @@ public static class Extensions
         configurator.WithDomainEventEntityAddedSubscriber<ChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
         configurator.WithDomainEventEntityUpdatedSubscriber<ChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
         configurator.WithDomainEventEntityDeletedSubscriber<ChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
-
-        configurator.Builder.WithRegistrationInstance<IChangeTrackingOptionsProvider<TKey, TEntity>>(
-            new DefaultChangeTrackingOptionsProvider<TKey, TEntity>(changeTrackingOptions ?? new ChangeTrackingOptions()));
 
         using var changeTrackingConfigurator =
             new MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(configurator.Builder);

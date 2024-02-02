@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Firebend.AutoCrud.Core.Extensions;
 
 namespace Firebend.AutoCrud.Core.ObjectMapping;
@@ -7,31 +8,43 @@ namespace Firebend.AutoCrud.Core.ObjectMapping;
 public record ObjectMapperContext(
     Type SourceType,
     Type TargetType,
-    HashSet<string> PropertiesToIgnore,
-    HashSet<string> PropertiesToInclude,
+    ICollection<string> PropertiesToIgnore,
+    ICollection<string> PropertiesToInclude,
     bool IncludeObjects)
 {
     private string _key;
     public string Key => _key ??= GetMapKey();
-    private string GetMapKey()
+    private string GetMapKey() => GetKeyUsingStringBuilder();
+    private string GetKeyUsingStringBuilder()
     {
-        List<string> keys = ["ObjectMapper", SourceType.FullName, TargetType.FullName];
+        var sb = new StringBuilder();
+        sb.Append(SourceType.FullName);
+        sb.Append(TargetType.FullName);
 
-        if (!PropertiesToIgnore.IsEmpty())
+        if (PropertiesToIgnore.HasValues())
         {
-            keys.Add("propertiesToIgnore");
-            keys.AddRange(PropertiesToIgnore);
+            sb.Append('i');
+
+            foreach (var s in PropertiesToIgnore!)
+            {
+                sb.Append(s);
+            }
         }
 
-        if (!PropertiesToInclude.IsEmpty())
+        if (PropertiesToInclude.HasValues())
         {
-            keys.Add("propertiesToInclude");
-            keys.AddRange(PropertiesToInclude);
+            sb.Append('g');
+
+            foreach (var s in PropertiesToInclude!)
+            {
+                sb.Append(s);
+            }
         }
 
-        keys.Add("includeObject");
-        keys.Add(IncludeObjects.ToString());
-
-        return string.Join('_', keys);
+        sb.Append('o');
+        sb.Append(IncludeObjects);
+        var built = sb.ToString();
+        sb.Clear();
+        return built;
     }
 }

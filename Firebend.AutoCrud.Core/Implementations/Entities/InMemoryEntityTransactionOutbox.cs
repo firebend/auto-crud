@@ -16,8 +16,7 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
     {
         using var loc = await InMemoryEntityTransactionOutboxStatics
             .Locker
-            .LockAsync(transactionId, cancellationToken)
-            .ConfigureAwait(false);
+            .LockAsync(transactionId, cancellationToken);
 
         if (!_enrollments.ContainsKey(transactionId))
         {
@@ -38,8 +37,7 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
 
         using var loc = await InMemoryEntityTransactionOutboxStatics
             .Locker
-            .LockAsync(transactionId, cancellationToken)
-            .ConfigureAwait(false);
+            .LockAsync(transactionId, cancellationToken);
 
         if (!_enrollments.TryGetValue(transactionId, out var callbacks))
         {
@@ -55,9 +53,7 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
             {
                 try
                 {
-                    await x
-                        .ActAsync(cancellationToken)
-                        .ConfigureAwait(false);
+                    await x.ActAsync(cancellationToken);
 
                     return null;
                 }
@@ -68,9 +64,7 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
             })
             .ToArray();
 
-        await Task
-            .WhenAll(tasks)
-            .ConfigureAwait(false);
+        await Task.WhenAll(tasks);
 
         _enrollments.Remove(transactionId);
     }
@@ -79,8 +73,7 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
     {
         using var loc = await InMemoryEntityTransactionOutboxStatics
             .Locker
-            .LockAsync(transactionId, cancellationToken)
-            .ConfigureAwait(false);
+            .LockAsync(transactionId, cancellationToken);
 
         _enrollments.Remove(transactionId);
     }

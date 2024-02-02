@@ -40,9 +40,7 @@ public class MongoCustomFieldsSearchService<TKey, TEntity> : BaseDisposable,
                                           ?? (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, searchRequest);
         }
 
-        var query = await _readClient
-            .GetQueryableAsync(firstStageFilter, cancellationToken)
-            .ConfigureAwait(false);
+        var query = await _readClient.GetQueryableAsync(firstStageFilter, cancellationToken);
 
         var fieldsQuery = query.SelectMany(x => x.CustomFields);
 
@@ -56,7 +54,7 @@ public class MongoCustomFieldsSearchService<TKey, TEntity> : BaseDisposable,
             fieldsQuery = fieldsQuery.Where(x => x.Value.Contains(searchRequest.Value));
         }
 
-        var count = await fieldsQuery.LongCountAsync(cancellationToken).ConfigureAwait(false);
+        var count = await fieldsQuery.LongCountAsync(cancellationToken);
 
         fieldsQuery = fieldsQuery.OrderBy(x => x.Key);
 
@@ -67,7 +65,7 @@ public class MongoCustomFieldsSearchService<TKey, TEntity> : BaseDisposable,
                 .Take(searchRequest.PageSize.Value);
         }
 
-        var records = await fieldsQuery.ToListAsync(cancellationToken).ConfigureAwait(false);
+        var records = await fieldsQuery.ToListAsync(cancellationToken);
 
         return new EntityPagedResponse<CustomFieldsEntity<TKey>>
         {

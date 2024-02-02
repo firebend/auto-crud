@@ -133,9 +133,9 @@ public class SpreadsheetWriter : CsvWriter
             return;
         }
 
-        await FlushAsync().ConfigureAwait(false);
+        await FlushAsync();
         Worksheet.Workbook.SaveAs(Stream);
-        await Stream.FlushAsync().ConfigureAwait(false);
+        await Stream.FlushAsync();
 
         if (disposing)
         {
@@ -143,7 +143,7 @@ public class SpreadsheetWriter : CsvWriter
             Worksheet.Workbook.Dispose();
             if (!LeaveOpen)
             {
-                await Stream.DisposeAsync().ConfigureAwait(false);
+                await Stream.DisposeAsync();
             }
         }
 

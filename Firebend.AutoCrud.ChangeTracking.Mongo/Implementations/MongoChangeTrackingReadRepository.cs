@@ -63,9 +63,7 @@ public class MongoChangeTrackingReadRepository<TEntityKey, TEntity> :
             query = query.OrderByDescending(x => x.ModifiedDate);
         }
 
-        var paged = await _queryClient
-            .GetPagedResponseAsync(query, searchRequest, cancellationToken)
-            .ConfigureAwait(false);
+        var paged = await _queryClient.GetPagedResponseAsync(query, searchRequest, cancellationToken);
 
         return paged;
     }

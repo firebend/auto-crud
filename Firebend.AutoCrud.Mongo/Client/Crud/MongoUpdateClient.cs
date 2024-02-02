@@ -17,11 +17,6 @@ using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Client.Crud;
 
-internal static class MongoUpdateClientStatics
-{
-    public static readonly HashSet<string> MapperIgnores = [nameof(IModifiedEntity.CreatedDate)];
-}
-
 public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntity>, IMongoUpdateClient<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, new()
@@ -72,8 +67,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
     {
         var collection = await GetCollectionAsync();
 
-        var ids = await UpdateManyInternalAsync(collection, null, entities, cancellationToken)
-            .ConfigureAwait(false);
+        var ids = await UpdateManyInternalAsync(collection, null, entities, cancellationToken);
 
         if (ids.Count != 0)
         {
@@ -82,8 +76,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
             var updatedEntities = await RetryErrorAsync(() => collection
                     .AsQueryable(EntityConfiguration.AggregateOption)
                     .Where(_ => filter.Inject())
-                    .ToListAsync(cancellationToken))
-                .ConfigureAwait(false);
+                    .ToListAsync(cancellationToken));
 
             return updatedEntities;
         }
@@ -103,8 +96,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
     {
         var collection = await GetCollectionAsync();
 
-        var ids = await UpdateManyInternalAsync(collection, transaction, entities, cancellationToken)
-            .ConfigureAwait(false);
+        var ids = await UpdateManyInternalAsync(collection, transaction, entities, cancellationToken);
 
         if (ids.Count != 0)
         {
@@ -114,8 +106,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
                     .AsQueryable(EntityConfiguration.AggregateOption)
                     .Where(_ => filter.Inject())
                     .Select(projection)
-                    .ToListAsync(cancellationToken))
-                .ConfigureAwait(false);
+                    .ToListAsync(cancellationToken));
 
             return updatedEntities;
         }
@@ -136,10 +127,9 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         var queryable = await GetFilteredCollectionAsync(
             entities => Task.FromResult(entities.Where(x => x.Id.Equals(id))),
                     transaction,
-                    cancellationToken)
-            .ConfigureAwait(false);
+                    cancellationToken);
 
-        var entity = await queryable.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        var entity = await queryable.FirstOrDefaultAsync(cancellationToken);
 
         if (entity == null)
         {
@@ -156,7 +146,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
             transaction,
             patch,
             original,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
     }
 
     protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
@@ -167,7 +157,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         TEntity original,
         CancellationToken cancellationToken)
     {
-        var filters = await BuildFiltersAsync(filter, cancellationToken).ConfigureAwait(false);
+        var filters = await BuildFiltersAsync(filter, cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
         var mongoCollection = await GetCollectionAsync();
 
@@ -185,12 +175,12 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
                 transaction,
                 cancellationToken);
 
-            original = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            original = await query.FirstOrDefaultAsync(cancellationToken);
         }
 
         var modified = original == null ? new TEntity() : original.Clone();
 
-        entity.CopyPropertiesTo(modified, MongoUpdateClientStatics.MapperIgnores);
+        entity.CopyPropertiesTo(modified, [nameof(IModifiedEntity.CreatedDate)]);
 
         if (original == null && modified is IModifiedEntity mod)
         {
@@ -207,8 +197,12 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
                     session,
                     filtersDefinition,
                     modified,
-                    new FindOneAndReplaceOptions<TEntity, TEntity> { ReturnDocument = ReturnDocument.After, IsUpsert = doUpsert },
-                    cancellationToken)).ConfigureAwait(false);
+                    new FindOneAndReplaceOptions<TEntity, TEntity>
+                    {
+                        ReturnDocument = ReturnDocument.After,
+                        IsUpsert = doUpsert
+                    },
+                    cancellationToken));
         }
         else
         {
@@ -216,8 +210,12 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
                 mongoCollection.FindOneAndReplaceAsync(
                     filtersDefinition,
                     modified,
-                    new FindOneAndReplaceOptions<TEntity, TEntity> { ReturnDocument = ReturnDocument.After, IsUpsert = doUpsert },
-                    cancellationToken)).ConfigureAwait(false);
+                    new FindOneAndReplaceOptions<TEntity, TEntity>
+                    {
+                        ReturnDocument = ReturnDocument.After,
+                        IsUpsert = doUpsert
+                    },
+                    cancellationToken));
         }
 
         if (original is not null && _domainEventPublisher is not null)
@@ -263,14 +261,13 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
             var id = await queryable
                 .Where(entityUpdate.Filter)
                 .Select(x => x.Id)
-                .FirstOrDefaultAsync(cancellationToken)
-                .ConfigureAwait(false);
+                .FirstOrDefaultAsync(cancellationToken);
 
             var isCreating = false;
 
-            if (id.Equals(default))
+            if (id.Equals(default(TKey)))
             {
-                id = await _keyGenerator.GenerateKeyAsync(cancellationToken).ConfigureAwait(false);
+                id = await _keyGenerator.GenerateKeyAsync(cancellationToken);
                 isCreating = true;
             }
 
@@ -302,15 +299,13 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
             await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
                     session,
                     writes,
-                    new BulkWriteOptions { IsOrdered = true }, cancellationToken))
-                .ConfigureAwait(false);
+                    new BulkWriteOptions { IsOrdered = true }, cancellationToken));
         }
         else
         {
             await RetryErrorAsync(() => mongoCollection.BulkWriteAsync(
                     writes,
-                    new BulkWriteOptions { IsOrdered = true }, cancellationToken))
-                .ConfigureAwait(false);
+                    new BulkWriteOptions { IsOrdered = true }, cancellationToken));
         }
 
         return ids;

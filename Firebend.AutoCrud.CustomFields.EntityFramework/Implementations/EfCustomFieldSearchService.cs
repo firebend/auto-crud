@@ -34,20 +34,17 @@ public class EfCustomFieldSearchService<TKey, TEntity, TCustomFieldsEntity> :
     public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(CustomFieldsSearchRequest searchRequest,
         CancellationToken cancellationToken = default)
     {
-        var (query, context) = await _queryClient
-            .GetQueryableAsync(true, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (_searchHandler != null)
-        {
-            query = _searchHandler.HandleSearch(query, searchRequest)
-                ?? await _searchHandler.HandleSearchAsync(query, searchRequest);
-        }
-
-        var fieldsQuery = query.SelectMany(x => x.CustomFields);
+        var (query, context) = await _queryClient.GetQueryableAsync(true, cancellationToken);
 
         await using (context)
         {
+            if (_searchHandler != null)
+            {
+                query = _searchHandler.HandleSearch(query, searchRequest)
+                    ?? await _searchHandler.HandleSearchAsync(query, searchRequest);
+            }
+
+            var fieldsQuery = query.SelectMany(x => x.CustomFields);
 
             if (!string.IsNullOrWhiteSpace(searchRequest.Key))
             {
@@ -59,7 +56,7 @@ public class EfCustomFieldSearchService<TKey, TEntity, TCustomFieldsEntity> :
                 fieldsQuery = fieldsQuery.Where(x => x.Value.Contains(searchRequest.Value));
             }
 
-            var count = await fieldsQuery.LongCountAsync(cancellationToken).ConfigureAwait(false);
+            var count = await fieldsQuery.LongCountAsync(cancellationToken);
 
             fieldsQuery = fieldsQuery.OrderBy(x => x.Key);
 
@@ -70,7 +67,7 @@ public class EfCustomFieldSearchService<TKey, TEntity, TCustomFieldsEntity> :
                     .Take(searchRequest.PageSize.Value);
             }
 
-            var records = await fieldsQuery.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var records = await fieldsQuery.ToListAsync(cancellationToken);
             var data = records.Select(x => ((TCustomFieldsEntity)x).ToCustomFields()).ToList();
             return new EntityPagedResponse<CustomFieldsEntity<TKey>>
             {
@@ -82,8 +79,5 @@ public class EfCustomFieldSearchService<TKey, TEntity, TCustomFieldsEntity> :
         }
     }
 
-    protected override void DisposeManagedObjects()
-    {
-        _queryClient?.Dispose();
-    }
+    protected override void DisposeManagedObjects() => _queryClient?.Dispose();
 }

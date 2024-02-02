@@ -38,30 +38,29 @@ public class EntityFrameworkChangeTrackingReadService<TEntityKey, TEntity> :
         }
 
         var (query, context) = await _queryClient
-            .GetQueryableAsync(true, cancellationToken)
-            .ConfigureAwait(false);
+            .GetQueryableAsync(true, cancellationToken);
 
-        await using var dbContext = context;
-
-        query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
-
-        var filter = GetSearchExpression(searchRequest);
-
-        if (filter != null)
+        await using (context)
         {
-            query = query.Where(filter);
+            query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
+
+            var filter = GetSearchExpression(searchRequest);
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (_searchHandler != null)
+            {
+                query = _searchHandler.HandleSearch(query, searchRequest)
+                        ?? await _searchHandler.HandleSearchAsync(query, searchRequest);
+            }
+
+            var paged = await _queryClient
+                .GetPagedResponseAsync(query, searchRequest, true, cancellationToken);
+
+            return paged;
         }
-
-        if (_searchHandler != null)
-        {
-            query = _searchHandler.HandleSearch(query, searchRequest)
-                    ?? await _searchHandler.HandleSearchAsync(query, searchRequest);
-        }
-
-        var paged = await _queryClient
-            .GetPagedResponseAsync(query, searchRequest, true, cancellationToken)
-            .ConfigureAwait(false);
-
-        return paged;
     }
 }

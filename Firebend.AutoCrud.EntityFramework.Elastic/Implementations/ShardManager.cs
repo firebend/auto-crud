@@ -33,13 +33,12 @@ public class ShardManager : IShardManager
             throw new Exception("Could not resolve key for shard.");
         }
 
-        var manager = await GetShardMapMangerAsync(cancellationToken).ConfigureAwait(false);
+        var manager = await GetShardMapMangerAsync(cancellationToken);
         var shardMap = GetShardMap(manager);
 
         await _dbCreator.EnsureCreatedAsync(_shardMapMangerConfiguration.ConnectionString,
                 shardDatabaseName,
-                cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken);
 
         var shardLocation = new ShardLocation(_shardMapMangerConfiguration.Server, shardDatabaseName);
 
@@ -62,8 +61,7 @@ public class ShardManager : IShardManager
     {
         await _dbCreator.EnsureCreatedAsync(_shardMapMangerConfiguration.ConnectionString,
                 _shardMapMangerConfiguration.ShardMapManagerDbName,
-                cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken);
 
         var connStringBuilder = new SqlConnectionStringBuilder(_shardMapMangerConfiguration.ConnectionString)
         {

@@ -40,13 +40,11 @@ public class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         {
             var session = UnwrapSession(transaction);
 
-            await RetryErrorAsync(() => mongoCollection.InsertOneAsync(session, entity, null, cancellationToken))
-                .ConfigureAwait(false);
+            await RetryErrorAsync(() => mongoCollection.InsertOneAsync(session, entity, null, cancellationToken));
         }
         else
         {
-            await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken))
-                .ConfigureAwait(false);
+            await RetryErrorAsync(() => mongoCollection.InsertOneAsync(entity, null, cancellationToken));
         }
 
 

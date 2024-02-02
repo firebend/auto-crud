@@ -41,9 +41,7 @@ public class EfCustomFieldsDeleteService<TKey, TEntity, TCustomFieldsEntity> : B
     {
         _transactionManager.AddTransaction(entityTransaction);
 
-        var deleted = await _deleteClient
-            .DeleteAsync(key, entityTransaction, cancellationToken)
-            .ConfigureAwait(false);
+        var deleted = await _deleteClient.DeleteAsync(key, entityTransaction, cancellationToken);
 
         var retDeleted = deleted?.ToCustomFields();
 

@@ -35,7 +35,7 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
         IEntityTransaction transaction,
         CancellationToken cancellationToken = default)
     {
-        var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
+        var context = await GetDbContextAsync(transaction, cancellationToken);
 
         var query = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken);
 
@@ -58,7 +58,7 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
 
         await using (context)
         {
-            var entity = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            var entity = await query.FirstOrDefaultAsync(cancellationToken);
             return entity;
         }
     }
@@ -85,11 +85,11 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
+        var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken);
 
         await using (context)
         {
-            var count = await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
+            var count = await query.LongCountAsync(cancellationToken);
             return count;
         }
     }
@@ -104,11 +104,11 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        var (query, context) = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken).ConfigureAwait(false);
+        var (query, context) = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken);
 
         await using (context)
         {
-            var list = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var list = await query.ToListAsync(cancellationToken);
             return list;
         }
     }
@@ -121,11 +121,11 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken).ConfigureAwait(false);
+        var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken);
 
         await using (context)
         {
-            var exists = await query.AnyAsync(cancellationToken).ConfigureAwait(false);
+            var exists = await query.AnyAsync(cancellationToken);
             return exists;
         }
     }
@@ -160,7 +160,7 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
                 .Take(searchRequest.PageSize.Value);
         }
 
-        var list = await queryable.ToListAsync(cancellationToken).ConfigureAwait(false);
+        var list = await queryable.ToListAsync(cancellationToken);
 
         return new EntityPagedResponse<TEntity>
         {

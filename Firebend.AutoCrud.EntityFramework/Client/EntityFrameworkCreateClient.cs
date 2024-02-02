@@ -63,7 +63,7 @@ public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<
 
         entity = await OnBeforeAddAsync(context, entity, transaction, cancellationToken);
 
-        var entry = await set.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+        var entry = await set.AddAsync(entity, cancellationToken);
 
         return entry.Entity;
     }
@@ -72,7 +72,7 @@ public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<
     {
         try
         {
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex)
         {

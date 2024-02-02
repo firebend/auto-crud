@@ -46,9 +46,7 @@ public class EfCustomFieldsCreateService<TKey, TEntity, TCustomFieldsTEntity> : 
 
         customField.CopyPropertiesTo(customFieldsEntity);
 
-        var added = await _createClient
-            .AddAsync(customFieldsEntity, entityTransaction, cancellationToken)
-            .ConfigureAwait(false);
+        var added = await _createClient.AddAsync(customFieldsEntity, entityTransaction, cancellationToken);
 
         var returnEntity = added?.ToCustomFields();
 

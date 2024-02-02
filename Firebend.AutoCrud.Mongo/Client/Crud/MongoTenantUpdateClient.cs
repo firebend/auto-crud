@@ -57,9 +57,7 @@ public class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateCli
     protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(
         CancellationToken cancellationToken)
     {
-        var tenant = await _tenantEntityProvider
-            .GetTenantAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
         return new[] { tenantFilter };
@@ -74,15 +72,11 @@ public class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateCli
         TEntity original,
         CancellationToken cancellationToken)
     {
-        var tenant = await _tenantEntityProvider
-            .GetTenantAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var tenant = await _tenantEntityProvider            .GetTenantAsync(cancellationToken);
 
         entity.TenantId = tenant.TenantId;
         patchDocument = RemoveTenantId(patchDocument);
 
-        return await base
-            .UpdateInternalAsync(entity, filter, doUpsert, entityTransaction, patchDocument, original, cancellationToken)
-            .ConfigureAwait(false);
+        return await base.UpdateInternalAsync(entity, filter, doUpsert, entityTransaction, patchDocument, original, cancellationToken);
     }
 }

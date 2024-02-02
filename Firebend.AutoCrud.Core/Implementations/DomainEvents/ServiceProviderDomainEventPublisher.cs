@@ -85,7 +85,7 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
             {
                 try
                 {
-                    await func(x, domainEvent, cancellationToken).ConfigureAwait(false);
+                    await func(x, domainEvent, cancellationToken);
                     return null;
                 }
                 catch (Exception ex)
@@ -94,9 +94,7 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
                 }
             });
 
-        await Task
-            .WhenAll(tasks)
-            .ConfigureAwait(false);
+        await Task.WhenAll(tasks);
 
         foreach (var subscriber in subscribersArray)
         {

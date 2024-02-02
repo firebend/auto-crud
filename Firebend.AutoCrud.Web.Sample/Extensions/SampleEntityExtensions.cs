@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework;
-using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
@@ -49,8 +48,7 @@ public static class SampleEntityExtensions
                     .WithCustomFields()
                 )
                 .AddDomainEvents(domainEvents => domainEvents
-                    .WithMongoChangeTracking(changeTracking => changeTracking.WithConnectionString(configuration.GetConnectionString("Mongo")),
-                        new ChangeTrackingOptions { PersistCustomContext = true })
+                    .WithMongoChangeTracking(changeTracking => changeTracking.WithConnectionString(configuration.GetConnectionString("Mongo")))
                     .WithMassTransit()
                     .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
                     .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
@@ -185,8 +183,7 @@ public static class SampleEntityExtensions
                             EfPerson, CustomFieldsSearchRequest>>()
                         .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                         {
-                            de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
-                                .WithMassTransit();
+                            de.WithEfChangeTracking().WithMassTransit();
                         }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPerson, int>, V1>(controllers => controllers
                             .WithChangeTrackingControllers()
                             .WithVersionedRoute("ef-person/{personId:guid}/custom-fields", "api")
@@ -197,7 +194,7 @@ public static class SampleEntityExtensions
                     .WithCrud()
                 )
                 .AddDomainEvents(events => events
-                    .WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
+                    .WithEfChangeTracking()
                     .WithMassTransit()
                     .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                     .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
@@ -247,7 +244,7 @@ public static class SampleEntityExtensions
                             EfPet, CustomFieldsSearchRequest>>()
                         .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                         {
-                            de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
+                            de.WithEfChangeTracking()
                                 .WithMassTransit();
                         }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPet, int>, V1>(controllers => controllers
                             .WithChangeTrackingControllers()

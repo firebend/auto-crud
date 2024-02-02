@@ -41,13 +41,11 @@ public class MongoDeleteClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         {
             var session = UnwrapSession(transaction);
 
-            result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(session, filter, null, cancellationToken))
-                .ConfigureAwait(false);
+            result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(session, filter, null, cancellationToken));
         }
         else
         {
-            result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken))
-                .ConfigureAwait(false);
+            result = await RetryErrorAsync(() => mongoCollection.FindOneAndDeleteAsync(filter, null, cancellationToken));
         }
 
         if (result is not null && _publisherService is not null)

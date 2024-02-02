@@ -55,7 +55,7 @@ public class MongoCustomFieldsDeleteService<TKey, TEntity> :
         CancellationToken cancellationToken = default)
     {
         _transactionManager.AddTransaction(entityTransaction);
-        var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken).ConfigureAwait(false);
+        var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
 

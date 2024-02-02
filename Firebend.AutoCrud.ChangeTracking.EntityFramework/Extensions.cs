@@ -33,9 +33,6 @@ public static class Extensions
     /// <param name="configurator">
     /// The <see cref="DomainEventsConfigurator{TBuilder,TKey,TEntity}"/> to configure Entity Framework persistence for.
     /// </param>
-    /// <param name="changeTrackingOptions">
-    /// The <see cref="ChangeTrackingOptions"/> to configure change tracking.
-    /// </param>
     /// <typeparam name="TBuilder">
     /// The type of <see cref="EntityCrudBuilder{TKey,TEntity}"/> builder. Must inherit <see cref="EntityFrameworkEntityBuilder{TKey,TEntity}"/>
     /// </typeparam>
@@ -52,8 +49,7 @@ public static class Extensions
     /// Throws an exception if <paramref name="configurator"/> does not implement <see cref="EntityFrameworkEntityBuilder{TKey,TEntity}"/>
     /// </exception>
     public static DomainEventsConfigurator<TBuilder, TKey, TEntity> WithEfChangeTracking<TBuilder, TKey, TEntity>(
-        this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator,
-        ChangeTrackingOptions changeTrackingOptions = null
+        this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator
         )
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
@@ -98,9 +94,6 @@ public static class Extensions
         configurator.WithDomainEventEntityAddedSubscriber<ChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
         configurator.WithDomainEventEntityUpdatedSubscriber<ChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
         configurator.WithDomainEventEntityDeletedSubscriber<ChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
-
-        configurator.Builder.WithRegistrationInstance<IChangeTrackingOptionsProvider<TKey, TEntity>>(
-                new DefaultChangeTrackingOptionsProvider<TKey, TEntity>(changeTrackingOptions ?? new ChangeTrackingOptions()));
 
         return configurator;
     }

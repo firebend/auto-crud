@@ -38,7 +38,7 @@ public class EntityFrameworkDeleteClient<TKey, TEntity> : AbstractDbContextRepo<
             return null;
         }
 
-        await using var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
+        await using var context = await GetDbContextAsync(transaction, cancellationToken);
 
         var entity = new TEntity { Id = key };
         var entry = context.Entry(entity);
@@ -47,7 +47,7 @@ public class EntityFrameworkDeleteClient<TKey, TEntity> : AbstractDbContextRepo<
         {
             var set = GetDbSet(context);
 
-            var found = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
+            var found = await GetByEntityKeyAsync(context, key, false, cancellationToken);
 
             if (found != null)
             {
@@ -63,7 +63,7 @@ public class EntityFrameworkDeleteClient<TKey, TEntity> : AbstractDbContextRepo<
             entry.State = EntityState.Deleted;
         }
 
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
 
         if (_publisherService is not null)
         {
@@ -84,13 +84,10 @@ public class EntityFrameworkDeleteClient<TKey, TEntity> : AbstractDbContextRepo<
             return null;
         }
 
-        await using var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false);
+        await using var context = await GetDbContextAsync(transaction, cancellationToken);
         var query = await GetFilteredQueryableAsync(context, false, cancellationToken);
         var set = context.Set<TEntity>();
-        var list = await query
-            .Where(filter)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var list = await query.Where(filter).ToListAsync(cancellationToken);
 
         if (list.IsEmpty())
         {

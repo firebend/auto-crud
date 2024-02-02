@@ -65,7 +65,7 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
         customField.CreatedDate = DateTimeOffset.UtcNow;
         customField.ModifiedDate = DateTimeOffset.UtcNow;
 
-        var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken).ConfigureAwait(false);
+        var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
         var mongoCollection = await GetCollectionAsync();
         var updateDefinition = Builders<TEntity>.Update.Push(x => x.CustomFields, customField);

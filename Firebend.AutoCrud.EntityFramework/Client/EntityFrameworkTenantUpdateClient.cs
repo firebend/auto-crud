@@ -29,9 +29,7 @@ public class EntityFrameworkTenantUpdateClient<TKey, TEntity, TTenantKey> : Enti
 
     protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
     {
-        var tenant = await _tenantEntityProvider
-            .GetTenantAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
@@ -47,9 +45,7 @@ public class EntityFrameworkTenantUpdateClient<TKey, TEntity, TTenantKey> : Enti
 
     protected virtual async Task<TEntity> SetTenantAsync(TEntity entity, CancellationToken cancellationToken)
     {
-        var tenant = await _tenantEntityProvider
-            .GetTenantAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
         entity.TenantId = tenant.TenantId;
 
@@ -79,13 +75,13 @@ public class EntityFrameworkTenantUpdateClient<TKey, TEntity, TTenantKey> : Enti
     {
         entity = await SetTenantAsync(entity, cancellationToken);
 
-        return await base.UpdateAsync(entity, cancellationToken).ConfigureAwait(false);
+        return await base.UpdateAsync(entity, cancellationToken);
     }
 
     public override async Task<TEntity> UpdateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
     {
         entity = await SetTenantAsync(entity, cancellationToken);
 
-        return await base.UpdateAsync(entity, entityTransaction, cancellationToken).ConfigureAwait(false);
+        return await base.UpdateAsync(entity, entityTransaction, cancellationToken);
     }
 }

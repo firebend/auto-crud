@@ -59,7 +59,7 @@ public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase<TKe
             mongoQueryable = await firstStageFilters(mongoQueryable);
         }
 
-        var filters = await BuildFiltersAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var filters = await BuildFiltersAsync(cancellationToken: cancellationToken);
 
         return filters == null ? mongoQueryable : mongoQueryable.Where(filters);
     }

@@ -49,9 +49,7 @@ public class EfCustomFieldsUpdateService<TKey, TEntity, TCustomFieldsEntity> : B
         var efEntity = new TCustomFieldsEntity { EntityId = rootEntityKey };
         customField.CopyPropertiesTo(efEntity);
 
-        var updated = await _updateClient
-            .UpdateAsync(efEntity, entityTransaction, cancellationToken)
-            .ConfigureAwait(false);
+        var updated = await _updateClient.UpdateAsync(efEntity, entityTransaction, cancellationToken);
 
         var retEntity = updated?.ToCustomFields();
         return retEntity;
@@ -77,9 +75,7 @@ public class EfCustomFieldsUpdateService<TKey, TEntity, TCustomFieldsEntity> : B
 
         var patch = new JsonPatchDocument<TCustomFieldsEntity>(operations, new DefaultContractResolver());
 
-        var updated = await _updateClient
-            .UpdateAsync(key, patch, entityTransaction, cancellationToken)
-            .ConfigureAwait(false);
+        var updated = await _updateClient.UpdateAsync(key, patch, entityTransaction, cancellationToken);
 
         var retEntity = updated?.ToCustomFields();
         return retEntity;

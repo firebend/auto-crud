@@ -40,7 +40,7 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
         CancellationToken cancellationToken = default)
     {
         _transactionManager.AddTransaction(entityTransaction);
-        var results = await PageAsync(request, entityTransaction, cancellationToken).ConfigureAwait(false);
+        var results = await PageAsync(request, entityTransaction, cancellationToken);
         return results?.Data?.ToList();
     }
 
@@ -63,9 +63,7 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
                                           ?? (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, request);
         }
 
-        var query = await _readClient
-            .GetQueryableAsync(firstStageFilter, entityTransaction, cancellationToken)
-            .ConfigureAwait(false);
+        var query = await _readClient.GetQueryableAsync(firstStageFilter, entityTransaction, cancellationToken);
 
         var expression = GetSearchExpression(request);
 
@@ -74,9 +72,7 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
             query = query.Where(expression);
         }
 
-        var paged = await _readClient
-            .GetPagedResponseAsync(query, request, cancellationToken)
-            .ConfigureAwait(false);
+        var paged = await _readClient.GetPagedResponseAsync(query, request, cancellationToken);
 
         return paged;
     }

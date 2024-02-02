@@ -42,8 +42,7 @@ public class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> :
         _transactionManager.AddTransaction(entityTransaction);
         request.DoCount = false;
 
-        var results = await PageAsync(request, entityTransaction, cancellationToken)
-            .ConfigureAwait(false);
+        var results = await PageAsync(request, entityTransaction, cancellationToken);
 
         return results?.Data?.ToList();
     }
@@ -61,8 +60,7 @@ public class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> :
     {
         _transactionManager.AddTransaction(entityTransaction);
         var (query, context) = await _searchClient
-            .GetQueryableAsync(true, entityTransaction, cancellationToken)
-            .ConfigureAwait(false);
+            .GetQueryableAsync(true, entityTransaction, cancellationToken);
 
         await using (context)
         {
@@ -79,9 +77,7 @@ public class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> :
                     ?? await _searchHandler.HandleSearchAsync(query, request);
             }
 
-            var paged = await _searchClient
-                .GetPagedResponseAsync(query, request, true, cancellationToken)
-                .ConfigureAwait(false);
+            var paged = await _searchClient.GetPagedResponseAsync(query, request, true, cancellationToken);
 
             return paged;
         }

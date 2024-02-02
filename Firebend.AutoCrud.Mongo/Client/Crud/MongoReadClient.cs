@@ -47,7 +47,7 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         Expression<Func<TEntity, bool>> additionalFilter,
         CancellationToken cancellationToken)
     {
-        var queryable = await GetFilteredCollectionAsync(firstStageFilters, entityTransaction, cancellationToken).ConfigureAwait(false);
+        var queryable = await GetFilteredCollectionAsync(firstStageFilters, entityTransaction, cancellationToken);
 
         if (additionalFilter != null)
         {
@@ -65,10 +65,9 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {
-        var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken)
-            .ConfigureAwait(false);
+        var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken);
 
-        var entity = await RetryErrorAsync(() => query.FirstOrDefaultAsync(cancellationToken)).ConfigureAwait(false);
+        var entity = await RetryErrorAsync(() => query.FirstOrDefaultAsync(cancellationToken));
         return entity;
     }
 
@@ -104,10 +103,9 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {
-        var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken)
-            .ConfigureAwait(false);
+        var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken);
 
-        var list = await RetryErrorAsync(() => query.ToListAsync(cancellationToken)).ConfigureAwait(false);
+        var list = await RetryErrorAsync(() => query.ToListAsync(cancellationToken));
 
         return list;
     }
@@ -119,10 +117,9 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken)
-            .ConfigureAwait(false);
+        var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken);
 
-        var exists = await RetryErrorAsync(() => query.AnyAsync(cancellationToken)).ConfigureAwait(false);
+        var exists = await RetryErrorAsync(() => query.AnyAsync(cancellationToken));
         return exists;
     }
 
@@ -131,10 +128,9 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
 
     public async Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
     {
-        var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken)
-            .ConfigureAwait(false);
+        var query = await GetQueryableInternalAsync(entityTransaction, filter, cancellationToken);
 
-        var count = await RetryErrorAsync(() => query.LongCountAsync(cancellationToken)).ConfigureAwait(false);
+        var count = await RetryErrorAsync(() => query.LongCountAsync(cancellationToken));
         return count;
     }
 
@@ -148,7 +144,7 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         if (searchRequest?.DoCount ?? false)
         {
             var queryable1 = queryable;
-            count = await RetryErrorAsync(() => queryable1.LongCountAsync(cancellationToken)).ConfigureAwait(false);
+            count = await RetryErrorAsync(() => queryable1.LongCountAsync(cancellationToken));
         }
 
         if (searchRequest is IOrderableSearchRequest orderableSearchRequest)
@@ -165,8 +161,7 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
                 .Take(searchRequest.PageSize.Value);
         }
 
-        var data = await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken))
-            .ConfigureAwait(false);
+        var data = await RetryErrorAsync(() => queryable.ToListAsync(cancellationToken));
 
         return new EntityPagedResponse<TEntity>
         {

@@ -18,14 +18,11 @@ public class MongoChangeTrackingService<TEntityKey, TEntity> :
     where TEntity : class, IEntity<TEntityKey>
     where TEntityKey : struct
 {
-    private readonly IChangeTrackingOptionsProvider<TEntityKey, TEntity> _changeTrackingOptionsProvider;
     private readonly IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _createClient;
 
-    public MongoChangeTrackingService(IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> createClient,
-        IChangeTrackingOptionsProvider<TEntityKey, TEntity> changeTrackingOptionsProvider)
+    public MongoChangeTrackingService(IMongoCreateClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> createClient)
     {
         _createClient = createClient;
-        _changeTrackingOptionsProvider = changeTrackingOptionsProvider;
     }
 
     public Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
@@ -68,9 +65,7 @@ public class MongoChangeTrackingService<TEntityKey, TEntity> :
             Changes = operations,
             Entity = entity,
             EntityId = id,
-            DomainEventCustomContext = _changeTrackingOptionsProvider?.Options?.PersistCustomContext ?? false
-               ? domainEvent.EventContext?.CustomContext
-               : null
+            DomainEventCustomContext = domainEvent.EventContext?.CustomContext
         };
 
         return changeEntity;

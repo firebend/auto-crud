@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#nullable disable
-
 namespace Firebend.AutoCrud.Web.Sample.Migrations;
 
 public partial class AddDataAuth : Migration

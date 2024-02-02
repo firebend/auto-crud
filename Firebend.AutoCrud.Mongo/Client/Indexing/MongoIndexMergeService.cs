@@ -38,14 +38,9 @@ public class MongoIndexMergeService<TKey, TEntity> : MongoClientBase<TKey, TEnti
             throw new Exception($"Ensure index definitions are unique. Entity Type {typeof(TEntity)}");
         }
 
-        var indexesCursor = await dbCollection
-            .Indexes
-            .ListAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var indexesCursor = await dbCollection.Indexes.ListAsync(cancellationToken);
 
-        var indexes = await indexesCursor
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var indexes = await indexesCursor.ToListAsync(cancellationToken);
 
         var hasExistingIndexes = (indexes?.Count ?? 0) > 0;
 

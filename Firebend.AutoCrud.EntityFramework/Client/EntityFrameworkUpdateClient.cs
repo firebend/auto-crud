@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
@@ -13,11 +12,6 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Client;
-
-internal static class EntityFrameworkUpdateClientStatics
-{
-    public static readonly HashSet<string> MapperIgnores = [nameof(IModifiedEntity.CreatedDate)];
-}
 
 public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
     where TKey : struct
@@ -115,8 +109,8 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
             return null;
         }
 
-        await using var context = await GetDbContextAsync(entityTransaction, cancellationToken).ConfigureAwait(false);
-        var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken).ConfigureAwait(false);
+        await using var context = await GetDbContextAsync(entityTransaction, cancellationToken);
+        var entity = await GetByEntityKeyAsync(context, key, false, cancellationToken);
 
         if (entity == null)
         {
@@ -176,7 +170,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
     {
         try
         {
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex)
         {
@@ -200,7 +194,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
 
         entity = await OnBeforeReplaceAsync(context, entity, transaction, cancellationToken);
 
-        await set.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+        await set.AddAsync(entity, cancellationToken);
 
         await SaveUpdateChangesAsync(entity, context, cancellationToken);
 
@@ -209,9 +203,9 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
 
     private async Task<TEntity> UpdateEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
     {
-        var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken).ConfigureAwait(false);
+        var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken);
 
-        model = entity.CopyPropertiesTo(model, EntityFrameworkUpdateClientStatics.MapperIgnores);
+        model = entity.CopyPropertiesTo(model, [nameof(IModifiedEntity.CreatedDate)]);
 
         if (model is IModifiedEntity modified)
         {

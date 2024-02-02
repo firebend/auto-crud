@@ -105,19 +105,16 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
 
         var objectType = tb.CreateType();
 
-        if (objectType == null)
-        {
-            return null;
-        }
-
         var instance = Activator.CreateInstance(objectType);
 
-        if (properties.Length > 0)
+        if (properties.Length <= 0)
         {
-            foreach (var field in properties.Where(x => x.Value != null))
-            {
-                SetProperty(objectType, instance, field.Name, field.Value);
-            }
+            return instance;
+        }
+
+        foreach (var field in properties.Where(x => x.Value != null))
+        {
+            SetProperty(objectType, instance, field.Name, field.Value);
         }
 
         return instance;

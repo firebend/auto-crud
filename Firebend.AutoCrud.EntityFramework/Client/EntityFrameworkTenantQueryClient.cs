@@ -27,9 +27,7 @@ public class EntityFrameworkTenantQueryClient<TKey, TEntity, TTenantKey> : Entit
 
     protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
     {
-        var tenant = await _tenantEntityProvider
-            .GetTenantAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
         Expression<Func<TEntity, bool>> filter = x => x.TenantId.Equals(tenant.TenantId);
 

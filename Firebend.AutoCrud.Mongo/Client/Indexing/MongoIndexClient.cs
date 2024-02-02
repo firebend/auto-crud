@@ -37,9 +37,7 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
     public async Task BuildIndexesAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
     {
         var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
-        using var _ = await _distributedLockService
-            .LockAsync(key, cancellationToken)
-            .ConfigureAwait(false);
+        using var _ = await _distributedLockService.LockAsync(key, cancellationToken);
 
         var builder = Builders<TEntity>.IndexKeys;
         var indexesToAdd = _indexProvider.GetIndexes(builder, configuration)?.ToArray();
@@ -59,28 +57,20 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
     {
         var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection";
 
-        using var _ = await _distributedLockService
-            .LockAsync(key, cancellationToken)
-            .ConfigureAwait(false);
+        using var _ = await _distributedLockService.LockAsync(key, cancellationToken);
 
         var client = await GetClientAsync(configuration.ShardKey);
         var database = client.GetDatabase(configuration.DatabaseName);
 
         var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };
 
-        var collectionNames = await database
-            .ListCollectionNamesAsync(options, cancellationToken)
-            .ConfigureAwait(false);
+        var collectionNames = await database            .ListCollectionNamesAsync(options, cancellationToken);
 
-        var collectionExists = await collectionNames
-            .AnyAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var collectionExists = await collectionNames.AnyAsync(cancellationToken);
 
         if (!collectionExists)
         {
-            await database
-                .CreateCollectionAsync(configuration.CollectionName, null, cancellationToken)
-                .ConfigureAwait(false);
+            await database.CreateCollectionAsync(configuration.CollectionName, null, cancellationToken);
         }
     }
 
