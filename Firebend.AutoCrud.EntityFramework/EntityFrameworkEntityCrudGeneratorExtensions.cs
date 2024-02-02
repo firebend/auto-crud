@@ -10,11 +10,18 @@ public static class EntityFrameworkEntityCrudGeneratorExtensions
     public static IServiceCollection UsingEfCrud<TContext>(
         this IServiceCollection serviceCollection,
         Action<IServiceProvider, DbContextOptionsBuilder> dbContextOptionsBuilder,
-        Action<EntityFrameworkEntityCrudGenerator> configure)
+        Action<EntityFrameworkEntityCrudGenerator> configure,
+        bool usePooled = true)
         where TContext : DbContext
     {
-        serviceCollection.AddDbContextFactory<TContext>(dbContextOptionsBuilder);
-        //serviceCollection.AddPooledDbContextFactory<TContext>(dbContextOptionsBuilder);
+        if (usePooled)
+        {
+            serviceCollection.AddPooledDbContextFactory<TContext>(dbContextOptionsBuilder);
+        }
+        else
+        {
+            serviceCollection.AddDbContextFactory<TContext>(dbContextOptionsBuilder);
+        }
 
         using var ef = new EntityFrameworkEntityCrudGenerator(
             new DynamicClassGenerator(),

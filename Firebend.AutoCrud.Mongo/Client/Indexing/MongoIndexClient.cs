@@ -64,7 +64,7 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
 
         var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };
 
-        var collectionNames = await database            .ListCollectionNamesAsync(options, cancellationToken);
+        var collectionNames = await database.ListCollectionNamesAsync(options, cancellationToken);
 
         var collectionExists = await collectionNames.AnyAsync(cancellationToken);
 

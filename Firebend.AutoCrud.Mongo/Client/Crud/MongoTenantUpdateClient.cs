@@ -72,7 +72,7 @@ public class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateCli
         TEntity original,
         CancellationToken cancellationToken)
     {
-        var tenant = await _tenantEntityProvider            .GetTenantAsync(cancellationToken);
+        var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
         entity.TenantId = tenant.TenantId;
         patchDocument = RemoveTenantId(patchDocument);

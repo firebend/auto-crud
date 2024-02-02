@@ -181,10 +181,7 @@ public static class SampleEntityExtensions
                 .AddCustomFields(cf =>
                     cf.WithSearchHandler<EntitySearchAuthorizationHandler<Guid,
                             EfPerson, CustomFieldsSearchRequest>>()
-                        .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
-                        {
-                            de.WithEfChangeTracking().WithMassTransit();
-                        }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPerson, int>, V1>(controllers => controllers
+                        .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de => de.WithEfChangeTracking().WithMassTransit()).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPerson, int>, V1>(controllers => controllers
                             .WithChangeTrackingControllers()
                             .WithVersionedRoute("ef-person/{personId:guid}/custom-fields", "api")
                             .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")

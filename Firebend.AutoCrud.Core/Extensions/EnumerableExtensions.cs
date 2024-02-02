@@ -9,11 +9,17 @@ public static class EnumerableExtensions
         => source switch
         {
             null => true,
-            ICollection<T> collection => collection.Count == 0,
-            _ => source.Any()
+            ICollection<T> collection => collection.Count <= 0,
+            _ => source.Any() is false
         };
 
-    public static bool HasValues<T>(this IEnumerable<T> source) => source.IsEmpty() is false;
+    public static bool HasValues<T>(this IEnumerable<T> source)
+        => source switch
+        {
+            null => false,
+            ICollection<T> collection => collection.Count > 0,
+            _ => source.Any()
+        };
 
     public static IEnumerable<T> NullCheck<T>(this IEnumerable<T> source) => source ?? Enumerable.Empty<T>();
 }
