@@ -11,6 +11,9 @@ namespace Firebend.AutoCrud.Generator.Implementations;
 
 public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
 {
+    // ReSharper disable once InconsistentNaming
+    public static AssemblyBuilderAccess DefaultAccess = AssemblyBuilderAccess.Run;
+
     public Type GenerateDynamicClass(Type classType,
         string typeSignature,
         List<Type> implementedTypes,
@@ -185,7 +188,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
         }
     }
 
-    private static IEnumerable<CustomAttributeBuilder> BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes) => customAttributes.Select(attribute =>
+    private static CustomAttributeBuilder[] BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes) => customAttributes.Select(attribute =>
         {
             var attributeArgs = attribute.ConstructorArguments
                 .Select(a => a.Value)
@@ -240,7 +243,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
         }
 
         var an = new AssemblyName(typeSignature);
-        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(an, DefaultAccess);
         var moduleBuilder = assemblyBuilder.DefineDynamicModule("Firebend.AutoCrud.Dynamic");
         var tb = moduleBuilder.DefineType(
             typeSignature,
