@@ -185,6 +185,8 @@ public abstract class BaseBuilder : BaseDisposable
 
                 argsString = args.ToString(0, args.Length - 1);
 
+                args.Clear();
+
             }
             throw new Exception($"Please register a {type.Name} {argsString}");
         }

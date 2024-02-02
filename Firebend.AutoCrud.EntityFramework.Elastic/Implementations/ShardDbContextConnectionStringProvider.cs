@@ -62,9 +62,7 @@ public class ShardDbContextConnectionStringProvider<TKey, TEntity> : IDbContextC
 
         var shardConnectionString = rootConnectionStringBuilder.ConnectionString;
 
-        await using var connection = await shard
-            .OpenConnectionForKeyAsync(keyBytes, shardConnectionString)
-            .ConfigureAwait(false);
+        await using var connection = await shard.OpenConnectionForKeyAsync(keyBytes, shardConnectionString);
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connection.ConnectionString) { Password = rootConnectionStringBuilder.Password };
 
