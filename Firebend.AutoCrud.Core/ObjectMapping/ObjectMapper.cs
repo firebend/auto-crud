@@ -99,8 +99,8 @@ public static class ObjectMapper
     public static void Copy<TSource, TTarget>(
         TSource source,
         TTarget target,
-        HashSet<string> propertiesToIgnore = null,
-        HashSet<string> propertiesToInclude = null,
+        ICollection<string> propertiesToIgnore = null,
+        ICollection<string> propertiesToInclude = null,
         bool includeObjects = true,
         bool useMemoizer = true)
     {

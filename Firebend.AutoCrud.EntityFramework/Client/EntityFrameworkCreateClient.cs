@@ -31,7 +31,7 @@ public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<
     {
         TEntity savedEntity;
 
-        await using (var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false))
+        await using (var context = await GetDbContextAsync(transaction, cancellationToken))
         {
             savedEntity = await AddEntityToDbContextAsync(entity, transaction, context, cancellationToken);
 

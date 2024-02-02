@@ -67,12 +67,14 @@ public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase<TKe
     protected virtual async Task<Expression<Func<TEntity, bool>>> BuildFiltersAsync(Expression<Func<TEntity, bool>> additionalFilter = null,
         CancellationToken cancellationToken = default)
     {
-        var securityFilters = await GetSecurityFiltersAsync(cancellationToken).ConfigureAwait(false)
-                              ?? new List<Expression<Func<TEntity, bool>>>();
+        var filters = new List<Expression<Func<TEntity, bool>>>();
 
-        var filters = securityFilters
-            .Where(x => x != null)
-            .ToList();
+        var securityFilters = await GetSecurityFiltersAsync(cancellationToken);
+
+        if (securityFilters is not null)
+        {
+            filters.AddRange(securityFilters);
+        }
 
         if (additionalFilter != null)
         {

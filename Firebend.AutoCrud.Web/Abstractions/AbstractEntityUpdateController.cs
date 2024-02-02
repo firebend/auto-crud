@@ -249,7 +249,7 @@ public abstract class
         var modifiedEntity = await _updateViewModelMapper.FromAsync(vm, cancellationToken);
         modifiedEntity.Id = key.Value;
 
-        var copyOnPatchProperties = _copyOnPatchPropertyAccessor.GetProperties()?.ToHashSet();
+        var copyOnPatchProperties = _copyOnPatchPropertyAccessor.GetProperties();
 
         if (copyOnPatchProperties.HasValues())
         {

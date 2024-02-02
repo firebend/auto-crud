@@ -145,7 +145,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
         var isUpdating = previous is not null;
         TEntity savedEntity;
 
-        await using (var context = await GetDbContextAsync(transaction, cancellationToken).ConfigureAwait(false))
+        await using (var context = await GetDbContextAsync(transaction, cancellationToken))
         {
             savedEntity = isUpdating
                 ? await UpdateEntityAsync(entity, transaction, context, cancellationToken)

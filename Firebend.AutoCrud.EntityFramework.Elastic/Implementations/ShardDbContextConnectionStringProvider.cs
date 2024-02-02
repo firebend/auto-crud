@@ -50,9 +50,7 @@ public class ShardDbContextConnectionStringProvider<TKey, TEntity> : IDbContextC
 
     private static async Task<string> GetShardConnectionStringAsync(string shardKey, ConnectionStringContext ctx)
     {
-        var shard = await ctx.ShardManager
-            .RegisterShardAsync(ctx.ShardNameProvider?.GetShardName(ctx.Key), ctx.Key, ctx.CancellationToken)
-            .ConfigureAwait(false);
+        var shard = await ctx.ShardManager.RegisterShardAsync(ctx.ShardNameProvider?.GetShardName(ctx.Key), ctx.Key, ctx.CancellationToken);
 
         var keyBytes = Encoding.ASCII.GetBytes(shardKey);
 

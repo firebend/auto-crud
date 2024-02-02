@@ -28,7 +28,7 @@ public static class OrderByExtensions
             return source;
         }
 
-        var list = source?.ToList() ?? new List<(Expression<Func<T, object>> order, bool ascending)>();
+        var list = source?.ToList() ?? [];
 
         list.Add((orderBy, true));
 
@@ -44,7 +44,7 @@ public static class OrderByExtensions
             return source;
         }
 
-        var list = source?.ToList() ?? new List<(Expression<Func<T, object>> order, bool ascending)>();
+        var list = source?.ToList() ?? [];
 
         list.Add((orderBy, false));
 
