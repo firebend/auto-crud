@@ -12,7 +12,14 @@ namespace Firebend.AutoCrud.Generator.Implementations;
 public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
 {
     // ReSharper disable once InconsistentNaming
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
+    // ReSharper disable once ConvertToConstant.Global
+#pragma warning disable CA2211
+#pragma warning disable IDE1006
+    // ReSharper disable once MemberCanBePrivate.Global
     public static AssemblyBuilderAccess DefaultAccess = AssemblyBuilderAccess.Run;
+#pragma warning restore CA2211
+#pragma warning restore IDE1006
 
     public Type GenerateDynamicClass(Type classType,
         string typeSignature,
