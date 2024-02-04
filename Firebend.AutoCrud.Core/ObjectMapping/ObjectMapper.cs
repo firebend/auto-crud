@@ -25,15 +25,15 @@ public static class ObjectMapper
             }
 
             if (context.PropertiesToIgnore is not null
-               && context.PropertiesToIgnore.Count > 0
-               && context.PropertiesToIgnore.Contains(sourceProperty.Name))
+                && context.PropertiesToIgnore.Count > 0
+                && context.PropertiesToIgnore.Contains(sourceProperty.Name))
             {
                 continue;
             }
 
             if (context.PropertiesToInclude is not null
-               && context.PropertiesToInclude.Count > 0
-               && context.PropertiesToInclude.Contains(sourceProperty.Name) is false)
+                && context.PropertiesToInclude.Count > 0
+                && context.PropertiesToInclude.Contains(sourceProperty.Name) is false)
             {
                 continue;
             }
@@ -47,23 +47,23 @@ public static class ObjectMapper
                 continue;
             }
 
-            var targetProperty = targetProperties.FirstOrDefault(x => x.Name == sourceProperty.Name);
+            var targetPropertiesByName = targetProperties
+                .Where(x => x.Name == sourceProperty.Name)
+                .Where(x => x.CanWrite);
 
-            if (targetProperty is null || targetProperty.CanWrite is false)
+            foreach (var targetProperty in targetPropertiesByName)
             {
-                continue;
+                var canAssign = (sourceProperty.PropertyType.IsValueType
+                                 && sourceProperty.PropertyType.IsAssignableTo(targetProperty.PropertyType))
+                                || sourceProperty.PropertyType == targetProperty.PropertyType;
+
+                if (canAssign is false)
+                {
+                    continue;
+                }
+
+                yield return new PropertyMap(sourceProperty, targetProperty);
             }
-
-            var canAssign = (sourceProperty.PropertyType.IsValueType
-                             && sourceProperty.PropertyType.IsAssignableTo(targetProperty.PropertyType))
-                            || sourceProperty.PropertyType == targetProperty.PropertyType;
-
-            if (canAssign is false)
-            {
-                continue;
-            }
-
-            yield return new PropertyMap(sourceProperty, targetProperty);
         }
     }
 

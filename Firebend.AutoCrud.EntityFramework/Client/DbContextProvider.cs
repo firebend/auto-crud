@@ -81,12 +81,12 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
         return await _connectionStringProvider.GetConnectionStringAsync(cancellationToken);
     }
 
-    public async Task<IDbContext> GetDbContextAsync(DbConnection connection,
+    public async Task<IDbContext> GetDbContextAsync(DbTransaction transaction,
         CancellationToken cancellationToken = default)
     {
         var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
-        await dbContext.Database.CloseConnectionAsync();
-        dbContext.Database.SetDbConnection(connection);
+        dbContext.Database.SetDbConnection(transaction.Connection);
+        await dbContext.Database.UseTransactionAsync(transaction, cancellationToken);
 
         InitDb(dbContext);
 

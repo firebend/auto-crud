@@ -42,12 +42,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
             var transaction = efTransaction.ContextTransaction.GetDbTransaction();
 
-            context = await _provider.GetDbContextAsync(transaction.Connection, cancellationToken);
-
-            if (context.Database.CurrentTransaction == null)
-            {
-                await context.Database.UseTransactionAsync(transaction, cancellationToken);
-            }
+            context = await _provider.GetDbContextAsync(transaction, cancellationToken);
         }
 
         return context;

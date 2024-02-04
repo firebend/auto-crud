@@ -64,6 +64,7 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
 
         customField.CreatedDate = DateTimeOffset.UtcNow;
         customField.ModifiedDate = DateTimeOffset.UtcNow;
+        customField.EntityId = rootEntityKey;
 
         var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters);

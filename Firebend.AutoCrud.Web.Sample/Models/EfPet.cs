@@ -32,7 +32,7 @@ public class EfPet : IEntity<Guid>, IModifiedEntity, ITenantEntity<int>, IActive
     public EfPerson Person { get; set; }
 
     [Required]
-    [MaxLength(205)]
+    [MaxLength(500)]
     public string PetName { get; set; }
 
     [Required]
