@@ -23,7 +23,7 @@ public static class ObjectMapper
             {
                 continue;
             }
-            
+
             if (context.PropertiesToIgnore is not null
                && context.PropertiesToIgnore.Count > 0
                && context.PropertiesToIgnore.Contains(sourceProperty.Name))
