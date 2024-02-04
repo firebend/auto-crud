@@ -19,6 +19,11 @@ public static class ObjectMapper
 
         foreach (var sourceProperty in context.SourceType.GetProperties())
         {
+            if (sourceProperty.CanRead is false)
+            {
+                continue;
+            }
+            
             if (context.PropertiesToIgnore is not null
                && context.PropertiesToIgnore.Count > 0
                && context.PropertiesToIgnore.Contains(sourceProperty.Name))
@@ -44,7 +49,7 @@ public static class ObjectMapper
 
             var targetProperty = targetProperties.FirstOrDefault(x => x.Name == sourceProperty.Name);
 
-            if (targetProperty is null)
+            if (targetProperty is null || targetProperty.CanWrite is false)
             {
                 continue;
             }
