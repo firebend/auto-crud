@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="11.0.0"></a>
+## [11.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v11.0.0) (2024-02-05)
+
+### Features
+
+* dotnet perf fixes and ef migration fixes ([#290](https://www.github.com/firebend/auto-crud/issues/290)) ([4af09d2](https://www.github.com/firebend/auto-crud/commit/4af09d21afd21de22ac7e71f62646e2026ed13c8))
+
+### Breaking Changes
+
+* dotnet perf fixes and ef migration fixes ([#290](https://www.github.com/firebend/auto-crud/issues/290)) ([4af09d2](https://www.github.com/firebend/auto-crud/commit/4af09d21afd21de22ac7e71f62646e2026ed13c8))
+
 <a name="10.0.0"></a>
 ## [10.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v10.0.0) (2024-01-23)
 
