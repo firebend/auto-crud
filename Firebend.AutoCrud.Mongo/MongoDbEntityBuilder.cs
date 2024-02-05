@@ -3,16 +3,14 @@ using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.Core.Models;
-using Firebend.AutoCrud.Core.Models.ClassGeneration;
-using Firebend.AutoCrud.Mongo.Abstractions.Client;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
-using Firebend.AutoCrud.Mongo.Abstractions.Entities;
+using Firebend.AutoCrud.Mongo.Client;
+using Firebend.AutoCrud.Mongo.Client.Configuration;
+using Firebend.AutoCrud.Mongo.Client.Crud;
+using Firebend.AutoCrud.Mongo.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Firebend.AutoCrud.Mongo.Models;
+using Firebend.AutoCrud.Mongo.Services;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
@@ -24,7 +22,7 @@ public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEnti
 {
     private bool _hasFullText;
 
-    public MongoDbEntityBuilder()
+    public MongoDbEntityBuilder(IServiceCollection services) : base(services)
     {
         CreateType = typeof(MongoEntityCreateService<TKey, TEntity>);
         ReadType = typeof(MongoEntityReadService<TKey, TEntity>);
@@ -49,7 +47,7 @@ public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEnti
 
     public string CollectionName { get; set; }
 
-    public AggregateOptions AggregateOption { get; set; } = new AggregateOptions { Collation = new Collation("en") };
+    public AggregateOptions AggregateOption { get; set; } = new() { Collation = new Collation("en") };
 
     public string Database { get; set; }
 
@@ -277,20 +275,7 @@ public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEnti
             Database = db;
         }
 
-        const string signature = "DefaultDb";
-
-        var iFaceType = typeof(IMongoDefaultDatabaseSelector);
-
-        var defaultDbField = new PropertySet(nameof(IMongoDefaultDatabaseSelector.DefaultDb), typeof(string), db, true);
-
-        WithDynamicClass(iFaceType,
-            new DynamicClassRegistration
-            {
-                Interface = iFaceType,
-                Properties = new[] { defaultDbField },
-                Signature = signature,
-                Lifetime = ServiceLifetime.Singleton
-            });
+        WithRegistrationInstance<IMongoDefaultDatabaseSelector>(new DefaultMongoDefaultDatabaseSelector(db));
 
         return this;
     }

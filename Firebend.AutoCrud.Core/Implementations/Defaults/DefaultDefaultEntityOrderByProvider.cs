@@ -24,21 +24,3 @@ public class DefaultDefaultEntityOrderByProvider<TKey, TEntity> : IDefaultEntity
 
     public (Expression<Func<TEntity, object>> order, bool ascending) GetOrderBy() => (_expression, _ascending);
 }
-
-public class DefaultEntityOrderByProviderModified<TKey, TEntity> : DefaultDefaultEntityOrderByProvider<TKey, TEntity>
-    where TEntity : IEntity<TKey>, IModifiedEntity
-    where TKey : struct
-{
-    public DefaultEntityOrderByProviderModified() : base(x => x.ModifiedDate, false)
-    {
-    }
-}
-
-public class DefaultEntityOrderByProviderActive<TKey, TEntity> : DefaultDefaultEntityOrderByProvider<TKey, TEntity>
-    where TEntity : IEntity<TKey>, IActiveEntity
-    where TKey : struct
-{
-    public DefaultEntityOrderByProviderActive() : base(x => x.IsDeleted, false)
-    {
-    }
-}

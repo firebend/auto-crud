@@ -23,11 +23,11 @@ public abstract class AbstractDbCreator : IDbCreator
 
         var cString = connBuilder.ConnectionString;
         await using var conn = new SqlConnection(cString);
-        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await conn.OpenAsync(cancellationToken);
 
         await using var command = conn.CreateCommand();
         command.CommandText = GetSqlCommand(dbName);
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        await command.ExecuteNonQueryAsync(cancellationToken);
 
         AbstractDbCreatorLogger.CreatingDb(_logger, dbName, connBuilder.DataSource);
     }

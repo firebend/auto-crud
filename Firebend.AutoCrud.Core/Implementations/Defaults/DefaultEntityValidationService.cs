@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Implementations.Defaults;
 
-public abstract class DefaultEntityValidationService<TKey, TEntity, TVersion> : IEntityValidationService<TKey, TEntity, TVersion>
+public class DefaultEntityValidationService<TKey, TEntity, TVersion> : IEntityValidationService<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
     where TVersion : class, IAutoCrudApiVersion

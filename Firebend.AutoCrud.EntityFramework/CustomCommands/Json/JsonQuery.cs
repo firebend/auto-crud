@@ -10,7 +10,7 @@ public static class JsonQuery
     private static readonly MethodInfo Method
         = typeof(EfJsonFunctions)
             .GetMethod(nameof(EfJsonFunctions.JsonQuery),
-                new[] { typeof(string), typeof(string) });
+                [typeof(string), typeof(string)]);
 
     public static ModelBuilder AddJsonQuerySupport(this ModelBuilder modelBuilder)
     {

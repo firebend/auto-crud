@@ -8,9 +8,3 @@ public interface IFileFieldWriteFilter<TExport, TVersion>
 {
     bool ShouldExport(IFileFieldWrite<TExport> field);
 }
-
-public interface IFileFieldWriteFilterFactory<TVersion>
-    where TVersion : class, IAutoCrudApiVersion
-{
-    IFileFieldWriteFilter<TExport, TVersion> GetFilter<TExport>();
-}

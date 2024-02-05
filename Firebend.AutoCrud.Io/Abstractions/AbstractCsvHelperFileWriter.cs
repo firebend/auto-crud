@@ -25,8 +25,8 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
     public abstract EntityFileType FileType { get; }
 
     private IWriter _writer;
-    private TextWriter _textWriter;
-    private Stream _stream;
+    private StreamWriter _textWriter;
+    private MemoryStream _stream;
 
     private readonly IFileFieldAutoMapper<TVersion> _autoMapper;
 
@@ -57,7 +57,7 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
 
         if (_textWriter != null)
         {
-            await _textWriter.FlushAsync().ConfigureAwait(false);
+            await _textWriter.FlushAsync(cancellationToken);
         }
 
         if (_writer is SpreadsheetWriter excelWriter)
@@ -74,7 +74,7 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
     private async Task WriteRows<T>(IFileFieldWrite<T>[] fields, IEnumerable<T> records, bool isMainRow)
         where T : class
     {
-        await _writer.NextRecordAsync().ConfigureAwait(false);
+        await _writer.NextRecordAsync();
 
         var childLists = typeof(T).GetProperties()
             .Where(propInfo => propInfo.PropertyType.IsCollection())
@@ -92,11 +92,11 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
             {
                 if (isMainRow)
                 {
-                    await _writer.NextRecordAsync().ConfigureAwait(false);
+                    await _writer.NextRecordAsync();
                 }
-                await _writer.NextRecordAsync().ConfigureAwait(false);
+                await _writer.NextRecordAsync();
                 WriteHeader(fields);
-                await _writer.NextRecordAsync().ConfigureAwait(false);
+                await _writer.NextRecordAsync();
                 hasAddedSubRows = false;
             }
 
@@ -105,7 +105,7 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
                 _writer.WriteField(fileFieldWrite.Writer(recordEnumerator.Current));
             }
 
-            await _writer.NextRecordAsync().ConfigureAwait(false);
+            await _writer.NextRecordAsync();
 
             foreach (var propertyInfo in childLists)
             {
@@ -117,7 +117,8 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
 
                 if (listProperty != null)
                 {
-                    var wasSubRowAdded = writeSubRowMethod != null && await ((Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this, new[] { listProperty }))!;
+                    var wasSubRowAdded = writeSubRowMethod != null && await ((Task<bool>)writeSubRowMethod.MakeGenericMethod(itemType).Invoke(this,
+                        [listProperty]))!;
                     hasAddedSubRows = wasSubRowAdded || hasAddedSubRows;
                 }
             }
@@ -135,7 +136,7 @@ public abstract class AbstractCsvHelperFileWriter<TVersion> : BaseDisposable, IE
             return false;
         }
 
-        await _writer.NextRecordAsync().ConfigureAwait(false);
+        await _writer.NextRecordAsync();
         WriteHeader(fields);
         await WriteRows(fields, records, false);
 

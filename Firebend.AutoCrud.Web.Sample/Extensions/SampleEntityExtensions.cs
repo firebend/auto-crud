@@ -1,16 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework;
-using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Mongo;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
-using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.CustomFields.EntityFramework;
@@ -24,9 +19,7 @@ using Firebend.AutoCrud.Io;
 using Firebend.AutoCrud.Io.Web;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Mongo.Models;
-using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.AutoCrud.Web.Sample.Authorization.Handlers;
-using Firebend.AutoCrud.Web.Sample.DbContexts;
 using Firebend.AutoCrud.Web.Sample.DomainEvents;
 using Firebend.AutoCrud.Web.Sample.Elastic;
 using Firebend.AutoCrud.Web.Sample.Models;
@@ -35,18 +28,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Firebend.AutoCrud.Web.Sample.Extensions;
-
-public class V1 : IAutoCrudApiVersion
-{
-    public int Version => 1;
-    public string Name => "Api V1";
-}
-
-public class V2 : IAutoCrudApiVersion
-{
-    public int Version => 2;
-    public string Name => "Api V2";
-}
 
 public static class SampleEntityExtensions
 {
@@ -67,8 +48,7 @@ public static class SampleEntityExtensions
                     .WithCustomFields()
                 )
                 .AddDomainEvents(domainEvents => domainEvents
-                    .WithMongoChangeTracking(changeTracking => changeTracking.WithConnectionString(configuration.GetConnectionString("Mongo")),
-                        new ChangeTrackingOptions { PersistCustomContext = true })
+                    .WithMongoChangeTracking(changeTracking => changeTracking.WithConnectionString(configuration.GetConnectionString("Mongo")))
                     .WithMassTransit()
                     .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
                     .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
@@ -186,9 +166,7 @@ public static class SampleEntityExtensions
     public static EntityFrameworkEntityCrudGenerator AddEfPerson(this EntityFrameworkEntityCrudGenerator generator,
         IConfiguration configuration) =>
         generator.AddEntity<Guid, EfPerson>(person =>
-            person.WithDbContext<PersonDbContext>()
-                .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPerson>>()
-                .WithIncludes(x => x.Include(y => y.CustomFields)
+            person.WithIncludes(x => x.Include(y => y.CustomFields)
                     .Include(y => y.Pets)
                     .ThenInclude(y => y.CustomFields))
                 .AddElasticPool(manager =>
@@ -198,16 +176,13 @@ public static class SampleEntityExtensions
                         manager.Server = configuration["Elastic:ServerName"];
                         manager.ElasticPoolName = configuration["Elastic:PoolName"];
                     }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
+                        .WithAllShardKeyProvider<SampleKeyProvider>()
                         .WithShardDbNameProvider<SampleDbNameProvider>()
                 )
                 .AddCustomFields(cf =>
                     cf.WithSearchHandler<EntitySearchAuthorizationHandler<Guid,
                             EfPerson, CustomFieldsSearchRequest>>()
-                        .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
-                        {
-                            de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
-                                .WithMassTransit();
-                        }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPerson, int>, V1>(controllers => controllers
+                        .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de => de.WithEfChangeTracking().WithMassTransit()).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPerson, int>, V1>(controllers => controllers
                             .WithChangeTrackingControllers()
                             .WithVersionedRoute("ef-person/{personId:guid}/custom-fields", "api")
                             .WithOpenApiGroupName("The Beautiful Sql People Custom Fields")
@@ -217,7 +192,7 @@ public static class SampleEntityExtensions
                     .WithCrud()
                 )
                 .AddDomainEvents(events => events
-                    .WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
+                    .WithEfChangeTracking()
                     .WithMassTransit()
                     .WithDomainEventEntityAddedSubscriber<EfPersonDomainEventHandler>()
                     .WithDomainEventEntityUpdatedSubscriber<EfPersonDomainEventHandler>()
@@ -252,9 +227,7 @@ public static class SampleEntityExtensions
     public static EntityFrameworkEntityCrudGenerator AddEfPets(this EntityFrameworkEntityCrudGenerator generator,
         IConfiguration configuration) =>
         generator.AddEntity<Guid, EfPet>(person =>
-            person.WithDbContext<PersonDbContext>()
-                .WithDbOptionsProvider<PersonDbContextOptionsProvider<Guid, EfPet>>()
-                .WithIncludes(pets => pets.Include(x => x.Person))
+            person.WithIncludes(pets => pets.Include(x => x.Person))
                 .AddElasticPool(manager =>
                     {
                         manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -269,7 +242,7 @@ public static class SampleEntityExtensions
                             EfPet, CustomFieldsSearchRequest>>()
                         .AddCustomFieldsTenant<int>(c => c.AddDomainEvents(de =>
                         {
-                            de.WithEfChangeTracking(new ChangeTrackingOptions { PersistCustomContext = true })
+                            de.WithEfChangeTracking()
                                 .WithMassTransit();
                         }).AddControllers<Guid, EfCustomFieldsModelTenant<Guid, EfPet, int>, V1>(controllers => controllers
                             .WithChangeTrackingControllers()
@@ -312,20 +285,4 @@ public static class SampleEntityExtensions
 
 
                 ));
-}
-
-public class PersonViewModelMapper : IReadViewModelMapper<Guid, EfPerson, V1, GetPersonViewModel>
-{
-    public Task<EfPerson> FromAsync(GetPersonViewModel model, CancellationToken cancellationToken = default) =>
-        null;
-
-    public Task<IEnumerable<EfPerson>> FromAsync(IEnumerable<GetPersonViewModel> model,
-        CancellationToken cancellationToken = default) => null;
-
-    public Task<GetPersonViewModel> ToAsync(EfPerson entity, CancellationToken cancellationToken = default) =>
-        Task.FromResult(new GetPersonViewModel(entity));
-
-    public Task<IEnumerable<GetPersonViewModel>> ToAsync(IEnumerable<EfPerson> entity,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult(entity.Select(x => new GetPersonViewModel(x)));
 }

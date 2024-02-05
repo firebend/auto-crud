@@ -3,7 +3,6 @@ using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
 using Firebend.AutoCrud.Core.Interfaces;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Io.Abstractions;
 using Firebend.AutoCrud.Io.Implementations;
 using Firebend.AutoCrud.Io.Interfaces;
 
@@ -22,7 +21,7 @@ public class IoConfigurator<TBuilder, TKey, TEntity, TVersion> :
         builder.WithRegistration<IEntityFileWriterCsv<TVersion>, CsvEntityFileWriter<TVersion>>();
         builder.WithRegistration<IEntityFileWriterSpreadSheet<TVersion>, SpreadSheetEntityFileWriter<TVersion>>();
         builder.WithRegistration<IEntityFileWriterFactory<TVersion>, EntityFileWriterFactory<TVersion>>();
-        builder.WithRegistration<IEntityExportMapper<TEntity, TVersion, TEntity>, AbstractDefaultEntityExportMapper<TEntity, TVersion>>();
+        builder.WithRegistration<IEntityExportMapper<TEntity, TVersion, TEntity>, DefaultEntityExportMapper<TEntity, TVersion>>();
 
         AddExportEntityRegistrations<TEntity>();
     }
@@ -33,7 +32,7 @@ public class IoConfigurator<TBuilder, TKey, TEntity, TVersion> :
         Builder.ExportType = typeof(TOut);
         Builder.WithRegistration<IEntityExportService<TOut, TVersion>, EntityExportService<TOut, TVersion>>();
         Builder.WithRegistration<IFileFieldAutoMapper<TVersion>, FileFieldAutoMapper<TVersion>>();
-        Builder.WithRegistration<IFileFieldWriteFilter<TOut, TVersion>, AbstractDefaultFileFileWriteFilter<TOut, TVersion>>();
+        Builder.WithRegistration<IFileFieldWriteFilter<TOut, TVersion>, DefaultFileFileWriteFilter<TOut, TVersion>>();
         Builder.WithRegistration<IFileFieldWriteFilterFactory<TVersion>, FileFieldWriteFilterFactory<TVersion>>();
     }
 

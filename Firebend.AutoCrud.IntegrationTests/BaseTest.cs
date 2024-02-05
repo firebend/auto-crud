@@ -226,7 +226,7 @@ public abstract class BaseTest<
         responseModel.Should().NotBeNull();
         foreach (var person in responseModel.Data)
         {
-            if (person.DataAuth is not null && person.DataAuth.UserEmails.Any())
+            if (person.DataAuth is not null && person.DataAuth.UserEmails.Length != 0)
             {
                 person.DataAuth.UserEmails.Should().Contain(email);
             }
@@ -285,7 +285,7 @@ public abstract class BaseTest<
             searchResponseModel.Should().NotBeNull();
             foreach (var person in searchResponseModel.Data)
             {
-                if (person.DataAuth is not null && person.DataAuth.UserEmails.Any())
+                if (person.DataAuth is not null && person.DataAuth.UserEmails.Length != 0)
                 {
                     person.DataAuth.UserEmails.Should().Contain(email);
                 }

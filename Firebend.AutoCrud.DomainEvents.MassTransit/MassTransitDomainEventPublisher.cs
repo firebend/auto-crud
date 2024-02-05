@@ -7,13 +7,13 @@ using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit;
 
-public abstract class MassTransitDomainEventPublisher<TKey, TEntity> : IEntityDomainEventPublisher<TKey, TEntity>
+public class MassTransitDomainEventPublisher<TKey, TEntity> : IEntityDomainEventPublisher<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
     private readonly IBus _bus;
 
-    protected MassTransitDomainEventPublisher(IBus bus)
+    public MassTransitDomainEventPublisher(IBus bus)
     {
         _bus = bus;
     }

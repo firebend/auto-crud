@@ -10,8 +10,3 @@ public interface IMaxPageSize<TKey, TEntity, TVersion>
 {
     public int MaxPageSize { get; }
 }
-
-public interface IMaxExportPageSize<TKey, TEntity, TVersion> : IMaxPageSize<TKey, TEntity, TVersion>
-    where TEntity : IEntity<TKey>
-    where TKey : struct
-    where TVersion : class, IAutoCrudApiVersion;

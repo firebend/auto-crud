@@ -3,14 +3,15 @@ using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
-using Firebend.AutoCrud.EntityFramework.Abstractions.Client;
-using Firebend.AutoCrud.EntityFramework.Abstractions.Entities;
+using Firebend.AutoCrud.EntityFramework.Client;
 using Firebend.AutoCrud.EntityFramework.Connections;
 using Firebend.AutoCrud.EntityFramework.ExceptionHandling;
 using Firebend.AutoCrud.EntityFramework.Implementations;
 using Firebend.AutoCrud.EntityFramework.Including;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Firebend.AutoCrud.EntityFramework.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.EntityFramework;
 
@@ -18,8 +19,16 @@ public class EntityFrameworkEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKe
     where TKey : struct
     where TEntity : class, IEntity<TKey>, new()
 {
-    public EntityFrameworkEntityBuilder()
+    public Type DbContextType { get; }
+    public Action<IServiceProvider, DbContextOptionsBuilder> DbContextOptionsBuilder { get; }
+
+    public EntityFrameworkEntityBuilder(IServiceCollection services,
+        Type dbContextType,
+        Action<IServiceProvider, DbContextOptionsBuilder> dbContextOptionsBuilder) : base(services)
     {
+        DbContextType = dbContextType;
+        DbContextOptionsBuilder = dbContextOptionsBuilder;
+
         CreateType = typeof(EntityFrameworkEntityCreateService<TKey, TEntity>);
         ReadType = typeof(EntityFrameworkEntityReadService<TKey, TEntity>);
         UpdateType = typeof(EntityFrameworkEntityUpdateService<TKey, TEntity>);
@@ -40,8 +49,6 @@ public class EntityFrameworkEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKe
     public override Type UpdateType { get; }
 
     public override Type DeleteType { get; }
-
-    public Type DbContextType { get; set; }
 
     protected override void ApplyPlatformTypes()
     {
@@ -75,84 +82,10 @@ public class EntityFrameworkEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKe
 
         WithRegistration<IEntityTransactionFactory<TKey, TEntity>,
             EntityFrameworkEntityTransactionFactory<TKey, TEntity>>();
-    }
 
-    /// <summary>
-    /// Specifies the DbContext to use for an entity
-    /// </summary>
-    /// <param name="dbContextType">The type of the DbContext to use</param>
-    /// <example>
-    /// <code>
-    /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
-    ///    forecast.WithDbContext(typeof(AppDbContext))
-    ///        .AddCrud()
-    ///        .AddControllers()
-    /// </code>
-    /// </example>
-    public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext(Type dbContextType)
-    {
-        DbContextType = dbContextType;
+        var dbContextProvider = typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, DbContextType);
 
-        var t = typeof(AbstractDbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, dbContextType);
-
-        WithRegistration<IDbContextProvider<TKey, TEntity>>(t);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Specifies the DbContext to use for an entity
-    /// </summary>
-    /// <typeparam name="TContext">The type of the DbContext to use</typeparam>
-    /// <example>
-    /// <code>
-    /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
-    ///    forecast.WithDbContext<AppDbContext>()
-    ///        .AddCrud()
-    ///        .AddControllers()
-    /// </code>
-    /// </example>
-    public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbContext<TContext>()
-        where TContext : IDbContext => WithDbContext(typeof(TContext));
-
-    /// <summary>
-    /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
-    /// </summary>
-    /// <param name="type">
-    /// The <see cref="Type"/> that specifies a class that implements <see cref="IDbContextOptionsProvider{TKey,TEntity}"/>
-    /// </param>
-    /// <example>
-    /// <code>
-    /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
-    ///    forecast.WithDbContext<AppDbContext>()
-    ///        .WithDbOptionsProvider(typeof(AppDbContextOptionsProvider))
-    ///        .AddCrud()
-    ///        .AddControllers()
-    /// </code>
-    /// </example>
-    public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider(Type type)
-    {
-        WithRegistration(typeof(IDbContextOptionsProvider<TKey, TEntity>), type);
-        return this;
-    }
-
-    /// <summary>
-    /// Specifies EntityFramework Db Context options. Used when creating a change tracking context or a sharded context.
-    /// </summary>
-    /// <typeparam name="TProvider">The type that implements <see cref="IDbContextOptionsProvider{TKey,TEntity}"/></typeparam>
-    /// <example>
-    /// <code>
-    /// ef.AddEntity<Guid, WeatherForecast>(forecast =>
-    ///    forecast.WithDbContext<AppDbContext>()
-    ///        .WithDbOptionsProvider<AppDbContextOptionsProvider>()
-    ///        .AddCrud()
-    ///        .AddControllers()
-    /// </code>
-    /// </example>
-    public EntityFrameworkEntityBuilder<TKey, TEntity> WithDbOptionsProvider<TProvider>()
-    {
-        WithRegistration(typeof(IDbContextOptionsProvider<TKey, TEntity>), typeof(TProvider));
-        return this;
+        WithRegistration<IDbContextProvider<TKey, TEntity>>(dbContextProvider);
     }
 
     /// <summary>

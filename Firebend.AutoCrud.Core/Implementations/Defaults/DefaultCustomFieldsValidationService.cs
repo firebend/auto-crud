@@ -9,8 +9,7 @@ using Microsoft.AspNetCore.JsonPatch;
 
 namespace Firebend.AutoCrud.Core.Implementations.Defaults;
 
-public abstract class
-    DefaultCustomFieldsValidationService<TKey, TEntity, TVersion> : ICustomFieldsValidationService<TKey, TEntity, TVersion>
+public class DefaultCustomFieldsValidationService<TKey, TEntity, TVersion> : ICustomFieldsValidationService<TKey, TEntity, TVersion>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     where TVersion : class, IAutoCrudApiVersion

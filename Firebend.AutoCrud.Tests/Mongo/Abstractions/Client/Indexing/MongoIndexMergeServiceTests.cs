@@ -5,8 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Firebend.AutoCrud.Mongo.Abstractions.Client;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
+using Firebend.AutoCrud.Mongo.Client;
+using Firebend.AutoCrud.Mongo.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Configuration;
 using Firebend.AutoCrud.Mongo.Helpers;
 using Firebend.AutoCrud.Mongo.Interfaces;
@@ -98,7 +98,7 @@ public class MongoIndexMergeServiceTests
         date.Options.Name = "fake";
 
         //act
-        await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
+        await sut.MergeIndexesAsync(Collection.Object, [date], default);
 
         //assert
         Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -122,7 +122,7 @@ public class MongoIndexMergeServiceTests
         var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
 
         //act
-        await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
+        await sut.MergeIndexesAsync(Collection.Object, [date], default);
 
         //assert
         Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -147,7 +147,7 @@ public class MongoIndexMergeServiceTests
         var date = MongoIndexProviderHelpers.DateTimeOffset(keys);
 
         //act
-        await sut.MergeIndexesAsync(Collection.Object, new[] { date }, default);
+        await sut.MergeIndexesAsync(Collection.Object, [date], default);
 
         //assert
         Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -196,7 +196,7 @@ public class MongoIndexMergeServiceTests
         var fullText = MongoIndexProviderHelpers.FullText(keys);
 
         //act
-        await sut.MergeIndexesAsync(Collection.Object, new[] { date, fullText }, default);
+        await sut.MergeIndexesAsync(Collection.Object, [date, fullText], default);
 
         //assert
         Collection.Verify(x => x.Indexes.CreateManyAsync(It.Is<IEnumerable<CreateIndexModel<FooIndexEntity>>>(e => e.Count() == 1), It.IsAny<CancellationToken>()), Times.Once);
@@ -222,7 +222,7 @@ public class MongoIndexMergeServiceTests
         var fullText = MongoIndexProviderHelpers.FullText(keys);
 
         //act
-        await sut.MergeIndexesAsync(Collection.Object, new[] { date, fullText }, default);
+        await sut.MergeIndexesAsync(Collection.Object, [date, fullText], default);
 
         //assert
         Collection.Verify(x => x.Indexes.CreateManyAsync(It.Is<IEnumerable<CreateIndexModel<FooIndexEntity>>>(e => e.Count() == 2), It.IsAny<CancellationToken>()), Times.Once);

@@ -1,17 +1,17 @@
 using System;
-using Firebend.AutoCrud.ChangeTracking.Abstractions;
+using Firebend.AutoCrud.ChangeTracking.Implementations;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
-using Firebend.AutoCrud.ChangeTracking.Mongo.Abstractions;
+using Firebend.AutoCrud.ChangeTracking.Mongo.Implementations;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Mongo;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Configuration;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Crud;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
+using Firebend.AutoCrud.Mongo.Client.Configuration;
+using Firebend.AutoCrud.Mongo.Client.Crud;
+using Firebend.AutoCrud.Mongo.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 
@@ -21,18 +21,15 @@ public static class Extensions
 {
     /// <summary>
     /// Adds change tracking for a given entity and persists it to a data store using Mongo.
-    /// This function registers a <see cref="AbstractMongoChangeTrackingService{TEntityKey,TEntity}"/> to track changes and
-    /// a <see cref="AbstractMongoChangeTrackingReadRepository{TEntityKey,TEntity}"/> to read changes.
-    /// It also registers <see cref="AbstractChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="AbstractChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
-    /// and <see cref="AbstractChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
+    /// This function registers a <see cref="MongoChangeTrackingService{TEntityKey,TEntity}"/> to track changes and
+    /// a <see cref="MongoChangeTrackingReadRepository{TEntityKey,TEntity}"/> to read changes.
+    /// It also registers <see cref="ChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="ChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
+    /// and <see cref="ChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
     /// <param name="configurator">
     /// The <see cref="DomainEventsConfigurator{TBuilder,TKey,TEntity}"/> to configure Mongo persistence for.
     /// </param>
     /// <param name="configure">
     /// A function to configure mongo change tracking.
-    /// </param>
-    /// <param name="changeTrackingOptions">
-    /// The <see cref="ChangeTrackingOptions"/> to configure change tracking.
     /// </param>
     /// <typeparam name="TBuilder">
     /// The type of <see cref="MongoDbEntityBuilder{TKey,TEntity}"/> builder. Must inherit <see cref="MongoDbEntityBuilder{TKey,TEntity}"/>
@@ -51,8 +48,7 @@ public static class Extensions
     /// </exception>
     public static DomainEventsConfigurator<TBuilder, TKey, TEntity> WithMongoChangeTracking<TBuilder, TKey, TEntity>(
         this DomainEventsConfigurator<TBuilder, TKey, TEntity> configurator,
-        Action<MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure,
-        ChangeTrackingOptions changeTrackingOptions = null)
+        Action<MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure)
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
         where TBuilder : EntityCrudBuilder<TKey, TEntity>
@@ -72,13 +68,13 @@ public static class Extensions
             MongoIndexClient<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
 
         configurator.Builder.WithRegistration<IMongoIndexProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-            AbstractMongoChangeTrackingIndexProvider<TKey, TEntity>>(false);
+            MongoChangeTrackingIndexProvider<TKey, TEntity>>(false);
 
         configurator.Builder.WithRegistration<IChangeTrackingReadService<TKey, TEntity>,
-            AbstractMongoChangeTrackingReadRepository<TKey, TEntity>>(false);
+            MongoChangeTrackingReadRepository<TKey, TEntity>>(false);
 
         configurator.Builder.WithRegistration<IChangeTrackingService<TKey, TEntity>,
-            AbstractMongoChangeTrackingService<TKey, TEntity>>(false);
+            MongoChangeTrackingService<TKey, TEntity>>(false);
 
         configurator.Builder.WithRegistration<IDefaultEntityOrderByProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
             DefaultEntityOrderByProviderModified<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
@@ -128,12 +124,9 @@ public static class Extensions
                     mongoDbEntityBuilder.ShardMode));
         }
 
-        configurator.WithDomainEventEntityAddedSubscriber<AbstractChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
-        configurator.WithDomainEventEntityUpdatedSubscriber<AbstractChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
-        configurator.WithDomainEventEntityDeletedSubscriber<AbstractChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
-
-        configurator.Builder.WithRegistrationInstance<IChangeTrackingOptionsProvider<TKey, TEntity>>(
-            new DefaultChangeTrackingOptionsProvider<TKey, TEntity>(changeTrackingOptions ?? new ChangeTrackingOptions()));
+        configurator.WithDomainEventEntityAddedSubscriber<ChangeTrackingAddedDomainEventHandler<TKey, TEntity>>();
+        configurator.WithDomainEventEntityUpdatedSubscriber<ChangeTrackingUpdatedDomainEventHandler<TKey, TEntity>>();
+        configurator.WithDomainEventEntityDeletedSubscriber<ChangeTrackingDeleteDomainEventHandler<TKey, TEntity>>();
 
         using var changeTrackingConfigurator =
             new MongoChangeTrackingConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(configurator.Builder);

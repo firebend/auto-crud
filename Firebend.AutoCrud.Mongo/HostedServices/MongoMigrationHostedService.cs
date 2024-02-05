@@ -60,8 +60,7 @@ public class MongoMigrationHostedService : BackgroundService
         var maxVersion = await collection.AsQueryable()
             .Select(x => x.Version)
             .OrderByDescending(x => x)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(cancellationToken);
 
         foreach (var migration in _migrations
             .Where(x => x.Version.Version > maxVersion)
@@ -69,13 +68,9 @@ public class MongoMigrationHostedService : BackgroundService
         {
             try
             {
-                await migration
-                    .ApplyMigrationAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await migration.ApplyMigrationAsync(cancellationToken);
 
-                await collection
-                    .InsertOneAsync(migration.Version, new InsertOneOptions(), cancellationToken)
-                    .ConfigureAwait(false);
+                await collection.InsertOneAsync(migration.Version, new InsertOneOptions(), cancellationToken);
             }
             catch (Exception ex)
             {

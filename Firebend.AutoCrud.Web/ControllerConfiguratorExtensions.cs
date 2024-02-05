@@ -28,7 +28,7 @@ public static class ControllerConfiguratorExtensions
             Type filterType,
             string policy)
     {
-        var authCtor = filterType.GetConstructor(new[] { typeof(string) });
+        var authCtor = filterType.GetConstructor([typeof(string)]);
 
         if (authCtor == null)
         {

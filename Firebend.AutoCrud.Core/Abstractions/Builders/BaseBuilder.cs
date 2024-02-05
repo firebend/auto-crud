@@ -20,9 +20,14 @@ public abstract class BaseBuilder : BaseDisposable
 
     public Dictionary<Type, List<CrudBuilderAttributeModel>> Attributes { get; set; }
 
-    public List<Action<IServiceCollection>> ServiceCollectionHooks { get; set; }
-
     public virtual string SignatureBase { get; set; }
+
+    public IServiceCollection Services { get; }
+
+    public BaseBuilder(IServiceCollection serviceCollection)
+    {
+        Services = serviceCollection;
+    }
 
     public void Build()
     {
@@ -56,7 +61,7 @@ public abstract class BaseBuilder : BaseDisposable
     {
         if (Registrations == null)
         {
-            Registrations = new Dictionary<Type, List<Registration>> { { type, new List<Registration> { registration } } };
+            Registrations = new Dictionary<Type, List<Registration>> { { type, [registration] } };
 
             return this;
         }
@@ -65,18 +70,18 @@ public abstract class BaseBuilder : BaseDisposable
         {
             if (allowMany)
             {
-                Registrations[type] ??= new List<Registration>();
+                Registrations[type] ??= [];
                 Registrations[type].Add(registration);
             }
             else if (replace)
             {
-                Registrations[type] = new List<Registration> { registration };
+                Registrations[type] = [registration];
             }
 
             return this;
         }
 
-        Registrations.Add(type, new List<Registration> { registration });
+        Registrations.Add(type, [registration]);
 
         return this;
     }
@@ -85,24 +90,35 @@ public abstract class BaseBuilder : BaseDisposable
         Type serviceType,
         bool replace = true,
         bool allowMany = false,
-        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        ServiceLifetime lifetime = ServiceLifetime.Scoped,
+        bool isDynamic = false)
     {
-        var registration = new ServiceRegistration { ServiceType = serviceType, Lifetime = lifetime };
+        var registration = isDynamic
+            ? new DynamicServiceRegistration { ServiceType = serviceType, Lifetime = lifetime }
+            : new ServiceRegistration { ServiceType = serviceType, Lifetime = lifetime };
 
         return WithRegistration(registrationType, registration, replace, allowMany);
     }
 
-    public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true, bool allowMany = false, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
-        => WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany, serviceLifetime);
+    public BaseBuilder WithRegistration<TRegistration, TService>(bool replace = true,
+        bool allowMany = false,
+        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped,
+        bool isDynamic = false)
+        => WithRegistration(typeof(TRegistration), typeof(TService), replace, allowMany, serviceLifetime, isDynamic);
 
-    public BaseBuilder WithRegistration<TRegistration>(Type type, bool replace = true, bool allowMany = false, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
-        => WithRegistration(typeof(TRegistration), type, replace, allowMany, serviceLifetime);
+    public BaseBuilder WithRegistration<TRegistration>(Type type,
+        bool replace = true,
+        bool allowMany = false,
+        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped,
+        bool isDynamic = false)
+        => WithRegistration(typeof(TRegistration), type, replace, allowMany, serviceLifetime, isDynamic);
 
     public BaseBuilder WithRegistration(Type registrationType,
         Type serviceType,
         Type typeToCheck,
         bool replace = true,
-        bool allowMany = false)
+        bool allowMany = false,
+        bool isDynamic = false)
     {
         if (!typeToCheck.IsAssignableFrom(serviceType))
         {
@@ -114,7 +130,7 @@ public abstract class BaseBuilder : BaseDisposable
             throw new ArgumentException($"Service type is not assignable to {typeToCheck}");
         }
 
-        return WithRegistration(registrationType, serviceType, replace, allowMany);
+        return WithRegistration(registrationType, serviceType, replace, allowMany, ServiceLifetime.Scoped, isDynamic);
     }
 
     public BaseBuilder WithRegistrationInstance(Type registrationType, object instance, bool replace = true, bool allowMany = false)
@@ -128,13 +144,6 @@ public abstract class BaseBuilder : BaseDisposable
 
     public BaseBuilder WithRegistrationInstance<TInstance>(object instance) => WithRegistrationInstance(typeof(TInstance), instance);
 
-    public BaseBuilder WithDynamicClass(Type type, DynamicClassRegistration classRegistration)
-    {
-        WithRegistration(type, classRegistration);
-
-        return this;
-    }
-
     public BaseBuilder WithAttribute(Type registrationType, Type attributeType, CustomAttributeBuilder attribute,
         bool allowMultiple = false)
     {
@@ -144,7 +153,7 @@ public abstract class BaseBuilder : BaseDisposable
 
         if (Attributes.ContainsKey(registrationType))
         {
-            Attributes[registrationType] ??= new List<CrudBuilderAttributeModel>();
+            Attributes[registrationType] ??= [];
             if (!allowMultiple)
             {
                 Attributes[registrationType].RemoveAll(x => x.AttributeType == attributeType);
@@ -153,15 +162,8 @@ public abstract class BaseBuilder : BaseDisposable
         }
         else
         {
-            Attributes.Add(registrationType, new List<CrudBuilderAttributeModel> { model });
+            Attributes.Add(registrationType, [model]);
         }
-        return this;
-    }
-
-    public BaseBuilder WithServiceCollectionHook(Action<IServiceCollection> action)
-    {
-        ServiceCollectionHooks ??= new List<Action<IServiceCollection>>();
-        ServiceCollectionHooks.Add(action);
         return this;
     }
 
@@ -183,6 +185,8 @@ public abstract class BaseBuilder : BaseDisposable
 
                 argsString = args.ToString(0, args.Length - 1);
 
+                args.Clear();
+
             }
             throw new Exception($"Please register a {type.Name} {argsString}");
         }
@@ -196,9 +200,6 @@ public abstract class BaseBuilder : BaseDisposable
 
         Attributes?.Clear();
         Attributes = null;
-
-        ServiceCollectionHooks?.Clear();
-        ServiceCollectionHooks = null;
 
         SignatureBase = null;
     }

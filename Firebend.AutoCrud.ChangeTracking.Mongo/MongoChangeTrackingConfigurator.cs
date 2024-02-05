@@ -3,8 +3,8 @@ using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Abstractions.Configurators;
 using Firebend.AutoCrud.Core.Interfaces.Models;
-using Firebend.AutoCrud.Mongo.Abstractions.Client;
-using Firebend.AutoCrud.Mongo.Abstractions.Client.Indexing;
+using Firebend.AutoCrud.Mongo.Client;
+using Firebend.AutoCrud.Mongo.Client.Indexing;
 using Firebend.AutoCrud.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo.Interfaces;
 

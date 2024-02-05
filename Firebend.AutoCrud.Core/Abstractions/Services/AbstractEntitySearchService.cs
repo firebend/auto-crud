@@ -15,7 +15,7 @@ public abstract class AbstractEntitySearchService<TEntity, TSearch> : BaseDispos
     {
         var functions = new List<Expression<Func<TEntity, bool>>>();
 
-        if (search is IActiveEntitySearchRequest { IsDeleted: { } } activeEntitySearchRequest)
+        if (search is IActiveEntitySearchRequest { IsDeleted: not null } activeEntitySearchRequest)
         {
             Expression<Func<IActiveEntity, bool>> expression = activeEntitySearchRequest.IsDeleted.Value
                 ? x => x.IsDeleted

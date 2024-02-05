@@ -10,11 +10,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web;
 
-internal static class ControllerConfiguratorStatics
-{
-    public static readonly object Locker = new();
-}
-
 public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 {
     public string OpenApiGroupName { get; private set; }
@@ -80,30 +75,12 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
     }
 
     private void AddSwaggerGenOptionConfiguration()
-    {
-        if (ControllerConfiguratorCache.IsSwaggerApplied)
-        {
-            return;
-        }
-
-        lock (ControllerConfiguratorStatics.Locker)
-        {
-            if (ControllerConfiguratorCache.IsSwaggerApplied)
-            {
-                return;
-            }
-
-            Builder.WithServiceCollectionHook(sc =>
-                sc.TryAddEnumerable(ServiceDescriptor
-                    .Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>()));
-
-            ControllerConfiguratorCache.IsSwaggerApplied = true;
-        }
-    }
+        => Builder
+        .Services
+        .TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<SwaggerGenOptions>, PostConfigureSwaggerOptions>());
 
 
-    private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo(
-        string openApiName)
+    private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetOpenApiGroupAttributeInfo(string openApiName)
     {
         if (string.IsNullOrWhiteSpace(openApiName))
         {
@@ -111,14 +88,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
         }
 
         var attributeType = typeof(OpenApiGroupNameAttribute);
-        var attributeCtor = attributeType.GetConstructor(new[] { typeof(string) });
+        var attributeCtor = attributeType.GetConstructor([typeof(string)]);
 
         if (attributeCtor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { openApiName });
+        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, [openApiName]);
 
         return (attributeType, attributeBuilder);
     }
@@ -138,14 +115,14 @@ public partial class ControllerConfigurator<TBuilder, TKey, TEntity, TVersion>
 
         var attributeType = typeof(OpenApiEntityNameAttribute);
 
-        var attributeCtor = attributeType.GetConstructor(new[] { typeof(string), typeof(string) });
+        var attributeCtor = attributeType.GetConstructor([typeof(string), typeof(string)]);
 
         if (attributeCtor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, new object[] { name, plural });
+        var attributeBuilder = new CustomAttributeBuilder(attributeCtor, [name, plural]);
 
         return (attributeType, attributeBuilder);
     }

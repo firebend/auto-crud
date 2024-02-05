@@ -6,12 +6,6 @@ using Firebend.AutoCrud.Core.Models.CustomFields;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 
-public interface IEfCustomFieldsModel<TKey>
-    where TKey : struct
-{
-    CustomFieldsEntity<TKey> ToCustomFields();
-}
-
 public class EfCustomFieldsModel<TKey, TEntity> : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>, IEntityName
     where TKey : struct
 {
@@ -38,11 +32,4 @@ public class EfCustomFieldsModel<TKey, TEntity> : CustomFieldsEntity<TKey>, IEfC
 
         return $"{tableName}_CustomFields";
     }
-}
-
-public class EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey> : EfCustomFieldsModel<TKey, TEntity>, ITenantEntity<TTenantKey>
-    where TKey : struct
-    where TTenantKey : struct
-{
-    public TTenantKey TenantId { get; set; }
 }

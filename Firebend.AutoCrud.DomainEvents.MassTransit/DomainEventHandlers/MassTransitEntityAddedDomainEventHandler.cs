@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers.Abstractions;
 using MassTransit;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;

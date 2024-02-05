@@ -11,6 +11,7 @@ using Firebend.AutoCrud.Tests.Web.Implementations.Swagger;
 using Firebend.AutoCrud.Web.Implementations.Authorization;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 
@@ -20,6 +21,8 @@ namespace Firebend.AutoCrud.Tests.Web.Implementations.Authorization;
 public class EntityAuthProviderTests
 {
     private Fixture _fixture;
+    private Mock<IServiceScopeFactory> _serviceScopeFactory;
+    private Mock<IServiceScope> _serviceScope;
     private Mock<IServiceProvider> _serviceProvider;
     private Mock<IEntityReadService<Guid, ActionFilterTestHelper.TestEntity>> _entityReadService;
     private Mock<IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity, V1>> _entityKeyParser;
@@ -31,11 +34,17 @@ public class EntityAuthProviderTests
         _fixture = new Fixture();
         _fixture.Customize(new AutoMoqCustomization());
         _authService = new Mock<IAuthorizationService>();
+        _serviceScopeFactory = new Mock<IServiceScopeFactory>();
+        _serviceScope = new Mock<IServiceScope>();
         _serviceProvider = new Mock<IServiceProvider>();
         _entityReadService = new Mock<IEntityReadService<Guid, ActionFilterTestHelper.TestEntity>>();
+
         _serviceProvider.Setup(s
                 => s.GetService(typeof(IEntityReadService<Guid, ActionFilterTestHelper.TestEntity>)))
             .Returns(_entityReadService.Object);
+
+        _serviceScope.Setup(x => x.ServiceProvider).Returns(_serviceProvider.Object);
+        _serviceScopeFactory.Setup(x => x.CreateScope()).Returns(_serviceScope.Object);
 
         _entityKeyParser = new Mock<IEntityKeyParser<Guid, ActionFilterTestHelper.TestEntity, V1>>();
         _entityKeyParser.Setup(s => s.ParseKey(
@@ -55,7 +64,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceScopeFactory.Object);
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
@@ -74,7 +83,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceScopeFactory.Object);
 
         // then
         Assert.ThrowsAsync<DependencyResolverException>(() =>
@@ -93,7 +102,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceScopeFactory.Object);
 
         // then
         Assert.ThrowsAsync<ArgumentException>(() =>
@@ -110,7 +119,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceScopeFactory.Object);
 
         // then
         await entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
@@ -129,7 +138,7 @@ public class EntityAuthProviderTests
 
         // when
         var entityAuthProvider =
-            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
+            new DefaultEntityAuthProvider(_authService.Object, _serviceScopeFactory.Object);
 
         // then
         await entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(

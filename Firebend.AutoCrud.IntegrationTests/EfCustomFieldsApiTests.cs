@@ -76,8 +76,8 @@ public class EfCustomFieldsApiTests
     [TestMethod]
     [DataRow(0, HttpStatusCode.BadRequest)]
     [DataRow(1, HttpStatusCode.OK)]
-    [DataRow(1000, HttpStatusCode.OK)]
-    [DataRow(1001, HttpStatusCode.BadRequest)]
+    [DataRow(250, HttpStatusCode.OK)]
+    [DataRow(251, HttpStatusCode.BadRequest)]
     public async Task CustomFieldsValueMinMaxCharacters(int valueLength, HttpStatusCode expectedStatusCode)
     {
         var customField =

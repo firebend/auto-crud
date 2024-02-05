@@ -8,7 +8,7 @@ public interface IEntityCrudGenerator
 {
     List<BaseBuilder> Builders { get; }
 
-    IServiceCollection ServiceCollection { get; }
+    IServiceCollection Services { get; }
 
     IServiceCollection Generate();
 }

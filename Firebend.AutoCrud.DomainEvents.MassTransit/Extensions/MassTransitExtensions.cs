@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
-using Firebend.AutoCrud.Core.Models.DomainEvents;
-using Firebend.AutoCrud.DomainEvents.MassTransit.DomainEventHandlers;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -19,9 +16,9 @@ public static class MassTransitExtensions
 
     private static List<AutoCrudMassTransitConsumerInfo> _listeners;
 
-    private static IEnumerable<AutoCrudMassTransitConsumerInfo> GetListeners(IServiceCollection serviceCollection)
+    private static List<AutoCrudMassTransitConsumerInfo> GetListeners(IServiceCollection serviceCollection)
     {
-        if (_listeners != null && _listeners.Any())
+        if (_listeners != null && _listeners.Count != 0)
         {
             return _listeners;
         }
@@ -39,19 +36,10 @@ public static class MassTransitExtensions
     public static void RegisterFirebendAutoCrudDomainEventHandlers(this IBusRegistrationConfigurator busConfigurator,
         IServiceCollection serviceCollection)
     {
-        var addConsumer = typeof(MassTransitExtensions).GetMethod(nameof(AddConsumer),
-            BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Static);
-
-        if (addConsumer == null)
-        {
-            return;
-        }
-
         foreach (var listener in GetListeners(serviceCollection))
         {
-            addConsumer
-                .MakeGenericMethod(listener.ServiceDescriptor.ImplementationType!, listener.DomainEventType, listener.ConsumerType)
-                .Invoke(null, new object[] { busConfigurator, serviceCollection });
+            busConfigurator.AddConsumer(listener.ConsumerType);
+            serviceCollection.TryAddTransient(listener.ServiceDescriptor.ImplementationType!);
         }
     }
 
@@ -62,14 +50,6 @@ public static class MassTransitExtensions
         string receiveEndpointPrefix = null,
         Action<IReceiveEndpointConfigurator> configureReceiveEndpoint = null)
     {
-        var configureConsumer = typeof(MassTransitExtensions).GetMethod(nameof(ConfigureConsumer),
-            BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Static);
-
-        if (configureConsumer == null)
-        {
-            return;
-        }
-
         var queues = GetQueues(queueMode, receiveEndpointPrefix, _listeners);
 
         foreach (var (queueName, consumerInfos) in queues)
@@ -78,14 +58,7 @@ public static class MassTransitExtensions
             {
                 foreach (var consumerInfo in consumerInfos)
                 {
-                    configureConsumer.MakeGenericMethod(consumerInfo.ServiceDescriptor.ImplementationType!,
-                            consumerInfo.DomainEventType,
-                            consumerInfo.ConsumerType)
-                        .Invoke(null, new object[]
-                        {
-                            busRegistrationContext,
-                            re
-                        });
+                    busRegistrationContext.ConfigureConsumer(consumerInfo.ConsumerType, re);
                 }
                 configureReceiveEndpoint?.Invoke(re);
             });
@@ -114,7 +87,7 @@ public static class MassTransitExtensions
         switch (queueMode)
         {
             case AutoCrudMassTransitQueueMode.OneQueue:
-                return new Dictionary<string, List<AutoCrudMassTransitConsumerInfo>> { { prefix, consumerInfos } };
+                return new() { { prefix, consumerInfos } };
 
             case AutoCrudMassTransitQueueMode.QueuePerAction:
                 return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityActionDescription}")
@@ -122,7 +95,7 @@ public static class MassTransitExtensions
                         x => x.ToList());
 
             case AutoCrudMassTransitQueueMode.QueuePerEntity:
-                return consumerInfos.GroupBy(x => $"{prefix}_{x.EntityType.Name}")
+                return consumerInfos.GroupBy(x => CleanseQueueName($"{prefix}_{x.EntityType.Name}"))
                     .ToDictionary(x => x.Key, x => x.ToList());
 
             case AutoCrudMassTransitQueueMode.QueuePerEntityAction:
@@ -138,7 +111,7 @@ public static class MassTransitExtensions
                         consumerInfo.ServiceDescriptor.ImplementationType,
                         consumerInfo.EntityActionDescription
                     );
-                    dictionary.Add(queueName, new List<AutoCrudMassTransitConsumerInfo> { consumerInfo });
+                    dictionary.Add(queueName, [consumerInfo]);
                 }
 
                 return dictionary;
@@ -152,23 +125,21 @@ public static class MassTransitExtensions
         }
     }
 
-    private static void AddConsumer<TDomainEventHandler, TDomainEvent, TDomainEventConsumer>(IRegistrationConfigurator busConfigurator,
-        IServiceCollection serviceCollection)
-        where TDomainEvent : DomainEventBase
-        where TDomainEventHandler : class, IDomainEventSubscriber
-        where TDomainEventConsumer : AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler>
-    {
-        serviceCollection.TryAddTransient<TDomainEventHandler>();
-        busConfigurator.AddConsumer<TDomainEventConsumer>();
-    }
-
-    private static void ConfigureConsumer<TDomainEventHandler, TDomainEvent, TDomainEventConsumer>(
-        IRegistrationContext context,
-        IReceiveEndpointConfigurator receiveEndpointConfigurator)
-        where TDomainEvent : DomainEventBase
-        where TDomainEventHandler : class, IDomainEventSubscriber
-        where TDomainEventConsumer : AbstractMassTransitDomainEventHandler<TDomainEvent, TDomainEventHandler>
-        => context.ConfigureConsumer<TDomainEventConsumer>(receiveEndpointConfigurator);
+    private static string CleanseQueueName(string queueName) => queueName
+        .Replace("`1", null)
+        .Replace("`2", null)
+        .Replace("`3", null)
+        .Replace("`4", null)
+        .Replace("`5", null)
+        .Replace("`6", null)
+        .Replace("`7", null)
+        .Replace("`8", null)
+        .Replace("`9", null)
+        .Replace("`10", null)
+        .Replace("<", string.Empty)
+        .Replace(">", string.Empty)
+        .Replace(",", string.Empty)
+        .Replace(" ", string.Empty);
 
     private static string GetQueueName(ICollection<string> queueNames,
         string receiveEndpointPrefix,
@@ -176,43 +147,39 @@ public static class MassTransitExtensions
         MemberInfo listenerImplementationType,
         string handlerTypeDesc)
     {
-        var sb = new StringBuilder();
+        var sb = new List<string>();
 
         if (!string.IsNullOrWhiteSpace(receiveEndpointPrefix))
         {
-            sb.Append(receiveEndpointPrefix);
-            sb.Append('-');
+            sb.Add(receiveEndpointPrefix);
+            sb.Add("-");
         }
 
-        sb.Append(genericMessageType.Name);
+        sb.Add(genericMessageType.Name);
 
         if (!string.IsNullOrWhiteSpace(listenerImplementationType?.Name))
         {
-            sb.Append('_');
-            sb.Append(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
+            sb.Add("_");
+            sb.Add(listenerImplementationType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? listenerImplementationType.Name);
         }
 
         foreach (var genericTypeArgument in genericMessageType.GenericTypeArguments)
         {
-            sb.Append('_');
-            sb.Append(genericTypeArgument.Name);
+            sb.Add("_");
+            sb.Add(genericTypeArgument.Name);
         }
 
-        sb.Append('_');
-        sb.Append(handlerTypeDesc);
-        var sbBuilt = sb.ToString();
+        sb.Add("_");
+        sb.Add(handlerTypeDesc);
+
+        var sbBuilt = string.Join(string.Empty, sb);
 
         if (string.IsNullOrWhiteSpace(sbBuilt))
         {
             throw new Exception("Error building queue name");
         }
 
-        var queueName = sbBuilt
-            .Replace("`1", null)
-            .Replace("`2", null)
-            .Replace("`3", null)
-            .Replace("`4", null)
-            .Replace("`5", null);
+        var queueName = CleanseQueueName(sbBuilt);
 
         while (queueNames.Contains(queueName))
         {

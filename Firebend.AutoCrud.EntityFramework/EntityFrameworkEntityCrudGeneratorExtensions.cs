@@ -1,25 +1,39 @@
 using System;
-using Firebend.AutoCrud.Core.Implementations.Concurrency;
-using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
+using Firebend.AutoCrud.EntityFramework.HostedServices;
 using Firebend.AutoCrud.Generator.Implementations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Firebend.AutoCrud.EntityFramework;
 
 public static class EntityFrameworkEntityCrudGeneratorExtensions
 {
-    public static EntityFrameworkEntityCrudGenerator UsingEfCrud(this IServiceCollection serviceCollection) =>
-        new(new DynamicClassGenerator(), serviceCollection);
-
-    public static IServiceCollection UsingEfCrud(this IServiceCollection serviceCollection,
-        Action<EntityFrameworkEntityCrudGenerator> configure)
+    public static IServiceCollection UsingEfCrud<TContext>(
+        this IServiceCollection serviceCollection,
+        Action<IServiceProvider, DbContextOptionsBuilder> dbContextOptionsBuilder,
+        Action<EntityFrameworkEntityCrudGenerator> configure,
+        bool usePooled = true)
+        where TContext : DbContext
     {
+        if (usePooled)
+        {
+            serviceCollection.AddPooledDbContextFactory<TContext>(dbContextOptionsBuilder);
+        }
+        else
+        {
+            serviceCollection.AddDbContextFactory<TContext>(dbContextOptionsBuilder);
+        }
 
-        serviceCollection.TryAddSingleton<IMemoizer>(Memoizer.Instance);
+        serviceCollection.AddHostedService<AutoCrudEfMigrationHostedService<TContext>>();
 
-        using var ef = UsingEfCrud(serviceCollection);
+        using var ef = new EntityFrameworkEntityCrudGenerator(
+            new DynamicClassGenerator(),
+            serviceCollection,
+            dbContextOptionsBuilder,
+            typeof(TContext));
+
         configure(ef);
+
         return ef.Generate();
     }
 }

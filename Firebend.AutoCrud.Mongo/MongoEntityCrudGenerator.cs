@@ -45,7 +45,7 @@ public class MongoEntityCrudGenerator : EntityCrudGenerator
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        var builder = new MongoDbEntityBuilder<TKey, TEntity>();
+        var builder = new MongoDbEntityBuilder<TKey, TEntity>(Services);
         configure(builder);
         Builders.Add(builder);
         return this;
@@ -77,7 +77,7 @@ public class MongoEntityCrudGenerator : EntityCrudGenerator
     /// </example>
     public MongoEntityCrudGenerator WithMigrationConnectionString(string connectionString)
     {
-        ServiceCollection.TryAddSingleton<IMongoMigrationConnectionStringProvider>(
+        Services.TryAddSingleton<IMongoMigrationConnectionStringProvider>(
             new MongoMigrationConnectionStringProvider(connectionString));
 
         return this;

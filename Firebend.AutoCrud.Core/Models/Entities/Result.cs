@@ -21,17 +21,6 @@ public class Result<TModel> : Result
     public static new Result<TModel> Error(string message) => new Result<TModel> { WasSuccessful = false, Message = message };
 }
 
-public class ModelError
-{
-    public string PropertyPath { get; set; }
-    public string Error { get; set; }
-}
-
-public static class ModelStateResult
-{
-    public static ModelStateResult<TModel> Success<TModel>(TModel model) => new ModelStateResult<TModel> { WasSuccessful = true, Model = model };
-}
-
 public class ModelStateResult<TModel> : Result<TModel>
 {
     private readonly List<ModelError> _errors = new List<ModelError>();

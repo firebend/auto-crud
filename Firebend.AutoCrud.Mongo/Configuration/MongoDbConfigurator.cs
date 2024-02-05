@@ -40,7 +40,6 @@ public class MongoDbConfigurator : IMongoDbConfigurator
                 new CamelCaseElementNameConvention(), new EnumRepresentationConvention(BsonType.String), new IgnoreExtraElementsConvention(true)
             };
 
-            var mongoEntityType = typeof(IEntity<>);
             const string mongoEntityIdName = "Id";
 
             pack.AddClassMapConvention("Mongo ID Guid Generator", map =>
@@ -49,7 +48,7 @@ public class MongoDbConfigurator : IMongoDbConfigurator
                     map.ClassType.BaseType.IsInterface ||
                     map.ClassType.BaseType.GetProperty(mongoEntityIdName) == null)
                 {
-                    if (mongoEntityType.IsAssignableFrom(map.ClassType))
+                    if (typeof(IEntity<>).IsAssignableFrom(map.ClassType))
                     {
                         map.MapIdProperty(mongoEntityIdName)
                             .SetIdGenerator(MongoIdGeneratorComb.Instance)

@@ -18,7 +18,10 @@ public class SwaggerOperationFilter : IOperationFilter
             ?.ActionDescriptor
             ?.EndpointMetadata;
 
-        operation.Deprecated |= context.ApiDescription.IsDeprecated();
+        if (context.ApiDescription != null)
+        {
+            operation.Deprecated |= context.ApiDescription.IsDeprecated();
+        }
 
         if (endpointMetaData is null)
         {

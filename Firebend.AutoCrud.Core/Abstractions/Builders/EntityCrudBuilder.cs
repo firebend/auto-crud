@@ -9,6 +9,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders;
 
@@ -24,7 +25,7 @@ public abstract class EntityCrudBuilder<TKey, TEntity> : EntityBuilder<TKey, TEn
 
     private Type _tenantEntityKeyType;
 
-    protected EntityCrudBuilder()
+    protected EntityCrudBuilder(IServiceCollection services) : base(services)
     {
         SearchRequestType = IsActiveEntity switch
         {

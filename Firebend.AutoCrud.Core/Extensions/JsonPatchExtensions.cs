@@ -37,17 +37,17 @@ public static class JsonPatchExtensions
     {
         var result = Result.Success();
 
+        toPatch.Operations.AddRange(
+            fromPatch.Operations.Select(o => new Operation<TTo>(o.op, o.path, o.from, o.value)));
+        TestPatch(toPatch);
+        errorMessage = result.Message;
+        return result.WasSuccessful;
+
         void TestPatch(JsonPatchDocument<TTo> jsonPatchDocument)
         {
             var testEntity = new TTo();
             jsonPatchDocument.ApplyTo(testEntity,
                 _ => result.WasSuccessful = false);
         }
-
-        toPatch.Operations.AddRange(
-            fromPatch.Operations.Select(o => new Operation<TTo>(o.op, o.path, o.from, o.value)));
-        TestPatch(toPatch);
-        errorMessage = result.Message;
-        return result.WasSuccessful;
     }
 }

@@ -10,9 +10,3 @@ public class UserInfo
     public string Password { get; set; }
     public DateTime? CreatedDate { get; set; }
 }
-
-public class UserInfoPostDto
-{
-    public string Email { get; set; }
-    public string Password { get; set; }
-}

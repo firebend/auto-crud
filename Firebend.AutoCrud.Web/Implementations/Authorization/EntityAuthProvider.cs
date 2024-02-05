@@ -16,12 +16,12 @@ namespace Firebend.AutoCrud.Web.Implementations.Authorization;
 public abstract class EntityAuthProvider : IEntityAuthProvider
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    protected EntityAuthProvider(IAuthorizationService authorizationService, IServiceProvider serviceProvider)
+    protected EntityAuthProvider(IAuthorizationService authorizationService, IServiceScopeFactory serviceScopeFactory)
     {
         _authorizationService = authorizationService;
-        _serviceProvider = serviceProvider;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     private TKey GetEntityKeyAsync<TKey, TEntity, TVersion>(string entityIdString)
@@ -29,7 +29,8 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         where TEntity : class, IEntity<TKey>
         where TVersion : class, IAutoCrudApiVersion
     {
-        var keyParser = _serviceProvider.GetService<IEntityKeyParser<TKey, TEntity, TVersion>>() ?? throw new DependencyResolverException($"Cannot resolve key parser for {nameof(TEntity)}");
+        using var scope = _serviceScopeFactory.CreateScope();
+        var keyParser = scope.ServiceProvider.GetService<IEntityKeyParser<TKey, TEntity, TVersion>>() ?? throw new DependencyResolverException($"Cannot resolve key parser for {nameof(TEntity)}");
 
         var entityId = keyParser.ParseKey(entityIdString) ?? throw new ArgumentException($"Failed to parse id for {nameof(TEntity)}");
 
@@ -40,7 +41,8 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        var readService = _serviceProvider.GetService<IEntityReadService<TKey, TEntity>>() ?? throw new DependencyResolverException($"Cannot resolve read service for {nameof(TEntity)}");
+        using var scope = _serviceScopeFactory.CreateScope();
+        var readService = scope.ServiceProvider.GetService<IEntityReadService<TKey, TEntity>>() ?? throw new DependencyResolverException($"Cannot resolve read service for {nameof(TEntity)}");
 
         using (readService)
         {

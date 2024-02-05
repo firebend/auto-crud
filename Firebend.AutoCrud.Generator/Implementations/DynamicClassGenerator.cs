@@ -11,6 +11,16 @@ namespace Firebend.AutoCrud.Generator.Implementations;
 
 public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
 {
+    // ReSharper disable once InconsistentNaming
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
+    // ReSharper disable once ConvertToConstant.Global
+#pragma warning disable CA2211
+#pragma warning disable IDE1006
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static AssemblyBuilderAccess DefaultAccess = AssemblyBuilderAccess.Run;
+#pragma warning restore CA2211
+#pragma warning restore IDE1006
+
     public Type GenerateDynamicClass(Type classType,
         string typeSignature,
         List<Type> implementedTypes,
@@ -64,7 +74,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
             throw new ArgumentNullException(nameof(typeSignature));
         }
 
-        var tb = GetTypeBuilder(typeSignature, interfaces: new[] { interfaceType }, isInterface: true);
+        var tb = GetTypeBuilder(typeSignature, interfaces: [interfaceType], isInterface: true);
 
         return tb.CreateType();
     }
@@ -81,7 +91,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
             throw new ArgumentNullException(nameof(typeSignature));
         }
 
-        var tb = GetTypeBuilder(typeSignature, interfaces: new[] { interfaceType });
+        var tb = GetTypeBuilder(typeSignature, interfaces: [interfaceType]);
 
         tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
 
@@ -105,19 +115,16 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
 
         var objectType = tb.CreateType();
 
-        if (objectType == null)
-        {
-            return null;
-        }
-
         var instance = Activator.CreateInstance(objectType);
 
-        if (properties.Length > 0)
+        if (properties.Length <= 0)
         {
-            foreach (var field in properties.Where(x => x.Value != null))
-            {
-                SetProperty(objectType, instance, field.Name, field.Value);
-            }
+            return instance;
+        }
+
+        foreach (var field in properties.Where(x => x.Value != null))
+        {
+            SetProperty(objectType, instance, field.Name, field.Value);
         }
 
         return instance;
@@ -188,7 +195,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
         }
     }
 
-    private static IEnumerable<CustomAttributeBuilder> BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes) => customAttributes.Select(attribute =>
+    private static CustomAttributeBuilder[] BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes) => customAttributes.Select(attribute =>
         {
             var attributeArgs = attribute.ConstructorArguments
                 .Select(a => a.Value)
@@ -216,10 +223,10 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
 
             return new CustomAttributeBuilder(attribute.Constructor,
                 attributeArgs,
-                namedPropertyInfos,
-                namedPropertyValues,
-                namedFieldInfos,
-                namedFieldValues);
+                namedPropertyInfos!,
+                namedPropertyValues!,
+                namedFieldInfos!,
+                namedFieldValues!);
         })
         .ToArray();
 
@@ -243,7 +250,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
         }
 
         var an = new AssemblyName(typeSignature);
-        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(an, DefaultAccess);
         var moduleBuilder = assemblyBuilder.DefineDynamicModule("Firebend.AutoCrud.Dynamic");
         var tb = moduleBuilder.DefineType(
             typeSignature,
@@ -297,7 +304,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
                 MethodAttributes.HideBySig |
                 MethodAttributes.Public,
                 null,
-                new[] { propertySet.Type });
+                [propertySet.Type]);
 
         var setMethodBody = setPropertyMethodBuilder.GetILGenerator();
         var modifyProperty = setMethodBody.DefineLabel();

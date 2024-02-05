@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.CustomFields.Web;
 using Firebend.AutoCrud.EntityFramework;
+using Firebend.AutoCrud.EntityFramework.CustomCommands;
 using Firebend.AutoCrud.Mongo;
 using Firebend.AutoCrud.Web.Sample.Authorization;
 using Firebend.AutoCrud.Web.Sample.DbContexts;
@@ -27,7 +27,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -79,18 +78,24 @@ public static class Startup
         services
             .AddScoped<ITenantEntityProvider<int>, SampleTenantProvider>()
             .AddHttpContextAccessor()
-            .AddDbContext<PersonDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlServer")))
             .AddScoped<IJsonPatchWriter, JsonPatchWriter>()
             .UsingMongoCrud(mongo => mongo
                 .WithMigrationConnectionString(configuration.GetConnectionString("Mongo"))
-                .AddMongoPerson(configuration))
-            .UsingEfCrud(ef =>
-            {
-                ef.AddEfPerson(configuration)
-                    .AddEfPets(configuration)
-                    .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
-            })
-            .AddSampleMassTransit(configuration)
+                .AddMongoPerson(configuration)
+                .WithDomainEventContextProvider<SampleDomainEventContextProvider>()
+            )
+            .UsingEfCrud<PersonDbContext>(
+                (_, opt) => opt
+                    .UseSqlServer(configuration.GetConnectionString("SqlServer"))
+                    .AddFirebendFunctions()
+                    .EnableSensitiveDataLogging(),
+                ef =>
+                {
+                    ef.AddEfPerson(configuration)
+                        .AddEfPets(configuration)
+                        .WithDomainEventContextProvider<SampleDomainEventContextProvider>();
+                })
+            .AddSampleMassTransit(configuration, false)
             .AddRouting()
             .AddAutoCrudOpenApi(description => $"Firebend Auto Crud Web Sample {description.GroupName}", true)
             .AddFirebendAutoCrudApiBehaviors()
@@ -153,30 +158,5 @@ public static class Startup
                 opt.SwaggerEndpoint($"/open-api/{description.GroupName}/open-api.json", $"Firebend Auto Crud Web Sample {description.GroupName}");
             }
         });
-    }
-}
-
-
-public class ConfigureBearerOptions : IConfigureNamedOptions<JwtBearerOptions>
-{
-    public void Configure(JwtBearerOptions options)
-    {
-        InternalConfiguration(options);
-    }
-
-    public void Configure(string name, JwtBearerOptions options)
-    {
-        InternalConfiguration(options);
-    }
-
-    private static void InternalConfiguration(JwtBearerOptions options)
-    {
-        options.Events ??= new();
-
-        options.Events.OnForbidden = _ => Task.CompletedTask;
-
-        options.Events.OnTokenValidated = _ => Task.CompletedTask;
-
-        options.Events.OnAuthenticationFailed = _ => Task.CompletedTask;
     }
 }

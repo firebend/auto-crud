@@ -47,7 +47,7 @@ public partial class MongoPersonDomainEventHandler : BaseDisposable, IEntityAdde
         var contextJson = JsonConvert.SerializeObject(domainEvent.EventContext, Formatting.Indented);
 
         LogPersonAdded(_logger, modifiedJson, contextJson);
-        LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
+        LogCatchPhrase(_logger, domainEvent.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
 
         if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityAddedDomainEvent<EfPerson>> consumeContext))
         {
@@ -71,7 +71,7 @@ public partial class MongoPersonDomainEventHandler : BaseDisposable, IEntityAdde
 
         LogPersonUpdated(_logger, originalJson, modifiedJson, contextJson);
 
-        LogCatchPhrase(_logger, domainEvent.EventContext.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
+        LogCatchPhrase(_logger, domainEvent.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
 
         if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityUpdatedDomainEvent<EfPerson>> consumeContext))
         {

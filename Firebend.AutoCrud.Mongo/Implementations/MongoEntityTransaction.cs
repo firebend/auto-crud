@@ -13,15 +13,6 @@ using MongoDB.Driver.Core.Bindings;
 
 namespace Firebend.AutoCrud.Mongo.Implementations;
 
-public static class MongoEntityTransactionsDefaults
-{
-#pragma warning disable CA2211, IDE1006
-    // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    // ReSharper disable once InconsistentNaming
-    public static int NumberOfRetries = 10;
-#pragma warning restore CA2211, IDE1006
-}
-
 public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
 {
     public IClientSessionHandle ClientSessionHandle { get; }
@@ -35,12 +26,12 @@ public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
         o.PoolSize = 20;
         o.PoolInitialFill = 1;
     });
-    private readonly ILogger<MongoEntityTransaction> _logger;
+    private readonly ILogger _logger;
 
     public MongoEntityTransaction(IClientSessionHandle clientSessionHandle,
         IEntityTransactionOutbox outbox,
         IMongoRetryService retry,
-        ILoggerFactory loggerFactory)
+        ILogger logger)
     {
         ClientSessionHandle = clientSessionHandle;
         Outbox = outbox;
@@ -48,7 +39,7 @@ public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
         Id = CombGuid.New();
         State = EntityTransactionState.Started;
         StartedDate = DateTimeOffset.UtcNow;
-        _logger = loggerFactory.CreateLogger<MongoEntityTransaction>();
+        _logger = logger;
     }
 
     public Guid Id { get; }
@@ -115,11 +106,6 @@ public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
         var canAct = isRollback
          ? state is CoreTransactionState.Starting or CoreTransactionState.InProgress
          : state is CoreTransactionState.Starting or CoreTransactionState.InProgress or CoreTransactionState.Committed;
-
-        if (canAct is false)
-        {
-            Console.WriteLine($"**************** can act is false {state} {(isRollback ? "rollback" : "commit")}");
-        }
 
         return canAct;
     }

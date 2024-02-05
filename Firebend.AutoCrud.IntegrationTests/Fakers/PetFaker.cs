@@ -16,7 +16,7 @@ public static class PetFaker
                 .RuleFor(x => x.PetName, f => f.Person.FirstName)
                 .RuleFor(x => x.PetType, f => f.Hacker.Verb())
                 .RuleFor(x => x.IsDeleted, false)
-                .RuleFor(x => x.DataAuth, f => new DataAuth { UserEmails = new[] { f.Person.Email } });
+                .RuleFor(x => x.DataAuth, f => new DataAuth { UserEmails = [f.Person.Email] });
 
             return _fakerViewModelBase;
         }

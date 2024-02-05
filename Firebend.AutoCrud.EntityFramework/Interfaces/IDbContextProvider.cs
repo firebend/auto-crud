@@ -12,5 +12,5 @@ public interface IDbContextProvider<TKey, TEntity>
 {
     Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default);
 
-    Task<IDbContext> GetDbContextAsync(DbConnection connection, CancellationToken cancellationToken = default);
+    Task<IDbContext> GetDbContextAsync(DbTransaction connection, CancellationToken cancellationToken = default);
 }

@@ -15,16 +15,15 @@ public static class FirebendAutoCrudSwaggerGenTagger
 
         if (apiDescription.ActionDescriptor is ControllerActionDescriptor controllerDescriptor)
         {
-            list = new List<string>
-            {
+            list = [
                 controllerDescriptor.ControllerTypeInfo?.GetCustomAttribute<OpenApiGroupNameAttribute>()?.GroupName ??
                 controllerDescriptor.ControllerTypeInfo?.Namespace?.Split('.').Last() ??
                 apiDescription.RelativePath
-            };
+            ];
         }
         else
         {
-            list = new List<string> { apiDescription.RelativePath };
+            list = [apiDescription.RelativePath];
         }
 
         return list;

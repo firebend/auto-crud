@@ -1,5 +1,6 @@
 using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Abstractions.Builders;
 
@@ -23,5 +24,9 @@ public abstract class EntityBuilder<TKey, TEntity> : BaseBuilder
     {
         get => _signatureBase ??= $"{EntityType.Name}_{EntityName}";
         set => _signatureBase = value;
+    }
+
+    protected EntityBuilder(IServiceCollection serviceCollection) : base(serviceCollection)
+    {
     }
 }

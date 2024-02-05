@@ -3,7 +3,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
-using Firebend.AutoCrud.CustomFields.Mongo.Abstractions;
+using Firebend.AutoCrud.CustomFields.Mongo.Implementations;
 using Firebend.AutoCrud.Mongo;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo;
@@ -29,19 +29,19 @@ public class MongoCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityBuil
     public MongoCustomFieldsConfigurator<TBuilder, TKey, TEntity> WithCustomFields()
     {
         Builder.WithRegistration<ICustomFieldsCreateService<TKey, TEntity>,
-            AbstractMongoCustomFieldsCreateService<TKey, TEntity>>();
+            MongoCustomFieldsCreateService<TKey, TEntity>>();
         Builder
             .WithRegistration<ICustomFieldsDeleteService<TKey, TEntity>,
-                AbstractMongoCustomFieldsDeleteService<TKey, TEntity>>();
+                MongoCustomFieldsDeleteService<TKey, TEntity>>();
         Builder
             .WithRegistration<ICustomFieldsUpdateService<TKey, TEntity>,
-                AbstractMongoCustomFieldsUpdateService<TKey, TEntity>>();
+                MongoCustomFieldsUpdateService<TKey, TEntity>>();
         Builder
             .WithRegistration<ICustomFieldsSearchService<TKey, TEntity>,
-                AbstractMongoCustomFieldsSearchService<TKey, TEntity>>();
+                MongoCustomFieldsSearchService<TKey, TEntity>>();
         Builder
             .WithRegistration<ICustomFieldsReadService<TKey, TEntity>,
-                AbstractMongoCustomFieldsReadService<TKey, TEntity>>();
+                MongoCustomFieldsReadService<TKey, TEntity>>();
         return this;
     }
 }

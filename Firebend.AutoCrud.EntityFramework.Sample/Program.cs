@@ -42,23 +42,16 @@ internal class Program
         })
         .ConfigureServices((hostContext, services) =>
         {
-            services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")),
-                    ServiceLifetime.Singleton)
-                .UsingEfCrud()
-                .AddEntity<Guid, Person>(person =>
-                    person.WithDbContext<AppDbContext>()
-                        .WithConnectionString(hostContext.Configuration.GetConnectionString("SqlServer"))
-                        .WithDbOptionsProvider<OptionsProvider<Guid, Person>>()
+            services.UsingEfCrud<AppDbContext>(
+                (_, opt) => opt.UseSqlServer(hostContext.Configuration.GetConnectionString("SqlServer")),
+                ef => ef
+                    .AddEntity<Guid, Person>(person => person
                         .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((persons, request) => persons.Where(x => x.FirstName.StartsWith(request.Search))))
                         .WithRegistration<IEntityReadService<Guid, Person>, PersonReadRepository>()
                 )
-                .AddEntity<Guid, Pet>(pet =>
-                    pet.WithDbContext<AppDbContext>()
-                        .WithConnectionString(hostContext.Configuration.GetConnectionString("SqlServer"))
-                        .WithDbOptionsProvider<OptionsProvider<Guid, Pet>>()
+                .AddEntity<Guid, Pet>(pet => pet
                         .AddCrud(crud => crud.WithCrud().WithSearchHandler<EntitySearchRequest>((pets, request) => pets.Where(x => x.Name.StartsWith(request.Search))))
-                )
-                .Generate();
+                ));
 
             services.AddHostedService<SampleHostedService>();
         });

@@ -31,9 +31,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
         if (entityTransaction == null)
         {
-            context = await _provider
-                .GetDbContextAsync(cancellationToken)
-                .ConfigureAwait(false);
+            context = await _provider.GetDbContextAsync(cancellationToken);
         }
         else
         {
@@ -44,12 +42,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
             var transaction = efTransaction.ContextTransaction.GetDbTransaction();
 
-            context = await _provider.GetDbContextAsync(transaction.Connection, cancellationToken);
-
-            if (context.Database.CurrentTransaction == null)
-            {
-                await context.Database.UseTransactionAsync(transaction, cancellationToken);
-            }
+            context = await _provider.GetDbContextAsync(transaction, cancellationToken);
         }
 
         return context;
@@ -59,8 +52,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
     protected virtual async Task<TEntity> GetByEntityKeyAsync(IDbContext context, TKey key, bool asNoTracking, CancellationToken cancellationToken)
     {
-        var queryable = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken)
-            .ConfigureAwait(false);
+        var queryable = await GetFilteredQueryableAsync(context, asNoTracking, cancellationToken);
 
         var first = await queryable.FirstOrDefaultAsync(x => x.Id.Equals(key), cancellationToken);
 
@@ -83,7 +75,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
         queryable = AddIncludes(queryable);
 
-        var filters = await BuildFilters(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var filters = await BuildFilters(cancellationToken: cancellationToken);
 
         return filters == null ? queryable : queryable.Where(filters);
     }
@@ -91,12 +83,14 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
     protected virtual async Task<Expression<Func<TEntity, bool>>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null,
         CancellationToken cancellationToken = default)
     {
-        var securityFilters = await GetSecurityFiltersAsync(cancellationToken).ConfigureAwait(false)
-                              ?? new List<Expression<Func<TEntity, bool>>>();
+        var filters = new List<Expression<Func<TEntity, bool>>>();
 
-        var filters = securityFilters
-            .Where(x => x != null)
-            .ToList();
+        var securityFilters = await GetSecurityFiltersAsync(cancellationToken);
+
+        if (securityFilters is not null)
+        {
+            filters.AddRange(securityFilters);
+        }
 
         if (additionalFilter != null)
         {

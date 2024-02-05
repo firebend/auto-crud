@@ -18,12 +18,11 @@ public class JsonObjectContainsMethodCallTranslator : IMethodCallTranslator
     private static readonly MethodInfo MethodInfo
         = typeof(FirebendAutoCrudDbFunctionExtensions).GetRuntimeMethod(
             nameof(FirebendAutoCrudDbFunctionExtensions.JsonContainsAny),
-            new[]
-            {
+            [
                 typeof(DbFunctions),
                 typeof(object),
                 typeof(string)
-            });
+            ]);
 
     private readonly ISqlExpressionFactory _sqlExpressionFactory;
 

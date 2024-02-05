@@ -56,7 +56,7 @@ public class CustomFieldValidationService<TKey, TEntity, TVersion> : ICustomFiel
             x.path.EndsWith(nameof(CustomFieldsEntity<TKey>.Value)) && x.value is string valString &&
             valString.Equals("All your base are belong to us!")).ToList();
 
-        if (badTranslations.Any())
+        if (badTranslations.Count != 0)
         {
             foreach (var operation in badTranslations)
             {

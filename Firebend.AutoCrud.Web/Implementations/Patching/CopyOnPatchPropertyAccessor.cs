@@ -7,19 +7,19 @@ namespace Firebend.AutoCrud.Web.Implementations.Patching;
 
 public class CopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel> : ICopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel>
 {
-    private readonly string[] _copyOnPatchPropertyNames;
+    private readonly ICollection<string> _copyOnPatchPropertyNames;
 
     public CopyOnPatchPropertyAccessor(List<string> copyOnPatchPropertyNames)
     {
         copyOnPatchPropertyNames ??= new List<string>();
         copyOnPatchPropertyNames.Add(nameof(ICustomFieldsEntity<Guid>.CustomFields));
-        _copyOnPatchPropertyNames = copyOnPatchPropertyNames.ToArray();
+        _copyOnPatchPropertyNames = copyOnPatchPropertyNames;
     }
 
     public CopyOnPatchPropertyAccessor()
     {
-        _copyOnPatchPropertyNames = new[] { nameof(ICustomFieldsEntity<Guid>.CustomFields) };
+        _copyOnPatchPropertyNames = [nameof(ICustomFieldsEntity<Guid>.CustomFields)];
     }
 
-    public string[] GetProperties() => _copyOnPatchPropertyNames;
+    public ICollection<string> GetProperties() => _copyOnPatchPropertyNames;
 }

@@ -1,7 +1,3 @@
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedMember.Global
-// ReSharper disable UnusedMethodReturnValue.Global
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,11 +19,6 @@ using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Firebend.AutoCrud.Web;
-
-public static class ControllerConfiguratorCache
-{
-    public static bool IsSwaggerApplied { get; set; }
-}
 
 public partial class
     ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> : EntityBuilderConfigurator<TBuilder, TKey, TEntity>
@@ -76,14 +67,14 @@ public partial class
     private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetRouteAttributeInfo()
     {
         var routeType = typeof(RouteAttribute);
-        var routeCtor = routeType.GetConstructor(new[] { typeof(string) });
+        var routeCtor = routeType.GetConstructor([typeof(string)]);
 
         if (routeCtor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(routeCtor, new object[] { Route });
+        var attributeBuilder = new CustomAttributeBuilder(routeCtor, [Route]);
 
         return (routeType, attributeBuilder);
     }
@@ -91,7 +82,7 @@ public partial class
     private static (Type attributeType, CustomAttributeBuilder attributeBuilder) GetApiVersionAttributeInfo(bool deprecated)
     {
         var type = typeof(ApiVersionAttribute);
-        var ctor = type.GetConstructor(new[] { typeof(string) });
+        var ctor = type.GetConstructor([typeof(string)]);
 
         if (ctor == null)
         {
@@ -107,7 +98,7 @@ public partial class
 
         var propertyInfos = type.GetProperties().Where(x => x.Name == nameof(ApiVersionAttribute.Deprecated)).Take(1).ToArray();
 
-        var attributeBuilder = new CustomAttributeBuilder(ctor, new object[] { $"{version.Version}.{version.MinorVersion}" }, propertyInfos, new object[] { deprecated });
+        var attributeBuilder = new CustomAttributeBuilder(ctor, [$"{version.Version}.{version.MinorVersion}"], propertyInfos, [deprecated]);
 
         return (type, attributeBuilder);
     }
@@ -167,7 +158,7 @@ public partial class
             throw new Exception($"Registration type {registrationType} is not assignable to {typeToCheckGeneric}");
         }
 
-        Builder.WithRegistration(registrationType, registrationType);
+        Builder.WithRegistration(registrationType, registrationType, isDynamic: true);
 
         AddRouteAttribute(registrationType);
         AddOpenApiGroupNameAttribute(registrationType, openApiName);
