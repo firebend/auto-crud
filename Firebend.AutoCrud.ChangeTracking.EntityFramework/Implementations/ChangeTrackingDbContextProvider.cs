@@ -12,7 +12,6 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Implementations;
 
@@ -25,10 +24,9 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
     private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _rootConnectionStringProvider;
 
     public ChangeTrackingDbContextProvider(
-        ILogger<ChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
         IDbContextFactory<ChangeTrackingDbContext<TEntityKey, TEntity>> contextFactory,
         IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider = null) :
-        base(logger, contextFactory)
+        base(contextFactory)
     {
         _rootConnectionStringProvider = connectionStringProvider;
     }

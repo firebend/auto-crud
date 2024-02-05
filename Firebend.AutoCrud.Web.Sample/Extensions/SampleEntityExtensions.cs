@@ -176,6 +176,7 @@ public static class SampleEntityExtensions
                         manager.Server = configuration["Elastic:ServerName"];
                         manager.ElasticPoolName = configuration["Elastic:PoolName"];
                     }, pool => pool.WithShardKeyProvider<SampleKeyProvider>()
+                        .WithAllShardKeyProvider<SampleKeyProvider>()
                         .WithShardDbNameProvider<SampleDbNameProvider>()
                 )
                 .AddCustomFields(cf =>

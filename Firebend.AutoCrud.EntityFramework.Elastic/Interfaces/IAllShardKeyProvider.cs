@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 
-public interface IShardKeyProvider
+public interface IAllShardKeyProvider
 {
-    Task<string> GetShardKeyAsync(CancellationToken cancellationToken);
+    Task<string[]> GetAllShards(CancellationToken cancellationToken);
 }

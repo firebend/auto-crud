@@ -1,4 +1,5 @@
 using System;
+using Firebend.AutoCrud.EntityFramework.HostedServices;
 using Firebend.AutoCrud.Generator.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,8 @@ public static class EntityFrameworkEntityCrudGeneratorExtensions
         {
             serviceCollection.AddDbContextFactory<TContext>(dbContextOptionsBuilder);
         }
+
+        serviceCollection.AddHostedService<AutoCrudEfMigrationHostedService<TContext>>();
 
         using var ef = new EntityFrameworkEntityCrudGenerator(
             new DynamicClassGenerator(),

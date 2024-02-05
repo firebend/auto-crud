@@ -4,6 +4,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
+using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic;
 
@@ -31,7 +32,8 @@ public class ElasticPoolConfigurator<TBuilder, TKey, TEntity> : EntityBuilderCon
         Builder.WithRegistrationInstance(shardConfiguration);
         Builder.WithRegistration<IShardManager, ShardManager>();
         Builder.WithConnectionStringProvider<ShardDbContextConnectionStringProvider<TKey, TEntity>>();
-
+        Builder.WithRegistration<IShardKeyConnectionStringProvider, ShardDbContextConnectionStringProvider<TKey, TEntity>>(replace: false);
+        Builder.WithRegistration<IEntityFrameworkMigrationsConnectionStringProvider, ShardEntityFrameworkMigrationsConnectionStringProvider>(replace: false);
         WithDbCreator<DefaultDbCreator>();
 
         return this;
@@ -69,6 +71,12 @@ public class ElasticPoolConfigurator<TBuilder, TKey, TEntity> : EntityBuilderCon
         where TShardKeyProvider : IShardKeyProvider
     {
         Builder.WithRegistration<IShardKeyProvider, TShardKeyProvider>();
+        return this;
+    }
+
+    public ElasticPoolConfigurator<TBuilder, TKey, TEntity> WithAllShardKeyProvider<TAllShardKeyProvider>()
+    {
+        Builder.WithRegistration<IAllShardKeyProvider, TAllShardKeyProvider>();
         return this;
     }
 

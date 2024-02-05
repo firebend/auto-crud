@@ -51,7 +51,7 @@ public partial class EfPersonDomainEventHandler : BaseDisposable, IEntityAddedDo
 
         if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityAddedDomainEvent<EfPerson>> consumeContext))
         {
-            LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
+            LogCatchPhraseFromScope(_logger, consumeContext.Message.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
         }
         else
         {
@@ -76,7 +76,7 @@ public partial class EfPersonDomainEventHandler : BaseDisposable, IEntityAddedDo
 
         if (_scoped.HasContext && _scoped.GetContext().TryGetMessage(out ConsumeContext<EntityUpdatedDomainEvent<EfPerson>> consumeContext))
         {
-            LogCatchPhraseFromScope(_logger, consumeContext?.Message?.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
+            LogCatchPhraseFromScope(_logger, consumeContext.Message.EventContext?.GetCustomContext<SampleDomainEventContext>()?.CatchPhraseModel?.CatchPhrase);
         }
         else
         {

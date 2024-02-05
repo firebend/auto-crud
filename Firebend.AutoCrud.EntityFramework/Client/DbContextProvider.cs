@@ -1,11 +1,10 @@
-using System;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.EntityFramework.HostedServices;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.EntityFramework.Client;
 
@@ -14,43 +13,25 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
     where TEntity : IEntity<TKey>
     where TContext : DbContext, IDbContext
 {
-    private readonly ILogger<DbContextProvider<TKey, TEntity, TContext>> _logger;
     private readonly IDbContextConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
     private readonly IDbContextFactory<TContext> _contextFactory;
 
-    private record InitContext(DbContext DbContext, ILogger Logger);
-
-    public DbContextProvider(ILogger<DbContextProvider<TKey, TEntity, TContext>> logger,
-        IDbContextFactory<TContext> contextFactory,
+    public DbContextProvider(IDbContextFactory<TContext> contextFactory,
         IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider = null)
     {
         _connectionStringProvider = connectionStringProvider;
-        _logger = logger;
         _contextFactory = contextFactory;
     }
 
     protected virtual void InitDb(DbContext dbContext)
-        => AbstractDbContextProviderCache.InitCache.GetOrAdd(
-            dbContext.Database.GetConnectionString(),
-            InitDbCacheFactory,
-            new InitContext(dbContext, _logger));
-
-    private static bool InitDbCacheFactory(string connectionString, InitContext context)
     {
-        try
-        {
-            context.DbContext.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            context.Logger.LogError(ex, "Fail to call migrations");
-        }
 
-        return true;
     }
 
     public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
     {
+        await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
+
         var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
         var providedConnectionString = await ProvideConnectionString(cancellationToken);
@@ -84,6 +65,8 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
     public async Task<IDbContext> GetDbContextAsync(DbTransaction transaction,
         CancellationToken cancellationToken = default)
     {
+        await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
+
         var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
         dbContext.Database.SetDbConnection(transaction.Connection);
         await dbContext.Database.UseTransactionAsync(transaction, cancellationToken);

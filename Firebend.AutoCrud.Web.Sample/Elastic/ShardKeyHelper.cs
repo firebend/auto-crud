@@ -24,7 +24,7 @@ public static class ShardKeyHelper
         {
             if (scoped.GetContext()?.TryGetMessage(out ConsumeContext<DomainEventBase> message) ?? false)
             {
-                var tenant = message.Message?.EventContext?.GetCustomContext<SampleDomainEventContext>()?.Tenant;
+                var tenant = message.Message.EventContext?.GetCustomContext<SampleDomainEventContext>()?.Tenant;
 
                 if (!string.IsNullOrWhiteSpace(tenant))
                 {
@@ -43,7 +43,7 @@ public static class ShardKeyHelper
         {
             return Firebend;
         }
-        var tenantHeader = header[TenantHeader];
+        var tenantHeader = header![TenantHeader];
 
         if (tenantHeader.Count > 0)
         {
@@ -52,4 +52,9 @@ public static class ShardKeyHelper
 
         return Firebend;
     }
+
+    public static readonly string[] AllShards = [
+        Firebend,
+        FirebendBackwards
+    ];
 }
