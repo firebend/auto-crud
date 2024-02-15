@@ -16,7 +16,7 @@ public class ChangeTrackingModel<TKey, TEntity> : IEntity<Guid>, IModifiedEntity
     /// <summary>
     /// Gets or sets a value indicating the set of changes made to the entity.
     /// </summary>
-    public List<Operation<TEntity>> Changes { get; set; }
+    public List<Operation> Changes { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating descriptions of where the change was made at.
