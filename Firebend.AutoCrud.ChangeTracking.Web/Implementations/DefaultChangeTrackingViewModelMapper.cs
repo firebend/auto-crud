@@ -12,6 +12,7 @@ using Firebend.AutoCrud.Web.Interfaces;
 using Firebend.JsonPatch.Extensions;
 using Firebend.JsonPatch.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json.Serialization;
 
 namespace Firebend.AutoCrud.ChangeTracking.Web.Implementations;
@@ -51,14 +52,14 @@ public class DefaultChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TView
             if (changeTrackingEntity.Changes?.HasValues() ?? false)
             {
                 var modifiedEntity = changeTrackingEntity.Entity.Clone();
-                var patchDoc = new JsonPatchDocument<TEntity>(changeTrackingEntity.Changes, new DefaultContractResolver());
+                var patchDoc = new JsonPatchDocument(changeTrackingEntity.Changes, new DefaultContractResolver());
                 patchDoc.ApplyTo(modifiedEntity);
 
                 var after = await _mapper.ToAsync(modifiedEntity, cancellationToken);
 
                 var diff = _patchGenerator.Generate(before, after);
 
-                model.Changes = diff.Operations;
+                model.Changes = diff.Operations?.Select(x => new Operation(x.op, x.path, x.from, x.value)).ToList();
             }
 
             models.Add(model);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
@@ -61,7 +62,7 @@ public class EntityFrameworkChangeTrackingService<TEntityKey, TEntity> :
             Source = domainEvent.EventContext?.Source,
             UserEmail = domainEvent.EventContext?.UserEmail,
             Action = action,
-            Changes = operations,
+            Changes = operations?.Select(x => new Operation(x.op, x.path, x.from, x.value)).ToList(),
             Entity = entity,
             EntityId = id,
             DomainEventCustomContext = domainEvent.EventContext?.CustomContext
