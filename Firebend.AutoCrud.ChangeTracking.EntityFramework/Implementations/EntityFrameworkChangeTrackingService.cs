@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
+using Firebend.AutoCrud.ChangeTracking.Extensions;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -62,7 +63,7 @@ public class EntityFrameworkChangeTrackingService<TEntityKey, TEntity> :
             Source = domainEvent.EventContext?.Source,
             UserEmail = domainEvent.EventContext?.UserEmail,
             Action = action,
-            Changes = operations?.Select(x => new Operation(x.op, x.path, x.from, x.value)).ToList(),
+            Changes = operations.ToNonGenericOperations(),
             Entity = entity,
             EntityId = id,
             DomainEventCustomContext = domainEvent.EventContext?.CustomContext

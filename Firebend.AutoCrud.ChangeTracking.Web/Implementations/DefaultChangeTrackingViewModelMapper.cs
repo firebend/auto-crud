@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.ChangeTracking.Extensions;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Web.Interfaces;
 using Firebend.AutoCrud.Core.Extensions;
@@ -59,7 +60,7 @@ public class DefaultChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TView
 
                 var diff = _patchGenerator.Generate(before, after);
 
-                model.Changes = diff.Operations?.Select(x => new Operation(x.op, x.path, x.from, x.value)).ToList();
+                model.Changes = diff.Operations.ToNonGenericOperations();
             }
 
             models.Add(model);
