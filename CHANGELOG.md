@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="12.0.0"></a>
+## [12.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.0) (2024-02-16)
+
+### Breaking Changes
+
+* use nongeneric operation for change tracking ([#294](https://www.github.com/firebend/auto-crud/issues/294)) ([da12fc9](https://www.github.com/firebend/auto-crud/commit/da12fc9a9e21c97f55a8253f048be54c11c68ab7))
+
+### Other
+
+* **deps:** bump Microsoft.OpenApi from 1.6.12 to 1.6.13 ([#291](https://www.github.com/firebend/auto-crud/issues/291)) ([31e2b10](https://www.github.com/firebend/auto-crud/commit/31e2b10f4fa66b9596b53d52fe13ff00094a4498))
+
 <a name="11.0.0"></a>
 ## [11.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v11.0.0) (2024-02-05)
 
