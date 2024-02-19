@@ -2,6 +2,7 @@ using System;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,6 +48,10 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
     private async Task MigrateContext(CancellationToken stoppingToken)
     {
         using var scope = _serviceScopeFactory.CreateScope();
+        var locker = scope.ServiceProvider.GetService<IDistributedLockService>();
+
+        using var locked = await locker.LockAsync(nameof(AutoCrudEfMigrationHostedService<TContext>), stoppingToken);
+
         var connectionStringProvider = scope.ServiceProvider.GetService<IEntityFrameworkMigrationsConnectionStringProvider>();
 
         if (connectionStringProvider is null)
