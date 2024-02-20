@@ -6,15 +6,9 @@ namespace Firebend.AutoCrud.Web.Sample;
 
 public class ConfigureBearerOptions : IConfigureNamedOptions<JwtBearerOptions>
 {
-    public void Configure(JwtBearerOptions options)
-    {
-        InternalConfiguration(options);
-    }
+    public void Configure(JwtBearerOptions options) => InternalConfiguration(options);
 
-    public void Configure(string name, JwtBearerOptions options)
-    {
-        InternalConfiguration(options);
-    }
+    public void Configure(string name, JwtBearerOptions options) => InternalConfiguration(options);
 
     private static void InternalConfiguration(JwtBearerOptions options)
     {
