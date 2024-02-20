@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="12.0.1"></a>
+## [12.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.1) (2024-02-20)
+
+### Bug Fixes
+
+* package updates ([#299](https://www.github.com/firebend/auto-crud/issues/299)) ([8910902](https://www.github.com/firebend/auto-crud/commit/8910902c244614b03be9c54d64e27fa4f67820c6))
+
+### Other
+
+* Forks/jacob/nuget updates (#298) ([c9005b2](https://www.github.com/firebend/auto-crud/commit/c9005b27c54e1e89e0526214f7a2232f79fb5ae7))
+* **deps:** bump Microsoft.AspNetCore.JsonPatch from 8.0.1 to 8.0.2 ([#297](https://www.github.com/firebend/auto-crud/issues/297)) ([cb2dc73](https://www.github.com/firebend/auto-crud/commit/cb2dc73f5f3923a9d9d070410d7284f6799799a0))
+
 <a name="12.0.0"></a>
 ## [12.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.0) (2024-02-16)
 
