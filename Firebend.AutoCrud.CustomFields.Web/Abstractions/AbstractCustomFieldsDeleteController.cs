@@ -40,8 +40,6 @@ public abstract class AbstractCustomFieldsDeleteController<TKey, TEntity, TVersi
         [Required][FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_deleteService);
-
         if (!ModelState.IsValid)
         {
             return GetInvalidModelStateResult();

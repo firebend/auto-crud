@@ -45,8 +45,6 @@ public abstract class AbstractEntityUndoDeleteController<TKey, TEntity, TVersion
         [Required][FromRoute] string id,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_updateService);
-
         var key = GetKey(id);
 
         if (!key.HasValue)

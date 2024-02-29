@@ -49,8 +49,6 @@ public abstract class
         [FromBody] CustomFieldViewModelCreate viewModel,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_updateService);
-
         if (!ModelState.IsValid || !TryValidateModel(viewModel))
         {
             return GetInvalidModelStateResult();
@@ -116,8 +114,6 @@ public abstract class
         [FromBody] JsonPatchDocument<CustomFieldViewModelCreate> patchDocument,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_updateService);
-
         if (!ModelState.IsValid)
         {
             return GetInvalidModelStateResult();

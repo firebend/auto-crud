@@ -51,8 +51,6 @@ public abstract class AbstractEntitySearchController<TKey, TEntity, TVersion, TS
         [FromQuery] TSearchViewModel searchViewModel,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_searchService);
-
         var searchRequest = await _searchViewModelMapper.FromAsync(searchViewModel, cancellationToken);
 
         var validationResult = searchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);

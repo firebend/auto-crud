@@ -46,8 +46,6 @@ public abstract class AbstractIoController<TKey, TEntity, TVersion, TSearch, TMa
         [FromQuery] TSearch searchRequest,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_exportService);
-
         if (string.IsNullOrWhiteSpace(filename))
         {
             ModelState.AddModelError(nameof(filename), $"{nameof(filename)} is invalid.");

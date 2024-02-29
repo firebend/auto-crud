@@ -41,8 +41,6 @@ public abstract class AbstractEntityDeleteController<TKey, TEntity, TVersion, TV
         [Required][FromRoute] string id,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_deleteService);
-
         var key = GetKey(id);
 
         if (!key.HasValue)

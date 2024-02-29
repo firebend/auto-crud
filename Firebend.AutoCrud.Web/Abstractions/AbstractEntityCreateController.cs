@@ -49,8 +49,6 @@ public abstract class AbstractEntityCreateController<TKey, TEntity, TVersion, TC
         TCreateViewModel body,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_createService);
-
         if (body == null)
         {
             ModelState.AddModelError("body", "A body is required");

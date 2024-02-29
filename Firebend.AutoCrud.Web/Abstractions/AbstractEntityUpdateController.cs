@@ -73,9 +73,6 @@ public abstract class
         [Required] TUpdateViewModel body,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_readService);
-        Response.RegisterForDispose(_updateService);
-
         var key = GetKey(id);
 
         if (!key.HasValue)
@@ -181,9 +178,6 @@ public abstract class
         [Required][FromBody] JsonPatchDocument<TUpdateViewModelBody> patch,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_readService);
-        Response.RegisterForDispose(_updateService);
-
         if (patch == null)
         {
             ModelState.AddModelError(nameof(patch), "A valid patch document is required.");

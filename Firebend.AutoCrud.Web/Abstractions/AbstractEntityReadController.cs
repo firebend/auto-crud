@@ -40,8 +40,6 @@ public abstract class AbstractEntityReadController<TKey, TEntity, TVersion, TVie
         [Required][FromRoute] string id,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_readService);
-
         var key = GetKey(id);
 
         if (!key.HasValue)

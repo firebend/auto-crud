@@ -49,8 +49,6 @@ public abstract class AbstractChangeTrackingReadController<TKey, TEntity, TVersi
         [Required][FromQuery] ModifiedEntitySearchRequest changeSearchRequest,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_read);
-
         var key = GetKey(entityId);
 
         if (!key.HasValue)

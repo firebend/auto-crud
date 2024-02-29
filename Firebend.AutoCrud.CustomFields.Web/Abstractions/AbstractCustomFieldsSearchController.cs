@@ -40,9 +40,8 @@ public abstract class AbstractCustomFieldsSearchController<TKey, TEntity, TVersi
         [FromQuery] CustomFieldsSearchRequest searchRequest,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_searchService);
-
         var validationResult = searchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
+
         if (!validationResult.WasSuccessful)
         {
             foreach (var error in validationResult.Errors)

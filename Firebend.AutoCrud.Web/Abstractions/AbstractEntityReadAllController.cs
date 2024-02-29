@@ -36,8 +36,6 @@ public abstract class AbstractEntityReadAllController<TKey, TEntity, TVersion, T
     [SwaggerResponse(403, "Forbidden")]
     public virtual async Task<ActionResult<IEnumerable<TViewModel>>> GetAllAsync(CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_readService);
-
         var entities = await _readService.GetAllAsync(cancellationToken);
 
         if (entities == null || entities.Count == 0)

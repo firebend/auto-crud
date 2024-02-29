@@ -53,8 +53,6 @@ public abstract class AbstractEntityCreateMultipleController<TKey, TEntity, TVer
         TMultipleViewModelWrapper body,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_createService);
-
         if (body?.Entities?.IsEmpty() ?? true)
         {
             ModelState.AddModelError("body", "A body is required");

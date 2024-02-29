@@ -42,8 +42,6 @@ public abstract class AbstractCustomFieldsCreateController<TKey, TEntity, TVersi
         [FromBody] CustomFieldViewModelCreate viewModel,
         CancellationToken cancellationToken)
     {
-        Response.RegisterForDispose(_createService);
-
         if (!ModelState.IsValid || !TryValidateModel(viewModel))
         {
             return GetInvalidModelStateResult();
