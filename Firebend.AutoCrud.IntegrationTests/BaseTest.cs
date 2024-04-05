@@ -191,6 +191,8 @@ public abstract class BaseTest<
         var response = await Url.WithAuth()
             .SetQueryParam("pagenumber", 1)
             .SetQueryParam("pageSize", 10)
+            .SetQueryParam("isDeleted", "false")
+            .SetQueryParam("orderBy", "createdDate:desc")
             .SetQueryParam("doCount", true)
             .GetAsync();
 

@@ -48,14 +48,7 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
 
     private static IMongoClient CreateClientForCache(string server, MongoClientCacheFactoryContext context)
     {
-        //********************************************
-        // Author: JMA
-        // Date: 2023-03-27 02:04:09
-        // Comment: Mongo is planning on a version three of their driver.
-        // When using the V3 of the linq provider there are issues with having expressions that use
-        // object. For example: the AbstractEntitySearchService's GetSearchExpression function
-        //*******************************************
-        context.Settings.LinqProvider = LinqProvider.V2;
+        context.Settings.LinqProvider = LinqProvider.V3;
 
         if (context.EnableLogging)
         {

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Implementations;
 
@@ -71,7 +72,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == customField.Id);
 
         var mongoCollection = await GetCollectionAsync();
-        var updateDefinition = Builders<TEntity>.Update.Set(x => x.CustomFields[-1], customField);
+        var updateDefinition = Builders<TEntity>.Update.Set(x => x.CustomFields.FirstMatchingElement(), customField);
 
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))
         {
