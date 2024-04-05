@@ -68,7 +68,7 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
         var changeTrackingType = typeof(ChangeTrackingEntity<TEntityKey, TEntity>);
         var type = scaffoldCacheContext.DbContext.Model.FindEntityType(changeTrackingType);
 
-        if(type is null)
+        if (type is null)
         {
             scaffoldCacheContext.Logger.LogWarning("Could not find entity type for {TypeName}", changeTrackingType.FullName);
             return false;
