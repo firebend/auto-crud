@@ -13,6 +13,8 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
+    private record MongoClientCacheFactoryContext(ILogger Logger, MongoClientSettings Settings, bool EnableLogging);
+
     private readonly ILogger _logger;
     private readonly IMongoConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
 
@@ -28,6 +30,18 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
         var connectionString = await _connectionStringProvider.GetConnectionStringAsync(overrideShardKey);
 
         var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
+
+        var client = MongoClientFactoryCache.MongoClients.GetOrAdd(
+            mongoClientSettings.Server.ToString(),
+            CreateClientForCache,
+            new MongoClientCacheFactoryContext(_logger, mongoClientSettings, enableLogging)
+        );
+
+        return client;
+    }
+
+    private static IMongoClient CreateClientForCache(string server, MongoClientCacheFactoryContext context)
+    {
         //********************************************
         // Author: JMA
         // Date: 2023-03-27 02:04:09
@@ -35,22 +49,22 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
         // When using the V3 of the linq provider there are issues with having expressions that use
         // object. For example: the AbstractEntitySearchService's GetSearchExpression function
         //*******************************************
-        mongoClientSettings.LinqProvider = LinqProvider.V2;
+        context.Settings.LinqProvider = LinqProvider.V2;
 
-        if (enableLogging)
+        if (context.EnableLogging)
         {
-            mongoClientSettings.ClusterConfigurator = Configurator;
+            context.Settings.ClusterConfigurator = cb => Configurator(cb, context);
         }
 
-        return new MongoClient(mongoClientSettings);
+        return new MongoClient(context.Settings);
     }
 
-    protected virtual void Configurator(ClusterBuilder cb)
+    private static void Configurator(ClusterBuilder cb, MongoClientCacheFactoryContext context)
     {
-        cb.Subscribe<CommandStartedEvent>(e => MongoClientFactoryLogger.Started(_logger, e.CommandName, e.Command));
+        cb.Subscribe<CommandStartedEvent>(e => MongoClientFactoryLogger.Started(context.Logger, e.CommandName, e.Command));
 
-        cb.Subscribe<CommandSucceededEvent>(e => MongoClientFactoryLogger.Success(_logger, e.CommandName, e.Duration, e.Reply));
+        cb.Subscribe<CommandSucceededEvent>(e => MongoClientFactoryLogger.Success(context.Logger, e.CommandName, e.Duration, e.Reply));
 
-        cb.Subscribe<CommandFailedEvent>(e => MongoClientFactoryLogger.Failed(_logger, e.CommandName, e.Duration));
+        cb.Subscribe<CommandFailedEvent>(e => MongoClientFactoryLogger.Failed(context.Logger, e.CommandName, e.Duration));
     }
 }
