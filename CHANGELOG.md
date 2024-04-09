@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="12.0.2"></a>
+## [12.0.2](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.2) (2024-04-09)
+
+### Bug Fixes
+
+* ensure change tracking db context provider accounts for multi-tenancy and Mongo Client caching ([#306](https://www.github.com/firebend/auto-crud/issues/306)) ([be74691](https://www.github.com/firebend/auto-crud/commit/be746911146275ff10211838c819152f3a5ec76c))
+
 <a name="12.0.1"></a>
 ## [12.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.1) (2024-02-20)
 
