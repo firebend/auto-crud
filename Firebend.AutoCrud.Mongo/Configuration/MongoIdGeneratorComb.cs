@@ -6,8 +6,6 @@ namespace Firebend.AutoCrud.Mongo.Configuration;
 
 public class MongoIdGeneratorComb : IIdGenerator
 {
-    public static readonly MongoIdGeneratorComb Instance = new();
-
     public object GenerateId(object container, object document)
         => CombGuid.New();
 
