@@ -51,7 +51,7 @@ public class MongoDbConfigurator : IMongoDbConfigurator
                     if (typeof(IEntity<>).IsAssignableFrom(map.ClassType))
                     {
                         map.MapIdProperty(mongoEntityIdName)
-                            .SetIdGenerator(MongoIdGeneratorComb.Instance)
+                            .SetIdGenerator(new MongoIdGeneratorComb())
                             .SetSerializer(new GuidSerializer(BsonType.String));
 
                         map.SetIgnoreExtraElements(true);

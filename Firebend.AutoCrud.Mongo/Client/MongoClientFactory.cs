@@ -13,14 +13,22 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
+    private record MongoClientCacheFactoryContext(ILogger Logger,
+        MongoClientSettings Settings,
+        bool EnableLogging,
+        IMongoClientSettingsConfigurator SettingsConfigurator);
+
     private readonly ILogger _logger;
     private readonly IMongoConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
+    private readonly IMongoClientSettingsConfigurator _settingsConfigurator;
 
     public MongoClientFactory(ILogger<MongoClientFactory<TKey, TEntity>> logger,
-        IMongoConnectionStringProvider<TKey, TEntity> connectionStringProvider)
+        IMongoConnectionStringProvider<TKey, TEntity> connectionStringProvider,
+        IMongoClientSettingsConfigurator settingsConfigurator = null)
     {
         _logger = logger;
         _connectionStringProvider = connectionStringProvider;
+        _settingsConfigurator = settingsConfigurator;
     }
 
     public async Task<IMongoClient> CreateClientAsync(string overrideShardKey = null, bool enableLogging = false)
@@ -28,29 +36,38 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
         var connectionString = await _connectionStringProvider.GetConnectionStringAsync(overrideShardKey);
 
         var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
-        //********************************************
-        // Author: JMA
-        // Date: 2023-03-27 02:04:09
-        // Comment: Mongo is planning on a version three of their driver.
-        // When using the V3 of the linq provider there are issues with having expressions that use
-        // object. For example: the AbstractEntitySearchService's GetSearchExpression function
-        //*******************************************
-        mongoClientSettings.LinqProvider = LinqProvider.V2;
 
-        if (enableLogging)
-        {
-            mongoClientSettings.ClusterConfigurator = Configurator;
-        }
+        var client = MongoClientFactoryCache.MongoClients.GetOrAdd(
+            mongoClientSettings.Server.ToString(),
+            CreateClientForCache,
+            new MongoClientCacheFactoryContext(_logger, mongoClientSettings, enableLogging, _settingsConfigurator)
+        );
 
-        return new MongoClient(mongoClientSettings);
+        return client;
     }
 
-    protected virtual void Configurator(ClusterBuilder cb)
+    private static IMongoClient CreateClientForCache(string server, MongoClientCacheFactoryContext context)
     {
-        cb.Subscribe<CommandStartedEvent>(e => MongoClientFactoryLogger.Started(_logger, e.CommandName, e.Command));
+        context.Settings.LinqProvider = LinqProvider.V3;
 
-        cb.Subscribe<CommandSucceededEvent>(e => MongoClientFactoryLogger.Success(_logger, e.CommandName, e.Duration, e.Reply));
+        if (context.EnableLogging)
+        {
+            context.Settings.ClusterConfigurator = cb => Configurator(cb, context);
+        }
 
-        cb.Subscribe<CommandFailedEvent>(e => MongoClientFactoryLogger.Failed(_logger, e.CommandName, e.Duration));
+        var settings = context.SettingsConfigurator is null
+            ? context.Settings
+            : context.SettingsConfigurator.Configure(server, context.Settings);
+
+        return new MongoClient(settings);
+    }
+
+    private static void Configurator(ClusterBuilder cb, MongoClientCacheFactoryContext context)
+    {
+        cb.Subscribe<CommandStartedEvent>(e => MongoClientFactoryLogger.Started(context.Logger, e.CommandName, e.Command));
+
+        cb.Subscribe<CommandSucceededEvent>(e => MongoClientFactoryLogger.Success(context.Logger, e.CommandName, e.Duration, e.Reply));
+
+        cb.Subscribe<CommandFailedEvent>(e => MongoClientFactoryLogger.Failed(context.Logger, e.CommandName, e.Duration));
     }
 }

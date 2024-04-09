@@ -168,7 +168,8 @@ public static class SampleEntityExtensions
         generator.AddEntity<Guid, EfPerson>(person =>
             person.WithIncludes(x => x.Include(y => y.CustomFields)
                     .Include(y => y.Pets)
-                    .ThenInclude(y => y.CustomFields))
+                    .ThenInclude(y => y.CustomFields)
+                    .AsSplitQuery())
                 .AddElasticPool(manager =>
                     {
                         manager.ConnectionString = configuration.GetConnectionString("Elastic");
@@ -227,7 +228,7 @@ public static class SampleEntityExtensions
     public static EntityFrameworkEntityCrudGenerator AddEfPets(this EntityFrameworkEntityCrudGenerator generator,
         IConfiguration configuration) =>
         generator.AddEntity<Guid, EfPet>(person =>
-            person.WithIncludes(pets => pets.Include(x => x.Person))
+            person.WithIncludes(pets => pets.Include(x => x.Person).AsSplitQuery())
                 .AddElasticPool(manager =>
                     {
                         manager.ConnectionString = configuration.GetConnectionString("Elastic");

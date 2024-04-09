@@ -12,6 +12,7 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Implementations;
 
@@ -21,20 +22,25 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
     where TEntity : class, IEntity<TEntityKey>
     where TEntityKey : struct
 {
+    private record ScaffoldCacheContext(DbContext DbContext, ILogger Logger);
+
     private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _rootConnectionStringProvider;
+    private readonly ILogger<ChangeTrackingDbContextProvider<TEntityKey, TEntity>> _logger;
 
     public ChangeTrackingDbContextProvider(
         IDbContextFactory<ChangeTrackingDbContext<TEntityKey, TEntity>> contextFactory,
+        ILogger<ChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
         IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider = null) :
         base(contextFactory)
     {
+        _logger = logger;
         _rootConnectionStringProvider = connectionStringProvider;
     }
 
     protected override void InitDb(DbContext dbContext)
     {
         base.InitDb(dbContext);
-        ScaffoldDbContext(dbContext);
+        ScaffoldDbContext(dbContext, _logger);
     }
 
     protected override async Task<string> ProvideConnectionString(CancellationToken cancellationToken)
@@ -47,32 +53,52 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
         return await _rootConnectionStringProvider.GetConnectionStringAsync(cancellationToken);
     }
 
-    private static void ScaffoldDbContext(DbContext context)
-        => ChangeTrackingDbContextProviderCache.ScaffoldCache.GetOrAdd(typeof(TEntity).FullName,
-            ScaffoldCacheFactory,
-            context);
-
-    private static bool ScaffoldCacheFactory(string typeName, DbContext dbContext)
+    private static void ScaffoldDbContext(DbContext context, ILogger logger)
     {
-        var type = dbContext.Model.FindEntityType(typeof(ChangeTrackingEntity<TEntityKey, TEntity>))
-                   ?? throw new Exception("Could not find entity type.");
+        var dbConn = context.Database.GetDbConnection();
+        var cacheKey = $"{dbConn.DataSource}_{dbConn.Database}_{typeof(TEntity).FullName}";
 
-        var schema = type.GetSchema().Coalesce("dbo");
-        var table = type.GetTableName();
+        ChangeTrackingDbContextProviderCache.ScaffoldCache.GetOrAdd(cacheKey,
+            ScaffoldCacheFactory,
+            new ScaffoldCacheContext(context, logger));
+    }
 
-        if (dbContext.Database.GetService<IDatabaseCreator>() is not RelationalDatabaseCreator dbCreator)
+    private static bool ScaffoldCacheFactory(string typeName, ScaffoldCacheContext scaffoldCacheContext)
+    {
+        var changeTrackingType = typeof(ChangeTrackingEntity<TEntityKey, TEntity>);
+        var type = scaffoldCacheContext.DbContext.Model.FindEntityType(changeTrackingType);
+
+        if (type is null)
         {
+            scaffoldCacheContext.Logger.LogWarning("Could not find entity type for {TypeName}", changeTrackingType.FullName);
+            return false;
+        }
+
+        try
+        {
+
+            var schema = type.GetSchema().Coalesce("dbo");
+            var table = type.GetTableName();
+
+            if (scaffoldCacheContext.DbContext.Database.GetService<IDatabaseCreator>() is not RelationalDatabaseCreator dbCreator)
+            {
+                return true;
+            }
+
+            var exists = DoesTableExist(scaffoldCacheContext.DbContext, schema, table);
+
+            if (!exists)
+            {
+                dbCreator.CreateTables();
+            }
+
             return true;
         }
-
-        var exists = DoesTableExist(dbContext, schema, table);
-
-        if (!exists)
+        catch (Exception ex)
         {
-            dbCreator.CreateTables();
+            scaffoldCacheContext.Logger.LogError(ex, "Error scaffolding change tracking table for {TypeName}", changeTrackingType.FullName);
+            return true;
         }
-
-        return true;
     }
 
     private static bool DoesTableExist(DbContext context, string schemaName, string tableName)
@@ -87,7 +113,6 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
         using var command = conn.CreateCommand();
 
         command.CommandText = $"""
-
                                    SELECT 1 FROM sys.tables AS T
                                        INNER JOIN sys.schemas AS S ON T.schema_id = S.schema_id
                                    WHERE S.Name = '{schemaName}' AND T.Name = '{tableName}'
