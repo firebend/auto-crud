@@ -43,7 +43,7 @@ public class MongoCustomFieldsReadService<TKey, TEntity> : BaseDisposable,
     {
         entityTransaction ??= await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
 
-        if(entityTransaction is not null)
+        if (entityTransaction is not null)
         {
             _transactionManager.AddTransaction(entityTransaction);
         }
