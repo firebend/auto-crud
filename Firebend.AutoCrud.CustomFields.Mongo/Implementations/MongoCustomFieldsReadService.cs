@@ -83,7 +83,7 @@ public class MongoCustomFieldsReadService<TKey, TEntity> : BaseDisposable,
         TKey key,
         IEntityTransaction transaction,
         CancellationToken cancellationToken = default) =>
-        FindFirstOrDefaultAsync(entityId, x => x.Key.Equals(key), transaction, cancellationToken);
+        FindFirstOrDefaultAsync(entityId, x => x.Id.Equals(key), transaction, cancellationToken);
 
     public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
         CancellationToken cancellationToken = default) =>
