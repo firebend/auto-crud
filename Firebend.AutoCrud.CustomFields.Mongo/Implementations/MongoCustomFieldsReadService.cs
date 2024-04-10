@@ -21,9 +21,6 @@ public class MongoCustomFieldsReadService<TKey, TEntity> : BaseDisposable,
     private readonly IMongoReadClient<TKey, TEntity> _readClient;
     private readonly ISessionTransactionManager _transactionManager;
 
-    private static Expression<Func<TEntity, bool>> FilterByEntityId(TKey entityId) =>
-        entity => entity.Id.Equals(entityId);
-
     public MongoCustomFieldsReadService(IMongoReadClient<TKey, TEntity> readClient,
         ISessionTransactionManager transactionManager)
     {
@@ -31,99 +28,85 @@ public class MongoCustomFieldsReadService<TKey, TEntity> : BaseDisposable,
         _transactionManager = transactionManager;
     }
 
-    public async Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId, TKey key,
-        CancellationToken cancellationToken = default)
-    {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
-        return await GetByKeyAsync(entityId, key, transaction, cancellationToken);
-    }
 
-    public async Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId, TKey key, IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
-    {
-        _transactionManager.AddTransaction(transaction);
-
-        var result = await _readClient.GetFirstOrDefaultAsync(
-            x => x.Id.Equals(entityId) && x.CustomFields.Any(cf => cf.Id.Equals(key)), transaction, cancellationToken);
-        return result.CustomFields.FirstOrDefault(cf => cf.Id.Equals(key));
-    }
-
-    public async Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
-        CancellationToken cancellationToken = default)
-    {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
-        return await GetAllAsync(entityId, null, transaction, cancellationToken);
-    }
-
+    ///********************************************
+    // Author: JMA
+    // Date: 2024-04-10
+    // Comment: The custom fields of a mongo entity are stored in a nested array.
+    // Therefore, we should only look up the entity by its id and do any kind of custom field filtering in memory.
+    // This will allow us to use the id index when looking up the entity.
+    //*******************************************
     public async Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
+        IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
-        return await GetAllAsync(entityId, filter, transaction, cancellationToken);
-    }
+        entityTransaction ??= await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
 
-    public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
-    {
-        _transactionManager.AddTransaction(entityTransaction);
-        return GetAllAsync(entityId, null, entityTransaction, cancellationToken);
-    }
+        if (entityTransaction is not null)
+        {
+            _transactionManager.AddTransaction(entityTransaction);
+        }
 
-    public async Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
-        Expression<Func<CustomFieldsEntity<TKey>, bool>> filter, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
-    {
-        _transactionManager.AddTransaction(entityTransaction);
-        var result =
-            await _readClient.GetFirstOrDefaultAsync(FilterByEntityId(entityId), entityTransaction, cancellationToken);
+        var result = await _readClient.GetFirstOrDefaultAsync(
+            x => x.Id.Equals(entityId),
+            entityTransaction,
+            cancellationToken);
+
         if (result?.CustomFields is null)
         {
             return null;
         }
 
-        return filter == null
+        return filter is null
             ? result.CustomFields
             : result.CustomFields.AsQueryable().Where(filter).ToList();
     }
 
-    public async Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default)
-    {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
-        return await ExistsAsync(entityId, filter, transaction, cancellationToken);
-    }
+    public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
+        Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
+        CancellationToken cancellationToken = default) =>
+        GetAllAsync(entityId, filter, null, cancellationToken);
 
-    public async Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
+    public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(
+        TKey entityId,
         IEntityTransaction entityTransaction,
+        CancellationToken cancellationToken = default) =>
+        GetAllAsync(entityId, null, entityTransaction, cancellationToken);
+
+    public Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId,
+        TKey key,
+        CancellationToken cancellationToken = default) =>
+        GetByKeyAsync(entityId, key, null, cancellationToken);
+
+    public Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId,
+        TKey key,
+        IEntityTransaction transaction,
+        CancellationToken cancellationToken = default) =>
+        FindFirstOrDefaultAsync(entityId, x => x.Id.Equals(key), transaction, cancellationToken);
+
+    public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
+        CancellationToken cancellationToken = default) =>
+        GetAllAsync(entityId, null, null, cancellationToken);
+
+    public Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         CancellationToken cancellationToken = default)
-    {
-        _transactionManager.AddTransaction(entityTransaction);
-        var result = await _readClient.GetFirstOrDefaultAsync(FilterByEntityId(entityId), entityTransaction, cancellationToken);
-        if (result?.CustomFields is null)
-        {
-            return false;
-        }
-        return result.CustomFields.AsQueryable().Any(filter);
-    }
+        => ExistsAsync(entityId, filter, null, cancellationToken);
+
+    public async Task<bool> ExistsAsync(TKey entityId,
+        Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
+        IEntityTransaction entityTransaction,
+        CancellationToken cancellationToken = default) =>
+        (await GetAllAsync(entityId, filter, entityTransaction, cancellationToken))?.Count > 0;
+
+    public Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
+        Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
+        CancellationToken cancellationToken = default) =>
+        FindFirstOrDefaultAsync(entityId, filter, null, cancellationToken);
 
     public async Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default)
-    {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
-        return await FindFirstOrDefaultAsync(entityId, filter, transaction, cancellationToken);
-    }
-
-    public async Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
-        Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
-    {
-        _transactionManager.AddTransaction(entityTransaction);
-
-        var result = await _readClient.GetFirstOrDefaultAsync(FilterByEntityId(entityId), entityTransaction, cancellationToken);
-
-        return result?.CustomFields?.AsQueryable().Where(filter).FirstOrDefault();
-    }
+        CancellationToken cancellationToken = default) =>
+        (await GetAllAsync(entityId, filter, entityTransaction, cancellationToken))?.FirstOrDefault();
 }
