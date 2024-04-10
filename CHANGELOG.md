@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="12.0.3"></a>
+## [12.0.3](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.3) (2024-04-10)
+
+### Bug Fixes
+
+* only look up mongo custom fields by entity id for performance purposes ([#310](https://www.github.com/firebend/auto-crud/issues/310)) ([748c22a](https://www.github.com/firebend/auto-crud/commit/748c22ae5632ba8da8464b92298807c6d1817d7d))
+
 <a name="12.0.2"></a>
 ## [12.0.2](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.2) (2024-04-09)
 
