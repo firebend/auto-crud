@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="12.0.4"></a>
+## [12.0.4](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.4) (2024-04-12)
+
+### Bug Fixes
+
+* change the AbstractEntitySearchService to use reflection to work with mongo v3 linq provider ([#311](https://www.github.com/firebend/auto-crud/issues/311)) ([19cf4ad](https://www.github.com/firebend/auto-crud/commit/19cf4ad925a4a509001a0dc609626858c267ed37))
+
 <a name="12.0.3"></a>
 ## [12.0.3](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.3) (2024-04-10)
 
