@@ -193,6 +193,10 @@ public abstract class BaseTest<
             .SetQueryParam("pageSize", 10)
             .SetQueryParam("isDeleted", "false")
             .SetQueryParam("orderBy", "createdDate:desc")
+            .SetQueryParam("CreatedStartDate", "1968-08-09")
+            .SetQueryParam("CreatedEndDate", "2068-08-09")
+            .SetQueryParam("ModifiedStartDate", "1968-08-09")
+            .SetQueryParam("ModifiedEndDate", "2068-08-09")
             .SetQueryParam("doCount", true)
             .GetAsync();
 

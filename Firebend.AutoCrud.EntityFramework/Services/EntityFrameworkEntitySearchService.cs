@@ -64,12 +64,7 @@ public class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> :
 
         await using (context)
         {
-            var expression = GetSearchExpression(request);
-
-            if (expression != null)
-            {
-                query = query.Where(expression);
-            }
+            query = GetSearchExpressions(request).Aggregate(query, (current, expression) => current.Where(expression));
 
             if (_searchHandler != null)
             {

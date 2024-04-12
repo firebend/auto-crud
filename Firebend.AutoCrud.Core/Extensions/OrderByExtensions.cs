@@ -56,7 +56,7 @@ public static class OrderByExtensions
     {
         if (source is null || source.Length <= 0)
         {
-            return Array.Empty<(Expression<Func<T, object>> order, bool ascending)>();
+            return [];
         }
 
         return source

@@ -65,12 +65,7 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
 
         var query = await _readClient.GetQueryableAsync(firstStageFilter, entityTransaction, cancellationToken);
 
-        var expression = GetSearchExpression(request);
-
-        if (expression != null)
-        {
-            query = query.Where(expression);
-        }
+        query = GetSearchExpressions(request).Aggregate(query, (current, expression) => current.Where(expression));
 
         var paged = await _readClient.GetPagedResponseAsync(query, request, cancellationToken);
 
