@@ -44,12 +44,7 @@ public class EntityFrameworkChangeTrackingReadService<TEntityKey, TEntity> :
         {
             query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
 
-            var filter = GetSearchExpression(searchRequest);
-
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
+            query = GetSearchExpressions(searchRequest).Aggregate(query, (current, expression) => current.Where(expression));
 
             if (_searchHandler != null)
             {

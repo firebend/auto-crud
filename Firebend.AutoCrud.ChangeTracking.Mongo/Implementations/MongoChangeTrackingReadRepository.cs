@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.Interfaces;
@@ -51,12 +52,7 @@ public class MongoChangeTrackingReadRepository<TEntityKey, TEntity> :
 
         query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
 
-        var filter = GetSearchExpression(searchRequest);
-
-        if (filter != null)
-        {
-            query = query.Where(filter);
-        }
+        query = GetSearchExpressions(searchRequest).Aggregate(query, (current, expression) => current.Where(expression));
 
         if (searchRequest.OrderBy == null)
         {
