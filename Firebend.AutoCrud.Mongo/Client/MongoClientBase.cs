@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Client;
 
@@ -14,6 +15,8 @@ public abstract class MongoClientBase<TKey, TEntity> : BaseDisposable
 {
     private readonly IMongoClientFactory<TKey, TEntity> _mongoClientFactory;
     private IMongoClient _mongoClient;
+
+    public LinqProvider? LinqProvider => _mongoClient?.Settings?.LinqProvider;
 
     protected MongoClientBase(IMongoClientFactory<TKey, TEntity> clientFactory,
         ILogger logger,
