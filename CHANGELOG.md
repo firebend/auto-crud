@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="12.1.0"></a>
+## [12.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v12.1.0) (2024-04-25)
+
+### Features
+
+* Mongo Logger Factory, Conditional LinqProviderV2/V3, fixes, package updates ([#317](https://www.github.com/firebend/auto-crud/issues/317)) ([b78051d](https://www.github.com/firebend/auto-crud/commit/b78051d380b29243aa58762e549e48b2901193c9))
+
 <a name="12.0.5"></a>
 ## [12.0.5](https://www.github.com/firebend/auto-crud/releases/tag/v12.0.5) (2024-04-15)
 
