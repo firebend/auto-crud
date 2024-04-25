@@ -4,7 +4,6 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
-using MongoDB.Driver.Core.Events;
 using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Client;
