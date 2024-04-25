@@ -8,5 +8,5 @@ public interface IMongoClientFactory<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    Task<IMongoClient> CreateClientAsync(string overrideShardKey = null, bool enableLogging = false);
+    Task<IMongoClient> CreateClientAsync(string overrideShardKey = null);
 }

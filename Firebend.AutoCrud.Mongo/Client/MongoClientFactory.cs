@@ -13,25 +13,24 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    private record MongoClientCacheFactoryContext(ILogger Logger,
+    private record MongoClientCacheFactoryContext(ILoggerFactory LoggerFactory,
         MongoClientSettings Settings,
-        bool EnableLogging,
         IMongoClientSettingsConfigurator SettingsConfigurator);
 
-    private readonly ILogger _logger;
     private readonly IMongoConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
     private readonly IMongoClientSettingsConfigurator _settingsConfigurator;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public MongoClientFactory(ILogger<MongoClientFactory<TKey, TEntity>> logger,
-        IMongoConnectionStringProvider<TKey, TEntity> connectionStringProvider,
+    public MongoClientFactory(IMongoConnectionStringProvider<TKey, TEntity> connectionStringProvider,
+        ILoggerFactory loggerFactory,
         IMongoClientSettingsConfigurator settingsConfigurator = null)
     {
-        _logger = logger;
         _connectionStringProvider = connectionStringProvider;
+        _loggerFactory = loggerFactory;
         _settingsConfigurator = settingsConfigurator;
     }
 
-    public async Task<IMongoClient> CreateClientAsync(string overrideShardKey = null, bool enableLogging = false)
+    public async Task<IMongoClient> CreateClientAsync(string overrideShardKey = null)
     {
         var connectionString = await _connectionStringProvider.GetConnectionStringAsync(overrideShardKey);
 
@@ -40,7 +39,7 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
         var client = MongoClientFactoryCache.MongoClients.GetOrAdd(
             mongoClientSettings.Server.ToString(),
             CreateClientForCache,
-            new MongoClientCacheFactoryContext(_logger, mongoClientSettings, enableLogging, _settingsConfigurator)
+            new MongoClientCacheFactoryContext(_loggerFactory, mongoClientSettings, _settingsConfigurator)
         );
 
         return client;
@@ -50,24 +49,12 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
     {
         context.Settings.LinqProvider = LinqProvider.V3;
 
-        if (context.EnableLogging)
-        {
-            context.Settings.ClusterConfigurator = cb => Configurator(cb, context);
-        }
+        context.Settings.LoggingSettings ??= new LoggingSettings(context.LoggerFactory);
 
         var settings = context.SettingsConfigurator is null
             ? context.Settings
             : context.SettingsConfigurator.Configure(server, context.Settings);
 
         return new MongoClient(settings);
-    }
-
-    private static void Configurator(ClusterBuilder cb, MongoClientCacheFactoryContext context)
-    {
-        cb.Subscribe<CommandStartedEvent>(e => MongoClientFactoryLogger.Started(context.Logger, e.CommandName, e.Command));
-
-        cb.Subscribe<CommandSucceededEvent>(e => MongoClientFactoryLogger.Success(context.Logger, e.CommandName, e.Duration, e.Reply));
-
-        cb.Subscribe<CommandFailedEvent>(e => MongoClientFactoryLogger.Failed(context.Logger, e.CommandName, e.Duration));
     }
 }
