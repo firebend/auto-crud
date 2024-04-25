@@ -26,7 +26,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
     private readonly IServiceProvider _serviceProvider;
 
     private readonly ConcurrentDictionary<string, Lazy<Task<IEntityTransaction>>> _sharedTransactions = new();
-    private readonly ConcurrentBag<QueuedTransaction> _transactions = new();
+    private readonly ConcurrentBag<QueuedTransaction> _transactions = [];
 
     public bool TransactionStarted { get; private set; }
     public ImmutableList<Guid> TransactionIds => GetTransactionsInOrder(true).Select(x => x.Id).ToImmutableList();

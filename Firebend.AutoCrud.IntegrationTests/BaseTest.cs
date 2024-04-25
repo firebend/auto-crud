@@ -37,7 +37,7 @@ public abstract class BaseTest<
 {
     protected abstract string Url { get; }
 
-    protected List<IFlurlResponse> Responses { get; } = new();
+    protected List<IFlurlResponse> Responses { get; } = [];
 
     private TKey CreatedKey { get; set; }
 

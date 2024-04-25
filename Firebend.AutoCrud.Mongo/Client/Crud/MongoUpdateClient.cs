@@ -81,7 +81,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
             return updatedEntities;
         }
 
-        return new List<TEntity>();
+        return [];
     }
 
     public virtual Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities,
@@ -111,7 +111,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
             return updatedEntities;
         }
 
-        return new List<TOut>();
+        return [];
     }
 
     public virtual Task<TEntity> UpdateAsync(TKey id,
