@@ -27,7 +27,7 @@ public class ClientRequestTransactionManagerTests
     public void TestSetup()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
-        _transactions = new List<Mock<TestTransaction>>();
+        _transactions = [];
 
         _efTransactionFactory = _fixture.Create<Mock<IEntityTransactionFactory<Guid, TestClassEf>>>();
         _mongoTransactionFactory = _fixture.Create<Mock<IEntityTransactionFactory<Guid, TestClassMongo>>>();

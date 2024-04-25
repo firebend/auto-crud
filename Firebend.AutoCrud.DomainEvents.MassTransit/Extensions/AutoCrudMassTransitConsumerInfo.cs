@@ -7,17 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 
-public class AutoCrudMassTransitConsumerInfo
+public record AutoCrudMassTransitConsumerInfo
 {
-    public Type EntityType { get; set; }
+    public Type EntityType { get; }
 
-    public Type DomainEventType { get; set; }
+    public Type DomainEventType { get; }
 
-    public Type ConsumerType { get; set; }
+    public Type ConsumerType { get; }
 
-    public string EntityActionDescription { get; set; }
+    public string EntityActionDescription { get; }
 
-    public ServiceDescriptor ServiceDescriptor { get; set; }
+    public ServiceDescriptor ServiceDescriptor { get; }
 
     public Type MessageType => ServiceDescriptor?.ServiceType.GenericTypeArguments.FirstOrDefault() ?? ServiceDescriptor?.ServiceType;
 

@@ -11,7 +11,7 @@ public class CopyOnPatchPropertyAccessor<TEntity, TVersion, TViewModel> : ICopyO
 
     public CopyOnPatchPropertyAccessor(List<string> copyOnPatchPropertyNames)
     {
-        copyOnPatchPropertyNames ??= new List<string>();
+        copyOnPatchPropertyNames ??= [];
         copyOnPatchPropertyNames.Add(nameof(ICustomFieldsEntity<Guid>.CustomFields));
         _copyOnPatchPropertyNames = copyOnPatchPropertyNames;
     }

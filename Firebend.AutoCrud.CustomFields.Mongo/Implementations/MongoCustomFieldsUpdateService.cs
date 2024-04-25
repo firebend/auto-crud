@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
@@ -72,7 +73,14 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == customField.Id);
 
         var mongoCollection = await GetCollectionAsync();
-        var updateDefinition = Builders<TEntity>.Update.Set(x => x.CustomFields.FirstMatchingElement(), customField);
+
+        var linqVersion = LinqProvider.GetValueOrDefault(MongoDB.Driver.Linq.LinqProvider.V3);
+
+        Expression<Func<TEntity, CustomFieldsEntity<TKey>>> filterExpression = linqVersion == MongoDB.Driver.Linq.LinqProvider.V2
+            ? x => x.CustomFields[-1]
+            : x => x.CustomFields.FirstMatchingElement();
+
+        var updateDefinition = Builders<TEntity>.Update.Set(filterExpression, customField);
 
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))
         {
@@ -178,7 +186,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
                 new FindOneAndUpdateOptions<TEntity>
                 {
                     ReturnDocument = ReturnDocument.Before,
-                    ArrayFilters = new[] { arrayFilters },
+                    ArrayFilters = [arrayFilters],
                 },
                 cancellationToken);
         }
@@ -189,7 +197,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
                 new FindOneAndUpdateOptions<TEntity>
                 {
                     ReturnDocument = ReturnDocument.Before,
-                    ArrayFilters = new[] { arrayFilters },
+                    ArrayFilters = [arrayFilters],
                 },
                 cancellationToken);
         }
@@ -221,7 +229,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
         return entity.CustomFields?.FirstOrDefault(x => x.Id == key);
     }
 
-    private static string FixMongoPatchPath(Operation<CustomFieldsEntity<TKey>> operation)
+    private static string FixMongoPatchPath(OperationBase operation)
         => operation.path[1..].FirstCharToLower();
 
     private Task PublishUpdatedDomainEventAsync(TEntity previous,
@@ -242,6 +250,5 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
         };
 
         return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
-
     }
 }

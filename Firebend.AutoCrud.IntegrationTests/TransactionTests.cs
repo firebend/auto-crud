@@ -24,7 +24,7 @@ public class TransactionTests
     public async Task SeedData()
     {
         _efPerson = await CreatePersonAsync(EfPersonUrl);
-        _efPerson.CustomFields = new List<CustomFieldsEntity<Guid>>();
+        _efPerson.CustomFields = [];
         _mongoPerson = await CreatePersonAsync(MongoPersonUrl);
         _requestModel = new SessionTransactionRequestModel { EfPersonId = _efPerson.Id, MongoPersonId = _mongoPerson.Id };
     }

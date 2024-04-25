@@ -23,7 +23,7 @@ public class Result<TModel> : Result
 
 public class ModelStateResult<TModel> : Result<TModel>
 {
-    private readonly List<ModelError> _errors = new List<ModelError>();
+    private readonly List<ModelError> _errors = [];
     public IReadOnlyList<ModelError> Errors => _errors;
 
     public ModelStateResult<TModel> AddError(string path, string error)
