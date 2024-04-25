@@ -12,11 +12,11 @@ namespace Firebend.AutoCrud.DomainEvents.MassTransit.Extensions;
 
 public static class MassTransitExtensions
 {
-    private const string QueuePrefix = "FB_AC_DV_";
+    private const string QueuePrefix = "FB_AC_DE_";
 
     private static List<AutoCrudMassTransitConsumerInfo> _listeners;
 
-    private static List<AutoCrudMassTransitConsumerInfo> GetListeners(IServiceCollection serviceCollection)
+    public static List<AutoCrudMassTransitConsumerInfo> GetListeners(IServiceCollection serviceCollection)
     {
         if (_listeners != null && _listeners.Count != 0)
         {
@@ -48,7 +48,7 @@ public static class MassTransitExtensions
         IBusFactoryConfigurator bus,
         AutoCrudMassTransitQueueMode queueMode,
         string receiveEndpointPrefix = null,
-        Action<IReceiveEndpointConfigurator> configureReceiveEndpoint = null)
+        Action<AutoCrudMassTransitConfigureReceiveEndpointContext> configureReceiveEndpoint = null)
     {
         var queues = GetQueues(queueMode, receiveEndpointPrefix, _listeners);
 
@@ -59,12 +59,28 @@ public static class MassTransitExtensions
                 foreach (var consumerInfo in consumerInfos)
                 {
                     busRegistrationContext.ConfigureConsumer(consumerInfo.ConsumerType, re);
+
+                    if (configureReceiveEndpoint is null)
+                    {
+                        continue;
+                    }
+
+                    var ctx = new AutoCrudMassTransitConfigureReceiveEndpointContext(re,
+                        queueName,
+                        consumerInfo.ConsumerType,
+                        consumerInfo.MessageType);
+
+                    configureReceiveEndpoint.Invoke(ctx);
                 }
-                configureReceiveEndpoint?.Invoke(re);
             });
         }
 
-        _listeners.Clear();
+        ClearListeners();
+    }
+
+    public static void ClearListeners()
+    {
+        _listeners?.Clear();
         _listeners = null;
     }
 
