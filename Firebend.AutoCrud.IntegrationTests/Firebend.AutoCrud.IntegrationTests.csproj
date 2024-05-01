@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bogus" Version="35.5.0" />
-        <PackageReference Include="CsvHelper" Version="31.0.4" />
+        <PackageReference Include="Bogus" Version="35.5.1" />
+        <PackageReference Include="CsvHelper" Version="32.0.1" />
         <PackageReference Include="FluentAssertions" Version="6.12.0" />
         <PackageReference Include="Flurl.Http" Version="4.0.2" />
         <PackageReference Include="Flurl.Http.Newtonsoft" Version="0.9.1" />
