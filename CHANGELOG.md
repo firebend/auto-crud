@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="12.1.1"></a>
+## [12.1.1](https://www.github.com/firebend/auto-crud/releases/tag/v12.1.1) (2024-05-01)
+
+### Bug Fixes
+
+* package upgrades ([eeaab4d](https://www.github.com/firebend/auto-crud/commit/eeaab4dce252eb0dc44f75524b75bb23da282540))
+
 <a name="12.1.0"></a>
 ## [12.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v12.1.0) (2024-04-25)
 
