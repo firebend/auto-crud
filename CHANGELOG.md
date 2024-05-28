@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="12.3.0"></a>
+## [12.3.0](https://www.github.com/firebend/auto-crud/releases/tag/v12.3.0) (2024-05-28)
+
+### Features
+
+* ef update ([3e23718](https://www.github.com/firebend/auto-crud/commit/3e2371878aac3be96f5356f97dccca07ceb1ba54))
+
 <a name="12.2.0"></a>
 ## [12.2.0](https://www.github.com/firebend/auto-crud/releases/tag/v12.2.0) (2024-05-28)
 
