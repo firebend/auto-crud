@@ -24,7 +24,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" Version="2.4.1" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.5" />
     </ItemGroup>
 
     <ItemGroup>
