@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using MongoDB.Driver;
@@ -7,11 +9,13 @@ namespace Firebend.AutoCrud.Mongo.Client;
 
 public class MongoRetryService : IMongoRetryService
 {
+    private static readonly TimeSpan TransactionTimeout = TimeSpan.FromSeconds(120);
+
     public async Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int maxTries)
     {
         var tries = 0;
-        double delay = 100;
-
+        double delay = 200;
+        var now = Stopwatch.GetTimestamp();
 
         while (true)
         {
@@ -23,24 +27,55 @@ public class MongoRetryService : IMongoRetryService
             {
                 tries++;
 
-                if (!ShouldRetry(ex) || tries >= maxTries)
+                if (!ShouldRetry(ex, now) || tries >= maxTries)
                 {
                     throw;
                 }
 
-                if (tries != 1)
-                {
-                    delay = Math.Ceiling(Math.Pow(delay, 1.1));
-                }
+                delay *= 2;
 
                 await Task.Delay(TimeSpan.FromMilliseconds(delay));
             }
         }
     }
 
-    // don't retry MongoBulkWriteException or duplicate key exceptions
-    private bool ShouldRetry(Exception exception) =>
-        exception is MongoException
-        && exception is not MongoBulkWriteException
-        && !exception.Message.Contains("duplicate key");
+    public static bool ShouldRetry(Exception exception, long now) =>
+        exception switch
+        {
+            not null when exception.Message.Contains("duplicate key") => false,
+            MongoWriteConcernException e => HasWriteConcern(e),
+            MongoCommandException e => HasAnyErrorCode(e, ErrorCodes.Retryable),
+            MongoBulkWriteException => false,
+            MongoExecutionTimeoutException { Code: ErrorCodes.MaxTimeMsExpiredErrorCode } => true,
+            MongoException e when HasAnyLabel(e,
+                Labels.TransientTransactionErrorLabel,
+                Labels.UnknownTransactionCommitResultLabel) => true,
+            _ => HasTimedOut(now)
+        };
+
+    private static bool HasAnyErrorCode(MongoCommandException mongoException, params int[] codes)
+        => codes.Contains(mongoException.Code);
+
+    private static bool HasAnyLabel(MongoException mongoException, params string[] labels)
+        => labels.Any(mongoException.HasErrorLabel);
+
+    private static bool HasWriteConcern(MongoWriteConcernException writeConcernException)
+    {
+        var writeConcernError = writeConcernException
+            .WriteConcernResult
+            .Response?
+            .GetValue("writeConcernError", null)
+            ?.AsBsonDocument;
+
+        var code = writeConcernError?.GetValue("code", -1).ToInt32() ?? 0;
+
+        return code != 0 && ErrorCodes.Retryable.Contains(code);
+    }
+
+    private static bool HasTimedOut(long startTime, TimeSpan? timeout = null)
+    {
+        timeout ??= TransactionTimeout;
+        var hasTimedOut = Stopwatch.GetElapsedTime(startTime) >= timeout;
+        return hasTimedOut;
+    }
 }

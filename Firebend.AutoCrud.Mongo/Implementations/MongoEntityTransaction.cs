@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Core.Ids;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Mongo.Client;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -54,18 +55,15 @@ public class MongoEntityTransaction : BaseDisposable, IEntityTransaction
         {
             _logger.LogDebug("Transaction exception {Id}, {Code}, {CodeName} {Message}", Id, ex.Code, ex.CodeName, ex.Message);
 
-            //********************************************
-            // Author: JMA
-            // Date: 2023-04-20 02:37:42
-            // Comment: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml
-            // Break out of a transaction is in an invalid state
-            //*******************************************
-            if (ex.Code == 251)
+            switch (ex.Code)
             {
-                return false;
+                case ErrorCodes.NoSuchTransaction or ErrorCodes.TransactionTooLarge:
+                    return false;
+                case ErrorCodes.TransactionCommitted:
+                    return true;
+                default:
+                    throw;
             }
-
-            throw;
         }
 
         return true;
