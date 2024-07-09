@@ -48,18 +48,18 @@ public class MongoRetryService : IMongoRetryService
             MongoBulkWriteException => false,
             MongoExecutionTimeoutException { Code: ErrorCodes.MaxTimeMsExpiredErrorCode } => true,
             MongoException e when HasAnyLabel(e,
-                Labels.TransientTransactionErrorLabel,
+                Labels.TransientTransaction,
                 Labels.UnknownTransactionCommitResultLabel) => true,
             _ => HasTimedOut(now)
         };
 
-    private static bool HasAnyErrorCode(MongoCommandException mongoException, params int[] codes)
+    public static bool HasAnyErrorCode(MongoCommandException mongoException, params int[] codes)
         => codes.Contains(mongoException.Code);
 
-    private static bool HasAnyLabel(MongoException mongoException, params string[] labels)
+    public static bool HasAnyLabel(MongoException mongoException, params string[] labels)
         => labels.Any(mongoException.HasErrorLabel);
 
-    private static bool HasWriteConcern(MongoWriteConcernException writeConcernException)
+    public static bool HasWriteConcern(MongoWriteConcernException writeConcernException)
     {
         var writeConcernError = writeConcernException
             .WriteConcernResult
