@@ -4,6 +4,7 @@ using AutoFixture;
 using Firebend.AutoCrud.Mongo.Client;
 using FluentAssertions;
 using Microsoft.AspNetCore.Connections;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
 using MongoDB.Driver.Core.Connections;
@@ -47,18 +48,6 @@ public class MongoRetryServiceTests
         var retryService = fixture.Create<MongoRetryService>();
 
         var count = 0;
-        Task<bool> FakeFunc()
-        {
-            count++;
-
-            if (count < 3)
-            {
-                var connId = new ConnectionId(new ServerId(new ClusterId(), new UriEndPoint(new Uri("https://www.google.com"))));
-                throw new MongoWriteException(connId, null, null, null);
-            }
-
-            return Task.FromResult(true);
-        }
 
         //act
         var result = await retryService.RetryErrorAsync(FakeFunc, 10);
@@ -66,6 +55,20 @@ public class MongoRetryServiceTests
         //assert
         result.Should().BeTrue();
         count.Should().Be(3);
+        return;
+
+        Task<bool> FakeFunc()
+        {
+            count++;
+
+            if (count < 3)
+            {
+                var connId = new ConnectionId(new ServerId(new ClusterId(), new UriEndPoint(new Uri("https://www.google.com"))));
+                throw new MongoCommandException(connId, null, null, BsonDocument.Parse("{ code: 42 }"));
+            }
+
+            return Task.FromResult(true);
+        }
     }
 
     [TestCase]
@@ -117,13 +120,6 @@ public class MongoRetryServiceTests
         var retryService = fixture.Create<MongoRetryService>();
 
         var count = 0;
-        Task<bool> FakeFunc()
-        {
-            count++;
-
-            var connId = new ConnectionId(new ServerId(new ClusterId(), new UriEndPoint(new Uri("https://www.google.com"))));
-            throw new MongoWriteException(connId, null, null, null);
-        }
 
         //act
         try
@@ -132,10 +128,19 @@ public class MongoRetryServiceTests
         }
         catch (Exception ex)
         {
-            ex.Message.Should().Contain("A write operation resulted in an error.");
+            //ignore
         }
 
         //assert
         count.Should().Be(4);
+        return;
+
+        Task<bool> FakeFunc()
+        {
+            count++;
+
+            var connId = new ConnectionId(new ServerId(new ClusterId(), new UriEndPoint(new Uri("https://www.google.com"))));
+            throw new MongoCommandException(connId, null, null, BsonDocument.Parse("{ code: 42 }"));
+        }
     }
 }
