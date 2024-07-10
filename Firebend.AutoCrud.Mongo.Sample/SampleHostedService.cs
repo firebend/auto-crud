@@ -25,11 +25,10 @@ public class SampleHostedService : BackgroundService
     {
         _logger = logger;
 
-        using var scope = serviceProvider.CreateScope();
-        _createService = scope.ServiceProvider.GetService<IEntityCreateService<Guid, Person>>();
-        _updateService = scope.ServiceProvider.GetService<IEntityUpdateService<Guid, Person>>();
-        _readService = scope.ServiceProvider.GetService<IPersonReadRepository>();
-        _searchService = scope.ServiceProvider.GetService<IEntitySearchService<Guid, Person, EntitySearchRequest>>();
+        _createService = serviceProvider.GetService<IEntityCreateService<Guid, Person>>();
+        _updateService = serviceProvider.GetService<IEntityUpdateService<Guid, Person>>();
+        _readService = serviceProvider.GetService<IPersonReadRepository>();
+        _searchService = serviceProvider.GetService<IEntitySearchService<Guid, Person, EntitySearchRequest>>();
 
         if (_createService == null)
         {

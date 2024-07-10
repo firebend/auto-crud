@@ -53,10 +53,6 @@ public class ClientRequestTransactionManagerTests
         var serviceScope = _fixture.Freeze<Mock<IServiceScope>>();
         serviceScope.Setup(x => x.ServiceProvider)
             .Returns(_serviceProvider.Object);
-
-        var serviceFactoryScope = _fixture.Freeze<Mock<IServiceScopeFactory>>();
-        serviceFactoryScope.Setup(x => x.CreateScope())
-            .Returns(serviceScope.Object);
     }
 
     private Mock<TestTransaction> CreateMockTransaction()

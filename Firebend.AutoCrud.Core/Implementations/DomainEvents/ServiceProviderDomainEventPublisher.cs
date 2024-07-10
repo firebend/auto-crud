@@ -13,12 +13,13 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IServiceProvider _serviceProvider;
 
-    public ServiceProviderDomainEventPublisher(IServiceScopeFactory serviceScopeFactory)
+    public ServiceProviderDomainEventPublisher(IServiceProvider serviceProvider)
     {
-        _serviceScopeFactory = serviceScopeFactory;
+        _serviceProvider = serviceProvider;
     }
+
 
     public Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
@@ -83,11 +84,7 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
         CancellationToken cancellationToken)
         where TSubscriber : IDisposable
     {
-        using var scope = _serviceScopeFactory.CreateScope();
-
-        var subscribers = scope
-            .ServiceProvider
-            .GetServices<TSubscriber>();
+        var subscribers = _serviceProvider.GetServices<TSubscriber>();
 
         var subscribersArray = subscribers as TSubscriber[] ?? subscribers.ToArray();
 

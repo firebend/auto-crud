@@ -23,9 +23,7 @@ public class ConfigureCollectionsHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = _serviceProvider.CreateScope();
-
-        var collections = scope.ServiceProvider.GetService<IEnumerable<IConfigureCollection>>();
+        var collections = _serviceProvider.GetService<IEnumerable<IConfigureCollection>>();
 
         if (collections != null)
         {

@@ -15,20 +15,19 @@ namespace Firebend.AutoCrud.Mongo.HostedServices;
 
 public class MongoMigrationHostedService : BackgroundService
 {
-    private readonly IEnumerable<IMongoMigration> _migrations;
     private readonly IMongoDefaultDatabaseSelector _databaseSelector;
-    private readonly IMongoMigrationConnectionStringProvider _mongoMigrationConnectionStringProvider;
     private readonly ILogger _logger;
+    private readonly IEnumerable<IMongoMigration> _migrations;
+    private readonly IMongoMigrationConnectionStringProvider _mongoMigrationConnectionStringProvider;
 
-    public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider, IMongoMigrationConnectionStringProvider mongoMigrationConnectionStringProvider)
+    public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider,
+        IMongoMigrationConnectionStringProvider mongoMigrationConnectionStringProvider)
     {
         _mongoMigrationConnectionStringProvider = mongoMigrationConnectionStringProvider;
         _logger = logger;
 
-        using var scope = serviceProvider.CreateScope();
-
-        _migrations = scope.ServiceProvider.GetService<IEnumerable<IMongoMigration>>();
-        _databaseSelector = scope.ServiceProvider.GetService<IMongoDefaultDatabaseSelector>();
+        _migrations = serviceProvider.GetService<IEnumerable<IMongoMigration>>();
+        _databaseSelector = serviceProvider.GetService<IMongoDefaultDatabaseSelector>();
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken) => DoMigration(stoppingToken);
@@ -63,8 +62,8 @@ public class MongoMigrationHostedService : BackgroundService
             .FirstOrDefaultAsync(cancellationToken);
 
         foreach (var migration in _migrations
-            .Where(x => x.Version.Version > maxVersion)
-            .OrderBy(x => x.Version.Version))
+                     .Where(x => x.Version.Version > maxVersion)
+                     .OrderBy(x => x.Version.Version))
         {
             try
             {
