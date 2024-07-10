@@ -93,7 +93,9 @@ public class SampleHostedService : BackgroundService
     private void LogObject(string message, object entity = null)
     {
         // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+#pragma warning disable CA2254
         _logger.LogInformation(message);
+#pragma warning restore CA2254
 
         if (entity != null)
         {

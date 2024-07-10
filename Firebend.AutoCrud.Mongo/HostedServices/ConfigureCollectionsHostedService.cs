@@ -23,21 +23,29 @@ public class ConfigureCollectionsHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var collections = _serviceProvider.GetService<IEnumerable<IConfigureCollection>>();
+        using var scope = _serviceProvider.CreateScope();
+        await ConfigureCollectionsAsync(scope.ServiceProvider, _logger, stoppingToken);
+    }
+
+    private static async Task ConfigureCollectionsAsync(IServiceProvider serviceProvider,
+        ILogger<ConfigureCollectionsHostedService> logger,
+        CancellationToken stoppingToken)
+    {
+        var collections = serviceProvider.GetService<IEnumerable<IConfigureCollection>>();
 
         if (collections != null)
         {
-            ConfigureCollectionsHostedServiceLogger.Start(_logger);
+            ConfigureCollectionsHostedServiceLogger.Start(logger);
 
             var configureTasks = collections.Select(x => x.ConfigureAsync(stoppingToken));
 
             await Task.WhenAll(configureTasks);
 
-            ConfigureCollectionsHostedServiceLogger.Finish(_logger);
+            ConfigureCollectionsHostedServiceLogger.Finish(logger);
         }
         else
         {
-            _logger.LogError("No Collections to Configure, but Mongo still registered");
+            logger.LogError("No Collections to Configure, but Mongo still registered");
         }
     }
 }

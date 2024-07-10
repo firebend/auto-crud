@@ -32,7 +32,7 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
     {
         try
         {
-            await MigrateContext(stoppingToken);
+            await MigrateContext(_serviceProvider, _logger, stoppingToken);
         }
         catch (Exception ex)
         {
@@ -44,21 +44,23 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
         }
     }
 
-    private async Task MigrateContext(CancellationToken stoppingToken)
+    private static async Task MigrateContext(IServiceProvider provider, ILogger logger, CancellationToken stoppingToken)
     {
-        var locker = _serviceProvider.GetService<IDistributedLockService>();
+        using var scope = provider.CreateScope();
+
+        var locker = scope.ServiceProvider.GetService<IDistributedLockService>();
 
         using var locked = await locker.LockAsync(nameof(AutoCrudEfMigrationHostedService<TContext>), stoppingToken);
 
-        var connectionStringProvider = _serviceProvider.GetService<IEntityFrameworkMigrationsConnectionStringProvider>();
+        var connectionStringProvider = scope.ServiceProvider.GetService<IEntityFrameworkMigrationsConnectionStringProvider>();
 
         if (connectionStringProvider is null)
         {
-            await MigrateUsingDefaultConnectionStringAsync(_serviceProvider, _logger, stoppingToken);
+            await MigrateUsingDefaultConnectionStringAsync(scope.ServiceProvider, logger, stoppingToken);
             return;
         }
 
-        await MigrateUsingProvidedConnectionStringsAsync(connectionStringProvider, _serviceProvider, _logger, stoppingToken);
+        await MigrateUsingProvidedConnectionStringsAsync(connectionStringProvider, scope.ServiceProvider, logger, stoppingToken);
     }
 
     private static async Task MigrateUsingDefaultConnectionStringAsync(IServiceProvider provider,
