@@ -7,8 +7,16 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models;
 
 public static class EntityTransactionExtensions
 {
-    public static Task AddFunctionEnrollmentAsync(this IEntityTransaction source,
+    public static Task AddFunctionEnrollmentAsync<TEntity, TEnrollment>(this IEntityTransaction source,
         Func<CancellationToken, Task> func,
         CancellationToken cancellationToken)
-        => source.Outbox.AddEnrollmentAsync(source.Id.ToString(), new FunctionTransactionOutboxEnrollment(func), cancellationToken);
+    where TEntity : class
+    where TEnrollment : FunctionTransactionOutboxEnrollment, new()
+    {
+        var handler = new TEnrollment();
+        handler.SetFunc(func);
+        var enrollment = new EntityTransactionOutboxEnrollment(source.Id.ToString(), handler, typeof(TEntity));
+
+        return source.Outbox.AddEnrollmentAsync(enrollment, cancellationToken);
+    }
 }

@@ -7,12 +7,13 @@ namespace Firebend.AutoCrud.Core.Models.Entities;
 
 public class FunctionTransactionOutboxEnrollment : IEntityTransactionOutboxEnrollment
 {
-    private readonly Func<CancellationToken, Task> _func;
+    private Func<CancellationToken, Task> _func;
 
-    public FunctionTransactionOutboxEnrollment(Func<CancellationToken, Task> func)
+    public FunctionTransactionOutboxEnrollment()
     {
-        _func = func;
     }
+
+    public void SetFunc(Func<CancellationToken, Task> func) => _func = func;
 
     public Task ActAsync(CancellationToken cancellationToken) => _func(cancellationToken);
 }

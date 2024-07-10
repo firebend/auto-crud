@@ -1,0 +1,3 @@
+namespace Firebend.AutoCrud.Core.Implementations.DomainEvents;
+
+public class ServiceProviderDomainEventEntityTransactionOutboxEnrollment : DomainEventEntityTransactionOutboxEnrollment;
