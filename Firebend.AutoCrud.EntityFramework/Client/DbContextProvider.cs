@@ -1,7 +1,6 @@
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.HostedServices;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -69,6 +68,7 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
         await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
 
         var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        dbContext.UseUserDefinedTransaction = true;
         dbContext.Database.SetDbConnection(transaction.Connection);
         await dbContext.Database.UseTransactionAsync(transaction, cancellationToken);
 

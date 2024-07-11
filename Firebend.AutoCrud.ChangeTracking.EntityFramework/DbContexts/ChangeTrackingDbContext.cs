@@ -28,6 +28,7 @@ public class ChangeTrackingDbContext<TKey, TEntity> : DbContext, IDbContext
 {
     public ChangeTrackingDbContext(DbContextOptions options) : base(options)
     {
+        Options = options;
     }
 
     /// <summary>
@@ -112,4 +113,7 @@ public class ChangeTrackingDbContext<TKey, TEntity> : DbContext, IDbContext
             .Metadata
             .SetValueComparer(new EntityFrameworkJsonComparer<TProperty>(settings));
     }
+
+    public DbContextOptions Options { get; }
+    public bool UseUserDefinedTransaction { get; set; }
 }

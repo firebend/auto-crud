@@ -22,4 +22,8 @@ public interface IDbContext : IDisposable, IAsyncDisposable
     DatabaseFacade Database { get; }
 
     IModel Model { get; }
+
+    DbContextOptions Options { get; }
+
+    bool UseUserDefinedTransaction { get; set; }
 }

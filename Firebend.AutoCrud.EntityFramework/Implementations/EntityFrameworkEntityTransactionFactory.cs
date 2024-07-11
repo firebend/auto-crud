@@ -36,6 +36,7 @@ public class EntityFrameworkEntityTransactionFactory<TKey, TEntity> : BaseDispos
     public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
     {
         var context = await _dbContextProvider.GetDbContextAsync(cancellationToken);
+        context.UseUserDefinedTransaction = true;
         var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         return new EntityFrameworkEntityTransaction(transaction, _outbox);
     }

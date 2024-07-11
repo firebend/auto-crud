@@ -12,7 +12,7 @@ public static class EntityFrameworkEntityCrudGeneratorExtensions
         this IServiceCollection serviceCollection,
         Action<IServiceProvider, DbContextOptionsBuilder> dbContextOptionsBuilder,
         Action<EntityFrameworkEntityCrudGenerator> configure,
-        bool usePooled = true)
+        bool usePooled = false)
         where TContext : DbContext
     {
         if (usePooled)
@@ -30,7 +30,8 @@ public static class EntityFrameworkEntityCrudGeneratorExtensions
             new DynamicClassGenerator(),
             serviceCollection,
             dbContextOptionsBuilder,
-            typeof(TContext));
+            typeof(TContext),
+            usePooled);
 
         configure(ef);
 

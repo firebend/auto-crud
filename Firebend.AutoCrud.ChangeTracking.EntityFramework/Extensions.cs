@@ -65,7 +65,14 @@ public static class Extensions
             throw new Exception("Please configure the builder's db context first.");
         }
 
-        efBuilder.Services.AddPooledDbContextFactory<ChangeTrackingDbContext<TKey, TEntity>>(efBuilder.DbContextOptionsBuilder);
+        if (efBuilder.UsePooled)
+        {
+            efBuilder.Services.AddPooledDbContextFactory<ChangeTrackingDbContext<TKey, TEntity>>(efBuilder.DbContextOptionsBuilder);
+        }
+        else
+        {
+            efBuilder.Services.AddDbContextFactory<ChangeTrackingDbContext<TKey, TEntity>>(efBuilder.DbContextOptionsBuilder);
+        }
 
         configurator.Builder.WithRegistration<IDbContextProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>, ChangeTrackingDbContextProvider<TKey, TEntity>>();
         configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>, ChangeTrackingDbContextProvider<TKey, TEntity>>();
