@@ -59,7 +59,7 @@ public class ConstraintUpdateExceptionHandler<TKey, TEntity>
             return OnUniqueConstraintUnresolved(entity, sqlException);
         }
 
-        var constraint = constraintSplit[1][..constraintSplit[1].IndexOf("'", StringComparison.Ordinal)];
+        var constraint = constraintSplit[1][..constraintSplit[1].IndexOf('\'')];
 
         var tableIndex = GetConstraint<TableIndex, IIndex>(
             dbContext,
@@ -112,7 +112,7 @@ public class ConstraintUpdateExceptionHandler<TKey, TEntity>
             return OnConstraintUnresolved(entity, sqlException);
         }
 
-        var constraint = constraintSplit[1][..constraintSplit[1].IndexOf("\"", StringComparison.Ordinal)];
+        var constraint = constraintSplit[1][..constraintSplit[1].IndexOf('"')];
 
         var foreignKey = GetConstraint<ForeignKeyConstraint, IForeignKey>(
             dbContext,

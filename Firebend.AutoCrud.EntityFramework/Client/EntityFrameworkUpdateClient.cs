@@ -13,20 +13,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Client;
 
-public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
+public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, new()
 {
-    private readonly IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> _exceptionHandler;
     private readonly IDomainEventPublisherService<TKey, TEntity> _publisherService;
     private readonly IEntityReadService<TKey, TEntity> _readService;
 
     public EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
         IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
         IEntityReadService<TKey, TEntity> readService,
-        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(contextProvider)
+        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(contextProvider, exceptionHandler)
     {
-        _exceptionHandler = exceptionHandler;
         _publisherService = publisherService;
         _readService = readService;
     }
@@ -130,7 +128,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
 
         entity = await OnBeforePatchAsync(context, entity, entityTransaction, cancellationToken);
 
-        await SaveUpdateChangesAsync(entity, context, cancellationToken);
+        await SaveAsync(entity, context, cancellationToken);
 
         var fetched = await _publisherService.ReadAndPublishUpdateEventAsync(entity.Id, previous, entityTransaction, jsonPatchDocument, cancellationToken);
 
@@ -141,7 +139,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
         IEntityTransaction transaction,
         CancellationToken cancellationToken = default)
     {
-        var previous = await _readService.GetByKeyAsync(entity.Id, cancellationToken);
+        var previous = await _readService.GetByKeyAsync(entity.Id, transaction, cancellationToken);
         var isUpdating = previous is not null;
         TEntity savedEntity;
 
@@ -166,21 +164,6 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
         return await _publisherService.ReadAndPublishUpdateEventAsync(savedEntity.Id, previous, transaction, cancellationToken);
     }
 
-    private async Task SaveUpdateChangesAsync(TEntity entity, IDbContext context, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateException ex)
-        {
-            if (!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
-            {
-                throw;
-            }
-        }
-    }
-
     private async Task<TEntity> AddEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
     {
         if (entity is IModifiedEntity modified)
@@ -196,7 +179,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
 
         await set.AddAsync(entity, cancellationToken);
 
-        await SaveUpdateChangesAsync(entity, context, cancellationToken);
+        await SaveAsync(entity, context, cancellationToken);
 
         return entity;
     }
@@ -214,7 +197,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextRepo<
 
         model = await OnBeforeUpdateAsync(context, model, transaction, cancellationToken);
 
-        await SaveUpdateChangesAsync(model, context, cancellationToken);
+        await SaveAsync(model, context, cancellationToken);
 
         return model;
     }

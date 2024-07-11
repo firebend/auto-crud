@@ -14,10 +14,8 @@ namespace Firebend.AutoCrud.Core.Implementations.Entities;
 
 public class ClientRequestTransactionManager : ISessionTransactionManager
 {
-    private class QueuedTransaction
+    private record QueuedTransaction(IEntityTransaction Transaction, DateTimeOffset StartedDate)
     {
-        public IEntityTransaction Transaction { get; init; }
-        public DateTimeOffset StartedDate { get; init; }
         public bool Removed { get; set; }
     }
 
@@ -177,7 +175,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         }
 
         _logger.LogDebug("{SessionId}: Adding transaction {TransactionId} to session", _sessionId, transaction.Id);
-        _transactions.Add(new QueuedTransaction { Transaction = transaction, StartedDate = transaction.StartedDate });
+        _transactions.Add(new QueuedTransaction(transaction, transaction.StartedDate));
     }
 
     private void RemoveTransaction(string key, Guid transactionId)

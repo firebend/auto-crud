@@ -77,7 +77,7 @@ public class EntityFrameworkDeleteClient<TKey, TEntity> : AbstractDbContextRepo<
         IEntityTransaction transaction,
         CancellationToken cancellationToken)
     {
-        var previous = await _readService.GetAllAsync(filter, cancellationToken);
+        var previous = await _readService.GetAllAsync(filter, transaction, cancellationToken);
 
         if (previous?.IsEmpty() ?? true)
         {

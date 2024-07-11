@@ -21,7 +21,7 @@ public class EntityFrameworkChangeTrackingService<TEntityKey, TEntity> :
 {
     public EntityFrameworkChangeTrackingService(
         IChangeTrackingDbContextProvider<TEntityKey, TEntity> provider) :
-        base(provider, null)
+        base(provider, null, null)
     {
     }
 
