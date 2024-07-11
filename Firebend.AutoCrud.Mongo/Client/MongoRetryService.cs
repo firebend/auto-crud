@@ -28,7 +28,7 @@ public class MongoRetryService : IMongoRetryService
                     throw;
                 }
 
-                if(maxTries > 0 && tries >= maxTries)
+                if (maxTries > 0 && tries >= maxTries)
                 {
                     throw;
                 }

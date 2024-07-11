@@ -10,7 +10,7 @@ public class AbstractDbContextSaveRepo<TKey, TEntity> : AbstractDbContextRepo<TK
     where TKey : struct
     where TEntity : class, IEntity<TKey>, new()
 {
-    protected  IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> ExceptionHandler { get; }
+    protected IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> ExceptionHandler { get; }
 
     public AbstractDbContextSaveRepo(IDbContextProvider<TKey, TEntity> provider,
         IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler) : base(provider)

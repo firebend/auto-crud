@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Abstractions;
 
-public class AbstractDbContext: DbContext, IDbContext
+public class AbstractDbContext : DbContext, IDbContext
 {
     public AbstractDbContext(DbContextOptions options) : base(options)
     {
