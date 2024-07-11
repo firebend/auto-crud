@@ -15,8 +15,7 @@ public class AutoCrudSqlServerOptionsBuilder
         {
             builder.UseSqlServer(o =>
                 {
-                    o.ExecutionStrategy(dependencies => new AutoCrudAzureExecutionStrategy(provider,
-                        dependencies,
+                    o.ExecutionStrategy(dependencies => new AutoCrudSqlServerExecutionStrategy(dependencies,
                         6,
                         TimeSpan.FromSeconds(30)));
 

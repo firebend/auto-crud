@@ -6,14 +6,14 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 
-public class AutoCrudAzureExecutionStrategy : ExecutionStrategy
+public class AutoCrudSqlServerExecutionStrategy : ExecutionStrategy
 {
     private readonly IExecutionStrategy _strategy;
 
     private static bool IsDbContextUsingUserTransactions(DbContext context)
         => context is IDbContext { UseUserDefinedTransaction: true };
 
-    public AutoCrudAzureExecutionStrategy(DbContext context, int maxRetryCount, TimeSpan maxRetryDelay) : base(context, maxRetryCount, maxRetryDelay)
+    public AutoCrudSqlServerExecutionStrategy(DbContext context, int maxRetryCount, TimeSpan maxRetryDelay) : base(context, maxRetryCount, maxRetryDelay)
     {
         var shouldUseUserTransaction = IsDbContextUsingUserTransactions(context);
 
@@ -28,8 +28,7 @@ public class AutoCrudAzureExecutionStrategy : ExecutionStrategy
     }
 
 
-    public AutoCrudAzureExecutionStrategy(IServiceProvider provider,
-        ExecutionStrategyDependencies dependencies,
+    public AutoCrudSqlServerExecutionStrategy(ExecutionStrategyDependencies dependencies,
         int maxRetryCount,
         TimeSpan maxRetryDelay) : base(dependencies, maxRetryCount, maxRetryDelay)
     {
