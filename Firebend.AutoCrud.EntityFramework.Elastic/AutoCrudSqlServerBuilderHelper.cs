@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic;
 
-public class SqlServerBuilder
+public class AutoCrudSqlServerOptionsBuilder
 {
-    public static Action<IServiceProvider, DbContextOptionsBuilder> Get(
+    public static Action<IServiceProvider, DbContextOptionsBuilder> Build(
         Action<DbContextOptionsBuilder> configureBuilder = null,
         Action<SqlServerDbContextOptionsBuilder> configureSqlServer = null) =>
         (provider, builder) =>

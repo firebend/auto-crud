@@ -86,7 +86,7 @@ public static class Startup
                 .WithDomainEventContextProvider<SampleDomainEventContextProvider>()
             )
             .UsingEfCrud<PersonDbContext>(
-                SqlServerBuilder.Get(o => o.EnableSensitiveDataLogging()),
+                AutoCrudSqlServerOptionsBuilder.Build(o => o.EnableSensitiveDataLogging()),
                 ef =>
                 {
                     ef.AddEfPerson(configuration)

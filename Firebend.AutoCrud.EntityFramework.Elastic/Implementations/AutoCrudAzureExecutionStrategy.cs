@@ -1,10 +1,8 @@
 using System;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 
@@ -12,13 +10,15 @@ public class AutoCrudAzureExecutionStrategy : ExecutionStrategy
 {
     private readonly IExecutionStrategy _strategy;
 
+    private static bool IsDbContextUsingUserTransactions(DbContext context)
+        => context is IDbContext { UseUserDefinedTransaction: true };
+
     public AutoCrudAzureExecutionStrategy(DbContext context, int maxRetryCount, TimeSpan maxRetryDelay) : base(context, maxRetryCount, maxRetryDelay)
     {
-        var shouldUseUserTransaction = context is IDbContext { UseUserDefinedTransaction: true };
+        var shouldUseUserTransaction = IsDbContextUsingUserTransactions(context);
 
         if (shouldUseUserTransaction)
         {
-            Console.WriteLine("******************************* USER TRAN *****************");
             _strategy = new NonRetryingExecutionStrategy(context);
         }
         else
@@ -27,16 +27,16 @@ public class AutoCrudAzureExecutionStrategy : ExecutionStrategy
         }
     }
 
+
     public AutoCrudAzureExecutionStrategy(IServiceProvider provider,
         ExecutionStrategyDependencies dependencies,
         int maxRetryCount,
         TimeSpan maxRetryDelay) : base(dependencies, maxRetryCount, maxRetryDelay)
     {
-        var shouldUseUserTransaction = dependencies.CurrentContext.Context is IDbContext { UseUserDefinedTransaction: true };
+        var shouldUseUserTransaction = IsDbContextUsingUserTransactions(dependencies.CurrentContext.Context);
 
         if (shouldUseUserTransaction)
         {
-            Console.WriteLine("******************************* USER TRAN *****************");
             _strategy = new NonRetryingExecutionStrategy(dependencies);
         }
         else
@@ -45,10 +45,7 @@ public class AutoCrudAzureExecutionStrategy : ExecutionStrategy
         }
     }
 
-    protected override void OnFirstExecution()
-    {
-        this.ExceptionsEncountered.Clear();
-    }
+    protected override void OnFirstExecution() => this.ExceptionsEncountered.Clear();
 
     protected override bool ShouldRetryOn(Exception exception)
     {
