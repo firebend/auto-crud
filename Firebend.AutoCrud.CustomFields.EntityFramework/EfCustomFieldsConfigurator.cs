@@ -63,7 +63,8 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
         var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModel<TKey, TEntity>>(
             Builder.Services,
             Builder.DbContextType,
-            Builder.DbContextOptionsBuilder)
+            Builder.DbContextOptionsBuilder,
+            Builder.UsePooled)
         {
             SignatureBase = $"{typeof(TEntity).Name}_CustomFields",
         };
@@ -102,7 +103,8 @@ public class EfCustomFieldsConfigurator<TBuilder, TKey, TEntity> : EntityCrudCon
         var customFieldsBuilder = new EntityFrameworkEntityBuilder<Guid, EfCustomFieldsModelTenant<TKey, TEntity, TTenantKey>>(
             Builder.Services,
             Builder.DbContextType,
-            Builder.DbContextOptionsBuilder)
+            Builder.DbContextOptionsBuilder,
+            Builder.UsePooled)
         {
             SignatureBase = $"{typeof(TEntity).Name}_CustomFields"
         };

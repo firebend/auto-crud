@@ -18,11 +18,11 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
     where TKey : struct
     where TEntity : class, IEntity<TKey>, new()
 {
-    private readonly IDbContextProvider<TKey, TEntity> _provider;
+    protected IDbContextProvider<TKey, TEntity> Provider { get; }
 
     protected AbstractDbContextRepo(IDbContextProvider<TKey, TEntity> provider)
     {
-        _provider = provider;
+        Provider = provider;
     }
 
     protected virtual async Task<IDbContext> GetDbContextAsync(IEntityTransaction entityTransaction, CancellationToken cancellationToken)
@@ -31,7 +31,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
         if (entityTransaction == null)
         {
-            context = await _provider.GetDbContextAsync(cancellationToken);
+            context = await Provider.GetDbContextAsync(cancellationToken);
         }
         else
         {
@@ -42,7 +42,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
             var transaction = efTransaction.ContextTransaction.GetDbTransaction();
 
-            context = await _provider.GetDbContextAsync(transaction, cancellationToken);
+            context = await Provider.GetDbContextAsync(transaction, cancellationToken);
         }
 
         return context;

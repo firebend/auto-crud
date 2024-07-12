@@ -15,33 +15,32 @@ namespace Firebend.AutoCrud.Mongo.HostedServices;
 
 public class MongoMigrationHostedService : BackgroundService
 {
-    private readonly IEnumerable<IMongoMigration> _migrations;
-    private readonly IMongoDefaultDatabaseSelector _databaseSelector;
-    private readonly IMongoMigrationConnectionStringProvider _mongoMigrationConnectionStringProvider;
-    private readonly ILogger _logger;
+    private readonly ILogger<MongoMigrationHostedService> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
-    public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider, IMongoMigrationConnectionStringProvider mongoMigrationConnectionStringProvider)
+    public MongoMigrationHostedService(ILogger<MongoMigrationHostedService> logger, IServiceProvider serviceProvider)
     {
-        _mongoMigrationConnectionStringProvider = mongoMigrationConnectionStringProvider;
         _logger = logger;
-
-        using var scope = serviceProvider.CreateScope();
-
-        _migrations = scope.ServiceProvider.GetService<IEnumerable<IMongoMigration>>();
-        _databaseSelector = scope.ServiceProvider.GetService<IMongoDefaultDatabaseSelector>();
+        _serviceProvider = serviceProvider;
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken) => DoMigration(stoppingToken);
-
-    private async Task DoMigration(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var dbName = _databaseSelector?.DefaultDb;
+        using var scope = _serviceProvider.CreateScope();
+        await DoMigrationAsync(scope.ServiceProvider, _logger, stoppingToken);
+    }
+
+    private static async Task DoMigrationAsync(IServiceProvider serviceProvider, ILogger logger, CancellationToken cancellationToken)
+    {
+        var databaseSelector = serviceProvider.GetService<IMongoDefaultDatabaseSelector>();
+        var dbName = databaseSelector?.DefaultDb;
 
         if (string.IsNullOrWhiteSpace(dbName))
         {
             return;
         }
 
+        var _mongoMigrationConnectionStringProvider = serviceProvider.GetService<IMongoMigrationConnectionStringProvider>();
         var connectionString = _mongoMigrationConnectionStringProvider.GetConnectionString();
 
         if (string.IsNullOrWhiteSpace(connectionString))
@@ -62,9 +61,11 @@ public class MongoMigrationHostedService : BackgroundService
             .OrderByDescending(x => x)
             .FirstOrDefaultAsync(cancellationToken);
 
-        foreach (var migration in _migrations
-            .Where(x => x.Version.Version > maxVersion)
-            .OrderBy(x => x.Version.Version))
+        var migrations = serviceProvider.GetServices<IMongoMigration>();
+
+        foreach (var migration in migrations
+                     .Where(x => x.Version.Version > maxVersion)
+                     .OrderBy(x => x.Version.Version))
         {
             try
             {
@@ -74,7 +75,7 @@ public class MongoMigrationHostedService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "Error Applying mongo Migrations {Name}, {Version}",
+                logger.LogCritical(ex, "Error Applying mongo Migrations {Name}, {Version}",
                     migration.Version.Name,
                     migration.Version.Version);
 

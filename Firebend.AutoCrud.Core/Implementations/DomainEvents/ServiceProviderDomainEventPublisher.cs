@@ -13,56 +13,69 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IServiceProvider _serviceProvider;
 
-    public ServiceProviderDomainEventPublisher(IServiceScopeFactory serviceScopeFactory)
+    public ServiceProviderDomainEventPublisher(IServiceProvider serviceProvider)
     {
-        _serviceScopeFactory = serviceScopeFactory;
+        _serviceProvider = serviceProvider;
     }
+
 
     public Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        Task PublishAsync(CancellationToken token) =>
-            ExecuteSubscribers<IEntityAddedDomainEventSubscriber<TEntity>, EntityAddedDomainEvent<TEntity>>(
-                domainEvent,
-            (subscriber, de, ct) => subscriber.EntityAddedAsync(de, ct),
-                cancellationToken);
+        return entityTransaction == null
+            ? PublishAsync(cancellationToken)
+            : entityTransaction
+                .AddFunctionEnrollmentAsync<TEntity, ServiceProviderDomainEventEntityTransactionOutboxEnrollment>(
+                    PublishAsync, cancellationToken);
 
-        return entityTransaction == null ?
-            PublishAsync(cancellationToken) :
-            entityTransaction.AddFunctionEnrollmentAsync(PublishAsync, cancellationToken);
+        Task PublishAsync(CancellationToken token)
+        {
+            return ExecuteSubscribers<IEntityAddedDomainEventSubscriber<TEntity>, EntityAddedDomainEvent<TEntity>>(
+                domainEvent,
+                (subscriber, de, ct) => subscriber.EntityAddedAsync(de, ct),
+                cancellationToken);
+        }
     }
 
     public Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        Task PublishAsync(CancellationToken token) =>
-            ExecuteSubscribers<IEntityDeletedDomainEventSubscriber<TEntity>, EntityDeletedDomainEvent<TEntity>>(
+        return entityTransaction == null
+            ? PublishAsync(cancellationToken)
+            : entityTransaction
+                .AddFunctionEnrollmentAsync<TEntity, ServiceProviderDomainEventEntityTransactionOutboxEnrollment>(
+                    PublishAsync, cancellationToken);
+
+        Task PublishAsync(CancellationToken token)
+        {
+            return ExecuteSubscribers<IEntityDeletedDomainEventSubscriber<TEntity>, EntityDeletedDomainEvent<TEntity>>(
                 domainEvent,
                 (subscriber, de, ct) => subscriber.EntityDeletedAsync(de, ct),
                 cancellationToken);
-
-        return entityTransaction == null ?
-            PublishAsync(cancellationToken) :
-            entityTransaction.AddFunctionEnrollmentAsync(PublishAsync, cancellationToken);
+        }
     }
 
     public Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken = default)
     {
-        Task PublishAsync(CancellationToken token) =>
-            ExecuteSubscribers<IEntityUpdatedDomainEventSubscriber<TEntity>, EntityUpdatedDomainEvent<TEntity>>(
+        return entityTransaction == null
+            ? PublishAsync(cancellationToken)
+            : entityTransaction
+                .AddFunctionEnrollmentAsync<TEntity, ServiceProviderDomainEventEntityTransactionOutboxEnrollment>(
+                    PublishAsync, cancellationToken);
+
+        Task PublishAsync(CancellationToken token)
+        {
+            return ExecuteSubscribers<IEntityUpdatedDomainEventSubscriber<TEntity>, EntityUpdatedDomainEvent<TEntity>>(
                 domainEvent,
                 (subscriber, de, ct) => subscriber.EntityUpdatedAsync(de, ct),
                 cancellationToken);
-
-        return entityTransaction == null ?
-            PublishAsync(cancellationToken) :
-            entityTransaction.AddFunctionEnrollmentAsync(PublishAsync, cancellationToken);
+        }
     }
 
     private async Task ExecuteSubscribers<TSubscriber, TEvent>(
@@ -71,11 +84,7 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
         CancellationToken cancellationToken)
         where TSubscriber : IDisposable
     {
-        using var scope = _serviceScopeFactory.CreateScope();
-
-        var subscribers = scope
-            .ServiceProvider
-            .GetServices<TSubscriber>();
+        var subscribers = _serviceProvider.GetServices<TSubscriber>();
 
         var subscribersArray = subscribers as TSubscriber[] ?? subscribers.ToArray();
 
@@ -105,7 +114,6 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
             // ReSharper disable once EmptyGeneralCatchClause
             catch
             {
-
             }
         }
     }

@@ -21,13 +21,16 @@ public class EntityFrameworkEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKe
 {
     public Type DbContextType { get; }
     public Action<IServiceProvider, DbContextOptionsBuilder> DbContextOptionsBuilder { get; }
+    public bool UsePooled { get; }
 
     public EntityFrameworkEntityBuilder(IServiceCollection services,
         Type dbContextType,
-        Action<IServiceProvider, DbContextOptionsBuilder> dbContextOptionsBuilder) : base(services)
+        Action<IServiceProvider, DbContextOptionsBuilder> dbContextOptionsBuilder,
+        bool usePooled) : base(services)
     {
         DbContextType = dbContextType;
         DbContextOptionsBuilder = dbContextOptionsBuilder;
+        UsePooled = usePooled;
 
         CreateType = typeof(EntityFrameworkEntityCreateService<TKey, TEntity>);
         ReadType = typeof(EntityFrameworkEntityReadService<TKey, TEntity>);

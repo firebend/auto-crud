@@ -9,18 +9,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Client;
 
-public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<TKey, TEntity>, IEntityFrameworkCreateClient<TKey, TEntity>
+public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextSaveRepo<TKey, TEntity>, IEntityFrameworkCreateClient<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, new()
 {
     private readonly IDomainEventPublisherService<TKey, TEntity> _publisherService;
-    private readonly IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> _exceptionHandler;
 
     public EntityFrameworkCreateClient(IDbContextProvider<TKey, TEntity> provider,
         IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
-        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(provider)
+        IDomainEventPublisherService<TKey, TEntity> publisherService) : base(provider, exceptionHandler)
     {
-        _exceptionHandler = exceptionHandler;
         _publisherService = publisherService;
     }
 
@@ -35,7 +33,7 @@ public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<
         {
             savedEntity = await AddEntityToDbContextAsync(entity, transaction, context, cancellationToken);
 
-            await SaveAddChangesAsync(entity, context, cancellationToken);
+            await SaveAsync(entity, context, cancellationToken);
         }
 
         if (_publisherService is null)
@@ -43,7 +41,7 @@ public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<
             return savedEntity;
         }
 
-        return await _publisherService.ReadAndPublishAddedEventAsync(savedEntity.Id, null, cancellationToken);
+        return await _publisherService.ReadAndPublishAddedEventAsync(savedEntity.Id, transaction, cancellationToken);
     }
 
     private async Task<TEntity> AddEntityToDbContextAsync(TEntity entity,
@@ -66,21 +64,6 @@ public class EntityFrameworkCreateClient<TKey, TEntity> : AbstractDbContextRepo<
         var entry = await set.AddAsync(entity, cancellationToken);
 
         return entry.Entity;
-    }
-
-    private async Task SaveAddChangesAsync(TEntity entity, IDbContext context, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateException ex)
-        {
-            if (!(_exceptionHandler?.HandleException(context, entity, ex) ?? false))
-            {
-                throw;
-            }
-        }
     }
 
     public virtual Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken)

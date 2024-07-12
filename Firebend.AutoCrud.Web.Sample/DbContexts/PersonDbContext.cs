@@ -1,8 +1,8 @@
 using Firebend.AutoCrud.CustomFields.EntityFramework;
+using Firebend.AutoCrud.EntityFramework.Abstractions;
 using Firebend.AutoCrud.EntityFramework.Comparers;
 using Firebend.AutoCrud.EntityFramework.Converters;
 using Firebend.AutoCrud.EntityFramework.CustomCommands;
-using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Firebend.AutoCrud.Web.Sample.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace Firebend.AutoCrud.Web.Sample.DbContexts;
 
-public class PersonDbContext : DbContext, IDbContext
+public class PersonDbContext : AbstractDbContext
 {
     public PersonDbContext(DbContextOptions options) : base(options)
     {

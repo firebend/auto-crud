@@ -34,13 +34,8 @@ public class MassTransitDomainEventPublisher<TKey, TEntity> : IEntityDomainEvent
         => PublishAsync(domainEvent, transaction, cancellationToken);
 
     private Task PublishAsync<TDomainEvent>(TDomainEvent domainEvent, IEntityTransaction transaction, CancellationToken cancellationToken)
-    {
-        if (transaction == null)
-        {
-            return _bus.Publish(domainEvent, cancellationToken);
-        }
-
-        return transaction.AddFunctionEnrollmentAsync(ct =>
-            _bus.Publish(domainEvent, ct), cancellationToken);
-    }
+        => transaction == null
+            ? _bus.Publish(domainEvent, cancellationToken)
+            : transaction.AddFunctionEnrollmentAsync<TEntity, MassTransitDomainEventEntityTransactionOutboxEnrollment>(
+                ct => _bus.Publish(domainEvent, ct), cancellationToken);
 }

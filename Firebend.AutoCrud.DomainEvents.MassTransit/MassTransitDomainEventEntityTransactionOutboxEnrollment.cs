@@ -1,0 +1,5 @@
+using Firebend.AutoCrud.Core.Implementations.DomainEvents;
+
+namespace Firebend.AutoCrud.DomainEvents.MassTransit;
+
+public class MassTransitDomainEventEntityTransactionOutboxEnrollment : DomainEventEntityTransactionOutboxEnrollment;

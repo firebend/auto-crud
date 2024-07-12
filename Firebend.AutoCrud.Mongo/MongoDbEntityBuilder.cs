@@ -122,7 +122,7 @@ public class MongoDbEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKey, TEnti
 
         WithRegistration<IEntityTransactionFactory<TKey, TEntity>, MongoEntityTransactionFactory<TKey, TEntity>>(false);
 
-        WithRegistration<IMongoRetryService, MongoRetryService>(false);
+        WithRegistration<IMongoRetryService, MongoRetryService>(false, false, ServiceLifetime.Singleton);
     }
 
     private void RegisterEntityConfiguration()

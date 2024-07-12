@@ -5,15 +5,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Entities;
 
 namespace Firebend.AutoCrud.Core.Implementations.Entities;
 
 public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
 {
-    private readonly Dictionary<string, List<IEntityTransactionOutboxEnrollment>> _enrollments = new();
+    private readonly Dictionary<string, List<EntityTransactionOutboxEnrollment>> _enrollments = new();
 
-    public async Task AddEnrollmentAsync(string transactionId, IEntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
+    public async Task AddEnrollmentAsync(EntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
     {
+        var transactionId = enrollment.TransactionId;
+
         using var loc = await InMemoryEntityTransactionOutboxStatics
             .Locker
             .LockAsync(transactionId, cancellationToken);
@@ -49,11 +52,13 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
             return;
         }
 
+        OnBeforeInvokeEnrollments?.Invoke(transactionId, callbacks);
+
         var tasks = callbacks.Select(async x =>
             {
                 try
                 {
-                    await x.ActAsync(cancellationToken);
+                    await x.Enrollment.ActAsync(cancellationToken);
 
                     return null;
                 }
@@ -77,4 +82,10 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
 
         _enrollments.Remove(transactionId);
     }
+
+    public Task<Dictionary<string, List<EntityTransactionOutboxEnrollment>>> GetEnrollmentsAsync(
+        CancellationToken cancellationToken)
+        => Task.FromResult(_enrollments);
+
+    public Action<string, List<EntityTransactionOutboxEnrollment>> OnBeforeInvokeEnrollments { get; set; }
 }

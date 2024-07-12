@@ -12,15 +12,18 @@ public class EntityFrameworkEntityCrudGenerator : EntityCrudGenerator
     public Action<IServiceProvider, DbContextOptionsBuilder> DbContextOptionsBuilder { get; }
 
     public Type DbContextType { get; }
+    public bool UsePooled { get; }
 
     public EntityFrameworkEntityCrudGenerator(IDynamicClassGenerator classGenerator,
         IServiceCollection services,
         Action<IServiceProvider, DbContextOptionsBuilder> dbContextOptionsBuilder,
-        Type dbContextType) : base(classGenerator,
+        Type dbContextType,
+        bool usePooled) : base(classGenerator,
         services)
     {
         DbContextOptionsBuilder = dbContextOptionsBuilder;
         DbContextType = dbContextType;
+        UsePooled = usePooled;
     }
 
     public EntityFrameworkEntityCrudGenerator AddEntity<TKey, TEntity>(
@@ -28,7 +31,7 @@ public class EntityFrameworkEntityCrudGenerator : EntityCrudGenerator
         where TKey : struct
         where TEntity : class, IEntity<TKey>, new()
     {
-        var builder = new EntityFrameworkEntityBuilder<TKey, TEntity>(Services, DbContextType, DbContextOptionsBuilder);
+        var builder = new EntityFrameworkEntityBuilder<TKey, TEntity>(Services, DbContextType, DbContextOptionsBuilder, UsePooled);
         configure(builder);
         Builders.Add(builder);
         return this;

@@ -68,6 +68,7 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
         await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
 
         var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        dbContext.UseUserDefinedTransaction = true;
         dbContext.Database.SetDbConnection(transaction.Connection);
         await dbContext.Database.UseTransactionAsync(transaction, cancellationToken);
 

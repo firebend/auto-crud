@@ -1,7 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.Mongo.Client;
 
@@ -10,8 +10,8 @@ public class MongoRetryService : IMongoRetryService
     public async Task<TReturn> RetryErrorAsync<TReturn>(Func<Task<TReturn>> method, int maxTries)
     {
         var tries = 0;
-        double delay = 100;
-
+        var delay = 200;
+        var now = Stopwatch.GetTimestamp();
 
         while (true)
         {
@@ -23,24 +23,20 @@ public class MongoRetryService : IMongoRetryService
             {
                 tries++;
 
-                if (!ShouldRetry(ex) || tries >= maxTries)
+                if (MongoRetryUtilities.ShouldRetry(ex, now) is false)
                 {
                     throw;
                 }
 
-                if (tries != 1)
+                if (maxTries > 0 && tries >= maxTries)
                 {
-                    delay = Math.Ceiling(Math.Pow(delay, 1.1));
+                    throw;
                 }
 
-                await Task.Delay(TimeSpan.FromMilliseconds(delay));
+                delay *= 2;
+
+                await Task.Delay(delay);
             }
         }
     }
-
-    // don't retry MongoBulkWriteException or duplicate key exceptions
-    private bool ShouldRetry(Exception exception) =>
-        exception is MongoException
-        && exception is not MongoBulkWriteException
-        && !exception.Message.Contains("duplicate key");
 }

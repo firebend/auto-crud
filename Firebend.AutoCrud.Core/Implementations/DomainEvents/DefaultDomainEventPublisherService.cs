@@ -39,7 +39,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
 
     public async Task<TEntity> ReadAndPublishAddedEventAsync(TKey key, IEntityTransaction transaction, CancellationToken cancellationToken)
     {
-        var entity = await _readService.GetByKeyAsync(key, cancellationToken);
+        var entity = await _readService.GetByKeyAsync(key, transaction, cancellationToken);
 
         if (!_hasPublisher)
         {
@@ -66,7 +66,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
         Func<TEntity, TEntity, JsonPatchDocument<TEntity>> patchGenerator,
         CancellationToken cancellationToken)
     {
-        var entity = await _readService.GetByKeyAsync(key, cancellationToken);
+        var entity = await _readService.GetByKeyAsync(key, transaction, cancellationToken);
 
         if (!_hasPublisher)
         {
