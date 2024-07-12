@@ -52,14 +52,22 @@ public static class JsonPatchExtensions
         }
     }
 
-    public static bool HasOperationWithPath(this JsonPatchDocument document, string path)
-        => document?.Operations is not null &&
-           document.Operations.Any(x =>
-               x.path.Equals(path, StringComparison.InvariantCultureIgnoreCase));
+    public static bool HasOperationWithPath(this IJsonPatchDocument document, string path)
+    {
+        var operations = document?.GetOperations() ?? [];
 
-    public static bool IsOnlyModifiedEntityPatch(this JsonPatchDocument document)
-        => document?.Operations is not null &&
-        document.Operations.Count <= 2 &&
-        (document.HasOperationWithPath($"/{nameof(IModifiedEntity.CreatedDate)}") ||
-         document.HasOperationWithPath($"/{nameof(IModifiedEntity.ModifiedDate)}"));
+        return operations is not null &&
+               operations.Any(x =>
+                   x.path.Equals(path, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    public static bool IsOnlyModifiedEntityPatch(this IJsonPatchDocument document)
+    {
+        var operations = document?.GetOperations() ?? [];
+
+        return operations is not null &&
+               operations.Count <= 2 &&
+               (document.HasOperationWithPath($"/{nameof(IModifiedEntity.CreatedDate)}") ||
+                document.HasOperationWithPath($"/{nameof(IModifiedEntity.ModifiedDate)}"));
+    }
 }
