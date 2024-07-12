@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Entities;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
@@ -50,4 +51,15 @@ public static class JsonPatchExtensions
                 _ => result.WasSuccessful = false);
         }
     }
+
+    public static bool HasOperationWithPath(this JsonPatchDocument document, string path)
+        => document?.Operations is not null &&
+           document.Operations.Any(x =>
+               x.path.Equals(path, StringComparison.InvariantCultureIgnoreCase));
+
+    public static bool IsOnlyModifiedEntityPatch(this JsonPatchDocument document)
+        => document?.Operations is not null &&
+        document.Operations.Count <= 2 &&
+        (document.HasOperationWithPath($"/{nameof(IModifiedEntity.CreatedDate)}") ||
+         document.HasOperationWithPath($"/{nameof(IModifiedEntity.ModifiedDate)}"));
 }
