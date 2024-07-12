@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="13.0.0"></a>
+## [13.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v13.0.0) (2024-07-12)
+
+### Features
+
+* better support for transactions in EF and Mongo ([#341](https://www.github.com/firebend/auto-crud/issues/341)) ([1a7f158](https://www.github.com/firebend/auto-crud/commit/1a7f15889fb7aa6fd3995048a4e898c24633581b))
+
+### Breaking Changes
+
+* better support for transactions in EF and Mongo ([#341](https://www.github.com/firebend/auto-crud/issues/341)) ([1a7f158](https://www.github.com/firebend/auto-crud/commit/1a7f15889fb7aa6fd3995048a4e898c24633581b))
+
 <a name="12.4.1"></a>
 ## [12.4.1](https://www.github.com/firebend/auto-crud/releases/tag/v12.4.1) (2024-07-08)
 
