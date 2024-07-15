@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Models.Entities;
+using Firebend.JsonPatch.Extensions;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 
@@ -52,21 +53,17 @@ public static class JsonPatchExtensions
         }
     }
 
-    public static bool HasPath(this IList<Operation> operations, string path) =>
-        operations is not null &&
-        operations.Any(x =>
-            x.path.Equals(path, StringComparison.InvariantCultureIgnoreCase));
-
-    public static bool HasPath(this IJsonPatchDocument document, string path)
-        => (document?.GetOperations() ?? []).HasPath(path);
-
-    public static bool IsOnlyModifiedEntityPatch(this IJsonPatchDocument document)
-    {
-        var operations = document?.GetOperations() ?? [];
-
-        return operations is not null &&
-               operations.Count <= 2 &&
-               (operations.HasPath($"/{nameof(IModifiedEntity.CreatedDate)}") ||
-                operations.HasPath($"/{nameof(IModifiedEntity.ModifiedDate)}"));
-    }
+    /// <summary>
+    /// Gets a value indicating whether the patch document contains only the CreatedDate or ModifiedDate properties.
+    /// </summary>
+    /// <param name="document">
+    /// The document.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if the patch document contains only the CreatedDate or ModifiedDate properties; otherwise, <c>false</c>.
+    /// </returns>
+    public static bool IsOnlyModifiedEntityPatch(this IJsonPatchDocument document) =>
+        (document?.GetOperations() ?? []).All(x =>
+            x.path.EqualsIgnoreCaseAndWhitespace($"/{nameof(IModifiedEntity.CreatedDate)}") ||
+            x.path.EqualsIgnoreCaseAndWhitespace($"/{nameof(IModifiedEntity.ModifiedDate)}"));
 }
