@@ -15,7 +15,7 @@ public interface IEntityUpdateService<in TKey, TEntity> : IDisposable
 
     Task<TEntity> UpdateAsync(TEntity entity,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken );
+        CancellationToken cancellationToken);
 
     Task<TEntity> PatchAsync(TKey key,
         JsonPatchDocument<TEntity> jsonPatchDocument,

@@ -34,7 +34,7 @@ public interface IEntityReadService<in TKey, TEntity> : IDisposable
 
     Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken );
+        CancellationToken cancellationToken);
 
     Task<TEntity> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
         CancellationToken cancellationToken);
