@@ -29,7 +29,7 @@ public class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         IEntityTransaction transaction,
         CancellationToken cancellationToken)
     {
-        var mongoCollection = await GetCollectionAsync(cancellationToken);
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
         if (entity is IModifiedEntity modified)
         {

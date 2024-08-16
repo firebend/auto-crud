@@ -27,6 +27,4 @@ public class MongoTenantEntityConfiguration<TKey, TEntity> : IMongoEntityConfigu
     public AggregateOptions AggregateOption { get; set; }
 
     public MongoTenantShardMode ShardMode { get; }
-
-    public ReadPreferenceMode? ReadPreferenceMode { get; }
 }

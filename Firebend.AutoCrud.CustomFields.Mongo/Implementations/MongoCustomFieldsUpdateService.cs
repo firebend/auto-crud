@@ -72,7 +72,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == customField.Id);
 
-        var mongoCollection = await GetCollectionAsync(cancellationToken);
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
         var linqVersion = LinqProvider.GetValueOrDefault(MongoDB.Driver.Linq.LinqProvider.V3);
 
@@ -155,7 +155,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
 
-        var mongoCollection = await GetCollectionAsync(cancellationToken);
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
         var list = jsonPatchDocument
             .Operations
