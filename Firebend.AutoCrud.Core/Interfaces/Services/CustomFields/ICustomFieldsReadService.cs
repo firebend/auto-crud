@@ -13,41 +13,41 @@ public interface ICustomFieldsReadService<TKey, TEntity> : IDisposable
     where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
     Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId, TKey key,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId, TKey key,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
-        CancellationToken cancellationToken = default);
-
-    Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
-        Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default);
-
-    Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
-        IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
+        CancellationToken cancellationToken);
+
+    Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
+
+    Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
+        Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
+        IEntityTransaction entityTransaction,
+        CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

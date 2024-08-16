@@ -23,8 +23,8 @@ public class EntityFrameworkEntitySoftDeleteService<TKey, TEntity> : BaseDisposa
     }
 
     private Task<TEntity> DeleteInternalAsync(TKey key,
-        IEntityTransaction entityTransaction = null,
-        CancellationToken cancellationToken = default)
+        IEntityTransaction entityTransaction,
+        CancellationToken cancellationToken)
     {
         var patch = new JsonPatchDocument<TEntity>();
 
@@ -35,14 +35,14 @@ public class EntityFrameworkEntitySoftDeleteService<TKey, TEntity> : BaseDisposa
             : _updateService.PatchAsync(key, patch, cancellationToken);
     }
 
-    public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await DeleteInternalAsync(key, transaction, cancellationToken);
     }
 
     public Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return DeleteInternalAsync(key, entityTransaction, cancellationToken);

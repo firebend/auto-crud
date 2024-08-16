@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
@@ -29,9 +30,9 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
         _settingsConfigurator = settingsConfigurator;
     }
 
-    public async Task<IMongoClient> CreateClientAsync(string overrideShardKey = null)
+    public async Task<IMongoClient> CreateClientAsync(string overrideShardKey, CancellationToken cancellationToken)
     {
-        var connectionString = await _connectionStringProvider.GetConnectionStringAsync(overrideShardKey);
+        var connectionString = await _connectionStringProvider.GetConnectionStringAsync(overrideShardKey, cancellationToken);
 
         var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
 

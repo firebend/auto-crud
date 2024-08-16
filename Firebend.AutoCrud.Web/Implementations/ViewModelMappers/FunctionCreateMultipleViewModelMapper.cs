@@ -20,6 +20,6 @@ public class FunctionCreateMultipleViewModelMapper<TKey, TEntity, TVersion, TVie
         _func = func;
     }
 
-    public Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken = default)
+    public Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken)
         => Task.FromResult(_func(wrapper, viewModel));
 }

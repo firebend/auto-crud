@@ -28,7 +28,7 @@ public class EfCustomFieldsDeleteService<TKey, TEntity, TCustomFieldsEntity> : B
     }
 
     public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await DeleteAsync(rootEntityKey, key, transaction, cancellationToken);
@@ -37,7 +37,7 @@ public class EfCustomFieldsDeleteService<TKey, TEntity, TCustomFieldsEntity> : B
     public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
         Guid key,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
 

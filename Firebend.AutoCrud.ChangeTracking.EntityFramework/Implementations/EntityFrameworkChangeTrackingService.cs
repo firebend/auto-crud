@@ -25,7 +25,7 @@ public class EntityFrameworkChangeTrackingService<TEntityKey, TEntity> :
     {
     }
 
-    public Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+    public Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
         => AddAsync(
             GetChangeTrackingEntityBase(domainEvent,
                 "Added",
@@ -33,7 +33,7 @@ public class EntityFrameworkChangeTrackingService<TEntityKey, TEntity> :
                 domainEvent.Entity.Id),
             cancellationToken);
 
-    public Task TrackDeleteAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+    public Task TrackDeleteAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
         => AddAsync(
             GetChangeTrackingEntityBase(domainEvent,
                 "Delete",
@@ -41,7 +41,7 @@ public class EntityFrameworkChangeTrackingService<TEntityKey, TEntity> :
                 domainEvent.Entity.Id),
             cancellationToken);
 
-    public Task TrackUpdateAsync(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+    public Task TrackUpdateAsync(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
         => AddAsync(
             GetChangeTrackingEntityBase(domainEvent,
                 "Update",

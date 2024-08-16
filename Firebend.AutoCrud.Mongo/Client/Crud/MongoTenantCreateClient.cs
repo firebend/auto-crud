@@ -38,7 +38,7 @@ public class MongoTenantCreateClient<TKey, TEntity, TTenantKey> : MongoCreateCli
         return new[] { tenantFilter };
     }
 
-    protected override async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+    protected override async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
     {
         var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 

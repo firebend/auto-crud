@@ -27,6 +27,6 @@ public class FunctionSearchViewModelMapper<TKey, TEntity, TVersion, TViewModel, 
         _from = from;
     }
 
-    public Task<TSearchModel> FromAsync(TViewModel model, CancellationToken cancellationToken = default)
+    public Task<TSearchModel> FromAsync(TViewModel model, CancellationToken cancellationToken)
         => Task.FromResult(_from?.Invoke(model));
 }

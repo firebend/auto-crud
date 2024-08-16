@@ -31,13 +31,13 @@ public class ClientRequestTransactionManagerTests
 
         _efTransactionFactory = _fixture.Create<Mock<IEntityTransactionFactory<Guid, TestClassEf>>>();
         _mongoTransactionFactory = _fixture.Create<Mock<IEntityTransactionFactory<Guid, TestClassMongo>>>();
-        _efTransactionFactory.Setup(x => x.GetDbContextHashCode())
+        _efTransactionFactory.Setup(x => x.GetDbContextHashCode(It.IsAny<CancellationToken>()))
             .ReturnsAsync("ef_1");
         _efTransactionFactory.Setup(x => x.StartTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => CreateMockTransaction().Object);
         _efTransactionFactory.Setup(x => x.ValidateTransaction(It.IsAny<IEntityTransaction>()))
             .Returns(true);
-        _mongoTransactionFactory.Setup(x => x.GetDbContextHashCode())
+        _mongoTransactionFactory.Setup(x => x.GetDbContextHashCode(It.IsAny<CancellationToken>()))
             .ReturnsAsync("mongo_1");
         _mongoTransactionFactory.Setup(x => x.StartTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => CreateMockTransaction().Object);
@@ -66,7 +66,7 @@ public class ClientRequestTransactionManagerTests
     public async Task GetTransaction_Should_OnlyCreateOneInstancePerUniqueDbContext()
     {
         // arrange
-        _efTransactionFactory.SetupSequence(x => x.GetDbContextHashCode())
+        _efTransactionFactory.SetupSequence(x => x.GetDbContextHashCode(It.IsAny<CancellationToken>()))
             .ReturnsAsync("ef_1")
             .ReturnsAsync("ef_2")
             .ReturnsAsync("ef_1");

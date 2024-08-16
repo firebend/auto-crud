@@ -30,14 +30,14 @@ public class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> :
         _searchHandler = searchHandler;
     }
 
-    public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
+    public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await SearchAsync(request, transaction, cancellationToken);
     }
 
     public async Task<List<TEntity>> SearchAsync(TSearch request, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         request.DoCount = false;
@@ -48,7 +48,7 @@ public class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> :
     }
 
     public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await PageAsync(request, transaction, cancellationToken);
@@ -56,7 +56,7 @@ public class EntityFrameworkEntitySearchService<TKey, TEntity, TSearch> :
 
     public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         var (query, context) = await _searchClient

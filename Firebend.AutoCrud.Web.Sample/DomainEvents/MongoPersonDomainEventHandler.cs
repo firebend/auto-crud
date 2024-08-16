@@ -40,7 +40,7 @@ public partial class MongoPersonDomainEventHandler : BaseDisposable, IEntityAdde
         _scoped = scoped;
     }
 
-    public Task EntityAddedAsync(EntityAddedDomainEvent<MongoTenantPerson> domainEvent, CancellationToken cancellationToken = default)
+    public Task EntityAddedAsync(EntityAddedDomainEvent<MongoTenantPerson> domainEvent, CancellationToken cancellationToken)
     {
         var modified = domainEvent.Entity;
         var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
@@ -61,7 +61,7 @@ public partial class MongoPersonDomainEventHandler : BaseDisposable, IEntityAdde
         return Task.CompletedTask;
     }
 
-    public Task EntityUpdatedAsync(EntityUpdatedDomainEvent<MongoTenantPerson> domainEvent, CancellationToken cancellationToken = default)
+    public Task EntityUpdatedAsync(EntityUpdatedDomainEvent<MongoTenantPerson> domainEvent, CancellationToken cancellationToken)
     {
         var original = domainEvent.Previous;
         var modified = domainEvent.Modified;

@@ -16,5 +16,5 @@ public class DefaultDbContextConnectionStringProvider<TKey, TEntity> : IDbContex
         _connectionString = connectionString;
     }
 
-    public Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default) => Task.FromResult(_connectionString);
+    public Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) => Task.FromResult(_connectionString);
 }

@@ -25,9 +25,11 @@ public class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         _publisherService = publisherService;
     }
 
-    protected virtual async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+    protected virtual async Task<TEntity> CreateInternalAsync(TEntity entity,
+        IEntityTransaction transaction,
+        CancellationToken cancellationToken)
     {
-        var mongoCollection = await GetCollectionAsync();
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
         if (entity is IModifiedEntity modified)
         {
@@ -56,9 +58,9 @@ public class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         return entity;
     }
 
-    public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken)
         => CreateInternalAsync(entity, null, cancellationToken);
 
-    public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+    public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken)
         => CreateInternalAsync(entity, entityTransaction, cancellationToken);
 }

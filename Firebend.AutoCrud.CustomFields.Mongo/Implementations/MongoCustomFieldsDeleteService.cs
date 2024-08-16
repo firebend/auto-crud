@@ -43,7 +43,7 @@ public class MongoCustomFieldsDeleteService<TKey, TEntity> :
         _hasPublisher = domainEventPublisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
     }
 
-    public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken = default)
+    public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await DeleteAsync(rootEntityKey, key, transaction, cancellationToken);
@@ -52,14 +52,14 @@ public class MongoCustomFieldsDeleteService<TKey, TEntity> :
     public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
         Guid key,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
 
-        var mongoCollection = await GetCollectionAsync();
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
         var updateDefinition = Builders<TEntity>.Update.PullFilter(x => x.CustomFields, x => x.Id == key);
 
 
@@ -99,7 +99,7 @@ public class MongoCustomFieldsDeleteService<TKey, TEntity> :
     private Task PublishUpdatedDomainEventAsync(TEntity previous,
         JsonPatchDocument<TEntity> patch,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (_hasPublisher is false)
         {

@@ -18,5 +18,5 @@ public interface IEntityExportControllerService<TKey, TEntity, TVersion, TSearch
     Task<FileResult> ExportEntitiesAsync(EntityFileType fileType,
         string fileName,
         TSearch search,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

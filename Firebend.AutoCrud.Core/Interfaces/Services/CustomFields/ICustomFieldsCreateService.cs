@@ -12,10 +12,10 @@ public interface ICustomFieldsCreateService<TKey, TEntity> : IDisposable
 {
     Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

@@ -34,7 +34,7 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
         _mongoIndexMergeService = mongoIndexMergeService;
     }
 
-    public async Task BuildIndexesAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+    public async Task BuildIndexesAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken)
     {
         var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
         using var _ = await _distributedLockService.LockAsync(key, cancellationToken);
@@ -48,18 +48,18 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
             return;
         }
 
-        var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey);
+        var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey, cancellationToken);
 
         await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
     }
 
-    public async Task CreateCollectionAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken)
     {
         var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection";
 
         using var _ = await _distributedLockService.LockAsync(key, cancellationToken);
 
-        var client = await GetClientAsync(configuration.ShardKey);
+        var client = await GetClientAsync(configuration.ShardKey, cancellationToken);
         var database = client.GetDatabase(configuration.DatabaseName);
 
         var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };

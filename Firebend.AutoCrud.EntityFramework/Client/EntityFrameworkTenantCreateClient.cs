@@ -25,7 +25,7 @@ public class EntityFrameworkTenantCreateClient<TKey, TEntity, TTenantKey> : Enti
         _tenantEntityProvider = tenantEntityProvider;
     }
 
-    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
+    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken)
     {
         var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 

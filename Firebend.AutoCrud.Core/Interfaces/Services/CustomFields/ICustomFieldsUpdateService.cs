@@ -13,21 +13,21 @@ public interface ICustomFieldsUpdateService<TKey, TEntity> : IDisposable
 {
     Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

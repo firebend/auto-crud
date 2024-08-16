@@ -22,14 +22,14 @@ public class EntityFrameworkEntityDeleteService<TKey, TEntity> : BaseDisposable,
         _transactionManager = transactionManager;
     }
 
-    public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _deleteClient.DeleteAsync(key, transaction, cancellationToken);
     }
 
     public Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return _deleteClient.DeleteAsync(key, entityTransaction, cancellationToken);

@@ -28,27 +28,32 @@ public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase<TKe
 
     protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
 
-    protected virtual async Task<IMongoCollection<TEntity>> GetCollectionAsync(IMongoEntityConfiguration<TKey, TEntity> configuration, string shardKey = null)
+    protected virtual async Task<IMongoCollection<TEntity>> GetCollectionAsync(
+        IMongoEntityConfiguration<TKey, TEntity> configuration,
+        string shardKeyOverride,
+        CancellationToken cancellationToken)
     {
-        var client = await GetClientAsync(shardKey);
+        var client = await GetClientAsync(shardKeyOverride, cancellationToken);
         var database = client.GetDatabase(configuration.DatabaseName);
 
         return database.GetCollection<TEntity>(configuration.CollectionName);
     }
 
-    protected virtual Task<IMongoCollection<TEntity>> GetCollectionAsync(string shardKey = null) => GetCollectionAsync(EntityConfiguration, shardKey);
+    protected virtual Task<IMongoCollection<TEntity>> GetCollectionAsync(string shardKeyOverride, CancellationToken cancellationToken)
+        => GetCollectionAsync(EntityConfiguration, shardKeyOverride, cancellationToken);
 
     protected virtual Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => GetFilteredCollectionAsync(x => Task.FromResult(firstStageFilters(x)),
             entityTransaction, cancellationToken);
 
-    protected virtual async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
+    protected virtual async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(
+        Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
-        var collection = await GetCollectionAsync();
+        var collection = await GetCollectionAsync(null, cancellationToken);
 
         var mongoQueryable = entityTransaction == null ?
             collection.AsQueryable(EntityConfiguration.AggregateOption) :

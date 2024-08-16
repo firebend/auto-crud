@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -27,14 +28,14 @@ public abstract class MongoClientBase<TKey, TEntity> : BaseDisposable
         MongoRetryService = mongoRetryService;
     }
 
-    protected async Task<IMongoClient> GetClientAsync(string overrideShardKey = null)
+    protected async Task<IMongoClient> GetClientAsync(string overrideShardKey, CancellationToken cancellationToken)
     {
         if (_mongoClient != null)
         {
             return _mongoClient;
         }
 
-        _mongoClient = await _mongoClientFactory.CreateClientAsync(overrideShardKey);
+        _mongoClient = await _mongoClientFactory.CreateClientAsync(overrideShardKey, cancellationToken);
         return _mongoClient;
     }
 

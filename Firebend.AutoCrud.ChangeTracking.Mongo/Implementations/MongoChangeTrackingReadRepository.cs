@@ -31,7 +31,7 @@ public class MongoChangeTrackingReadRepository<TEntityKey, TEntity> :
 
     public async Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
         ChangeTrackingSearchRequest<TEntityKey> searchRequest,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (searchRequest == null)
         {

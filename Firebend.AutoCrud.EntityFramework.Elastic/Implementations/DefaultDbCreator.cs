@@ -17,7 +17,7 @@ public class DefaultDbCreator : IDbCreator
         _logger = logger;
     }
 
-    public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
+    public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken)
     {
         var creator = rootConnectionString.Contains("database.windows.net")
             ? (IDbCreator)new ElasticPoolDbCreator(_logger, _configuration)

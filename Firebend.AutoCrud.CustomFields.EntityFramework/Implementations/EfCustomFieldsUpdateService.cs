@@ -34,7 +34,7 @@ public class EfCustomFieldsUpdateService<TKey, TEntity, TCustomFieldsEntity> : B
 
     public async Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await UpdateAsync(rootEntityKey, customField, transaction, cancellationToken);
@@ -43,7 +43,7 @@ public class EfCustomFieldsUpdateService<TKey, TEntity, TCustomFieldsEntity> : B
     public async Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         var efEntity = new TCustomFieldsEntity { EntityId = rootEntityKey };
@@ -58,14 +58,14 @@ public class EfCustomFieldsUpdateService<TKey, TEntity, TCustomFieldsEntity> : B
     public Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => PatchAsync(rootEntityKey, key, jsonPatchDocument, null, cancellationToken);
 
     public async Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
 
         var operations = jsonPatchDocument

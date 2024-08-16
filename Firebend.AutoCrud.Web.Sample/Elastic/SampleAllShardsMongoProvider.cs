@@ -6,6 +6,6 @@ namespace Firebend.AutoCrud.Web.Sample.Elastic;
 
 public class SampleAllShardsMongoProvider : IMongoAllShardsProvider
 {
-    public Task<string[]> GetAllShardsAsync(CancellationToken cancellationToken = default)
+    public Task<string[]> GetAllShardsAsync(CancellationToken cancellationToken)
         => Task.FromResult(ShardKeyHelper.AllShards);
 }

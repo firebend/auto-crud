@@ -34,7 +34,7 @@ public class ShardDbContextConnectionStringProvider<TKey, TEntity> :
         _shardMapMangerConfiguration = shardMapMangerConfiguration;
     }
 
-    public async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default)
+    public async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken)
     {
         var shardKey = await _shardKeyProvider.GetShardKeyAsync(cancellationToken);
         var connection = await GetShardConnectionStringAsync(shardKey, cancellationToken);

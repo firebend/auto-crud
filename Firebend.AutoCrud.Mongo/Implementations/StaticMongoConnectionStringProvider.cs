@@ -16,5 +16,6 @@ public class StaticMongoConnectionStringProvider<TKey, TEntity> : IMongoConnecti
         _connectionString = connectionString;
     }
 
-    public Task<string> GetConnectionStringAsync(string overrideShardKey = null, CancellationToken cancellationToken = default) => Task.FromResult(_connectionString);
+    public Task<string> GetConnectionStringAsync(string overrideShardKey, CancellationToken cancellationToken)
+        => Task.FromResult(_connectionString);
 }

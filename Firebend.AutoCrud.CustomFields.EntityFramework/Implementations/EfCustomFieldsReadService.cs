@@ -34,14 +34,14 @@ public class EfCustomFieldsReadService<TKey, TEntity, TCustomFieldsEntity> : Bas
     }
 
     public async Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId, TKey key,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await GetByKeyAsync(entityId, key, transaction, cancellationToken);
     }
 
     public async Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId, TKey key, IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(transaction);
         var result =
@@ -51,14 +51,14 @@ public class EfCustomFieldsReadService<TKey, TEntity, TCustomFieldsEntity> : Bas
     }
 
     public async Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await GetAllAsync(entityId, null, transaction, cancellationToken);
     }
 
     public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return GetAllAsync(entityId, null, entityTransaction, cancellationToken);
@@ -66,7 +66,7 @@ public class EfCustomFieldsReadService<TKey, TEntity, TCustomFieldsEntity> : Bas
 
     public async Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await GetAllAsync(entityId, filter, transaction, cancellationToken);
@@ -75,7 +75,7 @@ public class EfCustomFieldsReadService<TKey, TEntity, TCustomFieldsEntity> : Bas
     public async Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         var result =
@@ -85,7 +85,7 @@ public class EfCustomFieldsReadService<TKey, TEntity, TCustomFieldsEntity> : Bas
     }
 
     public async Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await ExistsAsync(entityId, filter, transaction, cancellationToken);
@@ -93,7 +93,7 @@ public class EfCustomFieldsReadService<TKey, TEntity, TCustomFieldsEntity> : Bas
 
     public async Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(transaction);
         var result = await _readClient.GetAllAsync(FilterByEntityId(entityId), true, transaction, cancellationToken);
@@ -102,7 +102,7 @@ public class EfCustomFieldsReadService<TKey, TEntity, TCustomFieldsEntity> : Bas
 
     public async Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await FindFirstOrDefaultAsync(entityId, filter, transaction, cancellationToken);
@@ -111,7 +111,7 @@ public class EfCustomFieldsReadService<TKey, TEntity, TCustomFieldsEntity> : Bas
     public async Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         var result =

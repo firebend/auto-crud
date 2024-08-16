@@ -39,7 +39,7 @@ public class MongoCustomFieldsReadService<TKey, TEntity> : BaseDisposable,
     public async Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         entityTransaction ??= await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
 
@@ -65,48 +65,48 @@ public class MongoCustomFieldsReadService<TKey, TEntity> : BaseDisposable,
 
     public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         GetAllAsync(entityId, filter, null, cancellationToken);
 
     public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(
         TKey entityId,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         GetAllAsync(entityId, null, entityTransaction, cancellationToken);
 
     public Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId,
         TKey key,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         GetByKeyAsync(entityId, key, null, cancellationToken);
 
     public Task<CustomFieldsEntity<TKey>> GetByKeyAsync(TKey entityId,
         TKey key,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         FindFirstOrDefaultAsync(entityId, x => x.Id.Equals(key), transaction, cancellationToken);
 
     public Task<List<CustomFieldsEntity<TKey>>> GetAllAsync(TKey entityId,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         GetAllAsync(entityId, null, null, cancellationToken);
 
     public Task<bool> ExistsAsync(TKey entityId, Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => ExistsAsync(entityId, filter, null, cancellationToken);
 
     public async Task<bool> ExistsAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         (await GetAllAsync(entityId, filter, entityTransaction, cancellationToken))?.Count > 0;
 
     public Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         FindFirstOrDefaultAsync(entityId, filter, null, cancellationToken);
 
     public async Task<CustomFieldsEntity<TKey>> FindFirstOrDefaultAsync(TKey entityId,
         Expression<Func<CustomFieldsEntity<TKey>, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         (await GetAllAsync(entityId, filter, entityTransaction, cancellationToken))?.FirstOrDefault();
 }

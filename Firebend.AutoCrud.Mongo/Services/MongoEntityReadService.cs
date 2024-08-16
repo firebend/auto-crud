@@ -24,62 +24,62 @@ public class MongoEntityReadService<TKey, TEntity> : BaseDisposable, IEntityRead
         _transactionManager = transactionManager;
     }
 
-    public async Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken = default)
+    public async Task<TEntity> GetByKeyAsync(TKey key, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _readClient.GetFirstOrDefaultAsync(x => x.Id.Equals(key), transaction, cancellationToken);
     }
 
     public Task<TEntity> GetByKeyAsync(TKey key, IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(transaction);
         return _readClient.GetFirstOrDefaultAsync(x => x.Id.Equals(key), transaction, cancellationToken);
     }
 
-    public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _readClient.GetAllAsync(null, transaction, cancellationToken);
     }
 
     public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _readClient.GetAllAsync(filter, transaction, cancellationToken);
     }
 
     public Task<List<TEntity>> GetAllAsync(IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return _readClient.GetAllAsync(null, entityTransaction, cancellationToken);
     }
 
     public Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return _readClient.GetAllAsync(filter, entityTransaction, cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _readClient.ExistsAsync(filter, transaction, cancellationToken);
     }
 
     public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(transaction);
         return _readClient.ExistsAsync(filter, transaction, cancellationToken);
     }
 
     public async Task<TEntity> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _readClient.GetFirstOrDefaultAsync(filter, transaction, cancellationToken);
@@ -87,7 +87,7 @@ public class MongoEntityReadService<TKey, TEntity> : BaseDisposable, IEntityRead
 
     public Task<TEntity> FindFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return _readClient.GetFirstOrDefaultAsync(filter, entityTransaction, cancellationToken);

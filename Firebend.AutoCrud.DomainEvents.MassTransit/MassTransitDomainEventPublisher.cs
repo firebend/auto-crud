@@ -20,17 +20,17 @@ public class MassTransitDomainEventPublisher<TKey, TEntity> : IEntityDomainEvent
 
     public Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => PublishAsync(domainEvent, transaction, cancellationToken);
 
     public Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => PublishAsync(domainEvent, transaction, cancellationToken);
 
     public Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => PublishAsync(domainEvent, transaction, cancellationToken);
 
     private Task PublishAsync<TDomainEvent>(TDomainEvent domainEvent, IEntityTransaction transaction, CancellationToken cancellationToken)

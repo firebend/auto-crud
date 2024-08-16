@@ -31,9 +31,9 @@ public class MongoIndexMergeServiceTests
 
         public void Dispose() { }
 
-        public bool MoveNext(CancellationToken cancellationToken = default) => Enumerator.MoveNext();
+        public bool MoveNext(CancellationToken cancellationToken) => Enumerator.MoveNext();
 
-        public Task<bool> MoveNextAsync(CancellationToken cancellationToken = default) => Task.FromResult(Enumerator.MoveNext());
+        public Task<bool> MoveNextAsync(CancellationToken cancellationToken) => Task.FromResult(Enumerator.MoveNext());
 
         public IEnumerable<T> Current { get; }
 

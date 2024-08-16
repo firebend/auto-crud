@@ -28,7 +28,7 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
 
     }
 
-    public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
+    public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken)
     {
         await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
 
@@ -63,7 +63,7 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
     }
 
     public async Task<IDbContext> GetDbContextAsync(DbTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
 

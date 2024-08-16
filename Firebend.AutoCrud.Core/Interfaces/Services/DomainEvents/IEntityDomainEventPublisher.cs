@@ -11,13 +11,13 @@ public interface IEntityDomainEventPublisher<TKey, TEntity>
 {
     Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

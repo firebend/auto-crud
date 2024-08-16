@@ -22,7 +22,7 @@ public class MongoEntityDeleteService<TKey, TEntity> : BaseDisposable, IEntityDe
         _transactionManager = transactionManager;
     }
 
-    public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
     {
         if (key.Equals(default))
         {
@@ -34,7 +34,7 @@ public class MongoEntityDeleteService<TKey, TEntity> : BaseDisposable, IEntityDe
     }
 
     public Task<TEntity> DeleteAsync(TKey key, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (key.Equals(default))
         {

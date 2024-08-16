@@ -32,7 +32,7 @@ public class EfCustomFieldSearchService<TKey, TEntity, TCustomFieldsEntity> :
 
 
     public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(CustomFieldsSearchRequest searchRequest,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var (query, context) = await _queryClient.GetQueryableAsync(true, cancellationToken);
 

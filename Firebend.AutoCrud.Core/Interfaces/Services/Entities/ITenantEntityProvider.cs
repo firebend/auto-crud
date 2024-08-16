@@ -7,5 +7,5 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 public interface ITenantEntityProvider<TKey>
     where TKey : struct
 {
-    public Task<TenantEntityResult<TKey>> GetTenantAsync(CancellationToken cancellationToken = default);
+    public Task<TenantEntityResult<TKey>> GetTenantAsync(CancellationToken cancellationToken);
 }

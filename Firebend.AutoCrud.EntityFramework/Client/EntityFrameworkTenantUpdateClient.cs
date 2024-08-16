@@ -27,7 +27,7 @@ public class EntityFrameworkTenantUpdateClient<TKey, TEntity, TTenantKey> : Enti
         _tenantEntityProvider = tenantEntityProvider;
     }
 
-    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
+    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken)
     {
         var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
@@ -54,7 +54,7 @@ public class EntityFrameworkTenantUpdateClient<TKey, TEntity, TTenantKey> : Enti
 
     public override Task<TEntity> UpdateAsync(TKey key,
         JsonPatchDocument<TEntity> jsonPatchDocument,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         jsonPatchDocument = RemoveTenantId(jsonPatchDocument);
 
@@ -64,21 +64,21 @@ public class EntityFrameworkTenantUpdateClient<TKey, TEntity, TTenantKey> : Enti
     public override Task<TEntity> UpdateAsync(TKey key,
         JsonPatchDocument<TEntity> jsonPatchDocument,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         jsonPatchDocument = RemoveTenantId(jsonPatchDocument);
 
         return base.UpdateAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
     }
 
-    public override async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public override async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken)
     {
         entity = await SetTenantAsync(entity, cancellationToken);
 
         return await base.UpdateAsync(entity, cancellationToken);
     }
 
-    public override async Task<TEntity> UpdateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+    public override async Task<TEntity> UpdateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken)
     {
         entity = await SetTenantAsync(entity, cancellationToken);
 

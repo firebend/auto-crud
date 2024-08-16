@@ -10,7 +10,7 @@ public interface IDbContextProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken = default);
+    Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken);
 
-    Task<IDbContext> GetDbContextAsync(DbTransaction connection, CancellationToken cancellationToken = default);
+    Task<IDbContext> GetDbContextAsync(DbTransaction connection, CancellationToken cancellationToken);
 }

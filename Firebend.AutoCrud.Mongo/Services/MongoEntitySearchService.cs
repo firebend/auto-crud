@@ -30,14 +30,14 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
         _transactionManager = transactionManager;
     }
 
-    public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
+    public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await SearchAsync(request, transaction, cancellationToken);
     }
 
     public async Task<List<TEntity>> SearchAsync(TSearch request, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         var results = await PageAsync(request, entityTransaction, cancellationToken);
@@ -45,14 +45,14 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
     }
 
     public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await PageAsync(request, transaction, cancellationToken);
     }
 
     public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilter = null;

@@ -42,13 +42,13 @@ public class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateCli
 
     public override Task<TEntity> UpdateAsync(TKey id,
         JsonPatchDocument<TEntity> patch,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateAsync(id, patch, null, cancellationToken);
 
     public override Task<TEntity> UpdateAsync(TKey id,
         JsonPatchDocument<TEntity> patch,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         patch = RemoveTenantId(patch);
         return base.UpdateAsync(id, patch, transaction, cancellationToken);
