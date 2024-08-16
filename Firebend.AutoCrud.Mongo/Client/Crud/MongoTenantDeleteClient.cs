@@ -23,7 +23,14 @@ public class MongoTenantDeleteClient<TKey, TEntity, TTenantKey> : MongoDeleteCli
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         ITenantEntityProvider<TTenantKey> tenantEntityProvider,
         IMongoRetryService mongoRetryService,
-        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(clientFactory, logger, entityConfiguration, mongoRetryService, publisherService)
+        IDomainEventPublisherService<TKey, TEntity> publisherService,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            mongoRetryService,
+            readPreferenceService,
+            publisherService)
     {
         _tenantEntityProvider = tenantEntityProvider;
     }

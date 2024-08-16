@@ -22,7 +22,14 @@ public class MongoTenantReadClient<TKey, TEntity, TTenantKey> : MongoReadClient<
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         ITenantEntityProvider<TTenantKey> tenantEntityProvider,
         IEntityQueryOrderByHandler<TKey, TEntity> entityQueryOrderByHandler,
-        IMongoRetryService retryService) : base(clientFactory, logger, entityConfiguration, entityQueryOrderByHandler, retryService)
+        IMongoRetryService retryService,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            entityQueryOrderByHandler,
+            retryService,
+            readPreferenceService)
     {
         _tenantEntityProvider = tenantEntityProvider;
     }

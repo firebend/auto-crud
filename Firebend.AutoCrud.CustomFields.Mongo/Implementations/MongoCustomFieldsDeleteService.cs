@@ -35,7 +35,13 @@ public class MongoCustomFieldsDeleteService<TKey, TEntity> :
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
         IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
-        ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+        IMongoReadPreferenceService readPreferenceService,
+        ISessionTransactionManager transactionManager) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            mongoRetryService,
+            readPreferenceService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;

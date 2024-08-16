@@ -29,7 +29,13 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
         IMongoRetryService retryService,
-        IDomainEventPublisherService<TKey, TEntity> domainEventPublisher = null) : base(clientFactory, logger, entityConfiguration, retryService)
+        IDomainEventPublisherService<TKey, TEntity> domainEventPublisher,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            retryService,
+            readPreferenceService)
     {
         _keyGenerator = keyGenerator;
         _domainEventPublisher = domainEventPublisher;

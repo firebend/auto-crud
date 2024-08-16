@@ -26,8 +26,15 @@ public class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateCli
         IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
         IMongoRetryService retryService,
         ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-        IDomainEventPublisherService<TKey, TEntity> domainEventPublisher = null)
-        : base(clientFactory, logger, entityConfiguration, keyGenerator, retryService, domainEventPublisher)
+        IMongoReadPreferenceService readPreferenceService,
+        IDomainEventPublisherService<TKey, TEntity> domainEventPublisher) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            keyGenerator,
+            retryService,
+            domainEventPublisher,
+            readPreferenceService)
     {
         _tenantEntityProvider = tenantEntityProvider;
     }

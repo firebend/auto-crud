@@ -34,7 +34,13 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
         IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
-        ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+        ISessionTransactionManager transactionManager,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            mongoRetryService,
+            readPreferenceService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;

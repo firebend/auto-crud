@@ -24,7 +24,13 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         ILogger<MongoReadClient<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IEntityQueryOrderByHandler<TKey, TEntity> orderByHandler,
-        IMongoRetryService mongoRetryService) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+        IMongoRetryService mongoRetryService,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            mongoRetryService,
+            readPreferenceService)
     {
         _orderByHandler = orderByHandler;
     }

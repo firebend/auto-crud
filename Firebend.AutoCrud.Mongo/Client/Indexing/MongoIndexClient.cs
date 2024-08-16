@@ -27,7 +27,13 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
         IMongoIndexProvider<TKey, TEntity> indexProvider,
         IMongoRetryService retryService,
         IDistributedLockService distributedLockService,
-        IMongoIndexMergeService<TKey, TEntity> mongoIndexMergeService) : base(clientFactory, logger, entityConfiguration, retryService)
+        IMongoIndexMergeService<TKey, TEntity> mongoIndexMergeService,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            retryService,
+            readPreferenceService)
     {
         _indexProvider = indexProvider;
         _distributedLockService = distributedLockService;
@@ -48,7 +54,7 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
             return;
         }
 
-        var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey, cancellationToken);
+        var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey, false, cancellationToken);
 
         await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
     }
