@@ -28,38 +28,51 @@ public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase<TKe
 
     protected IMongoEntityConfiguration<TKey, TEntity> EntityConfiguration { get; }
 
+    protected virtual Task<IMongoCollection<TEntity>> GetCollectionAsync(
+        CancellationToken cancellationToken)
+        => GetCollectionAsync(null, null, false, cancellationToken);
+
     protected virtual async Task<IMongoCollection<TEntity>> GetCollectionAsync(
-        IMongoEntityConfiguration<TKey, TEntity> configuration,
+        IMongoEntityConfiguration<TKey, TEntity> configurationOverride,
         string shardKeyOverride,
+        bool isUsingTransaction,
         CancellationToken cancellationToken)
     {
+        var configuration = configurationOverride ?? EntityConfiguration;
         var client = await GetClientAsync(shardKeyOverride, cancellationToken);
         var database = client.GetDatabase(configuration.DatabaseName);
 
-        return database.GetCollection<TEntity>(configuration.CollectionName);
+        var collection = database.GetCollection<TEntity>(configuration.CollectionName);
+
+        if (isUsingTransaction is false && EntityConfiguration.ReadPreferenceMode.HasValue)
+        {
+            collection = EntityConfiguration.ReadPreferenceMode.Value switch
+            {
+                ReadPreferenceMode.Primary => collection.WithReadPreference(ReadPreference.Primary),
+                ReadPreferenceMode.PrimaryPreferred => collection.WithReadPreference(ReadPreference.PrimaryPreferred),
+                ReadPreferenceMode.Secondary => collection.WithReadPreference(ReadPreference.Secondary),
+                ReadPreferenceMode.SecondaryPreferred => collection.WithReadPreference(ReadPreference.SecondaryPreferred),
+                ReadPreferenceMode.Nearest => collection.WithReadPreference(ReadPreference.Nearest),
+                _ => collection
+            };
+        }
+
+        return collection;
     }
-
-    protected virtual Task<IMongoCollection<TEntity>> GetCollectionAsync(string shardKeyOverride, CancellationToken cancellationToken)
-        => GetCollectionAsync(EntityConfiguration, shardKeyOverride, cancellationToken);
-
-    protected virtual Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
-        IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken)
-        => GetFilteredCollectionAsync(x => Task.FromResult(firstStageFilters(x)),
-            entityTransaction, cancellationToken);
 
     protected virtual async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(
         Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {
-        var collection = await GetCollectionAsync(null, cancellationToken);
+        var isUsingTransaction = entityTransaction is not null;
+        var collection = await GetCollectionAsync(null, null, isUsingTransaction, cancellationToken);
 
-        var mongoQueryable = entityTransaction == null ?
-            collection.AsQueryable(EntityConfiguration.AggregateOption) :
-            collection.AsQueryable(UnwrapSession(entityTransaction), EntityConfiguration.AggregateOption);
+        var mongoQueryable = isUsingTransaction is false
+            ? collection.AsQueryable(EntityConfiguration.AggregateOption)
+            : collection.AsQueryable(UnwrapSession(entityTransaction), EntityConfiguration.AggregateOption);
 
-        if (firstStageFilters != null)
+        if (firstStageFilters is not null)
         {
             mongoQueryable = await firstStageFilters(mongoQueryable);
         }
@@ -69,7 +82,8 @@ public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase<TKe
         return filters == null ? mongoQueryable : mongoQueryable.Where(filters);
     }
 
-    protected virtual async Task<Expression<Func<TEntity, bool>>> BuildFiltersAsync(Expression<Func<TEntity, bool>> additionalFilter = null,
+    protected virtual async Task<Expression<Func<TEntity, bool>>> BuildFiltersAsync(
+        Expression<Func<TEntity, bool>> additionalFilter = null,
         CancellationToken cancellationToken = default)
     {
         var filters = new List<Expression<Func<TEntity, bool>>>();
@@ -95,13 +109,15 @@ public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase<TKe
             (aggregate, filter) => aggregate.AndAlso(filter));
     }
 
-    protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken) =>
+    protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(
+        CancellationToken cancellationToken) =>
         Task.FromResult<IEnumerable<Expression<Func<TEntity, bool>>>>(null);
 
-    protected virtual IClientSessionHandle UnwrapSession(IEntityTransaction entityTransaction) => entityTransaction switch
-    {
-        null => null,
-        MongoEntityTransaction mongoTransaction => mongoTransaction.ClientSessionHandle,
-        _ => throw new ArgumentException($"Is not a {nameof(MongoEntityTransaction)}", nameof(entityTransaction))
-    };
+    protected virtual IClientSessionHandle UnwrapSession(IEntityTransaction entityTransaction) =>
+        entityTransaction switch
+        {
+            null => null,
+            MongoEntityTransaction mongoTransaction => mongoTransaction.ClientSessionHandle,
+            _ => throw new ArgumentException($"Is not a {nameof(MongoEntityTransaction)}", nameof(entityTransaction))
+        };
 }

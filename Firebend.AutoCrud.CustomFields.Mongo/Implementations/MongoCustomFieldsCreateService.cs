@@ -68,7 +68,7 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
 
         var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
-        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
+        var mongoCollection = await GetCollectionAsync(cancellationToken);
         var updateDefinition = Builders<TEntity>.Update.Push(x => x.CustomFields, customField);
 
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))

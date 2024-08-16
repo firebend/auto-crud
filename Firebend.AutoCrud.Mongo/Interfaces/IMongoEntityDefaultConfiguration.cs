@@ -15,4 +15,6 @@ public interface IMongoEntityDefaultConfiguration<TKey, TEntity>
     public AggregateOptions AggregateOption { get; set; }
 
     public MongoTenantShardMode ShardMode { get; }
+
+    public ReadPreferenceMode? ReadPreferenceMode { get; }
 }

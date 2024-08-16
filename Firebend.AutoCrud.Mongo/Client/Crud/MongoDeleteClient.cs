@@ -32,7 +32,7 @@ public class MongoDeleteClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
     {
         filter = await BuildFiltersAsync(filter, cancellationToken);
 
-        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
+        var mongoCollection = await GetCollectionAsync(cancellationToken);
 
 
         TEntity result;

@@ -65,7 +65,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         IEntityTransaction transaction,
         CancellationToken cancellationToken)
     {
-        var collection = await GetCollectionAsync(null, cancellationToken);
+        var collection = await GetCollectionAsync(cancellationToken);
 
         var ids = await UpdateManyInternalAsync(collection, null, entities, cancellationToken);
 
@@ -94,7 +94,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         IEntityTransaction transaction,
         CancellationToken cancellationToken)
     {
-        var collection = await GetCollectionAsync(null, cancellationToken);
+        var collection = await GetCollectionAsync(cancellationToken);
 
         var ids = await UpdateManyInternalAsync(collection, transaction, entities, cancellationToken);
 
@@ -159,7 +159,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
     {
         var filters = await BuildFiltersAsync(filter, cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
-        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
+        var mongoCollection = await GetCollectionAsync(cancellationToken);
 
         var now = DateTimeOffset.Now;
 

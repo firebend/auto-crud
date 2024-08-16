@@ -48,7 +48,7 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
             return;
         }
 
-        var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey, cancellationToken);
+        var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey, false, cancellationToken);
 
         await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
     }

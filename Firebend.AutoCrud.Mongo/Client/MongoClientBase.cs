@@ -28,7 +28,8 @@ public abstract class MongoClientBase<TKey, TEntity> : BaseDisposable
         MongoRetryService = mongoRetryService;
     }
 
-    protected async Task<IMongoClient> GetClientAsync(string overrideShardKey, CancellationToken cancellationToken)
+    protected async Task<IMongoClient> GetClientAsync(string overrideShardKey,
+        CancellationToken cancellationToken)
     {
         if (_mongoClient != null)
         {
