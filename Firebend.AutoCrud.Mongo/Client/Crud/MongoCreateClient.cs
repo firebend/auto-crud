@@ -19,8 +19,8 @@ public class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         ILogger<MongoCreateClient<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
-        IDomainEventPublisherService<TKey, TEntity> publisherService,
-        IMongoReadPreferenceService readPreferenceService)
+        IMongoReadPreferenceService readPreferenceService,
+        IDomainEventPublisherService<TKey, TEntity> publisherService = null)
         : base(clientFactory, logger, entityConfiguration, mongoRetryService, readPreferenceService)
     {
         _publisherService = publisherService;

@@ -24,6 +24,10 @@ public class MongoEndToEndTest : BaseTest<
     [TestMethod]
     public async Task Mongo_Api_Should_Work() => await EndToEndAsync(x => x.FirstName);
 
+    [TestMethod]
+    public async Task Mongo_Api_Should_Work_With_Secondary_Request()
+        => await SearchAsync("test", x=>
+            x.AppendQueryParam(nameof(CustomSearchParametersMongo.IsReadFromSecondary), true));
 
     [TestMethod]
     public async Task Validate_Endpoints_Should_Work_On_ViewModel()

@@ -22,7 +22,7 @@ public class MongoDeleteClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         IMongoReadPreferenceService readPreferenceService,
-        IDomainEventPublisherService<TKey, TEntity> publisherService) : base(
+        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(
             clientFactory,
             logger,
             entityConfiguration,
