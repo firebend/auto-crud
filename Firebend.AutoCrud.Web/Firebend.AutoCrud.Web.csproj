@@ -28,7 +28,7 @@
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
       <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.8" />
-      <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.7.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.7.1" />
     </ItemGroup>
 
     <ItemGroup>
