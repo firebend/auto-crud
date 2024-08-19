@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.IntegrationTests.Fakers;
 using Firebend.AutoCrud.Web.Sample.Models;
 using FluentAssertions;

@@ -36,7 +36,7 @@ public class MongoTenantCreateClient<TKey, TEntity, TTenantKey> : MongoCreateCli
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-        return new[] { tenantFilter };
+        return [tenantFilter];
     }
 
     protected override async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)

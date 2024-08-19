@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using MongoDB.Driver;
@@ -10,5 +9,5 @@ public class DefaultIndexProvider<TKey, TEntity> : IMongoIndexProvider<TKey, TEn
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder, IMongoEntityIndexConfiguration<TKey, TEntity> configuration) => Enumerable.Empty<CreateIndexModel<TEntity>>();
+    public IEnumerable<CreateIndexModel<TEntity>> GetIndexes(IndexKeysDefinitionBuilder<TEntity> builder, IMongoEntityIndexConfiguration<TKey, TEntity> configuration) => [];
 }

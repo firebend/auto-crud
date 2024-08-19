@@ -67,10 +67,9 @@ public class MongoIndexMergeServiceTests
             .Returns(new BsonClassMapSerializer<FooIndexEntity>(BsonClassMap.LookupClassMap(typeof(FooIndexEntity))));
 
         Collection.Setup(x => x.Indexes.ListAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new FakeAsyncCursor<BsonDocument>(new[]
-            {
+            .ReturnsAsync(new FakeAsyncCursor<BsonDocument>([
                 doc
-            }));
+            ]));
 
         Collection.Setup(x => x.Indexes.DropOneAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -170,7 +169,7 @@ public class MongoIndexMergeServiceTests
         var sut = Fixture.Create<MongoIndexMergeService<Guid, FooIndexEntity>>();
 
         //act
-        await sut.MergeIndexesAsync(Collection.Object, Array.Empty<CreateIndexModel<FooIndexEntity>>(), default);
+        await sut.MergeIndexesAsync(Collection.Object, [], default);
 
         //assert
         Collection.Verify(x => x.Indexes.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<FooIndexEntity>>>(), It.IsAny<CancellationToken>()), Times.Never);

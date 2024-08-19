@@ -106,14 +106,14 @@ public partial class
     private (Type attributeType, CustomAttributeBuilder attributeBuilder) GetApiVersionNeutralAttributeInfo()
     {
         var type = typeof(ApiVersionNeutralAttribute);
-        var ctor = type.GetConstructor(Array.Empty<Type>());
+        var ctor = type.GetConstructor([]);
 
         if (ctor == null)
         {
             return default;
         }
 
-        var attributeBuilder = new CustomAttributeBuilder(ctor, Array.Empty<object>());
+        var attributeBuilder = new CustomAttributeBuilder(ctor, []);
 
         return (type, attributeBuilder);
     }

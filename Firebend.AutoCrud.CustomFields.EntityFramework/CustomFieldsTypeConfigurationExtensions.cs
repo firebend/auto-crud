@@ -85,7 +85,7 @@ public static class CustomFieldsTypeConfigurationExtensions
 
             var entityMethodGeneric = entityTypeMethod.MakeGenericMethod(customFieldsEntityType);
 
-            var entityResult = entityMethodGeneric.Invoke(builder, Array.Empty<object>());
+            var entityResult = entityMethodGeneric.Invoke(builder, []);
 
             if (configureMethod == null)
             {

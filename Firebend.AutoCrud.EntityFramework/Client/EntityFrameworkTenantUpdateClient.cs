@@ -33,7 +33,7 @@ public class EntityFrameworkTenantUpdateClient<TKey, TEntity, TTenantKey> : Enti
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-        return new[] { tenantFilter };
+        return [tenantFilter];
     }
 
     protected virtual JsonPatchDocument<TEntity> RemoveTenantId(JsonPatchDocument<TEntity> jsonPatchDocument)

@@ -31,9 +31,9 @@ public static class JsonPathExists
 
                 var arrayValExpression = new SqlFunctionExpression(
                     "JSON_PATH_EXISTS",
-                    new[] { columnFragment, args[1] },
+                    [columnFragment, args[1]],
                     true,
-                    new[] { false, false },
+                    [false, false],
                     typeof(int),
                     null);
                 return arrayValExpression;

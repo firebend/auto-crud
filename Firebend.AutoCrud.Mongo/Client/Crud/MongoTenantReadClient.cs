@@ -40,6 +40,6 @@ public class MongoTenantReadClient<TKey, TEntity, TTenantKey> : MongoReadClient<
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-        return new[] { tenantFilter };
+        return [tenantFilter];
     }
 }

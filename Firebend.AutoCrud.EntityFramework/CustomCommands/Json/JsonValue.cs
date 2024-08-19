@@ -31,9 +31,9 @@ public static class JsonValue
 
                 var arrayValExpression = new SqlFunctionExpression(
                     "JSON_VALUE",
-                    new[] { columnFragment, args[1] },
+                    [columnFragment, args[1]],
                     true,
-                    new[] { false, false },
+                    [false, false],
                     typeof(string),
                     null);
                 return arrayValExpression;

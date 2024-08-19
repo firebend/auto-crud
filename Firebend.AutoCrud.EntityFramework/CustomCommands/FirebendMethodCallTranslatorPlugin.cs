@@ -7,11 +7,11 @@ public sealed class FirebendMethodCallTranslatorPlugin : IMethodCallTranslatorPl
 {
     public FirebendMethodCallTranslatorPlugin(ISqlExpressionFactory expressionFactory)
     {
-        Translators = new IMethodCallTranslator[]
-        {
+        Translators =
+        [
             new FullTextContainsAnyMethodCallTranslator(expressionFactory),
             new JsonObjectContainsMethodCallTranslator(expressionFactory)
-        };
+        ];
     }
 
     public IEnumerable<IMethodCallTranslator> Translators { get; }

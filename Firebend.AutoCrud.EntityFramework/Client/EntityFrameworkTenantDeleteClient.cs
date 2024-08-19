@@ -32,6 +32,6 @@ public class EntityFrameworkTenantDeleteClient<TKey, TEntity, TTenantKey> : Enti
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-        return new[] { tenantFilter };
+        return [tenantFilter];
     }
 }

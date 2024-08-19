@@ -31,6 +31,6 @@ public class EntityFrameworkTenantQueryClient<TKey, TEntity, TTenantKey> : Entit
 
         Expression<Func<TEntity, bool>> filter = x => x.TenantId.Equals(tenant.TenantId);
 
-        return new[] { filter };
+        return [filter];
     }
 }

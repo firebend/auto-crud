@@ -97,7 +97,7 @@ public class DynamicClassGenerator : BaseDisposable, IDynamicClassGenerator
 
         var iProperties = interfaceType.GetProperties().Select(x => new PropertySet(x.Name, x.PropertyType, null, true));
 
-        properties ??= Array.Empty<PropertySet>();
+        properties ??= [];
 
         properties = properties
             .Union(iProperties

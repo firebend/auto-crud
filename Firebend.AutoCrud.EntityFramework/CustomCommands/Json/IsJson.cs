@@ -31,9 +31,9 @@ public static class IsJson
 
                 var arrayValExpression = new SqlFunctionExpression(
                     "ISJSON",
-                    new[] { columnFragment },
+                    [columnFragment],
                     true,
-                    new[] { false },
+                    [false],
                     typeof(int),
                     null);
                 return arrayValExpression;

@@ -80,19 +80,12 @@ public class ObjectMapperBenchmarks
             FirstName = "Fox",
             LastName = "Mulder",
             DateOfBirth = DateTimeOffset.UtcNow,
-            CustomFields = new List<CustomFieldsEntity<Guid>>
-            {
-                new()
-                {
-                    Key = "Favorite Color",
-                    Value = "Red"
-                },
-                new()
-                {
-                    Key = "Favorite Number",
-                    Value = "42"
-                }
-            }
+            CustomFields =
+            [
+                new() { Key = "Favorite Color", Value = "Red" },
+
+                new() { Key = "Favorite Number", Value = "42" }
+            ]
         };
         return person;
     }

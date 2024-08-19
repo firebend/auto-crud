@@ -34,14 +34,14 @@ public class DefaultEntityQueryOrderByHandler<TKey, TEntity> : IEntityQueryOrder
         {
             if (_defaultEntityOrderByProvider != null)
             {
-                order = new[]
-                {
+                order =
+                [
                     _defaultEntityOrderByProvider.GetOrderBy()
-                };
+                ];
             }
             else
             {
-                order = Enumerable.Empty<(Expression<Func<TEntity, object>> order, bool ascending)>();
+                order = [];
             }
         }
 
