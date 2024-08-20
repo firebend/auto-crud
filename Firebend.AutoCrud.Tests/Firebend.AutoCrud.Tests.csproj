@@ -17,6 +17,7 @@
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
         <PackageReference Include="Microsoft.OpenApi" Version="1.6.17" />
         <PackageReference Include="nunit" Version="4.1.0" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
