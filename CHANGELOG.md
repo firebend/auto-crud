@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="14.0.0"></a>
+## [14.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v14.0.0) (2024-08-20)
+
+### Features
+
+* allow mongo to set read preference ([#355](https://www.github.com/firebend/auto-crud/issues/355)) ([4c0dfca](https://www.github.com/firebend/auto-crud/commit/4c0dfca0fe614e2485a9781429152de89a4fb37e))
+
+### Breaking Changes
+
+* allow mongo to set read preference ([#355](https://www.github.com/firebend/auto-crud/issues/355)) ([4c0dfca](https://www.github.com/firebend/auto-crud/commit/4c0dfca0fe614e2485a9781429152de89a4fb37e))
+
 <a name="13.0.3"></a>
 ## [13.0.3](https://www.github.com/firebend/auto-crud/releases/tag/v13.0.3) (2024-08-15)
 
