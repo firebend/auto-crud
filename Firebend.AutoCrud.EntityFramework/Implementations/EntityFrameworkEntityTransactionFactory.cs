@@ -26,9 +26,9 @@ public class EntityFrameworkEntityTransactionFactory<TKey, TEntity> : BaseDispos
         _connectionStringProvider = connectionStringProvider;
     }
 
-    public async Task<string> GetDbContextHashCode()
+    public async Task<string> GetDbContextHashCode(CancellationToken cancellationToken)
     {
-        var connectionString = await _connectionStringProvider.GetConnectionStringAsync();
+        var connectionString = await _connectionStringProvider.GetConnectionStringAsync(cancellationToken);
         var hashCode = connectionString.GetHashCode();
         return $"ef_{hashCode}";
     }

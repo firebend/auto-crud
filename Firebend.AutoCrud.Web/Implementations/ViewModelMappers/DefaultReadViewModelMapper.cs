@@ -12,15 +12,15 @@ public class DefaultReadViewModelMapper<TKey, TEntity, TVersion> : IReadViewMode
     where TVersion : class, IAutoCrudApiVersion
     where TKey : struct
 {
-    public Task<TEntity> FromAsync(TEntity model, CancellationToken cancellationToken = default)
+    public Task<TEntity> FromAsync(TEntity model, CancellationToken cancellationToken)
         => Task.FromResult(model);
 
-    public Task<IEnumerable<TEntity>> FromAsync(IEnumerable<TEntity> model, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<TEntity>> FromAsync(IEnumerable<TEntity> model, CancellationToken cancellationToken)
         => Task.FromResult(model);
 
-    public Task<TEntity> ToAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public Task<TEntity> ToAsync(TEntity entity, CancellationToken cancellationToken)
         => Task.FromResult(entity);
 
-    public Task<IEnumerable<TEntity>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<TEntity>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken)
         => Task.FromResult(entity);
 }

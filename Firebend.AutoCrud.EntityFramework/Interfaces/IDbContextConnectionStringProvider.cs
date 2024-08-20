@@ -8,5 +8,5 @@ public interface IDbContextConnectionStringProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default);
+    Task<string> GetConnectionStringAsync(CancellationToken cancellationToken);
 }

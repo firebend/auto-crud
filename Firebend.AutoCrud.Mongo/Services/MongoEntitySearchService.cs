@@ -8,6 +8,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Interfaces;
+using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Services;
@@ -21,23 +22,27 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
     private readonly IMongoReadClient<TKey, TEntity> _readClient;
     private readonly IEntitySearchHandler<TKey, TEntity, TSearch> _searchHandler;
     private readonly ISessionTransactionManager _transactionManager;
+    private readonly IMongoReadPreferenceService _readPreferenceService;
 
     public MongoEntitySearchService(IMongoReadClient<TKey, TEntity> readClient,
-        IEntitySearchHandler<TKey, TEntity, TSearch> searchHandler, ISessionTransactionManager transactionManager)
+        IEntitySearchHandler<TKey, TEntity, TSearch> searchHandler,
+        ISessionTransactionManager transactionManager,
+        IMongoReadPreferenceService readPreferenceService)
     {
         _readClient = readClient;
         _searchHandler = searchHandler;
         _transactionManager = transactionManager;
+        _readPreferenceService = readPreferenceService;
     }
 
-    public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken = default)
+    public async Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await SearchAsync(request, transaction, cancellationToken);
     }
 
     public async Task<List<TEntity>> SearchAsync(TSearch request, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         var results = await PageAsync(request, entityTransaction, cancellationToken);
@@ -45,16 +50,24 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
     }
 
     public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await PageAsync(request, transaction, cancellationToken);
     }
 
-    public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+    public async Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request,
+        IEntityTransaction entityTransaction,
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
+
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        if (entityTransaction is null && request is IMongoReadPreferenceSearchRequest { IsReadFromSecondary: true })
+        {
+            _readPreferenceService.SetMode(ReadPreferenceMode.SecondaryPreferred);
+        }
+
         Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilter = null;
 
         if (_searchHandler != null)

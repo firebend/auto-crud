@@ -106,7 +106,7 @@ public class AuthorizeByIdTests
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new DeleteAuthorizationRequirement() })));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed([new DeleteAuthorizationRequirement()])));
 
         var actionArguments = new Dictionary<string, object> { { _idArgument, Guid.NewGuid() } };
         _actionExecutingContext.Setup(a => a.ActionArguments).Returns(actionArguments);

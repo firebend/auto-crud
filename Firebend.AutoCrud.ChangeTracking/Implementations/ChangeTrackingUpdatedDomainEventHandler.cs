@@ -23,7 +23,7 @@ public class ChangeTrackingUpdatedDomainEventHandler<TKey, TEntity> :
         _changeTrackingService = changeTrackingService;
     }
 
-    public Task EntityUpdatedAsync(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+    public Task EntityUpdatedAsync(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
         => _changeTrackingService.TrackUpdateAsync(domainEvent, cancellationToken);
 
     protected override void DisposeManagedObjects() => _changeTrackingService?.Dispose();

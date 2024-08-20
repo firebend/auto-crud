@@ -62,7 +62,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
     protected virtual async Task<IQueryable<TEntity>> GetFilteredQueryableAsync(
         IDbContext context,
         bool asNoTracking,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var set = GetDbSet(context);
 
@@ -75,13 +75,14 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
 
         queryable = AddIncludes(queryable);
 
-        var filters = await BuildFilters(cancellationToken: cancellationToken);
+        var filters = await BuildFilters(null, cancellationToken);
 
         return filters == null ? queryable : queryable.Where(filters);
     }
 
-    protected virtual async Task<Expression<Func<TEntity, bool>>> BuildFilters(Expression<Func<TEntity, bool>> additionalFilter = null,
-        CancellationToken cancellationToken = default)
+    protected virtual async Task<Expression<Func<TEntity, bool>>> BuildFilters(
+        Expression<Func<TEntity, bool>> additionalFilter,
+        CancellationToken cancellationToken)
     {
         var filters = new List<Expression<Func<TEntity, bool>>>();
 
@@ -106,7 +107,7 @@ public abstract class AbstractDbContextRepo<TKey, TEntity> : BaseDisposable
             (aggregate, filter) => aggregate.AndAlso(filter));
     }
 
-    protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
+    protected virtual Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken)
         => Task.FromResult((IEnumerable<Expression<Func<TEntity, bool>>>)null);
 
     protected virtual IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable) => queryable;

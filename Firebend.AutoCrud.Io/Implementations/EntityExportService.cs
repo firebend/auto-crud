@@ -26,7 +26,7 @@ public class EntityExportService<T, TVersion> : BaseDisposable, IEntityExportSer
 
     public Task<Stream> ExportAsync(EntityFileType exportType,
         IEnumerable<T> records,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var writer = _fileWriterFactory.Get(exportType) ?? throw new Exception($"Could not find writer for type {exportType}");
 

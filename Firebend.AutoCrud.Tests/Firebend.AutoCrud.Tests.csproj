@@ -21,7 +21,7 @@
         <PackageReference Include="nunit" Version="4.1.0" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.7.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.7.1" />
         <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
         <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.7.0" />
     </ItemGroup>

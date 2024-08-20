@@ -244,15 +244,19 @@ public abstract class BaseTest<
     {
     }
 
-    private async Task SearchAsync(string search)
+    protected async Task SearchAsync(string search,
+        Func<IFlurlRequest, IFlurlRequest> configureRequest = null)
     {
         async Task<(IFlurlResponse response, EntityPagedResponse<TReadResponse> responseModel)> DoSearch()
         {
-            var searchResponse = await Url.WithAuth()
+            var request = Url.WithAuth()
                 .SetQueryParam("pagenumber", 1)
                 .SetQueryParam("pageSize", 10)
-                .SetQueryParam("search", search)
-                .GetAsync();
+                .SetQueryParam("search", search);
+
+            request = configureRequest?.Invoke(request) ?? request;
+
+            var searchResponse = await request.GetAsync();
 
             searchResponse.Should().NotBeNull();
             searchResponse.StatusCode.Should().Be(200);

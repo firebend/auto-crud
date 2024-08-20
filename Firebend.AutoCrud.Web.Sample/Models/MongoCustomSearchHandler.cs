@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.Http;
 namespace Firebend.AutoCrud.Web.Sample.Models;
 
 public class
-    MongoCustomSearchHandler : EntitySearchAuthorizationHandler<Guid, MongoTenantPerson, CustomSearchParameters>
+    MongoCustomSearchHandler : EntitySearchAuthorizationHandler<Guid, MongoTenantPerson, CustomSearchParametersMongo>
 {
     public MongoCustomSearchHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
     {
     }
 
     public override IQueryable<MongoTenantPerson> HandleSearch(IQueryable<MongoTenantPerson> queryable,
-        CustomSearchParameters searchRequest)
+        CustomSearchParametersMongo searchRequest)
     {
         if (!string.IsNullOrWhiteSpace(searchRequest?.NickName))
         {

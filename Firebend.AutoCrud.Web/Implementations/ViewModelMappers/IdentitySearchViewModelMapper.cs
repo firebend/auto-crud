@@ -13,6 +13,6 @@ public class IdentitySearchViewModelMapper<TKey, TEntity, TVersion, TSearchModel
     where TVersion : class, IAutoCrudApiVersion
     where TSearchModel : class
 {
-    public Task<TSearchModel> FromAsync(TSearchModel model, CancellationToken cancellationToken = default)
+    public Task<TSearchModel> FromAsync(TSearchModel model, CancellationToken cancellationToken)
         => Task.FromResult(model);
 }

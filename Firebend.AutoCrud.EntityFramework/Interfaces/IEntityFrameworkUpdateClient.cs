@@ -11,18 +11,18 @@ public interface IEntityFrameworkUpdateClient<TKey, TEntity> : IDisposable
     where TEntity : class, IEntity<TKey>
 {
     Task<TEntity> UpdateAsync(TEntity entity,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<TEntity> UpdateAsync(TEntity entity,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<TEntity> UpdateAsync(TKey key,
         JsonPatchDocument<TEntity> patch,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<TEntity> UpdateAsync(TKey key,
         JsonPatchDocument<TEntity> patch,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

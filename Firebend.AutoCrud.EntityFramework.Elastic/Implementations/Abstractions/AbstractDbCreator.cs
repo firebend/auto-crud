@@ -15,7 +15,7 @@ public abstract class AbstractDbCreator : IDbCreator
         _logger = logger;
     }
 
-    public async Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken = default)
+    public async Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken)
     {
         var connBuilder = new SqlConnectionStringBuilder(rootConnectionString);
 

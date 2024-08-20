@@ -21,7 +21,7 @@ public class ShardManager : IShardManager
         _shardMapMangerConfiguration = shardMapMangerConfiguration;
     }
 
-    public async Task<ShardMap> RegisterShardAsync(string shardDatabaseName, string key, CancellationToken cancellationToken = default)
+    public async Task<ShardMap> RegisterShardAsync(string shardDatabaseName, string key, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(shardDatabaseName))
         {

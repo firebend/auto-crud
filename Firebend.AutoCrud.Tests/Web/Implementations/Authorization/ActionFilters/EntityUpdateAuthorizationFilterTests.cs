@@ -88,7 +88,7 @@ public class EntityUpdateAuthorizationFilterTests
             It.IsAny<object>(),
             It.IsAny<string>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed([new UpdateAuthorizationRequirement()])));
 
         _defaultHttpContext.Request.Method = HttpMethods.Put;
 
@@ -167,7 +167,7 @@ public class EntityUpdateAuthorizationFilterTests
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new UpdateAuthorizationRequirement() })));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed([new UpdateAuthorizationRequirement()])));
 
         _defaultHttpContext.Request.Method = HttpMethods.Patch;
 

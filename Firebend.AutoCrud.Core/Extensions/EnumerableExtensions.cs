@@ -21,5 +21,5 @@ public static class EnumerableExtensions
             _ => source.Any()
         };
 
-    public static IEnumerable<T> NullCheck<T>(this IEnumerable<T> source) => source ?? Enumerable.Empty<T>();
+    public static IEnumerable<T> NullCheck<T>(this IEnumerable<T> source) => source ?? [];
 }

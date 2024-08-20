@@ -26,7 +26,7 @@ public class MongoChangeTrackingService<TEntityKey, TEntity> :
         _createClient = createClient;
     }
 
-    public Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+    public Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
         => _createClient.CreateAsync(
             GetChangeTrackingEntityBase(domainEvent,
                 "Added",
@@ -34,7 +34,7 @@ public class MongoChangeTrackingService<TEntityKey, TEntity> :
                 domainEvent.Entity.Id),
             cancellationToken);
 
-    public Task TrackDeleteAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+    public Task TrackDeleteAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
         => _createClient.CreateAsync(
             GetChangeTrackingEntityBase(domainEvent,
                 "Delete",
@@ -42,7 +42,7 @@ public class MongoChangeTrackingService<TEntityKey, TEntity> :
                 domainEvent.Entity.Id),
             cancellationToken);
 
-    public Task TrackUpdateAsync(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default)
+    public Task TrackUpdateAsync(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
         => _createClient.CreateAsync(
             GetChangeTrackingEntityBase(domainEvent,
                 "Update",

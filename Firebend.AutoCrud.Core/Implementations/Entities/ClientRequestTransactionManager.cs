@@ -87,7 +87,7 @@ public class ClientRequestTransactionManager : ISessionTransactionManager
         }
 
         var transactionFactory = _serviceProvider.GetRequiredService<IEntityTransactionFactory<TKey, TEntity>>();
-        var key = await transactionFactory.GetDbContextHashCode();
+        var key = await transactionFactory.GetDbContextHashCode(cancellationToken);
 
         var transaction = await GetOrAddSharedTransaction(key, transactionFactory, cancellationToken);
 

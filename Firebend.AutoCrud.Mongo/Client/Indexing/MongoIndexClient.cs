@@ -27,14 +27,20 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
         IMongoIndexProvider<TKey, TEntity> indexProvider,
         IMongoRetryService retryService,
         IDistributedLockService distributedLockService,
-        IMongoIndexMergeService<TKey, TEntity> mongoIndexMergeService) : base(clientFactory, logger, entityConfiguration, retryService)
+        IMongoIndexMergeService<TKey, TEntity> mongoIndexMergeService,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            retryService,
+            readPreferenceService)
     {
         _indexProvider = indexProvider;
         _distributedLockService = distributedLockService;
         _mongoIndexMergeService = mongoIndexMergeService;
     }
 
-    public async Task BuildIndexesAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+    public async Task BuildIndexesAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken)
     {
         var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.Indexes";
         using var _ = await _distributedLockService.LockAsync(key, cancellationToken);
@@ -48,18 +54,18 @@ public class MongoIndexClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnti
             return;
         }
 
-        var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey);
+        var dbCollection = await GetCollectionAsync(configuration, configuration.ShardKey, false, cancellationToken);
 
         await _mongoIndexMergeService.MergeIndexesAsync(dbCollection, indexesToAdd, cancellationToken);
     }
 
-    public async Task CreateCollectionAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(IMongoEntityIndexConfiguration<TKey, TEntity> configuration, CancellationToken cancellationToken)
     {
         var key = $"{configuration.ShardKey}.{configuration.DatabaseName}.{configuration.CollectionName}.CreateCollection";
 
         using var _ = await _distributedLockService.LockAsync(key, cancellationToken);
 
-        var client = await GetClientAsync(configuration.ShardKey);
+        var client = await GetClientAsync(configuration.ShardKey, cancellationToken);
         var database = client.GetDatabase(configuration.DatabaseName);
 
         var options = new ListCollectionNamesOptions { Filter = new BsonDocument("name", EntityConfiguration.CollectionName) };

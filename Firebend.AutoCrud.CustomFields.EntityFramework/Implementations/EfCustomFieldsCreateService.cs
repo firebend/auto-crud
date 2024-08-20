@@ -29,7 +29,7 @@ public class EfCustomFieldsCreateService<TKey, TEntity, TCustomFieldsTEntity> : 
     }
 
     public async Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await CreateAsync(rootEntityKey, customField, transaction, cancellationToken);
@@ -38,7 +38,7 @@ public class EfCustomFieldsCreateService<TKey, TEntity, TCustomFieldsTEntity> : 
     public async Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
 

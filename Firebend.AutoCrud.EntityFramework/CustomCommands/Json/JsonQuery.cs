@@ -31,9 +31,9 @@ public static class JsonQuery
 
                 var arrayValExpression = new SqlFunctionExpression(
                     "JSON_QUERY",
-                    new[] { columnFragment, args[1] },
+                    [columnFragment, args[1]],
                     true,
-                    new[] { false, false },
+                    [false, false],
                     typeof(string),
                     null);
                 return arrayValExpression;

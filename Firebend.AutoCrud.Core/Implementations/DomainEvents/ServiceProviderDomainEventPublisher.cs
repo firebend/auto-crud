@@ -23,7 +23,7 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
 
     public Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return entityTransaction == null
             ? PublishAsync(cancellationToken)
@@ -42,7 +42,7 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
 
     public Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return entityTransaction == null
             ? PublishAsync(cancellationToken)
@@ -61,7 +61,7 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
 
     public Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return entityTransaction == null
             ? PublishAsync(cancellationToken)

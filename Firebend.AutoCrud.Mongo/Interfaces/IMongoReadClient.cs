@@ -19,24 +19,24 @@ public interface IMongoReadClient<TKey, TEntity>
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task<IMongoQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default);
+    Task<IMongoQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken);
 
     Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<IMongoQueryable<TEntity>> GetQueryableAsync(IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
         CancellationToken cancellationToken);
@@ -46,21 +46,21 @@ public interface IMongoReadClient<TKey, TEntity>
         CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<long> CountAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<long> CountAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,
         TSearchRequest searchRequest,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         where TSearchRequest : IEntitySearchRequest;
 }

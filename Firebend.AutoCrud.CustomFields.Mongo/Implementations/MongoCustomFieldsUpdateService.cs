@@ -45,7 +45,13 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
         IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
-        ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+        ISessionTransactionManager transactionManager,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            mongoRetryService,
+            readPreferenceService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;
@@ -53,7 +59,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
         _hasPublisher = domainEventPublisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
     }
 
-    public async Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField, CancellationToken cancellationToken = default)
+    public async Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await UpdateAsync(rootEntityKey, customField, transaction, cancellationToken);
@@ -62,7 +68,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
     public async Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         customField.ModifiedDate = DateTimeOffset.UtcNow;
@@ -72,7 +78,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == customField.Id);
 
-        var mongoCollection = await GetCollectionAsync();
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
         var linqVersion = LinqProvider.GetValueOrDefault(MongoDB.Driver.Linq.LinqProvider.V3);
 
@@ -138,7 +144,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
     public async Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await PatchAsync(rootEntityKey, key, jsonPatchDocument, transaction, cancellationToken);
@@ -148,14 +154,14 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
 
-        var mongoCollection = await GetCollectionAsync();
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
         var list = jsonPatchDocument
             .Operations
@@ -235,7 +241,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity> :
     private Task PublishUpdatedDomainEventAsync(TEntity previous,
         JsonPatchDocument<TEntity> patch,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (_hasPublisher is false)
         {

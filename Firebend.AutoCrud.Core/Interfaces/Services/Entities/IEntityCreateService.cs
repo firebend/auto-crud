@@ -9,7 +9,7 @@ public interface IEntityCreateService<TKey, TEntity> : IDisposable
     where TEntity : class, IEntity<TKey>
     where TKey : struct
 {
-    Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken);
 
-    Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default);
+    Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken);
 }

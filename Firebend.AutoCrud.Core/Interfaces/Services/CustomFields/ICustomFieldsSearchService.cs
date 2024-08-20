@@ -14,5 +14,5 @@ public interface
 {
     Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(
         CustomFieldsSearchRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

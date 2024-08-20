@@ -2,7 +2,6 @@ using System;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 using Firebend.AutoCrud.EntityFramework.Elastic.Models;
-using Firebend.AutoCrud.EntityFramework.Implementations;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Extensions;

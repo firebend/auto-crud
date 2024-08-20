@@ -15,46 +15,46 @@ public interface IEntityFrameworkQueryClient<TKey, TEntity> : IDisposable
 {
     Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(bool asNoTracking,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(bool asNoTracking,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
         TSearchRequest searchRequest,
         bool asNoTracking,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         where TSearchRequest : IEntitySearchRequest;
 }

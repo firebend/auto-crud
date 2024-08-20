@@ -40,7 +40,7 @@ public partial class EfPersonDomainEventHandler : BaseDisposable, IEntityAddedDo
         _scoped = scoped;
     }
 
-    public Task EntityAddedAsync(EntityAddedDomainEvent<EfPerson> domainEvent, CancellationToken cancellationToken = default)
+    public Task EntityAddedAsync(EntityAddedDomainEvent<EfPerson> domainEvent, CancellationToken cancellationToken)
     {
         var modified = domainEvent.Entity;
         var modifiedJson = JsonConvert.SerializeObject(modified, Formatting.Indented);
@@ -61,7 +61,7 @@ public partial class EfPersonDomainEventHandler : BaseDisposable, IEntityAddedDo
         return Task.CompletedTask;
     }
 
-    public Task EntityUpdatedAsync(EntityUpdatedDomainEvent<EfPerson> domainEvent, CancellationToken cancellationToken = default)
+    public Task EntityUpdatedAsync(EntityUpdatedDomainEvent<EfPerson> domainEvent, CancellationToken cancellationToken)
     {
         var original = domainEvent.Previous;
         var modified = domainEvent.Modified;

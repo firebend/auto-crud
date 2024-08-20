@@ -9,7 +9,6 @@ using Firebend.AutoCrud.EntityFramework.Abstractions;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
-using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Client;
 
@@ -98,7 +97,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
     protected virtual async Task<TEntity> UpdateInternalAsync(TKey key,
         JsonPatchDocument<TEntity> jsonPatchDocument,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var previous = await _readService.GetByKeyAsync(key, cancellationToken);
 
@@ -137,7 +136,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
 
     protected virtual async Task<TEntity> UpdateInternalAsync(TEntity entity,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var previous = await _readService.GetByKeyAsync(entity.Id, transaction, cancellationToken);
         var isUpdating = previous is not null;
@@ -203,23 +202,23 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
     }
 
     public virtual Task<TEntity> UpdateAsync(TEntity entity,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateInternalAsync(entity, null, cancellationToken);
 
     public virtual Task<TEntity> UpdateAsync(TEntity entity,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateInternalAsync(entity, entityTransaction, cancellationToken);
 
     public virtual Task<TEntity> UpdateAsync(TKey key,
         JsonPatchDocument<TEntity> patch,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateAsync(key, patch, null, cancellationToken);
 
     public virtual Task<TEntity> UpdateAsync(TKey key,
         JsonPatchDocument<TEntity> jsonPatchDocument,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateInternalAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
 
 }

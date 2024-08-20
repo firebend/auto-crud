@@ -30,7 +30,7 @@ public class MongoCustomFieldsSearchService<TKey, TEntity> : BaseDisposable,
 
     public async Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(
         CustomFieldsSearchRequest searchRequest,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilter = null;
 

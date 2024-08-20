@@ -14,5 +14,5 @@ public interface IEntityExportService<in T, TVersion> : IDisposable
 {
     Task<Stream> ExportAsync(EntityFileType exportType,
         IEnumerable<T> records,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

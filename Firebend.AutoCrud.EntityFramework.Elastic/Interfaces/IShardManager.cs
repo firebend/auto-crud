@@ -8,5 +8,5 @@ public interface IShardManager
 {
     Task<ShardMap> RegisterShardAsync(string shardDatabaseName,
         string key,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

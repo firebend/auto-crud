@@ -10,6 +10,6 @@ namespace Firebend.AutoCrud.Mongo.Implementations;
 public class CombGuidMongoCollectionKeyGenerator<TEntity> : IMongoCollectionKeyGenerator<Guid, TEntity>
     where TEntity : IEntity<Guid>
 {
-    public Task<Guid> GenerateKeyAsync(CancellationToken cancellationToken = default)
+    public Task<Guid> GenerateKeyAsync(CancellationToken cancellationToken)
         => Task.FromResult(CombGuid.New());
 }

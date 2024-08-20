@@ -24,7 +24,7 @@ public class MongoEntityUpdateService<TKey, TEntity> : BaseDisposable, IEntityUp
     }
 
     public async Task<TEntity> UpdateAsync(TEntity entity,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (entity == null)
         {
@@ -40,7 +40,7 @@ public class MongoEntityUpdateService<TKey, TEntity> : BaseDisposable, IEntityUp
 
     public Task<TEntity> UpdateAsync(TEntity entity,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return _updateClient.UpsertAsync(entity, entityTransaction, cancellationToken);
@@ -48,7 +48,7 @@ public class MongoEntityUpdateService<TKey, TEntity> : BaseDisposable, IEntityUp
 
     public async Task<TEntity> PatchAsync(TKey key,
         JsonPatchDocument<TEntity> jsonPatchDocument,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (key.Equals(default))
         {
@@ -62,7 +62,7 @@ public class MongoEntityUpdateService<TKey, TEntity> : BaseDisposable, IEntityUp
     public Task<TEntity> PatchAsync(TKey key,
         JsonPatchDocument<TEntity> jsonPatchDocument,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return _updateClient.UpdateAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);

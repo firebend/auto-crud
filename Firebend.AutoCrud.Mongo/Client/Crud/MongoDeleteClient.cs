@@ -21,18 +21,24 @@ public class MongoDeleteClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         ILogger<MongoDeleteClient<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
-        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+        IMongoReadPreferenceService readPreferenceService,
+        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            mongoRetryService,
+            readPreferenceService)
     {
         _publisherService = publisherService;
     }
 
     public async Task<TEntity> DeleteInternalAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         filter = await BuildFiltersAsync(filter, cancellationToken);
 
-        var mongoCollection = await GetCollectionAsync();
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
 
         TEntity result;
@@ -57,11 +63,11 @@ public class MongoDeleteClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
     }
 
     public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => DeleteInternalAsync(filter, null, cancellationToken);
 
     public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
 }

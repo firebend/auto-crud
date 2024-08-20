@@ -12,6 +12,6 @@ public class DefaultCreateMultipleViewModelMapper<TKey, TEntity, TVersion> : ICr
     where TKey : struct
     where TVersion : class, IAutoCrudApiVersion
 {
-    public Task<TEntity> FromAsync(MultipleEntityViewModel<TEntity> wrapper, TEntity viewModel, CancellationToken cancellationToken = default)
+    public Task<TEntity> FromAsync(MultipleEntityViewModel<TEntity> wrapper, TEntity viewModel, CancellationToken cancellationToken)
         => Task.FromResult(viewModel);
 }

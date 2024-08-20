@@ -34,5 +34,5 @@ public interface IChangeTrackingReadService<TKey, TEntity>
     /// A <see cref="EntityPagedResponse{TEntity}"/> containing a paged list of <see cref="ChangeTrackingEntity{TKey,TEntity}"/>
     /// </returns>
     Task<EntityPagedResponse<ChangeTrackingEntity<TKey, TEntity>>> GetChangesByEntityId(ChangeTrackingSearchRequest<TKey> searchRequest,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

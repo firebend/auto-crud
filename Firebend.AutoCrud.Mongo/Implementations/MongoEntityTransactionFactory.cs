@@ -29,16 +29,16 @@ public class MongoEntityTransactionFactory<TKey, TEntity> :
         _logger = logger;
     }
 
-    public async Task<string> GetDbContextHashCode()
+    public async Task<string> GetDbContextHashCode(CancellationToken cancellationToken)
     {
-        var connectionString = await _connectionStringProvider.GetConnectionStringAsync();
+        var connectionString = await _connectionStringProvider.GetConnectionStringAsync(null, cancellationToken);
         var hashCode = connectionString.GetHashCode();
         return $"mongo_{hashCode}";
     }
 
     public async Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken)
     {
-        var client = await GetClientAsync();
+        var client = await GetClientAsync(null, cancellationToken);
         var session = await client.StartSessionAsync(MongoEntityTransactionFactoryDefaults.SessionOptions, cancellationToken);
         session.StartTransaction(MongoEntityTransactionFactoryDefaults.TransactionOptions);
         return new MongoEntityTransaction(session, _outbox, MongoRetryService, _logger);

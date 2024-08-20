@@ -47,15 +47,15 @@ public class FunctionViewModelMapper<TKey, TEntity, TVersion, TViewModel> : ICre
     private static TViewModel ToViewModel(TEntity entity)
         => _to?.Invoke(entity);
 
-    public Task<TEntity> FromAsync(TViewModel model, CancellationToken cancellationToken = default)
+    public Task<TEntity> FromAsync(TViewModel model, CancellationToken cancellationToken)
         => Task.FromResult(ToEntity(model));
 
-    public Task<IEnumerable<TEntity>> FromAsync(IEnumerable<TViewModel> model, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<TEntity>> FromAsync(IEnumerable<TViewModel> model, CancellationToken cancellationToken)
         => _from == null ? Task.FromResult((IEnumerable<TEntity>)null) : Task.FromResult(model.Select(ToEntity));
 
-    public Task<TViewModel> ToAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public Task<TViewModel> ToAsync(TEntity entity, CancellationToken cancellationToken)
         => Task.FromResult(ToViewModel(entity));
 
-    public Task<IEnumerable<TViewModel>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<TViewModel>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken)
         => _to == null ? Task.FromResult((IEnumerable<TViewModel>)null) : Task.FromResult(entity.Select(ToViewModel));
 }

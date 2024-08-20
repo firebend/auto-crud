@@ -29,43 +29,49 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
         IMongoRetryService retryService,
-        IDomainEventPublisherService<TKey, TEntity> domainEventPublisher = null) : base(clientFactory, logger, entityConfiguration, retryService)
+        IMongoReadPreferenceService readPreferenceService,
+        IDomainEventPublisherService<TKey, TEntity> domainEventPublisher = null) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            retryService,
+            readPreferenceService)
     {
         _keyGenerator = keyGenerator;
         _domainEventPublisher = domainEventPublisher;
     }
 
-    public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+    public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken) =>
         UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), false, null, null, null, cancellationToken);
 
-    public virtual Task<TEntity> UpsertAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+    public virtual Task<TEntity> UpsertAsync(TEntity entity, CancellationToken cancellationToken) =>
         UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, null, null, null, cancellationToken);
 
     public virtual Task<TEntity> UpsertAsync(TEntity entity,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateInternalAsync(entity, x => x.Id.Equals(entity.Id), true, transaction, null, null, cancellationToken);
 
     public virtual Task<TEntity> UpsertAsync(TEntity entity,
         Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateInternalAsync(entity, filter, true, null, null, null, cancellationToken);
 
     public virtual Task<TEntity> UpsertAsync(TEntity entity,
         Expression<Func<TEntity, bool>> filter,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateInternalAsync(entity, filter, true, transaction, null, null, cancellationToken);
 
     public virtual Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpsertManyAsync(entities, null, cancellationToken);
 
     public virtual async Task<List<TEntity>> UpsertManyAsync(List<EntityUpdate<TEntity>> entities,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
-        var collection = await GetCollectionAsync();
+        var collection = await GetCollectionAsync(null, cancellationToken);
 
         var ids = await UpdateManyInternalAsync(collection, null, entities, cancellationToken);
 
@@ -86,15 +92,15 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
 
     public virtual Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities,
         Expression<Func<TEntity, TOut>> projection,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpsertManyAsync(entities, projection, null, cancellationToken);
 
     public virtual async Task<List<TOut>> UpsertManyAsync<TOut>(List<EntityUpdate<TEntity>> entities,
         Expression<Func<TEntity, TOut>> projection,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
-        var collection = await GetCollectionAsync();
+        var collection = await GetCollectionAsync(null, cancellationToken);
 
         var ids = await UpdateManyInternalAsync(collection, transaction, entities, cancellationToken);
 
@@ -116,13 +122,13 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
 
     public virtual Task<TEntity> UpdateAsync(TKey id,
         JsonPatchDocument<TEntity> patch,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         UpdateAsync(id, patch, null, cancellationToken);
 
     public virtual async Task<TEntity> UpdateAsync(TKey id,
         JsonPatchDocument<TEntity> patch,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var queryable = await GetFilteredCollectionAsync(
             entities => Task.FromResult(entities.Where(x => x.Id.Equals(id))),
@@ -159,7 +165,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
     {
         var filters = await BuildFiltersAsync(filter, cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
-        var mongoCollection = await GetCollectionAsync();
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
         var now = DateTimeOffset.Now;
 
@@ -236,7 +242,7 @@ public class MongoUpdateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
     protected virtual async Task<List<TKey>> UpdateManyInternalAsync(IMongoCollection<TEntity> mongoCollection,
         IEntityTransaction entityTransaction,
         List<EntityUpdate<TEntity>> entities,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (entities == null || entities.Count == 0)
         {

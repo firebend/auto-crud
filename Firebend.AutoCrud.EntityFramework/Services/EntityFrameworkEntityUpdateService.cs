@@ -23,28 +23,28 @@ public class EntityFrameworkEntityUpdateService<TKey, TEntity> : BaseDisposable,
         _transactionManager = transactionManager;
     }
 
-    public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _updateClient.UpdateAsync(entity, transaction, cancellationToken);
     }
 
     public Task<TEntity> UpdateAsync(TEntity entity, IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return _updateClient.UpdateAsync(entity, entityTransaction, cancellationToken);
     }
 
     public virtual async Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _updateClient.UpdateAsync(key, jsonPatchDocument, transaction, cancellationToken);
     }
 
     public Task<TEntity> PatchAsync(TKey key, JsonPatchDocument<TEntity> jsonPatchDocument,
-        IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+        IEntityTransaction entityTransaction, CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
         return _updateClient.UpdateAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);

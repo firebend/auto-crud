@@ -31,7 +31,7 @@ public interface IChangeTrackingService<TKey, TEntity> : IDisposable
     /// <returns>
     /// A <see cref="Task"/>
     /// </returns>
-    Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default);
+    Task TrackAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken);
 
     /// <summary>
     /// Tracks changes when an entity is deleted.
@@ -45,7 +45,7 @@ public interface IChangeTrackingService<TKey, TEntity> : IDisposable
     /// <returns>
     /// A <see cref="Task"/>
     /// </returns>
-    Task TrackDeleteAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default);
+    Task TrackDeleteAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken);
 
     /// <summary>
     /// Tracks changes when an entity is updated.
@@ -59,5 +59,5 @@ public interface IChangeTrackingService<TKey, TEntity> : IDisposable
     /// <returns>
     /// A <see cref="Task"/>
     /// </returns>
-    Task TrackUpdateAsync(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken = default);
+    Task TrackUpdateAsync(EntityUpdatedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken);
 }

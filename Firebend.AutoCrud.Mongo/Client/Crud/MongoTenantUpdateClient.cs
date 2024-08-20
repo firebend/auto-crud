@@ -26,8 +26,15 @@ public class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateCli
         IMongoCollectionKeyGenerator<TKey, TEntity> keyGenerator,
         IMongoRetryService retryService,
         ITenantEntityProvider<TTenantKey> tenantEntityProvider,
-        IDomainEventPublisherService<TKey, TEntity> domainEventPublisher = null)
-        : base(clientFactory, logger, entityConfiguration, keyGenerator, retryService, domainEventPublisher)
+        IMongoReadPreferenceService readPreferenceService,
+        IDomainEventPublisherService<TKey, TEntity> domainEventPublisher = null) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            keyGenerator,
+            retryService,
+            readPreferenceService,
+            domainEventPublisher)
     {
         _tenantEntityProvider = tenantEntityProvider;
     }
@@ -42,13 +49,13 @@ public class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateCli
 
     public override Task<TEntity> UpdateAsync(TKey id,
         JsonPatchDocument<TEntity> patch,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => UpdateAsync(id, patch, null, cancellationToken);
 
     public override Task<TEntity> UpdateAsync(TKey id,
         JsonPatchDocument<TEntity> patch,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         patch = RemoveTenantId(patch);
         return base.UpdateAsync(id, patch, transaction, cancellationToken);
@@ -60,7 +67,7 @@ public class MongoTenantUpdateClient<TKey, TEntity, TTenantKey> : MongoUpdateCli
         var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
-        return new[] { tenantFilter };
+        return [tenantFilter];
     }
 
 

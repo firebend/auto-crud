@@ -15,7 +15,7 @@ public class ServiceCollectionExtensionTests
         var serviceCollection = new ServiceCollection();
 
         // when
-        serviceCollection.RegisterAllTypes<ITestService>(new[] { typeof(ServiceCollectionExtensionTests).Assembly });
+        serviceCollection.RegisterAllTypes<ITestService>([typeof(ServiceCollectionExtensionTests).Assembly]);
         var serviceBuilder = serviceCollection.BuildServiceProvider();
 
         var testService = serviceBuilder.GetService<ITestService>();

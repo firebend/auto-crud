@@ -19,15 +19,18 @@ public class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         ILogger<MongoCreateClient<TKey, TEntity>> logger,
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
+        IMongoReadPreferenceService readPreferenceService,
         IDomainEventPublisherService<TKey, TEntity> publisherService = null)
-        : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+        : base(clientFactory, logger, entityConfiguration, mongoRetryService, readPreferenceService)
     {
         _publisherService = publisherService;
     }
 
-    protected virtual async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+    protected virtual async Task<TEntity> CreateInternalAsync(TEntity entity,
+        IEntityTransaction transaction,
+        CancellationToken cancellationToken)
     {
-        var mongoCollection = await GetCollectionAsync();
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
         if (entity is IModifiedEntity modified)
         {
@@ -56,9 +59,9 @@ public class MongoCreateClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEnt
         return entity;
     }
 
-    public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken)
         => CreateInternalAsync(entity, null, cancellationToken);
 
-    public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken = default)
+    public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken)
         => CreateInternalAsync(entity, entityTransaction, cancellationToken);
 }

@@ -18,6 +18,6 @@ public class CustomFieldsConnectionStringProvider<TKey, TEntity, TCustomFieldsEn
         _connectionStringProvider = connectionStringProvider;
     }
 
-    public Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default) =>
+    public Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) =>
         _connectionStringProvider.GetConnectionStringAsync(cancellationToken);
 }

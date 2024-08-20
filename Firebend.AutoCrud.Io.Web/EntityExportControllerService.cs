@@ -42,7 +42,7 @@ public class EntityExportControllerService<TKey, TEntity, TVersion, TSearch, TMa
     public async Task<FileResult> ExportEntitiesAsync(EntityFileType fileType,
         string fileName,
         TSearch search,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (search == null)
         {

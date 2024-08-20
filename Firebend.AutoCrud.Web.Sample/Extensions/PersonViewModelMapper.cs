@@ -10,16 +10,16 @@ namespace Firebend.AutoCrud.Web.Sample.Extensions;
 
 public class PersonViewModelMapper : IReadViewModelMapper<Guid, EfPerson, V1, GetPersonViewModel>
 {
-    public Task<EfPerson> FromAsync(GetPersonViewModel model, CancellationToken cancellationToken = default) =>
+    public Task<EfPerson> FromAsync(GetPersonViewModel model, CancellationToken cancellationToken) =>
         null;
 
     public Task<IEnumerable<EfPerson>> FromAsync(IEnumerable<GetPersonViewModel> model,
-        CancellationToken cancellationToken = default) => null;
+        CancellationToken cancellationToken) => null;
 
-    public Task<GetPersonViewModel> ToAsync(EfPerson entity, CancellationToken cancellationToken = default) =>
+    public Task<GetPersonViewModel> ToAsync(EfPerson entity, CancellationToken cancellationToken) =>
         Task.FromResult(new GetPersonViewModel(entity));
 
     public Task<IEnumerable<GetPersonViewModel>> ToAsync(IEnumerable<EfPerson> entity,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken) =>
         Task.FromResult(entity.Select(x => new GetPersonViewModel(x)));
 }

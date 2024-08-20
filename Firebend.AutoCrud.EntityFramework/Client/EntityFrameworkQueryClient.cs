@@ -33,7 +33,7 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
     protected virtual async Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
         IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var context = await GetDbContextAsync(transaction, cancellationToken);
 
@@ -52,7 +52,7 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
     public async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var (query, context) = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken);
 
@@ -65,25 +65,25 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
 
     public Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => GetFirstOrDefaultAsync(filter, asNoTracking, null, cancellationToken);
 
     public Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(bool asNoTracking,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => GetQueryableAsync(asNoTracking, null, cancellationToken);
 
     public Task<(IQueryable<TEntity> queryble, IDbContext context)> GetQueryableAsync(bool asNoTracking,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => GetQueryableAsync(null, asNoTracking, entityTransaction, cancellationToken);
 
     public Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => GetCountAsync(filter, null, cancellationToken);
 
     public async Task<long> GetCountAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken);
 
@@ -96,13 +96,13 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
 
     public Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => GetAllAsync(filter, asNoTracking, null, cancellationToken);
 
     public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter,
         bool asNoTracking,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var (query, context) = await GetQueryableAsync(filter, asNoTracking, entityTransaction, cancellationToken);
 
@@ -114,12 +114,12 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
     }
 
     public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         => ExistsAsync(filter, null, cancellationToken);
 
     public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var (query, context) = await GetQueryableAsync(filter, true, entityTransaction, cancellationToken);
 
@@ -133,7 +133,7 @@ public class EntityFrameworkQueryClient<TKey, TEntity> : AbstractDbContextRepo<T
     public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
         TSearchRequest searchRequest,
         bool asNoTracking,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
         where TSearchRequest : IEntitySearchRequest
     {
         if (asNoTracking)

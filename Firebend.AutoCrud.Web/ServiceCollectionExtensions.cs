@@ -51,6 +51,6 @@ public static class ServiceCollectionExtensions
     }
 
     public static void AddResourceAuthorizationHandlers(this IServiceCollection serviceCollection)
-        => serviceCollection.RegisterAllTypes<IAuthorizationHandler>(new[] { Assembly.GetEntryAssembly() },
+        => serviceCollection.RegisterAllTypes<IAuthorizationHandler>([Assembly.GetEntryAssembly()],
             ServiceLifetime.Scoped);
 }

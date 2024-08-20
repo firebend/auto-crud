@@ -34,7 +34,13 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
         IMongoRetryService mongoRetryService,
         IDomainEventContextProvider domainEventContextProvider,
         IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
-        ISessionTransactionManager transactionManager) : base(clientFactory, logger, entityConfiguration, mongoRetryService)
+        ISessionTransactionManager transactionManager,
+        IMongoReadPreferenceService readPreferenceService) : base(
+            clientFactory,
+            logger,
+            entityConfiguration,
+            mongoRetryService,
+            readPreferenceService)
     {
         _domainEventContextProvider = domainEventContextProvider;
         _domainEventPublisher = domainEventPublisher;
@@ -44,7 +50,7 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
 
     public async Task<CustomFieldsEntity<TKey>>
         CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await CreateAsync(rootEntityKey, customField, transaction, cancellationToken);
@@ -53,7 +59,7 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
     public async Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(entityTransaction);
 
@@ -68,7 +74,7 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
 
         var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters);
-        var mongoCollection = await GetCollectionAsync();
+        var mongoCollection = await GetCollectionAsync(null, cancellationToken);
         var updateDefinition = Builders<TEntity>.Update.Push(x => x.CustomFields, customField);
 
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))
@@ -121,7 +127,7 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
     private Task PublishUpdatedDomainEventAsync(TEntity previous,
         JsonPatchDocument<TEntity> patch,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (_hasPublisher is false)
         {

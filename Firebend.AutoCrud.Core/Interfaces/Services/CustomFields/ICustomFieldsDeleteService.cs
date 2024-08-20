@@ -12,9 +12,9 @@ public interface ICustomFieldsDeleteService<TKey, TEntity> : IDisposable
 {
     Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
         Guid key,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
     Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
         Guid key,
         IEntityTransaction entityTransaction,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 }

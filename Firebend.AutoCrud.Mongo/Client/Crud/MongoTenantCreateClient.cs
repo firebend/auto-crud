@@ -23,8 +23,9 @@ public class MongoTenantCreateClient<TKey, TEntity, TTenantKey> : MongoCreateCli
         IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
         IMongoRetryService mongoRetryService,
         ITenantEntityProvider<TTenantKey> tenantEntityProvider,
+        IMongoReadPreferenceService readPreferenceService,
         IDomainEventPublisherService<TKey, TEntity> publisherService = null)
-        : base(clientFactory, logger, entityConfiguration, mongoRetryService, publisherService)
+        : base(clientFactory, logger, entityConfiguration, mongoRetryService, readPreferenceService, publisherService)
     {
         _tenantEntityProvider = tenantEntityProvider;
     }
@@ -35,10 +36,10 @@ public class MongoTenantCreateClient<TKey, TEntity, TTenantKey> : MongoCreateCli
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-        return new[] { tenantFilter };
+        return [tenantFilter];
     }
 
-    protected override async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken = default)
+    protected override async Task<TEntity> CreateInternalAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
     {
         var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 

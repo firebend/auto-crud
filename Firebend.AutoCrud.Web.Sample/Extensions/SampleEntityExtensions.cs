@@ -53,7 +53,7 @@ public static class SampleEntityExtensions
                     .WithDomainEventEntityAddedSubscriber<MongoPersonDomainEventHandler>()
                     .WithDomainEventEntityUpdatedSubscriber<MongoPersonDomainEventHandler>())
                 .AddCrud(crud => crud
-                    .WithSearchHandler<CustomSearchParameters, MongoCustomSearchHandler>()
+                    .WithSearchHandler<CustomSearchParametersMongo, MongoCustomSearchHandler>()
                     .WithCrud()
                 )
                 .AddMongoPersonApiV1()

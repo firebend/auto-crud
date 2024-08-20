@@ -26,12 +26,12 @@ public class EntityFrameworkTenantDeleteClient<TKey, TEntity, TTenantKey> : Enti
     }
 
 
-    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
+    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken)
     {
         var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
         Expression<Func<TEntity, bool>> tenantFilter = x => x.TenantId.Equals(tenant.TenantId);
 
-        return new[] { tenantFilter };
+        return [tenantFilter];
     }
 }

@@ -84,7 +84,7 @@ public class EntityCreateAuthorizationFilterTests
             It.IsAny<object>(),
             It.IsAny<string>()
         )).ReturnsAsync(
-            AuthorizationResult.Failed(AuthorizationFailure.Failed(new[] { new CreateAuthorizationRequirement() })));
+            AuthorizationResult.Failed(AuthorizationFailure.Failed([new CreateAuthorizationRequirement()])));
 
         var postObject = _fixture.Create<ActionFilterTestHelper.TestEntity>();
         var actionArguments = new Dictionary<string, object> { { "body", postObject } };

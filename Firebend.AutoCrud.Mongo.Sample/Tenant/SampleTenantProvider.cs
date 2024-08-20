@@ -7,6 +7,6 @@ namespace Firebend.AutoCrud.Mongo.Sample.Tenant;
 
 public class SampleTenantProvider : ITenantEntityProvider<int>
 {
-    public Task<TenantEntityResult<int>> GetTenantAsync(CancellationToken cancellationToken = default) =>
+    public Task<TenantEntityResult<int>> GetTenantAsync(CancellationToken cancellationToken) =>
         Task.FromResult(new TenantEntityResult<int> { TenantId = 100 });
 }

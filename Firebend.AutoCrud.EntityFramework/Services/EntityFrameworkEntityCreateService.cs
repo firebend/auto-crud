@@ -22,14 +22,14 @@ public class EntityFrameworkEntityCreateService<TKey, TEntity> : BaseDisposable,
         _transactionManager = transactionManager;
     }
 
-    public virtual async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken)
     {
         var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await _createClient.AddAsync(entity, transaction, cancellationToken);
     }
 
     public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction transaction,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         _transactionManager.AddTransaction(transaction);
         return _createClient.AddAsync(entity, transaction, cancellationToken);

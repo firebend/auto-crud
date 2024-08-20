@@ -31,9 +31,9 @@ public static class JsonArrayIsEmpty
                 var columnFragment = new SqlFragmentExpression(columnName.Value.ToString()!);
                 var arrayStringValExpression = new SqlFunctionExpression(
                     "JSON_QUERY",
-                    new[] { columnFragment, args[1] },
+                    [columnFragment, args[1]],
                     true,
-                    new[] { false, false },
+                    [false, false],
                     typeof(string),
                     null);
                 var emptyArrayConstantExpression = new SqlConstantExpression(Expression.Constant("[]"), null);

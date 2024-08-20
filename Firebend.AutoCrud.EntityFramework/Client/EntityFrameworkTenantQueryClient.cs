@@ -25,12 +25,12 @@ public class EntityFrameworkTenantQueryClient<TKey, TEntity, TTenantKey> : Entit
         _tenantEntityProvider = tenantEntityProvider;
     }
 
-    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken = default)
+    protected override async Task<IEnumerable<Expression<Func<TEntity, bool>>>> GetSecurityFiltersAsync(CancellationToken cancellationToken)
     {
         var tenant = await _tenantEntityProvider.GetTenantAsync(cancellationToken);
 
         Expression<Func<TEntity, bool>> filter = x => x.TenantId.Equals(tenant.TenantId);
 
-        return new[] { filter };
+        return [filter];
     }
 }
