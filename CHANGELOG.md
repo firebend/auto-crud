@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="14.0.2"></a>
+## [14.0.2](https://www.github.com/firebend/auto-crud/releases/tag/v14.0.2) (2024-09-10)
+
+### Bug Fixes
+
+* map existing entity to vm and back to strip navigation properties ([#371](https://www.github.com/firebend/auto-crud/issues/371)) ([6841e18](https://www.github.com/firebend/auto-crud/commit/6841e1886477a5241a5def5cc3ebfd6714a81985))
+
+### Other
+
+* bump nunit from 4.2.1 to 4.2.2 ([#365](https://www.github.com/firebend/auto-crud/issues/365)) ([af55438](https://www.github.com/firebend/auto-crud/commit/af55438b9c82f1107ca6cc47d6b82e8e2e371aa1))
+* bump webpack from 5.76.0 to 5.94.0 in /Firebend.AutoCrud.Web.Sample.LoadTest ([#364](https://www.github.com/firebend/auto-crud/issues/364)) ([ae8a07d](https://www.github.com/firebend/auto-crud/commit/ae8a07d351ae815a5f025c96c591a1ff1d1c51e3))
+* **deps:** bump @babel/traverse from 7.12.12 to 7.25.6 in /Firebend.AutoCrud.Web.Sample.LoadTest ([#367](https://www.github.com/firebend/auto-crud/issues/367)) ([ad974f2](https://www.github.com/firebend/auto-crud/commit/ad974f27392d21f8ab7b68e2ebcc9a8c957201cc))
+* **deps:** bump minimist from 1.2.5 to 1.2.6 in /Firebend.AutoCrud.Web.Sample.LoadTest ([#309](https://www.github.com/firebend/auto-crud/issues/309)) ([9d9cf36](https://www.github.com/firebend/auto-crud/commit/9d9cf360dd8db73a16dce4abc8bcbc58bc85c073))
+
 <a name="14.0.1"></a>
 ## [14.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v14.0.1) (2024-08-26)
 
