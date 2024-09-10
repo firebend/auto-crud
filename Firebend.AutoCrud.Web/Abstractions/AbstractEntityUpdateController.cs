@@ -70,7 +70,7 @@ public abstract class
     [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
     [Produces("application/json")]
     public virtual async Task<ActionResult<TReadViewModel>> UpdatePutAsync(
-        [Required] [FromRoute] string id,
+        [Required][FromRoute] string id,
         [Required] TUpdateViewModel body,
         CancellationToken cancellationToken)
     {
@@ -185,8 +185,8 @@ public abstract class
     [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
     [Produces("application/json")]
     public virtual async Task<ActionResult<TReadViewModel>> UpdatePatchAsync(
-        [Required] [FromRoute] string id,
-        [Required] [FromBody] JsonPatchDocument<TUpdateViewModelBody> patch,
+        [Required][FromRoute] string id,
+        [Required][FromBody] JsonPatchDocument<TUpdateViewModelBody> patch,
         CancellationToken cancellationToken)
     {
         Response.RegisterForDispose(_readService);
