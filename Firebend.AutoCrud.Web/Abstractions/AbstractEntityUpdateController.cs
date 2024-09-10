@@ -22,7 +22,7 @@ namespace Firebend.AutoCrud.Web.Abstractions;
 [ApiController]
 public abstract class
     AbstractEntityUpdateController<TKey, TEntity, TVersion, TUpdateViewModel, TUpdateViewModelBody, TReadViewModel> :
-        AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
+    AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
     where TEntity : class, IEntity<TKey>
     where TKey : struct
     where TVersion : class, IAutoCrudApiVersion
@@ -50,7 +50,8 @@ public abstract class
         IReadViewModelMapper<TKey, TEntity, TVersion, TReadViewModel> readViewModelMapper,
         IOptions<ApiBehaviorOptions> apiOptions,
         IJsonPatchGenerator jsonPatchGenerator,
-        ICopyOnPatchPropertyAccessor<TEntity, TVersion, TUpdateViewModel> copyOnPatchPropertyAccessor) : base(entityKeyParser, apiOptions)
+        ICopyOnPatchPropertyAccessor<TEntity, TVersion, TUpdateViewModel> copyOnPatchPropertyAccessor) : base(
+        entityKeyParser, apiOptions)
     {
         _updateService = updateService;
         _readService = readService;
@@ -69,7 +70,7 @@ public abstract class
     [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
     [Produces("application/json")]
     public virtual async Task<ActionResult<TReadViewModel>> UpdatePutAsync(
-        [Required][FromRoute] string id,
+        [Required] [FromRoute] string id,
         [Required] TUpdateViewModel body,
         CancellationToken cancellationToken)
     {
@@ -108,7 +109,15 @@ public abstract class
 
         entityUpdate.Id = key.Value;
 
-        var original = await _readService.GetByKeyAsync(key.Value, cancellationToken);
+        var entity = await _readService.GetByKeyAsync(key.Value, cancellationToken);
+        TEntity original = null;
+
+        if (entity is not null)
+        {
+            // Map entity to view model and back to remove any properties that are not in the view model
+            var vm = await _updateViewModelMapper.ToAsync(entity.Clone(), cancellationToken);
+            original = await _updateViewModelMapper.FromAsync(vm, cancellationToken);
+        }
 
         if (HasIsDeletedChanged(original, entityUpdate))
         {
@@ -139,11 +148,11 @@ public abstract class
             entityUpdate = isValid.Model;
         }
 
-        TEntity entity;
+        TEntity updated;
 
         try
         {
-            entity = await _updateService.UpdateAsync(entityUpdate, cancellationToken);
+            updated = await _updateService.UpdateAsync(entityUpdate, cancellationToken);
         }
         catch (AutoCrudEntityException ex)
         {
@@ -153,18 +162,17 @@ public abstract class
                 {
                     ModelState.AddModelError(property, error);
                 }
-
             }
 
             return GetInvalidModelStateResult();
         }
 
-        if (entity == null)
+        if (updated == null)
         {
             return NotFound(new { id });
         }
 
-        var mapped = await _readViewModelMapper.ToAsync(entity, cancellationToken);
+        var mapped = await _readViewModelMapper.ToAsync(updated, cancellationToken);
 
         return Ok(mapped);
     }
@@ -177,8 +185,8 @@ public abstract class
     [SwaggerResponse(404, "The {entityName} with the given key is not found.")]
     [Produces("application/json")]
     public virtual async Task<ActionResult<TReadViewModel>> UpdatePatchAsync(
-        [Required][FromRoute] string id,
-        [Required][FromBody] JsonPatchDocument<TUpdateViewModelBody> patch,
+        [Required] [FromRoute] string id,
+        [Required] [FromBody] JsonPatchDocument<TUpdateViewModelBody> patch,
         CancellationToken cancellationToken)
     {
         Response.RegisterForDispose(_readService);
@@ -200,14 +208,14 @@ public abstract class
 
         if (IsCustomFieldsEntity() && PatchFieldsStartsWith(patch, CustomFieldsPatchPath))
         {
-            ModelState.AddModelError(nameof(patch), "Modifying an entity's custom fields is not allowed in this endpoint. Please use the entity's custom fields endpoints.");
+            ModelState.AddModelError(nameof(patch),
+                "Modifying an entity's custom fields is not allowed in this endpoint. Please use the entity's custom fields endpoints.");
 
             return GetInvalidModelStateResult();
         }
 
         if (IsActiveEntity() && PatchFieldsStartsWith(patch, IsDeletedPatchPath))
         {
-
             ModelState.AddModelError(nameof(patch),
                 $"Modifying an entity's {nameof(IActiveEntity.IsDeleted)} is not allowed in this endpoint. Please use the DELETE endpoint to soft delete this entity.");
 
@@ -228,9 +236,9 @@ public abstract class
             return NotFound(new { id });
         }
 
-        var original = entity.Clone();
-
-        var vm = await _updateViewModelMapper.ToAsync(entity, cancellationToken);
+        // Map entity to view model and back to remove any properties that are not in the view model
+        var vm = await _updateViewModelMapper.ToAsync(entity.Clone(), cancellationToken);
+        var original = await _updateViewModelMapper.FromAsync(vm, cancellationToken);
 
         if (vm is IViewModelWithBody<TUpdateViewModelBody> vmWithBody)
         {
@@ -259,7 +267,8 @@ public abstract class
         var entityPatch = _jsonPatchGenerator.Generate(original, modifiedEntity);
 
 
-        var isValid = await _entityValidationService.ValidateAsync(original, modifiedEntity, entityPatch, cancellationToken);
+        var isValid =
+            await _entityValidationService.ValidateAsync(original, modifiedEntity, entityPatch, cancellationToken);
 
         if (!isValid.WasSuccessful)
         {
@@ -290,7 +299,6 @@ public abstract class
                 {
                     ModelState.AddModelError(property, error);
                 }
-
             }
 
             return GetInvalidModelStateResult();
