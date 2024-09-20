@@ -4,9 +4,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Firebend.AutoCrud.EntityFramework.Abstractions;
 using Firebend.AutoCrud.EntityFramework.Comparers;
 using Firebend.AutoCrud.EntityFramework.Converters;
-using Firebend.AutoCrud.EntityFramework.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Newtonsoft.Json;
@@ -22,15 +22,10 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
 /// <typeparam name="TEntity">
 /// The type of entity that is being tracked.
 /// </typeparam>
-public class ChangeTrackingDbContext<TKey, TEntity> : DbContext, IDbContext
+public class ChangeTrackingDbContext<TKey, TEntity>(DbContextOptions options) : AbstractDbContext(options)
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    public ChangeTrackingDbContext(DbContextOptions options) : base(options)
-    {
-        Options = options;
-    }
-
     /// <summary>
     /// Gets or sets a value indicating the <see cref="DbSet{TEntity}"/> comprised of <see cref="ChangeTrackingEntity{TKey,TEntity}"/>.
     /// </summary>
@@ -113,7 +108,4 @@ public class ChangeTrackingDbContext<TKey, TEntity> : DbContext, IDbContext
             .Metadata
             .SetValueComparer(new EntityFrameworkJsonComparer<TProperty>(settings));
     }
-
-    public DbContextOptions Options { get; }
-    public bool UseUserDefinedTransaction { get; set; }
 }
