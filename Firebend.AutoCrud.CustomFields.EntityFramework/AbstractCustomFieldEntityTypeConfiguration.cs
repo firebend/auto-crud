@@ -27,7 +27,7 @@ public class CustomFieldEntityTypeConfiguration<TKey, TEntity, TEfModel> : IEnti
         builder.Property(x => x.Id).HasAnnotation("SqlServer:Clustered", false);
 
         builder.Property(x => x.Key).IsRequired().HasMaxLength(250);
-        builder.Property(x => x.Value).IsRequired().HasMaxLength(250);
+        builder.Property(x => x.Value).IsRequired().HasMaxLength(1000);
         builder.HasIndex(x => x.EntityId).IsClustered();
 
         builder.HasOne(x => x.Entity)
