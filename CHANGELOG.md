@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="14.0.3"></a>
+## [14.0.3](https://www.github.com/firebend/auto-crud/releases/tag/v14.0.3) (2024-09-20)
+
+### Bug Fixes
+
+* add abstract db context and bump custom field value max length ([#374](https://www.github.com/firebend/auto-crud/issues/374)) ([2d30fb8](https://www.github.com/firebend/auto-crud/commit/2d30fb810e266f12200a10fdd009c956ebc4fb73))
+
+### Other
+
+* **deps:** bump MSTest.TestAdapter from 3.5.2 to 3.6.0 ([#373](https://www.github.com/firebend/auto-crud/issues/373)) ([ba4d2da](https://www.github.com/firebend/auto-crud/commit/ba4d2da08c1f06f89072687f83e6923dd3f54507))
+* **deps:** bump MSTest.TestFramework from 3.5.2 to 3.6.0 ([#372](https://www.github.com/firebend/auto-crud/issues/372)) ([4a67aca](https://www.github.com/firebend/auto-crud/commit/4a67aca92ef8e26d81340346ec29f864c90efd29))
+
 <a name="14.0.2"></a>
 ## [14.0.2](https://www.github.com/firebend/auto-crud/releases/tag/v14.0.2) (2024-09-10)
 
