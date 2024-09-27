@@ -30,7 +30,7 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
 
     public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken)
     {
-        await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
+        await AutoCrudEfMigrationsMediator.HaveMigrationsRan<TContext>().Task;
 
         var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -65,7 +65,7 @@ public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKe
     public async Task<IDbContext> GetDbContextAsync(DbTransaction transaction,
         CancellationToken cancellationToken)
     {
-        await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
+        await AutoCrudEfMigrationsMediator.HaveMigrationsRan<TContext>().Task;
 
         var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
         dbContext.UseUserDefinedTransaction = true;

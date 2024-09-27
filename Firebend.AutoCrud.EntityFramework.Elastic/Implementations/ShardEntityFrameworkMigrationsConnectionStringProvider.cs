@@ -2,10 +2,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Elastic.Implementations;
 
-public class ShardEntityFrameworkMigrationsConnectionStringProvider : IEntityFrameworkMigrationsConnectionStringProvider
+public class
+    ShardEntityFrameworkMigrationsConnectionStringProvider<TDbContext> :
+    IEntityFrameworkMigrationsConnectionStringProvider<TDbContext> where TDbContext : DbContext
 {
     private readonly IAllShardKeyProvider _shardKeyProvider;
     private readonly IShardKeyConnectionStringProvider _shardKeyConnectionStringProvider;
@@ -25,7 +28,8 @@ public class ShardEntityFrameworkMigrationsConnectionStringProvider : IEntityFra
 
         for (var index = 0; index < shards.Length; index++)
         {
-            var connection = await _shardKeyConnectionStringProvider.GetShardConnectionStringAsync(shards[index], cancellationToken);
+            var connection =
+                await _shardKeyConnectionStringProvider.GetShardConnectionStringAsync(shards[index], cancellationToken);
             connections[index] = connection;
         }
 
