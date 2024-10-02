@@ -23,12 +23,7 @@ public class ChangeTrackingTableNameProvider<TEntityKey, TEntity, TEntityContext
         }
 
         using var context = contextFactory.CreateDbContext();
-        var entityType = context.Model.FindEntityType(typeof(TEntity));
-
-        if (entityType is null)
-        {
-            throw new Exception($"Entity type {typeof(TEntity).FullName} not found in the model.");
-        }
+        var entityType = context.Model.FindEntityType(typeof(TEntity)) ?? throw new Exception($"Entity type {typeof(TEntity).FullName} not found in the model.");
 
         _tableName = entityType.GetTableName() + "_Changes";
         _schema = entityType.GetSchema();
