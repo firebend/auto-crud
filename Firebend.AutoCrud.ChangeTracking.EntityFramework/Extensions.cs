@@ -74,6 +74,10 @@ public static class Extensions
             efBuilder.Services.AddDbContextFactory<ChangeTrackingDbContext<TKey, TEntity>>(efBuilder.DbContextOptionsBuilder);
         }
 
+        var providerType =
+            typeof(ChangeTrackingTableNameProvider<,,>).MakeGenericType(efBuilder.EntityKeyType, efBuilder.EntityType, efBuilder.DbContextType);
+        configurator.Builder.WithRegistration<IChangeTrackingTableNameProvider<TKey, TEntity>>(providerType, serviceLifetime: ServiceLifetime.Singleton);
+
         configurator.Builder.WithRegistration<IDbContextProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>, ChangeTrackingDbContextProvider<TKey, TEntity>>();
         configurator.Builder.WithRegistration<IChangeTrackingDbContextProvider<TKey, TEntity>, ChangeTrackingDbContextProvider<TKey, TEntity>>();
 

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
-using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Client;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
@@ -16,41 +15,35 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Implementations;
 
-public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
-    DbContextProvider<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingDbContext<TEntityKey, TEntity>>,
-    IChangeTrackingDbContextProvider<TEntityKey, TEntity>
+public class ChangeTrackingDbContextProvider<TEntityKey, TEntity>(
+    IDbContextFactory<ChangeTrackingDbContext<TEntityKey, TEntity>> contextFactory,
+    ILogger<ChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
+    IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider = null)
+    :
+        DbContextProvider<Guid, ChangeTrackingEntity<TEntityKey, TEntity>,
+            ChangeTrackingDbContext<TEntityKey, TEntity>>(contextFactory),
+        IChangeTrackingDbContextProvider<TEntityKey, TEntity>
     where TEntity : class, IEntity<TEntityKey>
     where TEntityKey : struct
 {
     private record ScaffoldCacheContext(DbContext DbContext, ILogger Logger);
 
-    private readonly IDbContextConnectionStringProvider<TEntityKey, TEntity> _rootConnectionStringProvider;
-    private readonly ILogger<ChangeTrackingDbContextProvider<TEntityKey, TEntity>> _logger;
-
-    public ChangeTrackingDbContextProvider(
-        IDbContextFactory<ChangeTrackingDbContext<TEntityKey, TEntity>> contextFactory,
-        ILogger<ChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
-        IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider = null) :
-        base(contextFactory)
-    {
-        _logger = logger;
-        _rootConnectionStringProvider = connectionStringProvider;
-    }
+    protected override bool WaitForMigrations => false;
 
     protected override void InitDb(DbContext dbContext)
     {
         base.InitDb(dbContext);
-        ScaffoldDbContext(dbContext, _logger);
+        ScaffoldDbContext(dbContext, logger);
     }
 
     protected override async Task<string> ProvideConnectionString(CancellationToken cancellationToken)
     {
-        if (_rootConnectionStringProvider is null)
+        if (connectionStringProvider is null)
         {
             return null;
         }
 
-        return await _rootConnectionStringProvider.GetConnectionStringAsync(cancellationToken);
+        return await connectionStringProvider.GetConnectionStringAsync(cancellationToken);
     }
 
     private static void ScaffoldDbContext(DbContext context, ILogger logger)
@@ -76,8 +69,7 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity> :
 
         try
         {
-
-            var schema = type.GetSchema().Coalesce("dbo");
+            var schema = type.GetSchema();
             var table = type.GetTableName();
 
             if (scaffoldCacheContext.DbContext.Database.GetService<IDatabaseCreator>() is not RelationalDatabaseCreator dbCreator)
