@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="14.0.5"></a>
+## [14.0.5](https://www.github.com/firebend/auto-crud/releases/tag/v14.0.5) (2024-10-03)
+
+### Bug Fixes
+
+* track ef migration completion status by context ([#376](https://www.github.com/firebend/auto-crud/issues/376)) ([206c935](https://www.github.com/firebend/auto-crud/commit/206c9352486b53b849afb282829b6dfcb97d1f6f))
+
 <a name="14.0.4"></a>
 ## [14.0.4](https://www.github.com/firebend/auto-crud/releases/tag/v14.0.4) (2024-09-23)
 
