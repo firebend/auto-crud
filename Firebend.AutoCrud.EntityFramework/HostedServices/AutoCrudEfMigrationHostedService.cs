@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,10 @@ namespace Firebend.AutoCrud.EntityFramework.HostedServices;
 
 public static class AutoCrudEfMigrationsMediator
 {
-    public static readonly TaskCompletionSource HaveMigrationsRan = new();
+    private static readonly ConcurrentDictionary<Type, TaskCompletionSource> CompletionSources = new();
+
+    public static TaskCompletionSource HaveMigrationsRan<TContext>() where TContext : DbContext =>
+        CompletionSources.GetOrAdd(typeof(TContext), _ => new TaskCompletionSource());
 }
 
 public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
@@ -22,7 +26,8 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<AutoCrudEfMigrationHostedService<TContext>> _logger;
 
-    public AutoCrudEfMigrationHostedService(IServiceProvider serviceProvider, ILogger<AutoCrudEfMigrationHostedService<TContext>> logger)
+    public AutoCrudEfMigrationHostedService(IServiceProvider serviceProvider,
+        ILogger<AutoCrudEfMigrationHostedService<TContext>> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -40,7 +45,7 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
         }
         finally
         {
-            AutoCrudEfMigrationsMediator.HaveMigrationsRan.TrySetResult();
+            AutoCrudEfMigrationsMediator.HaveMigrationsRan<TContext>().TrySetResult();
         }
     }
 
@@ -52,7 +57,8 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
 
         using var locked = await locker.LockAsync(nameof(AutoCrudEfMigrationHostedService<TContext>), stoppingToken);
 
-        var connectionStringProvider = scope.ServiceProvider.GetService<IEntityFrameworkMigrationsConnectionStringProvider>();
+        var connectionStringProvider =
+            scope.ServiceProvider.GetService<IEntityFrameworkMigrationsConnectionStringProvider<TContext>>();
 
         if (connectionStringProvider is null)
         {
@@ -60,7 +66,8 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
             return;
         }
 
-        await MigrateUsingProvidedConnectionStringsAsync(connectionStringProvider, scope.ServiceProvider, logger, stoppingToken);
+        await MigrateUsingProvidedConnectionStringsAsync(connectionStringProvider, scope.ServiceProvider, logger,
+            stoppingToken);
     }
 
     private static async Task MigrateUsingDefaultConnectionStringAsync(IServiceProvider provider,
@@ -84,7 +91,7 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
     }
 
     private static async Task MigrateUsingProvidedConnectionStringsAsync(
-        IEntityFrameworkMigrationsConnectionStringProvider connectionStringProvider,
+        IEntityFrameworkMigrationsConnectionStringProvider<TContext> connectionStringProvider,
         IServiceProvider provider,
         ILogger logger,
         CancellationToken stoppingToken)
@@ -93,7 +100,8 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
 
         if (connections is null || connections.Length == 0)
         {
-            logger.LogWarning("Connection string provider returned no strings.  Migrations will not be ran for any db contexts");
+            logger.LogWarning(
+                "Connection string provider returned no strings.  Migrations will not be ran for any db contexts");
             return;
         }
 
@@ -118,10 +126,7 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
 
     private static void LogMigrationError(ILogger logger, string connectionString, Exception ex)
     {
-        var connectionStringBuilder = new DbConnectionStringBuilder(false)
-        {
-            ConnectionString = connectionString
-        };
+        var connectionStringBuilder = new DbConnectionStringBuilder(false) { ConnectionString = connectionString };
 
         connectionStringBuilder.TryGetValue("Data Source", out var dataSource);
         connectionStringBuilder.TryGetValue("Initial Catalog", out var database);
@@ -139,10 +144,7 @@ public class AutoCrudEfMigrationHostedService<TContext> : BackgroundService
             return;
         }
 
-        var connectionStringBuilder = new DbConnectionStringBuilder(false)
-        {
-            ConnectionString = connectionString
-        };
+        var connectionStringBuilder = new DbConnectionStringBuilder(false) { ConnectionString = connectionString };
 
         connectionStringBuilder.TryGetValue("Data Source", out var dataSource);
         connectionStringBuilder.TryGetValue("Initial Catalog", out var database);

@@ -8,66 +8,73 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Firebend.AutoCrud.EntityFramework.Client;
 
-public class DbContextProvider<TKey, TEntity, TContext> : IDbContextProvider<TKey, TEntity>
+public class DbContextProvider<TKey, TEntity, TContext>(
+    IDbContextFactory<TContext> contextFactory,
+    IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider = null)
+    : IDbContextProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
     where TContext : DbContext, IDbContext
 {
-    private readonly IDbContextConnectionStringProvider<TKey, TEntity> _connectionStringProvider;
-    private readonly IDbContextFactory<TContext> _contextFactory;
-
-    public DbContextProvider(IDbContextFactory<TContext> contextFactory,
-        IDbContextConnectionStringProvider<TKey, TEntity> connectionStringProvider = null)
-    {
-        _connectionStringProvider = connectionStringProvider;
-        _contextFactory = contextFactory;
-    }
+    protected virtual bool WaitForMigrations => true;
 
     protected virtual void InitDb(DbContext dbContext)
     {
 
     }
 
-    public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken)
+    protected virtual async Task<string> ProvideConnectionString(CancellationToken cancellationToken)
     {
-        await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
+        if (connectionStringProvider is null)
+        {
+            return null;
+        }
 
-        var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        return await connectionStringProvider.GetConnectionStringAsync(cancellationToken);
+    }
+
+    protected virtual async Task<TContext> CreateDbContextAsync(CancellationToken cancellationToken)
+    {
+        var dbContext = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var providedConnectionString = await ProvideConnectionString(cancellationToken);
 
-        if (!string.IsNullOrWhiteSpace(providedConnectionString))
+        if (string.IsNullOrWhiteSpace(providedConnectionString))
         {
-            var dbContextConnectionString = dbContext.Database.GetConnectionString();
-
-            if (dbContextConnectionString != providedConnectionString)
-            {
-                await dbContext.Database.CloseConnectionAsync();
-                dbContext.Database.SetConnectionString(providedConnectionString);
-            }
+            return dbContext;
         }
+
+        var dbContextConnectionString = dbContext.Database.GetConnectionString();
+
+        if (dbContextConnectionString != providedConnectionString)
+        {
+            await dbContext.Database.CloseConnectionAsync();
+            dbContext.Database.SetConnectionString(providedConnectionString);
+        }
+
+        return dbContext;
+    }
+
+    public async Task<IDbContext> GetDbContextAsync(CancellationToken cancellationToken)
+    {
+        if (WaitForMigrations)
+        {
+            await AutoCrudEfMigrationsMediator.HaveMigrationsRan<TContext>().Task;
+        }
+
+        var dbContext = await CreateDbContextAsync(cancellationToken);
 
         InitDb(dbContext);
 
         return dbContext;
     }
 
-    protected virtual async Task<string> ProvideConnectionString(CancellationToken cancellationToken)
-    {
-        if (_connectionStringProvider is null)
-        {
-            return null;
-        }
-
-        return await _connectionStringProvider.GetConnectionStringAsync(cancellationToken);
-    }
-
     public async Task<IDbContext> GetDbContextAsync(DbTransaction transaction,
         CancellationToken cancellationToken)
     {
-        await AutoCrudEfMigrationsMediator.HaveMigrationsRan.Task;
+        await AutoCrudEfMigrationsMediator.HaveMigrationsRan<TContext>().Task;
 
-        var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var dbContext = await CreateDbContextAsync(cancellationToken);
         dbContext.UseUserDefinedTransaction = true;
         dbContext.Database.SetDbConnection(transaction.Connection);
         await dbContext.Database.UseTransactionAsync(transaction, cancellationToken);

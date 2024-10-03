@@ -12,22 +12,16 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Firebend.AutoCrud.EntityFramework.Client;
 
-public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveRepo<TKey, TEntity>, IEntityFrameworkUpdateClient<TKey, TEntity>
+public class EntityFrameworkUpdateClient<TKey, TEntity>(
+    IDbContextProvider<TKey, TEntity> contextProvider,
+    IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
+    IEntityReadService<TKey, TEntity> readService,
+    IDomainEventPublisherService<TKey, TEntity> publisherService = null)
+    : AbstractDbContextSaveRepo<TKey, TEntity>(contextProvider, exceptionHandler),
+        IEntityFrameworkUpdateClient<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, new()
 {
-    private readonly IDomainEventPublisherService<TKey, TEntity> _publisherService;
-    private readonly IEntityReadService<TKey, TEntity> _readService;
-
-    public EntityFrameworkUpdateClient(IDbContextProvider<TKey, TEntity> contextProvider,
-        IEntityFrameworkDbUpdateExceptionHandler<TKey, TEntity> exceptionHandler,
-        IEntityReadService<TKey, TEntity> readService,
-        IDomainEventPublisherService<TKey, TEntity> publisherService = null) : base(contextProvider, exceptionHandler)
-    {
-        _publisherService = publisherService;
-        _readService = readService;
-    }
-
     /// <summary>
     /// Occurs when an entity is being PUT into the database and did not previously exist. Occurs before the entity is added.
     /// </summary>
@@ -47,7 +41,8 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
     /// The entity
     /// </returns>
     /// <returns></returns>
-    protected virtual Task<TEntity> OnBeforeReplaceAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
+    protected virtual Task<TEntity> OnBeforeReplaceAsync(IDbContext context, TEntity entity,
+        IEntityTransaction transaction, CancellationToken cancellationToken)
         => Task.FromResult(entity);
 
     /// <summary>
@@ -69,7 +64,8 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
     /// The entity
     /// </returns>
     /// <returns></returns>
-    protected virtual Task<TEntity> OnBeforeUpdateAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
+    protected virtual Task<TEntity> OnBeforeUpdateAsync(IDbContext context, TEntity entity,
+        IEntityTransaction transaction, CancellationToken cancellationToken)
         => Task.FromResult(entity);
 
 
@@ -91,7 +87,8 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
     /// <returns>
     /// The entity
     /// </returns>
-    protected virtual Task<TEntity> OnBeforePatchAsync(IDbContext context, TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
+    protected virtual Task<TEntity> OnBeforePatchAsync(IDbContext context, TEntity entity,
+        IEntityTransaction transaction, CancellationToken cancellationToken)
         => Task.FromResult(entity);
 
     protected virtual async Task<TEntity> UpdateInternalAsync(TKey key,
@@ -99,7 +96,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {
-        var previous = await _readService.GetByKeyAsync(key, cancellationToken);
+        var previous = await readService.GetByKeyAsync(key, cancellationToken);
 
         if (previous is null)
         {
@@ -129,7 +126,8 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
 
         await SaveAsync(entity, context, cancellationToken);
 
-        var fetched = await _publisherService.ReadAndPublishUpdateEventAsync(entity.Id, previous, entityTransaction, jsonPatchDocument, cancellationToken);
+        var fetched = await publisherService.ReadAndPublishUpdateEventAsync(entity.Id, previous, entityTransaction,
+            jsonPatchDocument, cancellationToken);
 
         return fetched;
     }
@@ -138,7 +136,7 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
         IEntityTransaction transaction,
         CancellationToken cancellationToken)
     {
-        var previous = await _readService.GetByKeyAsync(entity.Id, transaction, cancellationToken);
+        var previous = await readService.GetByKeyAsync(entity.Id, transaction, cancellationToken);
         var isUpdating = previous is not null;
         TEntity savedEntity;
 
@@ -150,20 +148,22 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
         }
 
 
-        if (_publisherService is null)
+        if (publisherService is null)
         {
             return savedEntity;
         }
 
         if (isUpdating is false)
         {
-            return await _publisherService.ReadAndPublishAddedEventAsync(savedEntity.Id, transaction, cancellationToken);
+            return await publisherService.ReadAndPublishAddedEventAsync(savedEntity.Id, transaction, cancellationToken);
         }
 
-        return await _publisherService.ReadAndPublishUpdateEventAsync(savedEntity.Id, previous, transaction, cancellationToken);
+        return await publisherService.ReadAndPublishUpdateEventAsync(savedEntity.Id, previous, transaction,
+            cancellationToken);
     }
 
-    private async Task<TEntity> AddEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
+    private async Task<TEntity> AddEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context,
+        CancellationToken cancellationToken)
     {
         if (entity is IModifiedEntity modified)
         {
@@ -183,11 +183,15 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
         return entity;
     }
 
-    private async Task<TEntity> UpdateEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context, CancellationToken cancellationToken)
+    protected virtual TEntity MergeEntity(TEntity update, TEntity existing) =>
+        update.CopyPropertiesTo(existing, [nameof(IModifiedEntity.CreatedDate)]);
+
+    private async Task<TEntity> UpdateEntityAsync(TEntity entity, IEntityTransaction transaction, IDbContext context,
+        CancellationToken cancellationToken)
     {
         var model = await GetByEntityKeyAsync(context, entity.Id, false, cancellationToken);
 
-        model = entity.CopyPropertiesTo(model, [nameof(IModifiedEntity.CreatedDate)]);
+        model = MergeEntity(entity, model);
 
         if (model is IModifiedEntity modified)
         {
@@ -220,5 +224,4 @@ public class EntityFrameworkUpdateClient<TKey, TEntity> : AbstractDbContextSaveR
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
         => UpdateInternalAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
-
 }

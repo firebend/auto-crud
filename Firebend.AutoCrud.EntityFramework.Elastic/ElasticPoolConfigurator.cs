@@ -33,7 +33,10 @@ public class ElasticPoolConfigurator<TBuilder, TKey, TEntity> : EntityBuilderCon
         Builder.WithRegistration<IShardManager, ShardManager>();
         Builder.WithConnectionStringProvider<ShardDbContextConnectionStringProvider<TKey, TEntity>>();
         Builder.WithRegistration<IShardKeyConnectionStringProvider, ShardDbContextConnectionStringProvider<TKey, TEntity>>(replace: false);
-        Builder.WithRegistration<IEntityFrameworkMigrationsConnectionStringProvider, ShardEntityFrameworkMigrationsConnectionStringProvider>(replace: false);
+
+        var migrationsConnectionStringProviderType = typeof(IEntityFrameworkMigrationsConnectionStringProvider<>).MakeGenericType(Builder.DbContextType);
+        var shardConnectionStringProviderType = typeof(ShardEntityFrameworkMigrationsConnectionStringProvider<>).MakeGenericType(Builder.DbContextType);
+        Builder.WithRegistration(migrationsConnectionStringProviderType, shardConnectionStringProviderType, replace: false);
         WithDbCreator<DefaultDbCreator>();
 
         return this;

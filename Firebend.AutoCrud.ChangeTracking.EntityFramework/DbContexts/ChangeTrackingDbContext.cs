@@ -1,7 +1,6 @@
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
-using System.Reflection;
+using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.EntityFramework.Abstractions;
@@ -22,7 +21,10 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
 /// <typeparam name="TEntity">
 /// The type of entity that is being tracked.
 /// </typeparam>
-public class ChangeTrackingDbContext<TKey, TEntity>(DbContextOptions options) : AbstractDbContext(options)
+public class ChangeTrackingDbContext<TKey, TEntity>(
+    DbContextOptions<ChangeTrackingDbContext<TKey, TEntity>> options,
+    IChangeTrackingTableNameProvider<TKey, TEntity> tableNameProvider)
+    : AbstractDbContext(options)
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
@@ -37,9 +39,9 @@ public class ChangeTrackingDbContext<TKey, TEntity>(DbContextOptions options) : 
 
         modelBuilder.Entity<ChangeTrackingEntity<TKey, TEntity>>(changes =>
         {
-            var (table, schema) = GetTableName();
+            var (tableName, schema) = tableNameProvider.GetTableName();
 
-            changes.ToTable(table, schema);
+            changes.ToTable(tableName, schema);
             changes.HasKey(x => x.Id);
             changes.Property(x => x.Action).HasMaxLength(25);
             changes.Property(x => x.ModifiedDate);
@@ -51,57 +53,15 @@ public class ChangeTrackingDbContext<TKey, TEntity>(DbContextOptions options) : 
             MapJson(changes, x => x.Entity);
 
             changes.Ignore(x => x.DomainEventCustomContext);
-
         });
-    }
-
-    private static (string, string) GetTableName()
-    {
-        var entityType = typeof(TEntity);
-        string tableName = null;
-
-        if (typeof(IEntityName).IsAssignableFrom(entityType))
-        {
-            try
-            {
-                var instance = Activator.CreateInstance(entityType);
-
-                if (instance is IEntityName entityName)
-                {
-                    tableName = entityName.GetEntityName();
-                }
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
-        var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
-        var schema = tableAttribute?.Schema;
-
-        if (string.IsNullOrWhiteSpace(tableName))
-        {
-            tableName = tableAttribute?.Name;
-        }
-
-        if (string.IsNullOrWhiteSpace(tableName))
-        {
-            tableName = entityType.Name;
-        }
-
-        tableName += "_Changes";
-
-        return (tableName, schema);
     }
 
     private static void MapJson<TProperty>(EntityTypeBuilder<ChangeTrackingEntity<TKey, TEntity>> changes,
         Expression<Func<ChangeTrackingEntity<TKey, TEntity>, TProperty>> func)
     {
-        var settings = JsonPatch.JsonSerializationSettings.DefaultJsonSerializationSettings.Configure(new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.All
-        });
+        var settings =
+            JsonPatch.JsonSerializationSettings.DefaultJsonSerializationSettings.Configure(
+                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
 
         changes.Property(func)
             .HasConversion(new EntityFrameworkJsonValueConverter<TProperty>(settings))
