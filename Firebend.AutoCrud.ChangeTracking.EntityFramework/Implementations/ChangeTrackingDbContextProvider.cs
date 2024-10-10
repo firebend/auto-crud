@@ -67,11 +67,17 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity>(
             return false;
         }
 
+        var schema = type.GetSchema() ?? "dbo";
+        var table = type.GetTableName();
+
+        if (string.IsNullOrEmpty(table))
+        {
+            scaffoldCacheContext.Logger.LogWarning("Could not find table name for {TypeName}", changeTrackingType.FullName);
+            return false;
+        }
+
         try
         {
-            var schema = type.GetSchema();
-            var table = type.GetTableName();
-
             if (scaffoldCacheContext.DbContext.Database.GetService<IDatabaseCreator>() is not RelationalDatabaseCreator dbCreator)
             {
                 return true;
