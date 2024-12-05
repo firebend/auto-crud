@@ -7,6 +7,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
+using Firebend.JsonPatch.Extensions;
 using Firebend.JsonPatch.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
@@ -48,7 +49,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
 
         var message = new EntityAddedDomainEvent<TEntity>
         {
-            Entity = entity,
+            Entity = entity.Clone(),
             Time = entity is IModifiedEntity modifiedEntity ? modifiedEntity.CreatedDate : DateTimeOffset.UtcNow,
             EventContext = _hasDomainEventContextProvider ? _contextProvider.GetContext() : null,
             MessageId = CombGuid.New()
@@ -80,7 +81,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
 
         var message = new EntityUpdatedDomainEvent<TEntity>
         {
-            Previous = previous,
+            Previous = previous.Clone(),
             Operations = patch?.Operations,
             Time = entity is IModifiedEntity modifiedEntity ? modifiedEntity.ModifiedDate : DateTimeOffset.UtcNow,
             EventContext = _hasDomainEventContextProvider ? _contextProvider.GetContext() : null,
@@ -130,7 +131,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
             Time = entity is IModifiedEntity modifiedEntity ? modifiedEntity.ModifiedDate : DateTimeOffset.UtcNow,
             EventContext = _hasDomainEventContextProvider ? _contextProvider.GetContext() : null,
             MessageId = CombGuid.New(),
-            Entity = entity
+            Entity = entity.Clone()
         };
 
         await _publisher.PublishEntityDeleteEventAsync(message, transaction, cancellationToken);
