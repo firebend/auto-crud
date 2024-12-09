@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latestmajor</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591,1570,1572,1573</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyTitle>Firebend Auto Crud Caching</AssemblyTitle>
+    <Description>Firebend Auto Crud</Description>
+    <PackageTags>firebend;autocrud;crud;cache;</PackageTags>
+    <Authors>Firebend</Authors>
+    <RepositoryUrl>https://github.com/firebend/auto-crud</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/firebend/auto-crud/blob/main/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/firebend/auto-crud</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/firebend/auto-crud/blob/main/nuget-image.png?raw=true</PackageIconUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Firebend.AutoCrud.Core\Firebend.AutoCrud.Core.csproj" />
+  </ItemGroup>
+
+</Project>

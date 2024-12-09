@@ -27,6 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Firebend.AutoCrud.Caching\Firebend.AutoCrud.Caching.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.ChangeTracking.Web\Firebend.AutoCrud.ChangeTracking.Web.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.CustomFields.Web\Firebend.AutoCrud.CustomFields.Web.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.EntityFramework\Firebend.AutoCrud.EntityFramework.csproj" />
