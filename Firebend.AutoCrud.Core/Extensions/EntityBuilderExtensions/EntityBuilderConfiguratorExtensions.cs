@@ -1,7 +1,11 @@
 using System;
+using System.Linq;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Configurators;
+using Firebend.AutoCrud.Core.Implementations.Caching;
+using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Firebend.AutoCrud.Core.Extensions.EntityBuilderExtensions;
 
@@ -95,13 +99,65 @@ public static class EntityBuilderConfiguratorExtensions
     ///     })
     /// </code>
     /// </example>
-    public static EntityCrudBuilder<TKey, TEntity> AddDomainEvents<TKey, TEntity>(this EntityCrudBuilder<TKey, TEntity> builder,
+    public static EntityCrudBuilder<TKey, TEntity> AddDomainEvents<TKey, TEntity>(
+        this EntityCrudBuilder<TKey, TEntity> builder,
         Action<DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>> configure)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
-        using var domainEventsConfigurator = new DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
+        using var domainEventsConfigurator =
+            new DomainEventsConfigurator<EntityCrudBuilder<TKey, TEntity>, TKey, TEntity>(builder);
         configure(domainEventsConfigurator);
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds caching to an entity using the default cache service. Must be called after <see cref="Firebend.AutoCrud.Core.Extensions.ServiceCollectionExtensions.WithEntityCaching<TCacheOptions>"/>.
+    /// </summary>
+    /// <param name="builder"><see cref="Firebend.AutoCrud.Core.Abstractions.Builders.EntityCrudBuilder<TKey,TEntity>"/></param>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <returns>The calling EntityCrudBuilder</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static EntityCrudBuilder<TKey, TEntity> AddEntityCaching<TKey, TEntity>(
+        this EntityCrudBuilder<TKey, TEntity> builder)
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+    {
+        if (builder.Services.All(x => x.ServiceType != typeof(IEntityCacheOptions)))
+        {
+            throw new InvalidOperationException(
+                "WithEntityCaching must be called before AddEntityCaching.");
+        }
+
+        builder.Services.AddScoped<IEntityCacheService<TKey, TEntity>, DefaultEntityCacheService<TKey, TEntity>>();
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds caching to an entity using the provided cache service. Must be called after <see cref="Firebend.AutoCrud.Core.Extensions.ServiceCollectionExtensions.WithEntityCaching<TCacheOptions>"/>.
+    /// </summary>
+    /// <param name="builder"><see cref="Firebend.AutoCrud.Core.Abstractions.Builders.EntityCrudBuilder<TKey,TEntity>"/></param>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TService">Entity Cache Service type to register</typeparam>
+    /// <returns>The calling EntityCrudBuilder</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static EntityCrudBuilder<TKey, TEntity> AddEntityCaching<TKey, TEntity, TService>(
+        this EntityCrudBuilder<TKey, TEntity> builder)
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+        where TService : class, IEntityCacheService<TKey, TEntity>
+    {
+        if (builder.Services.All(x => x.ServiceType != typeof(IEntityCacheOptions)))
+        {
+            throw new InvalidOperationException(
+                "WithEntityCaching must be called before AddEntityCaching.");
+        }
+
+        builder.Services.AddScoped<IEntityCacheService<TKey, TEntity>, TService>();
+
         return builder;
     }
 }

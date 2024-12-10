@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Firebend.AutoCrud.Core.Implementations.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Caching;
-using Firebend.AutoCrud.Core.Interfaces.Models;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,32 +26,29 @@ public static class ServiceCollectionExtensions
         }
     }
 
-    public static IServiceCollection WithEntityCaching<TCacheOptions>(this IServiceCollection services)
-        where TCacheOptions : class, IEntityCacheOptions
+    public static IServiceCollection WithEntityCaching(this IServiceCollection services, Action<EntityCacheOptions> configure = null)
     {
-        services.AddSingleton<IEntityCacheOptions, TCacheOptions>();
-
-        if (services.All(x => x.ServiceType != typeof(IDistributedCache)))
-        {
-            throw new InvalidOperationException(
-                "IDistributedCache is required for entity caching. Ensure it is registered before calling WithEntityCaching.");
-        }
-
+        var cacheOptions = new EntityCacheOptions();
+        configure?.Invoke(cacheOptions);
+        services.AddScoped<IEntityCacheOptions>((_) => cacheOptions);
+        CheckDistributedCache(services);
         return services;
     }
 
-    public static IServiceCollection AddEntityCache<TKey, TEntity>(
-        this IServiceCollection services)
-        where TKey : struct
-        where TEntity : class, IEntity<TKey>
+    public static IServiceCollection WithEntityCaching<TCacheOptions>(this IServiceCollection services)
+        where TCacheOptions : class, IEntityCacheOptions
     {
-        if (services.All(x => x.ServiceType != typeof(IEntityCacheOptions))) {
-            throw new InvalidOperationException(
-                "WithEntityCaching must be called before AddEntityCache.");
-        }
-
-        services.AddSingleton<IEntityCacheService<TKey, TEntity>, DefaultEntityCacheService<TKey, TEntity>>();
-
+        services.AddScoped<IEntityCacheOptions, TCacheOptions>();
+        CheckDistributedCache(services);
         return services;
+    }
+
+    private static void CheckDistributedCache(IServiceCollection services)
+    {
+        if (services.All(x => x.ServiceType != typeof(IDistributedCache)))
+        {
+            throw new InvalidOperationException(
+                "IDistributedCache is required for entity caching. Ensure it is registered before calling AddEntityCaching.");
+        }
     }
 }

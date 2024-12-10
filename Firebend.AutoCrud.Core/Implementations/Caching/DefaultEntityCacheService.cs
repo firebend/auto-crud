@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,37 +10,61 @@ using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Core.Implementations.Caching;
 
+/// <summary>
+/// Default implementation of IEntityCacheService. This service is used to cache entities and collections of entities and
+/// to handle exceptions that may occur during cache operations.
+/// </summary>
+/// <param name="cache"></param>
+/// <param name="entityCacheOptions"></param>
+/// <param name="logger"></param>
+/// <typeparam name="TKey"></typeparam>
+/// <typeparam name="TEntity"></typeparam>
 public class DefaultEntityCacheService<TKey, TEntity>(
     IDistributedCache cache,
     IEntityCacheOptions entityCacheOptions,
-    ILogger<DefaultEntityCacheService<TKey, TEntity>> logger) : IEntityCacheService<TKey, TEntity>
+    ILogger<DefaultEntityCacheService<TKey, TEntity>> logger)
+    : IEntityCacheService<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    private static string CollectionKey => typeof(TEntity).Name;
-    private static string CollectionCacheKey => $"{CollectionKey}:All";
+    private readonly Type _entityType = typeof(TEntity);
+    private string CollectionKey => _entityType.Name;
+    private string CollectionCacheKey => $"{CollectionKey}:All";
 
-    private string GetCacheKey(TKey key)
+    private string GetCacheKey(string key)
     {
-        if (string.IsNullOrEmpty(key.ToString()))
+        var prefix = entityCacheOptions.CacheKeyPrefix();
+        return string.IsNullOrEmpty(prefix) ? key : $"{prefix}:{key}";
+    }
+
+    private string GetCacheKey(TKey? key)
+    {
+        if (key is null || key is 0 || (key is Guid guidKey && guidKey == default) ||
+            string.IsNullOrEmpty(key.ToString()))
         {
             throw new ArgumentNullException(nameof(key), "Cache Key cannot be null or empty!");
         }
 
-        return $"{CollectionKey}:{key}";
+        return GetCacheKey($"{CollectionKey}:{key}");
     }
 
-    public async Task<TEntity> GetAsync(TKey key, CancellationToken cancellationToken)
+    public async Task<TEntity?> GetAsync(TKey key, CancellationToken cancellationToken = default)
     {
         var cacheKey = GetCacheKey(key);
+        logger.LogDebug("Getting cache key {CacheKey}", cacheKey);
 
         try
         {
             var serialized = await cache.GetStringAsync(cacheKey, cancellationToken);
 
-            return string.IsNullOrWhiteSpace(serialized)
-                ? null
-                : entityCacheOptions.Serializer.Deserialize<TEntity>(serialized);
+            if (string.IsNullOrWhiteSpace(serialized))
+            {
+                logger.LogDebug("Cache key {CacheKey} not found", cacheKey);
+                return null;
+            }
+
+            logger.LogDebug("Cache key {CacheKey} found", cacheKey);
+            return entityCacheOptions.Serializer.Deserialize<TEntity>(serialized);
         }
         catch (Exception e)
         {
@@ -48,18 +73,28 @@ public class DefaultEntityCacheService<TKey, TEntity>(
         }
     }
 
-    public Task SetAsync(TEntity entity, CancellationToken cancellationToken) =>
-        SetAsync(entity, entityCacheOptions.GetCacheEntryOptions(entity), cancellationToken);
+    public Task SetAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+        SetAsync(entity, entityCacheOptions.CacheEntryOptions(_entityType), cancellationToken);
 
     public async Task SetAsync(TEntity entity, DistributedCacheEntryOptions cacheOptions,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var cacheKey = GetCacheKey(entity.Id);
+
+        logger.LogDebug("Setting cache key {CacheKey}", cacheKey);
+
         var serialized = entityCacheOptions.Serializer.Serialize(entity);
+
+        if (string.IsNullOrEmpty(serialized))
+        {
+            logger.LogWarning("Serialized entity is null or empty for key {CacheKey}", cacheKey);
+            return;
+        }
 
         try
         {
             await cache.SetStringAsync(cacheKey, serialized, cacheOptions, cancellationToken);
+            logger.LogDebug("Cache key {CacheKey} set", cacheKey);
             await RemoveCollectionAsync(cancellationToken);
         }
         catch (Exception e)
@@ -68,12 +103,14 @@ public class DefaultEntityCacheService<TKey, TEntity>(
         }
     }
 
-    public async Task RemoveAsync(TKey key, CancellationToken cancellationToken)
+    public async Task RemoveAsync(TKey key, CancellationToken cancellationToken = default)
     {
         var cacheKey = GetCacheKey(key);
+        logger.LogDebug("Removing cache key {CacheKey}", cacheKey);
         try
         {
             await cache.RemoveAsync(cacheKey, cancellationToken);
+            logger.LogDebug("Cache key {CacheKey} removed", cacheKey);
             await RemoveCollectionAsync(cancellationToken);
         }
         catch (Exception e)
@@ -82,28 +119,37 @@ public class DefaultEntityCacheService<TKey, TEntity>(
         }
     }
 
-    public async Task<List<TEntity>> GetCollectionAsync(CancellationToken cancellationToken)
+    public async Task<List<TEntity>?> GetCollectionAsync(CancellationToken cancellationToken = default)
     {
+        var cacheKey = GetCacheKey(CollectionCacheKey);
+        logger.LogDebug("Getting collection cache key {CacheKey}", cacheKey);
+
         try
         {
-            var serialized = await cache.GetStringAsync(CollectionCacheKey, cancellationToken);
+            var serialized = await cache.GetStringAsync(cacheKey, cancellationToken);
 
-            return string.IsNullOrWhiteSpace(serialized)
-                ? null
-                : entityCacheOptions.Serializer.Deserialize<List<TEntity>>(serialized);
+            if (string.IsNullOrWhiteSpace(serialized))
+            {
+                logger.LogDebug("Collection cache key {CacheKey} not found", cacheKey);
+                return null;
+            }
+
+            logger.LogDebug("Collection cache key {CacheKey} found", cacheKey);
+
+            return entityCacheOptions.Serializer.Deserialize<List<TEntity>>(serialized);
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Error getting collection cache key {CacheKey}", CollectionCacheKey);
+            logger.LogInformation(e, "Error getting collection cache key {CacheKey}", cacheKey);
             return null;
         }
     }
 
-    public Task SetCollectionAsync(List<TEntity> entities, CancellationToken cancellationToken) =>
-        SetCollectionAsync(entities, entityCacheOptions.GetCacheEntryOptions(entities), cancellationToken);
+    public Task SetCollectionAsync(List<TEntity> entities, CancellationToken cancellationToken = default) =>
+        SetCollectionAsync(entities, entityCacheOptions.CacheEntryOptions(_entityType), cancellationToken);
 
     public async Task SetCollectionAsync(List<TEntity> entities, DistributedCacheEntryOptions cacheOptions,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         if (entities.Count > entityCacheOptions.MaxCollectionSize)
         {
@@ -112,27 +158,41 @@ public class DefaultEntityCacheService<TKey, TEntity>(
             return;
         }
 
+        var cacheKey = GetCacheKey(CollectionCacheKey);
+        logger.LogDebug("Setting collection cache key {CacheKey}", cacheKey);
+
         var serialized = entityCacheOptions.Serializer.Serialize(entities);
+
+        if (string.IsNullOrEmpty(serialized))
+        {
+            logger.LogWarning("Serialized collection is null or empty for key {CacheKey}", cacheKey);
+            return;
+        }
+
         try
         {
-            await cache.SetStringAsync(CollectionCacheKey, serialized, cacheOptions, cancellationToken);
+            await cache.SetStringAsync(cacheKey, serialized, cacheOptions, cancellationToken);
+            logger.LogDebug("Collection cache key {CacheKey} set", cacheKey);
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Error setting collection cache key {CacheKey}", CollectionCacheKey);
+            logger.LogInformation(e, "Error setting collection cache key {CacheKey}", cacheKey);
         }
     }
 
-    public async Task RemoveCollectionAsync(CancellationToken cancellationToken)
+    public async Task RemoveCollectionAsync(CancellationToken cancellationToken = default)
     {
+        var cacheKey = GetCacheKey(CollectionCacheKey);
+        logger.LogDebug("Removing collection cache key {CacheKey}", cacheKey);
         try
         {
-            await cache.RemoveAsync(CollectionCacheKey, cancellationToken);
+            await cache.RemoveAsync(cacheKey, cancellationToken);
+            logger.LogDebug("Collection cache key {CacheKey} removed", cacheKey);
         }
         catch (Exception e)
         {
             logger.LogInformation(e, "Error removing collection cache key {CacheKey}",
-                CollectionCacheKey);
+                cacheKey);
         }
     }
 }
