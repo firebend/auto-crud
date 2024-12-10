@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Ids;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
+using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
@@ -17,42 +18,33 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Implementations;
 
-public class MongoCustomFieldsCreateService<TKey, TEntity> :
-    MongoClientBaseEntity<TKey, TEntity>,
-    ICustomFieldsCreateService<TKey, TEntity>
-    where TKey : struct
-    where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
-{
-    private readonly IDomainEventContextProvider _domainEventContextProvider;
-    private readonly IEntityDomainEventPublisher<TKey, TEntity> _domainEventPublisher;
-    private readonly ISessionTransactionManager _transactionManager;
-    private readonly bool _hasPublisher;
-
-    public MongoCustomFieldsCreateService(IMongoClientFactory<TKey, TEntity> clientFactory,
-        ILogger<MongoCustomFieldsCreateService<TKey, TEntity>> logger,
-        IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-        IMongoRetryService mongoRetryService,
-        IDomainEventContextProvider domainEventContextProvider,
-        IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
-        ISessionTransactionManager transactionManager,
-        IMongoReadPreferenceService readPreferenceService) : base(
-            clientFactory,
+public class MongoCustomFieldsCreateService<TKey, TEntity>(
+    IMongoClientFactory<TKey, TEntity> clientFactory,
+    ILogger<MongoCustomFieldsCreateService<TKey, TEntity>> logger,
+    IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
+    IMongoRetryService mongoRetryService,
+    IDomainEventContextProvider domainEventContextProvider,
+    IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
+    ISessionTransactionManager transactionManager,
+    IMongoReadPreferenceService readPreferenceService,
+    IEntityCacheService<TKey, TEntity> cacheService = null)
+    :
+        MongoClientBaseEntity<TKey, TEntity>(clientFactory,
             logger,
             entityConfiguration,
             mongoRetryService,
-            readPreferenceService)
-    {
-        _domainEventContextProvider = domainEventContextProvider;
-        _domainEventPublisher = domainEventPublisher;
-        _transactionManager = transactionManager;
-        _hasPublisher = domainEventPublisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
-    }
+            readPreferenceService),
+        ICustomFieldsCreateService<TKey, TEntity>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+{
+    private readonly bool _hasPublisher = domainEventPublisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
 
     public async Task<CustomFieldsEntity<TKey>>
         CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField,
             CancellationToken cancellationToken)
     {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
+        var transaction = await transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await CreateAsync(rootEntityKey, customField, transaction, cancellationToken);
     }
 
@@ -61,7 +53,7 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {
-        _transactionManager.AddTransaction(entityTransaction);
+        transactionManager.AddTransaction(entityTransaction);
 
         if (customField.Id == default)
         {
@@ -108,6 +100,11 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
             return null;
         }
 
+        if (cacheService != null)
+        {
+            await cacheService.RemoveAsync(rootEntityKey, cancellationToken);
+        }
+
         var patch = new JsonPatchDocument<TEntity>();
 
         if ((result.CustomFields?.Count ?? 0) <= 0)
@@ -138,9 +135,9 @@ public class MongoCustomFieldsCreateService<TKey, TEntity> :
         {
             Previous = previous,
             Operations = patch?.Operations,
-            EventContext = _domainEventContextProvider?.GetContext()
+            EventContext = domainEventContextProvider?.GetContext()
         };
 
-        return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
+        return domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
     }
 }

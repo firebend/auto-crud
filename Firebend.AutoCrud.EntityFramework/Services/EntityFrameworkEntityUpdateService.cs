@@ -60,7 +60,7 @@ public class EntityFrameworkEntityUpdateService<TKey, TEntity>(
             return;
         }
 
-        await cacheService.SetAsync(entity, cancellationToken);
+        await cacheService.RemoveAsync(entity.Id, cancellationToken);
     }
 
     protected override void DisposeManagedObjects() => updateClient?.Dispose();

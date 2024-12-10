@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations.Defaults;
+using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
@@ -17,41 +18,31 @@ using MongoDB.Driver;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Implementations;
 
-public class MongoCustomFieldsDeleteService<TKey, TEntity> :
-    MongoClientBaseEntity<TKey, TEntity>,
-    ICustomFieldsDeleteService<TKey, TEntity>
-    where TKey : struct
-    where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
-{
-
-    private readonly IDomainEventContextProvider _domainEventContextProvider;
-    private readonly IEntityDomainEventPublisher<TKey, TEntity> _domainEventPublisher;
-    private readonly ISessionTransactionManager _transactionManager;
-    private readonly bool _hasPublisher;
-
-    public MongoCustomFieldsDeleteService(IMongoClientFactory<TKey, TEntity> clientFactory,
-        ILogger<MongoCustomFieldsDeleteService<TKey, TEntity>> logger,
-        IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
-        IMongoRetryService mongoRetryService,
-        IDomainEventContextProvider domainEventContextProvider,
-        IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
-        IMongoReadPreferenceService readPreferenceService,
-        ISessionTransactionManager transactionManager) : base(
-            clientFactory,
+public class MongoCustomFieldsDeleteService<TKey, TEntity>(
+    IMongoClientFactory<TKey, TEntity> clientFactory,
+    ILogger<MongoCustomFieldsDeleteService<TKey, TEntity>> logger,
+    IMongoEntityConfiguration<TKey, TEntity> entityConfiguration,
+    IMongoRetryService mongoRetryService,
+    IDomainEventContextProvider domainEventContextProvider,
+    IEntityDomainEventPublisher<TKey, TEntity> domainEventPublisher,
+    IMongoReadPreferenceService readPreferenceService,
+    ISessionTransactionManager transactionManager,
+    IEntityCacheService<TKey, TEntity> cacheService = null)
+    :
+        MongoClientBaseEntity<TKey, TEntity>(clientFactory,
             logger,
             entityConfiguration,
             mongoRetryService,
-            readPreferenceService)
-    {
-        _domainEventContextProvider = domainEventContextProvider;
-        _domainEventPublisher = domainEventPublisher;
-        _transactionManager = transactionManager;
-        _hasPublisher = domainEventPublisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
-    }
+            readPreferenceService),
+        ICustomFieldsDeleteService<TKey, TEntity>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
+{
+    private readonly bool _hasPublisher = domainEventPublisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
 
     public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key, CancellationToken cancellationToken)
     {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
+        var transaction = await transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await DeleteAsync(rootEntityKey, key, transaction, cancellationToken);
     }
 
@@ -60,7 +51,7 @@ public class MongoCustomFieldsDeleteService<TKey, TEntity> :
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {
-        _transactionManager.AddTransaction(entityTransaction);
+        transactionManager.AddTransaction(entityTransaction);
         var filters = await BuildFiltersAsync(x => x.Id.Equals(rootEntityKey), cancellationToken);
         var filtersDefinition = Builders<TEntity>.Filter.Where(filters)
                                 & Builders<TEntity>.Filter.ElemMatch(x => x.CustomFields, cf => cf.Id == key);
@@ -95,6 +86,11 @@ public class MongoCustomFieldsDeleteService<TKey, TEntity> :
                 cancellationToken);
         }
 
+        if (cacheService != null)
+        {
+            await cacheService.RemoveAsync(rootEntityKey, cancellationToken);
+        }
+
         var patch = new JsonPatchDocument<TEntity>();
         patch.Remove(x => x.CustomFields, result.CustomFields.FindIndex(x => x.Id == key));
         await PublishUpdatedDomainEventAsync(result, patch, entityTransaction, cancellationToken);
@@ -116,10 +112,10 @@ public class MongoCustomFieldsDeleteService<TKey, TEntity> :
         {
             Previous = previous,
             Operations = patch?.Operations,
-            EventContext = _domainEventContextProvider?.GetContext()
+            EventContext = domainEventContextProvider?.GetContext()
         };
 
-        return _domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
+        return domainEventPublisher.PublishEntityUpdatedEventAsync(domainEvent, entityTransaction, cancellationToken);
 
     }
 }

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -12,26 +13,20 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Implementations;
 
-public class EfCustomFieldsCreateService<TKey, TEntity, TCustomFieldsTEntity> : BaseDisposable,
-    ICustomFieldsCreateService<TKey, TEntity>
+public class EfCustomFieldsCreateService<TKey, TEntity, TCustomFieldsTEntity>(
+    IEntityFrameworkCreateClient<Guid, TCustomFieldsTEntity> createClient,
+    ISessionTransactionManager transactionManager,
+    IEntityCacheService<TKey, TEntity> cacheService = null)
+    : BaseDisposable,
+        ICustomFieldsCreateService<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>, new()
     where TCustomFieldsTEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>, new()
 {
-    private readonly ISessionTransactionManager _transactionManager;
-    private readonly IEntityFrameworkCreateClient<Guid, TCustomFieldsTEntity> _createClient;
-
-    public EfCustomFieldsCreateService(IEntityFrameworkCreateClient<Guid, TCustomFieldsTEntity> createClient,
-        ISessionTransactionManager transactionManager)
-    {
-        _createClient = createClient;
-        _transactionManager = transactionManager;
-    }
-
     public async Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey, CustomFieldsEntity<TKey> customField,
         CancellationToken cancellationToken)
     {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
+        var transaction = await transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await CreateAsync(rootEntityKey, customField, transaction, cancellationToken);
     }
 
@@ -40,13 +35,18 @@ public class EfCustomFieldsCreateService<TKey, TEntity, TCustomFieldsTEntity> : 
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {
-        _transactionManager.AddTransaction(entityTransaction);
+        transactionManager.AddTransaction(entityTransaction);
 
         var customFieldsEntity = new TCustomFieldsTEntity { EntityId = rootEntityKey };
 
         customField.CopyPropertiesTo(customFieldsEntity);
 
-        var added = await _createClient.AddAsync(customFieldsEntity, entityTransaction, cancellationToken);
+        var added = await createClient.AddAsync(customFieldsEntity, entityTransaction, cancellationToken);
+
+        if (cacheService != null)
+        {
+            await cacheService.RemoveAsync(rootEntityKey, cancellationToken);
+        }
 
         var returnEntity = added?.ToCustomFields();
 
@@ -54,5 +54,5 @@ public class EfCustomFieldsCreateService<TKey, TEntity, TCustomFieldsTEntity> : 
     }
 
     protected override void DisposeManagedObjects()
-        => _createClient?.Dispose();
+        => createClient?.Dispose();
 }
