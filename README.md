@@ -911,6 +911,49 @@ The below example configures custom fields for the Weather Forecast Tenant and:
     // ... rest of your setup
 ```
 
+# Entity Caching
+Caching can be configured for entities by registering an IDistributedCache.
+Entities will be cached on read by their key for the specified duration.
+
+First you must register an IDistributedCache in your application. See [docs](https://learn.microsoft.com/en-us/aspnet/core/performance/caching/distributed?view=aspnetcore-9.0#establish-distributed-caching-services) for more info.
+
+Then call `WithEntityCaching()` on the `IServiceCollection` in your `Startup.cs` file. 
+
+`WithEntityCaching` will cache entities for 1 hour by default. You can override this by configuring the entity cache options
+or by setting up your own implementation of `IEntityCacheOptions`.
+```csharp
+// ...
+services.
+    .WithEntityCaching(o => 
+    {
+        o.CacheEntryOptions = _ =>
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) };
+    })
+// or
+services
+    .WithEntityCaching<MyCacheOptions>()
+```
+
+Then you can add caching to your entities by calling `AddEntityCaching()` on the entity configuration. If you need
+to change the behavior of the caching you can use the overload to provide your own implementation of `IEntityCacheService`.
+
+```csharp
+
+The following example demonstrates how to cache the WeatherForecast entities for 60 minutes. 
+
+```csharp
+// ...
+services
+  .AddDistributedMemoryCache()
+  .WithEntityCaching()
+  .UsingEfCrud(ef =>
+    {
+        ef.AddEntity<Guid, WeatherForecast>(forecast => 
+            forecast.WithDbContext<AppDbContext>()
+            .AddEntityCaching())
+    // ... rest of your setup
+```
+
 # Example Project
 
 
