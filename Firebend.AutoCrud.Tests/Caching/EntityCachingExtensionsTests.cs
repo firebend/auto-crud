@@ -23,7 +23,9 @@ public class EntityCachingExtensionsTests
         public override Type SearchType { get; }
         public override Type UpdateType { get; }
         public override Type DeleteType { get; }
-        protected override void ApplyPlatformTypes() => throw new NotImplementedException();
+        protected override void ApplyPlatformTypes()
+        {
+        }
     }
 
     [Test]
