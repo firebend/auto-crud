@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace Firebend.AutoCrud.Caching.interfaces;
+namespace Firebend.AutoCrud.Core.Interfaces.Caching;
 
 public interface IEntityCacheOptions
 {
     public IEntityCacheSerializer Serializer { get; }
     public DistributedCacheEntryOptions GetCacheEntryOptions<TEntity>(TEntity entity);
-    public string GetKey<TKey>(TKey key) where TKey : struct;
+    public int MaxCollectionSize { get; }
 }

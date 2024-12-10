@@ -1,6 +1,6 @@
 using System;
-using Firebend.AutoCrud.Caching.extensions;
-using Firebend.AutoCrud.Caching.interfaces;
+using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 

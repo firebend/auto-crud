@@ -2,9 +2,9 @@ using System;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Firebend.AutoCrud.Caching.extensions;
-using Firebend.AutoCrud.Caching.implementations;
-using Firebend.AutoCrud.Caching.interfaces;
+using Firebend.AutoCrud.Core.Extensions;
+using Firebend.AutoCrud.Core.Implementations.Caching;
+using Firebend.AutoCrud.Core.Interfaces.Caching;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -87,20 +87,16 @@ public class DefaultEntityCacheServiceTests
     }
 
     [Test]
-    public void EntityCacheService_Should_ThrowError_When_CacheKey_Is_NullOrEmpty()
+    public void EntityCacheService_Should_ThrowError_When_CacheKey_Is_NullOrDefault()
     {
         // Arrange
-        _fixture.Freeze<Mock<IEntityCacheOptions>>().SetupSequence(x => x.GetKey(It.IsAny<int>())).Returns(string.Empty)
-            .Returns(null);
-
         var sut = _fixture.Create<DefaultEntityCacheService<int, TestEntity>>();
 
         // Act
-        async Task Action() => await sut.GetAsync(1, default);
+        async Task ActionDefault() => await sut.GetAsync(0, default);
 
         // Assert
-        Assert.ThrowsAsync<ArgumentNullException>(Action);
-        Assert.ThrowsAsync<ArgumentNullException>(Action);
+        Assert.ThrowsAsync<ArgumentNullException>(ActionDefault);
     }
 
     [Test]
@@ -154,7 +150,7 @@ public class DefaultEntityCacheServiceTests
     }
 
     [Test]
-    public async Task EntityCacheServiceExtensions_Should_GetOrCreateAsync()
+    public async Task EntityCacheServiceExtensions_Should_GetOrSetAsync()
     {
         // Arrange
         _fixture.Inject<IEntityCacheOptions>(new TestEntityCacheOptions());
@@ -164,7 +160,7 @@ public class DefaultEntityCacheServiceTests
         var sut = _fixture.Create<DefaultEntityCacheService<int, TestEntity>>();
 
         // Act
-        var result = await sut.GetOrCreateAsync(1, () => Task.FromResult(testEntity), default);
+        var result = await sut.GetOrSetAsync(1, () => Task.FromResult(testEntity), default);
 
         // Assert
         result.Should().NotBeNull();
@@ -172,7 +168,7 @@ public class DefaultEntityCacheServiceTests
     }
 
     [Test]
-    public async Task EntityCacheServiceExtensions_Should_GetOrCreateAsync_When_Entity_Is_Cached()
+    public async Task EntityCacheServiceExtensions_Should_GetOrSetAsync_When_Entity_Is_Cached()
     {
         // Arrange
         _fixture.Inject<IEntityCacheOptions>(new TestEntityCacheOptions());
@@ -183,7 +179,7 @@ public class DefaultEntityCacheServiceTests
         await sut.SetAsync(testEntity, default);
 
         // Act
-        var result = await sut.GetOrCreateAsync(1, () => Task.FromResult(new TestEntity { Id = 2 }), default);
+        var result = await sut.GetOrSetAsync(1, () => Task.FromResult(new TestEntity { Id = 2 }), default);
 
         // Assert
         result.Should().NotBeNull();
