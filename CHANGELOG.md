@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="14.1.0"></a>
+## [14.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v14.1.0) (2024-12-12)
+
+### ✨ Features
+
+* Entity caching via IDistributedCache ([#393](https://www.github.com/firebend/auto-crud/issues/393)) ([d2b549b](https://www.github.com/firebend/auto-crud/commit/d2b549b542b0f870e1a53882f936c7842f0f7dfa))
+
+### Other
+
+* Update versionize configuration ([#395](https://www.github.com/firebend/auto-crud/issues/395)) ([95a21ba](https://www.github.com/firebend/auto-crud/commit/95a21ba70691d7689e4585b3d60178e36cf67edd))
+
 <a name="14.0.6"></a>
 ## [14.0.6](https://www.github.com/firebend/auto-crud/releases/tag/v14.0.6) (2024-10-10)
 
