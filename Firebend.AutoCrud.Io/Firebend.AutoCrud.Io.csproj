@@ -23,7 +23,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ClosedXML" Version="0.104.1" />
+      <PackageReference Include="ClosedXML" Version="0.104.2" />
       <PackageReference Include="CsvHelper" Version="33.0.1" />
     </ItemGroup>
 

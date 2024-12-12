@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
+using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.CustomFields;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
@@ -11,26 +12,20 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.CustomFields.EntityFramework.Implementations;
 
-public class EfCustomFieldsDeleteService<TKey, TEntity, TCustomFieldsEntity> : BaseDisposable,
-    ICustomFieldsDeleteService<TKey, TEntity>
+public class EfCustomFieldsDeleteService<TKey, TEntity, TCustomFieldsEntity>(
+    IEntityFrameworkDeleteClient<Guid, TCustomFieldsEntity> deleteClient,
+    ISessionTransactionManager transactionManager,
+    IEntityCacheService<TKey, TEntity> cacheService = null)
+    : BaseDisposable,
+        ICustomFieldsDeleteService<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
     where TCustomFieldsEntity : CustomFieldsEntity<TKey>, IEfCustomFieldsModel<TKey>
 {
-    private readonly ISessionTransactionManager _transactionManager;
-    private readonly IEntityFrameworkDeleteClient<Guid, TCustomFieldsEntity> _deleteClient;
-
-    public EfCustomFieldsDeleteService(IEntityFrameworkDeleteClient<Guid, TCustomFieldsEntity> deleteClient,
-        ISessionTransactionManager transactionManager)
-    {
-        _deleteClient = deleteClient;
-        _transactionManager = transactionManager;
-    }
-
     public async Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey, Guid key,
         CancellationToken cancellationToken)
     {
-        var transaction = await _transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
+        var transaction = await transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         return await DeleteAsync(rootEntityKey, key, transaction, cancellationToken);
     }
 
@@ -39,14 +34,19 @@ public class EfCustomFieldsDeleteService<TKey, TEntity, TCustomFieldsEntity> : B
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {
-        _transactionManager.AddTransaction(entityTransaction);
+        transactionManager.AddTransaction(entityTransaction);
 
-        var deleted = await _deleteClient.DeleteAsync(key, entityTransaction, cancellationToken);
+        var deleted = await deleteClient.DeleteAsync(key, entityTransaction, cancellationToken);
+
+        if (cacheService != null)
+        {
+            await cacheService.RemoveAsync(rootEntityKey, cancellationToken);
+        }
 
         var retDeleted = deleted?.ToCustomFields();
 
         return retDeleted;
     }
 
-    protected override void DisposeManagedObjects() => _deleteClient?.Dispose();
+    protected override void DisposeManagedObjects() => deleteClient?.Dispose();
 }
