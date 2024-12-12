@@ -8,11 +8,6 @@ namespace Firebend.AutoCrud.Core.Implementations.Caching;
 public class EntityCacheOptions : IEntityCacheOptions
 {
     /// <summary>
-    /// Serializer for the cache. Defaults to JsonEntityCacheSerializer
-    /// </summary>
-    public IEntityCacheSerializer Serializer => new JsonEntityCacheSerializer();
-
-    /// <summary>
     /// Function to get cache entry options. Defaults to 1 hour
     /// </summary>
     public Func<Type, DistributedCacheEntryOptions> CacheEntryOptions { get; set; } = _ =>

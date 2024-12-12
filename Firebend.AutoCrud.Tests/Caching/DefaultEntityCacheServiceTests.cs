@@ -9,6 +9,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -38,6 +39,8 @@ public class DefaultEntityCacheServiceTests
             new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions()));
 
         _fixture.Inject<IEntityCacheOptions>(_cacheOptions);
+        _fixture.Inject<IEntityCacheSerializer>(
+            new JsonEntityCacheSerializer(_fixture.Freeze<ILogger<JsonEntityCacheSerializer>>()));
     }
 
     [Test]

@@ -16,12 +16,14 @@ namespace Firebend.AutoCrud.Core.Implementations.Caching;
 /// </summary>
 /// <param name="cache"></param>
 /// <param name="entityCacheOptions"></param>
+/// <param name="serializer"></param>
 /// <param name="logger"></param>
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TEntity"></typeparam>
 public class DefaultEntityCacheService<TKey, TEntity>(
     IDistributedCache cache,
     IEntityCacheOptions entityCacheOptions,
+    IEntityCacheSerializer serializer,
     ILogger<DefaultEntityCacheService<TKey, TEntity>> logger)
     : IEntityCacheService<TKey, TEntity>
     where TKey : struct
@@ -64,11 +66,11 @@ public class DefaultEntityCacheService<TKey, TEntity>(
             }
 
             logger.LogDebug("Cache key {CacheKey} found", cacheKey);
-            return entityCacheOptions.Serializer.Deserialize<TEntity>(serialized);
+            return serializer.Deserialize<TEntity>(serialized);
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Error getting cache key {CacheKey}", cacheKey);
+            logger.LogWarning(e, "Error getting cache key {CacheKey}", cacheKey);
             return null;
         }
     }
@@ -83,7 +85,7 @@ public class DefaultEntityCacheService<TKey, TEntity>(
 
         logger.LogDebug("Setting cache key {CacheKey}", cacheKey);
 
-        var serialized = entityCacheOptions.Serializer.Serialize(entity);
+        var serialized = serializer.Serialize(entity);
 
         if (string.IsNullOrEmpty(serialized))
         {
@@ -99,7 +101,7 @@ public class DefaultEntityCacheService<TKey, TEntity>(
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Error setting cache key {CacheKey}", cacheKey);
+            logger.LogWarning(e, "Error setting cache key {CacheKey}", cacheKey);
         }
     }
 
@@ -115,7 +117,7 @@ public class DefaultEntityCacheService<TKey, TEntity>(
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Error removing cache key {CacheKey}", cacheKey);
+            logger.LogWarning(e, "Error removing cache key {CacheKey}", cacheKey);
         }
     }
 
@@ -136,11 +138,11 @@ public class DefaultEntityCacheService<TKey, TEntity>(
 
             logger.LogDebug("Collection cache key {CacheKey} found", cacheKey);
 
-            return entityCacheOptions.Serializer.Deserialize<List<TEntity>>(serialized);
+            return serializer.Deserialize<List<TEntity>>(serialized);
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Error getting collection cache key {CacheKey}", cacheKey);
+            logger.LogWarning(e, "Error getting collection cache key {CacheKey}", cacheKey);
             return null;
         }
     }
@@ -161,7 +163,7 @@ public class DefaultEntityCacheService<TKey, TEntity>(
         var cacheKey = GetCacheKey(CollectionCacheKey);
         logger.LogDebug("Setting collection cache key {CacheKey}", cacheKey);
 
-        var serialized = entityCacheOptions.Serializer.Serialize(entities);
+        var serialized = serializer.Serialize(entities);
 
         if (string.IsNullOrEmpty(serialized))
         {
@@ -176,7 +178,7 @@ public class DefaultEntityCacheService<TKey, TEntity>(
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Error setting collection cache key {CacheKey}", cacheKey);
+            logger.LogWarning(e, "Error setting collection cache key {CacheKey}", cacheKey);
         }
     }
 
@@ -191,7 +193,7 @@ public class DefaultEntityCacheService<TKey, TEntity>(
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Error removing collection cache key {CacheKey}",
+            logger.LogWarning(e, "Error removing collection cache key {CacheKey}",
                 cacheKey);
         }
     }

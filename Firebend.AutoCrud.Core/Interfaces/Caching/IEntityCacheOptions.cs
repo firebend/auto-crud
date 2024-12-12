@@ -6,11 +6,6 @@ namespace Firebend.AutoCrud.Core.Interfaces.Caching;
 public interface IEntityCacheOptions
 {
     /// <summary>
-    /// Serializer for the cache
-    /// </summary>
-    public IEntityCacheSerializer Serializer { get; }
-
-    /// <summary>
     /// Function to get cache entry options
     /// </summary>
     public Func<Type, DistributedCacheEntryOptions> CacheEntryOptions { get; }
