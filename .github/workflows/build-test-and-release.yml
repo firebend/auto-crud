@@ -116,7 +116,7 @@ jobs:
 
       - name: Publish Nuget Packages
         if: steps.versionize.outcome == 'success'
-        run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+        run: dotnet nuget push *.nupkg --api-key ${{secrets.FIREBEND_NUGET_KEY}} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
       - name: Push version changes
         if: steps.versionize.outcome == 'success'
