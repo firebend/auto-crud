@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="14.1.1"></a>
+## [14.1.1](https://www.github.com/firebend/auto-crud/releases/tag/v14.1.1) (2024-12-18)
+
+### Other
+
+* change tracking schema detection issues ([#397](https://www.github.com/firebend/auto-crud/issues/397)) ([fcfb907](https://www.github.com/firebend/auto-crud/commit/fcfb907c2721ee6d00b4912d549b1df8cc5047dd))
+
 <a name="14.1.0"></a>
 ## [14.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v14.1.0) (2024-12-12)
 
