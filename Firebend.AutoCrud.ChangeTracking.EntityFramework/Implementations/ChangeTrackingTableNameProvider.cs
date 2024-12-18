@@ -12,6 +12,7 @@ public class ChangeTrackingTableNameProvider<TEntityKey, TEntity, TEntityContext
     where TEntityKey : struct
     where TEntityContext : DbContext, IDbContext
 {
+    private static readonly Type _entityType = typeof(TEntity);
     private TableNameResult _result;
 
     public TableNameResult GetTableName()
@@ -22,12 +23,18 @@ public class ChangeTrackingTableNameProvider<TEntityKey, TEntity, TEntityContext
         }
 
         using var context = contextFactory.CreateDbContext();
-        var entityType = context.Model.FindEntityType(typeof(TEntity)) ?? throw new Exception($"Entity type {typeof(TEntity).FullName} not found in the model.");
-
-        var tableName = entityType.GetTableName() + "_Changes";
-        var schema = entityType.GetSchema();
-        _result = new TableNameResult(tableName, schema);
+        _result = GetTableName(context);
 
         return _result;
+    }
+
+    private TableNameResult GetTableName(DbContext context)
+    {
+        var entityType = context.Model.FindEntityType(_entityType) ??
+                         throw new Exception($"Entity type {_entityType.FullName} not found in the model.");
+
+        var tableName = entityType.GetTableName() + "_Changes";
+        var schema = entityType.GetSchema() ?? context.Model.GetDefaultSchema() ?? "dbo";
+        return new TableNameResult(tableName, schema);
     }
 }
