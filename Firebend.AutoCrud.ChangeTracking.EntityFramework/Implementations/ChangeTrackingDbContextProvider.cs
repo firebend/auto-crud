@@ -18,6 +18,7 @@ namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Implementations;
 public class ChangeTrackingDbContextProvider<TEntityKey, TEntity>(
     IDbContextFactory<ChangeTrackingDbContext<TEntityKey, TEntity>> contextFactory,
     ILogger<ChangeTrackingDbContextProvider<TEntityKey, TEntity>> logger,
+    IChangeTrackingTableNameProvider<TEntityKey, TEntity> tableNameProvider,
     IDbContextConnectionStringProvider<TEntityKey, TEntity> connectionStringProvider = null)
     :
         DbContextProvider<Guid, ChangeTrackingEntity<TEntityKey, TEntity>,
@@ -26,14 +27,15 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity>(
     where TEntity : class, IEntity<TEntityKey>
     where TEntityKey : struct
 {
-    private record ScaffoldCacheContext(DbContext DbContext, ILogger Logger);
+    private record ScaffoldCacheContext(DbContext DbContext, TableNameResult TableName, ILogger Logger);
 
     protected override bool WaitForMigrations => false;
 
     protected override void InitDb(DbContext dbContext)
     {
         base.InitDb(dbContext);
-        ScaffoldDbContext(dbContext, logger);
+        var tableName = tableNameProvider.GetTableName();
+        ScaffoldDbContext(dbContext, tableName, logger);
     }
 
     protected override async Task<string> ProvideConnectionString(CancellationToken cancellationToken)
@@ -46,29 +48,22 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity>(
         return await connectionStringProvider.GetConnectionStringAsync(cancellationToken);
     }
 
-    private static void ScaffoldDbContext(DbContext context, ILogger logger)
+    private static void ScaffoldDbContext(DbContext context, TableNameResult tableName, ILogger logger)
     {
         var dbConn = context.Database.GetDbConnection();
         var cacheKey = $"{dbConn.DataSource}_{dbConn.Database}_{typeof(TEntity).FullName}";
 
         ChangeTrackingDbContextProviderCache.ScaffoldCache.GetOrAdd(cacheKey,
             ScaffoldCacheFactory,
-            new ScaffoldCacheContext(context, logger));
+            new ScaffoldCacheContext(context, tableName, logger));
     }
 
     private static bool ScaffoldCacheFactory(string typeName, ScaffoldCacheContext scaffoldCacheContext)
     {
         var changeTrackingType = typeof(ChangeTrackingEntity<TEntityKey, TEntity>);
-        var type = scaffoldCacheContext.DbContext.Model.FindEntityType(changeTrackingType);
 
-        if (type is null)
-        {
-            scaffoldCacheContext.Logger.LogWarning("Could not find entity type for {TypeName}", changeTrackingType.FullName);
-            return false;
-        }
-
-        var schema = type.GetSchema() ?? "dbo";
-        var table = type.GetTableName();
+        var schema = scaffoldCacheContext.TableName.Schema;
+        var table = scaffoldCacheContext.TableName.Table;
 
         if (string.IsNullOrEmpty(table))
         {
@@ -115,9 +110,7 @@ public class ChangeTrackingDbContextProvider<TEntityKey, TEntity>(
                                        INNER JOIN sys.schemas AS S ON T.schema_id = S.schema_id
                                    WHERE S.Name = '{schemaName}' AND T.Name = '{tableName}'
                                """;
-
-        var exists = command.ExecuteScalar() != null;
-
-        return exists;
+        var result = command.ExecuteScalar();
+        return result != null;
     }
 }

@@ -8,5 +8,5 @@ public interface IChangeTrackingTableNameProvider<TEntityKey, TEntity>
     where TEntity : class, IEntity<TEntityKey>
     where TEntityKey : struct
 {
-    TableNameResult GetTableName();
+    public TableNameResult GetTableName();
 }
