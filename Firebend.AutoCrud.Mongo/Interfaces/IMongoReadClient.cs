@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,22 +20,22 @@ public interface IMongoReadClient<TKey, TEntity>
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task<IMongoQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken);
+    Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken);
 
-    Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+    Task<IQueryable<TEntity>> GetQueryableAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> firstStageFilters,
         CancellationToken cancellationToken);
 
-    Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
+    Task<IQueryable<TEntity>> GetQueryableAsync(Func<IQueryable<TEntity>, Task<IQueryable<TEntity>>> firstStageFilters,
         CancellationToken cancellationToken);
 
-    Task<IMongoQueryable<TEntity>> GetQueryableAsync(IEntityTransaction entityTransaction,
+    Task<IQueryable<TEntity>> GetQueryableAsync(IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+    Task<IQueryable<TEntity>> GetQueryableAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> firstStageFilters,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
+    Task<IQueryable<TEntity>> GetQueryableAsync(Func<IQueryable<TEntity>, Task<IQueryable<TEntity>>> firstStageFilters,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
@@ -59,7 +60,7 @@ public interface IMongoReadClient<TKey, TEntity>
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,
+    Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
         TSearchRequest searchRequest,
         CancellationToken cancellationToken)
         where TSearchRequest : IEntitySearchRequest;

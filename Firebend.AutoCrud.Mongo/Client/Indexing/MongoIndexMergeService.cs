@@ -120,7 +120,7 @@ public class MongoIndexMergeService<TKey, TEntity> : MongoClientBase<TKey, TEnti
         if (existingIndex is null)
         {
             var keys = indexToAdd.Keys
-                .Render(mongoCollection.DocumentSerializer, new BsonSerializerRegistry())
+                .Render(new RenderArgs<TEntity>(mongoCollection.DocumentSerializer, new BsonSerializerRegistry()))
                 .ToJson();
 
             existingIndex = indexes.FirstOrDefault(x => x["key"].ToJson().EqualsIgnoreCaseAndWhitespace(keys));
@@ -150,7 +150,7 @@ public class MongoIndexMergeService<TKey, TEntity> : MongoClientBase<TKey, TEnti
     {
         var isIndexToAddTextIndex = indexToAdd
             .Keys
-            .Render(dbCollection.DocumentSerializer, new BsonSerializerRegistry())
+            .Render(new RenderArgs<TEntity>(dbCollection.DocumentSerializer, new BsonSerializerRegistry()))
             .Where(x => x.Value.IsString)
             .Any(x => x.Value.AsString.EqualsIgnoreCaseAndWhitespace("text"));
 

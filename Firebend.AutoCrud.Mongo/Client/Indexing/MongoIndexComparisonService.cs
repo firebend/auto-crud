@@ -25,7 +25,7 @@ public class MongoIndexComparisonService : IMongoIndexComparisonService
         }
 
         var existingKeys = existingIndexBson["key"].AsBsonDocument;
-        var definitionKeys = definition.Keys.Render(collection.DocumentSerializer, new BsonSerializerRegistry());
+        var definitionKeys = definition.Keys.Render(new RenderArgs<TEntity>(collection.DocumentSerializer, new BsonSerializerRegistry()));
         var doKeysMatch = existingKeys == definitionKeys;
         var isFullText = definitionKeys.Contains("$**");
 
@@ -64,7 +64,7 @@ public class MongoIndexComparisonService : IMongoIndexComparisonService
 
         var hasDuplicateKeys = definitions
             .Select(x => x.Keys)
-            .Select(x => x.Render(collection.DocumentSerializer, new BsonSerializerRegistry()))
+            .Select(x => x.Render(new RenderArgs<TEntity>(collection.DocumentSerializer, new BsonSerializerRegistry())))
             .GroupBy(x => x)
             .Any(x => x.Count() > 1);
 

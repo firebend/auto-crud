@@ -35,12 +35,12 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         _orderByHandler = orderByHandler;
     }
 
-    protected virtual Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(IEntityTransaction entityTransaction,
+    protected virtual Task<IQueryable<TEntity>> GetQueryableInternalAsync(IEntityTransaction entityTransaction,
         Expression<Func<TEntity, bool>> additionalFilter,
         CancellationToken cancellationToken)
-        => GetQueryableInternalAsync((Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>>)null, entityTransaction, additionalFilter, cancellationToken);
+        => GetQueryableInternalAsync((Func<IQueryable<TEntity>, IQueryable<TEntity>>)null, entityTransaction, additionalFilter, cancellationToken);
 
-    protected virtual Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+    protected virtual Task<IQueryable<TEntity>> GetQueryableInternalAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> firstStageFilters,
         IEntityTransaction entityTransaction,
         Expression<Func<TEntity, bool>> additionalFilter,
         CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
             x => Task.FromResult(firstStageFilters(x))
             : Task.FromResult, entityTransaction, additionalFilter, cancellationToken);
 
-    protected virtual async Task<IMongoQueryable<TEntity>> GetQueryableInternalAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
+    protected virtual async Task<IQueryable<TEntity>> GetQueryableInternalAsync(Func<IQueryable<TEntity>, Task<IQueryable<TEntity>>> firstStageFilters,
         IEntityTransaction entityTransaction,
         Expression<Func<TEntity, bool>> additionalFilter,
         CancellationToken cancellationToken)
@@ -77,27 +77,27 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         return entity;
     }
 
-    public Task<IMongoQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken)
-        => GetQueryableAsync((Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>>)null, null, cancellationToken);
+    public Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken)
+        => GetQueryableAsync((Func<IQueryable<TEntity>, IQueryable<TEntity>>)null, null, cancellationToken);
 
-    public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+    public Task<IQueryable<TEntity>> GetQueryableAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> firstStageFilters,
         CancellationToken cancellationToken)
         => GetQueryableAsync(firstStageFilters, null, cancellationToken);
 
-    public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
+    public Task<IQueryable<TEntity>> GetQueryableAsync(Func<IQueryable<TEntity>, Task<IQueryable<TEntity>>> firstStageFilters,
         CancellationToken cancellationToken)
         => GetQueryableAsync(firstStageFilters, null, cancellationToken);
 
-    public Task<IMongoQueryable<TEntity>> GetQueryableAsync(IEntityTransaction entityTransaction,
+    public Task<IQueryable<TEntity>> GetQueryableAsync(IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
-        => GetQueryableAsync((Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>>)null, entityTransaction, cancellationToken);
+        => GetQueryableAsync((Func<IQueryable<TEntity>, IQueryable<TEntity>>)null, entityTransaction, cancellationToken);
 
-    public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+    public Task<IQueryable<TEntity>> GetQueryableAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> firstStageFilters,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
         => GetQueryableInternalAsync(firstStageFilters, entityTransaction, null, cancellationToken);
 
-    public Task<IMongoQueryable<TEntity>> GetQueryableAsync(Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
+    public Task<IQueryable<TEntity>> GetQueryableAsync(Func<IQueryable<TEntity>, Task<IQueryable<TEntity>>> firstStageFilters,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
         => GetQueryableInternalAsync(firstStageFilters, entityTransaction, null, cancellationToken);
@@ -140,7 +140,7 @@ public class MongoReadClient<TKey, TEntity> : MongoClientBaseEntity<TKey, TEntit
         return count;
     }
 
-    public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IMongoQueryable<TEntity> queryable,
+    public async Task<EntityPagedResponse<TEntity>> GetPagedResponseAsync<TSearchRequest>(IQueryable<TEntity> queryable,
         TSearchRequest searchRequest,
         CancellationToken cancellationToken)
         where TSearchRequest : IEntitySearchRequest
