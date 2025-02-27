@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="15.0.0"></a>
+## [15.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.0) (2025-02-27)
+
+### ✨ Features
+
+* update package references and move to mongo driver 3.x ([#399](https://www.github.com/firebend/auto-crud/issues/399)) ([2b5ef5d](https://www.github.com/firebend/auto-crud/commit/2b5ef5dd1e73fc02124f0ed21772d03dcd0e6047))
+
+### Breaking Changes
+
+* update package references and move to mongo driver 3.x ([#399](https://www.github.com/firebend/auto-crud/issues/399)) ([2b5ef5d](https://www.github.com/firebend/auto-crud/commit/2b5ef5dd1e73fc02124f0ed21772d03dcd0e6047))
+
 <a name="14.1.1"></a>
 ## [14.1.1](https://www.github.com/firebend/auto-crud/releases/tag/v14.1.1) (2024-12-18)
 
