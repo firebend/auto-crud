@@ -11,21 +11,21 @@ public interface ICustomFieldsUpdateService<TKey, TEntity> : IDisposable
     where TKey : struct
     where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
-    Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
+    public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         CancellationToken cancellationToken);
 
-    Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
+    public Task<CustomFieldsEntity<TKey>> UpdateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
+    public Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
         CancellationToken cancellationToken);
 
-    Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
+    public Task<CustomFieldsEntity<TKey>> PatchAsync(TKey rootEntityKey,
         Guid key,
         JsonPatchDocument<CustomFieldsEntity<TKey>> jsonPatchDocument,
         IEntityTransaction entityTransaction,

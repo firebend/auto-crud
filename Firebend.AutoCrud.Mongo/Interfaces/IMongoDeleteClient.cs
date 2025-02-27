@@ -10,10 +10,10 @@ public interface IMongoDeleteClient<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+    public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
         CancellationToken cancellationToken);
 
-    Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
+    public Task<TEntity> DeleteAsync(Expression<Func<TEntity, bool>> filter,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 }

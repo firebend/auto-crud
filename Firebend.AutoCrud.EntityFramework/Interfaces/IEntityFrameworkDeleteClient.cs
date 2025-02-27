@@ -11,11 +11,11 @@ public interface IEntityFrameworkDeleteClient<TKey, TEntity> : IDisposable
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken);
+    public Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken);
 
-    Task<TEntity> DeleteAsync(TKey filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
+    public Task<TEntity> DeleteAsync(TKey filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
 
-    Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
+    public Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken);
 
-    Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
+    public Task<IEnumerable<TEntity>> DeleteAsync(Expression<Func<TEntity, bool>> filter, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
 }

@@ -8,7 +8,7 @@ public interface IEntityTransactionFactory<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    Task<string> GetDbContextHashCode(CancellationToken cancellationToken);
-    Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken);
-    bool ValidateTransaction(IEntityTransaction transaction);
+    public Task<string> GetDbContextHashCode(CancellationToken cancellationToken);
+    public Task<IEntityTransaction> StartTransactionAsync(CancellationToken cancellationToken);
+    public bool ValidateTransaction(IEntityTransaction transaction);
 }

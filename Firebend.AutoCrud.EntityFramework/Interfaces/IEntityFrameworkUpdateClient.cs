@@ -10,18 +10,18 @@ public interface IEntityFrameworkUpdateClient<TKey, TEntity> : IDisposable
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    Task<TEntity> UpdateAsync(TEntity entity,
+    public Task<TEntity> UpdateAsync(TEntity entity,
         CancellationToken cancellationToken);
 
-    Task<TEntity> UpdateAsync(TEntity entity,
+    public Task<TEntity> UpdateAsync(TEntity entity,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task<TEntity> UpdateAsync(TKey key,
+    public Task<TEntity> UpdateAsync(TKey key,
         JsonPatchDocument<TEntity> patch,
         CancellationToken cancellationToken);
 
-    Task<TEntity> UpdateAsync(TKey key,
+    public Task<TEntity> UpdateAsync(TKey key,
         JsonPatchDocument<TEntity> patch,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);

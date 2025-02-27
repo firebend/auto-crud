@@ -6,6 +6,6 @@ namespace Firebend.AutoCrud.Io.Interfaces;
 public interface IFileFieldAutoMapper<TVersion>
     where TVersion : class, IAutoCrudApiVersion
 {
-    IFileFieldWrite<T>[] MapOutput<T>()
+    public IFileFieldWrite<T>[] MapOutput<T>()
         where T : class;
 }

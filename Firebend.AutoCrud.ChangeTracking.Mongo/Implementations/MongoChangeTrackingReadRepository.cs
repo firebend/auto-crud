@@ -38,13 +38,13 @@ public class MongoChangeTrackingReadRepository<TEntityKey, TEntity> :
             throw new ArgumentNullException(nameof(searchRequest));
         }
 
-        Func<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>, Task<IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>>> firstStageFilter = null;
+        Func<IQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>, Task<IQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>>> firstStageFilter = null;
 
         if (!string.IsNullOrWhiteSpace(searchRequest.Search))
         {
             firstStageFilter = async x =>
-                (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)_searchHandler.HandleSearch(x, searchRequest)
-                    ?? (IMongoQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)await _searchHandler
+                (IQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)_searchHandler.HandleSearch(x, searchRequest)
+                    ?? (IQueryable<ChangeTrackingEntity<TEntityKey, TEntity>>)await _searchHandler
                         .HandleSearchAsync(x, searchRequest);
         }
 

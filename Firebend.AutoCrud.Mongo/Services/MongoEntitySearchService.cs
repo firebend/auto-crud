@@ -68,12 +68,12 @@ public class MongoEntitySearchService<TKey, TEntity, TSearch> : AbstractEntitySe
             _readPreferenceService.SetMode(ReadPreferenceMode.SecondaryPreferred);
         }
 
-        Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilter = null;
+        Func<IQueryable<TEntity>, Task<IQueryable<TEntity>>> firstStageFilter = null;
 
         if (_searchHandler != null)
         {
-            firstStageFilter = async x => (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, request)
-                                          ?? (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, request);
+            firstStageFilter = async x => (IQueryable<TEntity>)_searchHandler.HandleSearch(x, request)
+                                          ?? (IQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, request);
         }
 
         var query = await _readClient.GetQueryableAsync(firstStageFilter, entityTransaction, cancellationToken);

@@ -57,14 +57,14 @@ public abstract class MongoClientBaseEntity<TKey, TEntity> : MongoClientBase<TKe
     protected virtual Task<IMongoCollection<TEntity>> GetCollectionAsync(string shardKeyOverride, CancellationToken cancellationToken)
         => GetCollectionAsync(EntityConfiguration, shardKeyOverride, false, cancellationToken);
 
-    protected virtual Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(Func<IMongoQueryable<TEntity>, IMongoQueryable<TEntity>> firstStageFilters,
+    protected virtual Task<IQueryable<TEntity>> GetFilteredCollectionAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> firstStageFilters,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
         => GetFilteredCollectionAsync(x => Task.FromResult(firstStageFilters(x)),
             entityTransaction, cancellationToken);
 
-    protected virtual async Task<IMongoQueryable<TEntity>> GetFilteredCollectionAsync(
-        Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilters,
+    protected virtual async Task<IQueryable<TEntity>> GetFilteredCollectionAsync(
+        Func<IQueryable<TEntity>, Task<IQueryable<TEntity>>> firstStageFilters,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
     {

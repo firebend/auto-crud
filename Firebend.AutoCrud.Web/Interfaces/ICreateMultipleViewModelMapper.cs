@@ -11,5 +11,5 @@ public interface ICreateMultipleViewModelMapper<TKey, TEntity, TVersion, TViewWr
     where TEntity : IEntity<TKey>
     where TVersion : class, IAutoCrudApiVersion
 {
-    Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken);
+    public Task<TEntity> FromAsync(TViewWrapper wrapper, TView viewModel, CancellationToken cancellationToken);
 }

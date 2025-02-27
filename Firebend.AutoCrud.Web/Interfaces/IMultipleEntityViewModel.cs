@@ -4,5 +4,5 @@ namespace Firebend.AutoCrud.Web.Interfaces;
 
 public interface IMultipleEntityViewModel<T>
 {
-    IEnumerable<T> Entities { get; set; }
+    public IEnumerable<T> Entities { get; set; }
 }

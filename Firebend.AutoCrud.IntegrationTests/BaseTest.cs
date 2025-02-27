@@ -208,7 +208,7 @@ public abstract class BaseTest<
         responseModel.Should().NotBeNull();
         responseModel.Data.Should().NotBeNullOrEmpty();
         responseModel.TotalRecords.Should().HaveValue();
-        responseModel.TotalRecords.Should().BeGreaterOrEqualTo(1);
+        responseModel.TotalRecords.Should().BeGreaterThanOrEqualTo(1);
 
         PageAssertions(response, responseModel);
 
@@ -264,7 +264,7 @@ public abstract class BaseTest<
             var searchResponseModel = await searchResponse.GetJsonAsync<EntityPagedResponse<TReadResponse>>();
             searchResponseModel.Should().NotBeNull();
             searchResponseModel.Data.Should().NotBeNullOrEmpty("search should contain {0}", search);
-            searchResponseModel.TotalRecords.Should().BeGreaterOrEqualTo(1);
+            searchResponseModel.TotalRecords.Should().BeGreaterThanOrEqualTo(1);
 
             return (searchResponse, searchResponseModel);
         }
@@ -510,7 +510,7 @@ public abstract class BaseTest<
 
             httpResponseModel.Should().NotBeNull();
             httpResponseModel.Data.Should().NotBeNullOrEmpty();
-            httpResponseModel.Data.Should().HaveCountGreaterOrEqualTo(operationCount);
+            httpResponseModel.Data.Should().HaveCountGreaterThanOrEqualTo(operationCount);
             httpResponseModel.Data.Select(x => x.UserEmail).Should().NotContainNulls();
             httpResponseModel.Data.Select(x => x.Source).Should().NotContainNulls();
 
@@ -565,7 +565,7 @@ public abstract class BaseTest<
         var responseModel = await response.GetJsonAsync<MultiResult<TReadResponse>>();
         responseModel.Created.Should().NotBeNullOrEmpty();
         responseModel.Created.Count().Should().Be(models.Count());
-        (responseModel.Errors?.Count() ?? 0).Should().BeLessOrEqualTo(0);
+        (responseModel.Errors?.Count() ?? 0).Should().BeLessThanOrEqualTo(0);
 
         foreach (var entity in responseModel.Created)
         {

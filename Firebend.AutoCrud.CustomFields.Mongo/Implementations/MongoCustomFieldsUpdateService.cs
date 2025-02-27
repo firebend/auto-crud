@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
@@ -71,13 +70,7 @@ public class MongoCustomFieldsUpdateService<TKey, TEntity>(
 
         var mongoCollection = await GetCollectionAsync(null, cancellationToken);
 
-        var linqVersion = LinqProvider.GetValueOrDefault(MongoDB.Driver.Linq.LinqProvider.V3);
-
-        Expression<Func<TEntity, CustomFieldsEntity<TKey>>> filterExpression = linqVersion == MongoDB.Driver.Linq.LinqProvider.V2
-            ? x => x.CustomFields[-1]
-            : x => x.CustomFields.FirstMatchingElement();
-
-        var updateDefinition = Builders<TEntity>.Update.Set(filterExpression, customField);
+        var updateDefinition = Builders<TEntity>.Update.Set(x => x.CustomFields.FirstMatchingElement(), customField);
 
         if (typeof(IModifiedEntity).IsAssignableFrom(typeof(TEntity)))
         {

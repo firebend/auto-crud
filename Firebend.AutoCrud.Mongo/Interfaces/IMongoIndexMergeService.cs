@@ -9,7 +9,7 @@ public interface IMongoIndexMergeService<TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    Task MergeIndexesAsync(IMongoCollection<TEntity> collection,
+    public Task MergeIndexesAsync(IMongoCollection<TEntity> collection,
         CreateIndexModel<TEntity>[] indexModels,
         CancellationToken cancellationToken);
 }

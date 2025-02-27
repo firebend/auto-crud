@@ -5,7 +5,6 @@ using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
-using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.Mongo.Client;
 
@@ -47,8 +46,6 @@ public class MongoClientFactory<TKey, TEntity> : IMongoClientFactory<TKey, TEnti
 
     private static IMongoClient CreateClientForCache(string server, MongoClientCacheFactoryContext context)
     {
-        context.Settings.LinqProvider = LinqProvider.V3;
-
         context.Settings.LoggingSettings ??= new LoggingSettings(context.LoggerFactory);
 
         var settings = context.SettingsConfigurator is null

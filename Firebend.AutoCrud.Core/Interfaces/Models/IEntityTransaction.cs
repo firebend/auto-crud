@@ -7,13 +7,13 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models;
 
 public interface IEntityTransaction : IDisposable
 {
-    Guid Id { get; }
+    public Guid Id { get; }
 
-    Task CompleteAsync(CancellationToken cancellationToken);
+    public Task CompleteAsync(CancellationToken cancellationToken);
 
-    Task RollbackAsync(CancellationToken cancellationToken);
+    public Task RollbackAsync(CancellationToken cancellationToken);
 
-    IEntityTransactionOutbox Outbox { get; }
+    public IEntityTransactionOutbox Outbox { get; }
 
     public EntityTransactionState State { get; set; }
 

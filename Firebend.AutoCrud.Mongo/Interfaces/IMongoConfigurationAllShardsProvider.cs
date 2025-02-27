@@ -9,5 +9,5 @@ public interface IMongoConfigurationAllShardsProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    Task<IEnumerable<IMongoEntityIndexConfiguration<TKey, TEntity>>> GetAllEntityConfigurationsAsync(CancellationToken cancellationToken);
+    public Task<IEnumerable<IMongoEntityIndexConfiguration<TKey, TEntity>>> GetAllEntityConfigurationsAsync(CancellationToken cancellationToken);
 }

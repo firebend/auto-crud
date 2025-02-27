@@ -9,7 +9,7 @@ public interface IEntitySearchHandler<TKey, TEntity, in TSearch>
     where TEntity : IEntity<TKey>
     where TSearch : IEntitySearchRequest
 {
-    IQueryable<TEntity> HandleSearch(IQueryable<TEntity> queryable, TSearch searchRequest) => null;
+    public IQueryable<TEntity> HandleSearch(IQueryable<TEntity> queryable, TSearch searchRequest) => null;
 
-    Task<IQueryable<TEntity>> HandleSearchAsync(IQueryable<TEntity> queryable, TSearch searchRequest) => Task.FromResult((IQueryable<TEntity>)null);
+    public Task<IQueryable<TEntity>> HandleSearchAsync(IQueryable<TEntity> queryable, TSearch searchRequest) => Task.FromResult((IQueryable<TEntity>)null);
 }

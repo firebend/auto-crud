@@ -2,5 +2,5 @@ namespace Firebend.AutoCrud.Web.Sample.Models;
 
 public interface IDataAuth
 {
-    string[] UserEmails { get; set; }
+    public string[] UserEmails { get; set; }
 }

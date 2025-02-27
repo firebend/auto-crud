@@ -5,5 +5,5 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 
 public interface IEntityTransactionOutboxEnrollment
 {
-    Task ActAsync(CancellationToken cancellationToken);
+    public Task ActAsync(CancellationToken cancellationToken);
 }

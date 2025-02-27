@@ -11,7 +11,7 @@ public interface IEntityValidationService<TKey, TEntity, TVersion>
     where TEntity : class, IEntity<TKey>
     where TVersion : class, IAutoCrudApiVersion
 {
-    Task<ModelStateResult<TEntity>> ValidateAsync(TEntity original,
+    public Task<ModelStateResult<TEntity>> ValidateAsync(TEntity original,
         TEntity entity,
         JsonPatchDocument<TEntity> patch,
         CancellationToken cancellationToken);

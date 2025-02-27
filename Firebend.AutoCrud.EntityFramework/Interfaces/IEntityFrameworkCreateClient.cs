@@ -9,7 +9,7 @@ public interface IEntityFrameworkCreateClient<TKey, TEntity> : IDisposable
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken);
+    public Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken);
 
-    Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken);
+    public Task<TEntity> AddAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken);
 }

@@ -4,5 +4,5 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 
 public interface IDomainEventContextProvider
 {
-    DomainEventContext GetContext();
+    public DomainEventContext GetContext();
 }

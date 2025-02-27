@@ -13,7 +13,7 @@ public interface IChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TViewMo
     where TKey : struct
     where TVersion : class, IAutoCrudApiVersion
 {
-    Task<List<ChangeTrackingModel<TKey, TViewModel>>> MapAsync(
+    public Task<List<ChangeTrackingModel<TKey, TViewModel>>> MapAsync(
         IEnumerable<ChangeTrackingEntity<TKey, TEntity>> changeTrackingEntities,
         CancellationToken cancellationToken);
 }

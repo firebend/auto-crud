@@ -11,5 +11,5 @@ public interface ISearchViewModelMapper<TKey, TEntity, TVersion, in TViewModel, 
     where TVersion : class, IAutoCrudApiVersion
     where TViewModel : class
 {
-    Task<TSearchModel> FromAsync(TViewModel model, CancellationToken cancellationToken);
+    public Task<TSearchModel> FromAsync(TViewModel model, CancellationToken cancellationToken);
 }

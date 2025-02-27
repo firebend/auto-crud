@@ -12,7 +12,7 @@ public interface
     where TKey : struct
     where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
-    Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(
+    public Task<EntityPagedResponse<CustomFieldsEntity<TKey>>> SearchAsync(
         CustomFieldsSearchRequest request,
         CancellationToken cancellationToken);
 }

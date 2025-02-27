@@ -10,11 +10,11 @@ public interface ICustomFieldsCreateService<TKey, TEntity> : IDisposable
     where TKey : struct
     where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
-    Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
+    public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         CancellationToken cancellationToken);
 
-    Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
+    public Task<CustomFieldsEntity<TKey>> CreateAsync(TKey rootEntityKey,
         CustomFieldsEntity<TKey> customField,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);

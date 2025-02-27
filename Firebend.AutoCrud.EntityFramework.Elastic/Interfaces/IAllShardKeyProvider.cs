@@ -5,5 +5,5 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 
 public interface IAllShardKeyProvider
 {
-    Task<string[]> GetAllShards(CancellationToken cancellationToken);
+    public Task<string[]> GetAllShards(CancellationToken cancellationToken);
 }

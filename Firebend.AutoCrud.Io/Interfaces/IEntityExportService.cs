@@ -12,7 +12,7 @@ public interface IEntityExportService<in T, TVersion> : IDisposable
     where T : class
     where TVersion : class, IAutoCrudApiVersion
 {
-    Task<Stream> ExportAsync(EntityFileType exportType,
+    public Task<Stream> ExportAsync(EntityFileType exportType,
         IEnumerable<T> records,
         CancellationToken cancellationToken);
 }

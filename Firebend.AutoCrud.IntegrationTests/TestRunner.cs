@@ -6,12 +6,12 @@ using static Firebend.AutoCrud.IntegrationTests.TestConstants;
 namespace Firebend.AutoCrud.IntegrationTests;
 
 [TestClass]
-public static class TestRunner
+public class TestRunner
 {
     public static string Token { get; set; }
 
     [TestInitialize]
-    public static async Task TestInitialize()
+    public async Task TestInitialize()
     {
         await Authenticate();
     }

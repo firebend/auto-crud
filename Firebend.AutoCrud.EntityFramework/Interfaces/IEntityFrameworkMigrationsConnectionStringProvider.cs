@@ -10,5 +10,5 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces;
 public interface IEntityFrameworkMigrationsConnectionStringProvider<TDbContext>
     where TDbContext : DbContext
 {
-    Task<string[]> GetConnectionStringsAsync(CancellationToken cancellationToken);
+    public Task<string[]> GetConnectionStringsAsync(CancellationToken cancellationToken);
 }

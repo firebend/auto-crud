@@ -7,5 +7,5 @@ public interface IEntityFrameworkDbUpdateExceptionHandler<TKey, in TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    bool HandleException(IDbContext context, TEntity entity, DbUpdateException exception);
+    public bool HandleException(IDbContext context, TEntity entity, DbUpdateException exception);
 }

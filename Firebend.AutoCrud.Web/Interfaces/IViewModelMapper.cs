@@ -12,11 +12,11 @@ public interface IViewModelMapper<TKey, TEntity, TVersion, TViewModel>
     where TVersion : class, IAutoCrudApiVersion
     where TViewModel : class
 {
-    Task<TEntity> FromAsync(TViewModel model, CancellationToken cancellationToken);
+    public Task<TEntity> FromAsync(TViewModel model, CancellationToken cancellationToken);
 
-    Task<IEnumerable<TEntity>> FromAsync(IEnumerable<TViewModel> model, CancellationToken cancellationToken);
+    public Task<IEnumerable<TEntity>> FromAsync(IEnumerable<TViewModel> model, CancellationToken cancellationToken);
 
-    Task<TViewModel> ToAsync(TEntity entity, CancellationToken cancellationToken);
+    public Task<TViewModel> ToAsync(TEntity entity, CancellationToken cancellationToken);
 
-    Task<IEnumerable<TViewModel>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken);
+    public Task<IEnumerable<TViewModel>> ToAsync(IEnumerable<TEntity> entity, CancellationToken cancellationToken);
 }

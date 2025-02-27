@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
@@ -8,7 +9,6 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.CustomFields;
 using Firebend.AutoCrud.Core.Models.Searching;
 using Firebend.AutoCrud.Mongo.Interfaces;
-using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
 namespace Firebend.AutoCrud.CustomFields.Mongo.Implementations;
@@ -32,12 +32,12 @@ public class MongoCustomFieldsSearchService<TKey, TEntity> : BaseDisposable,
         CustomFieldsSearchRequest searchRequest,
         CancellationToken cancellationToken)
     {
-        Func<IMongoQueryable<TEntity>, Task<IMongoQueryable<TEntity>>> firstStageFilter = null;
+        Func<IQueryable<TEntity>, Task<IQueryable<TEntity>>> firstStageFilter = null;
 
         if (_searchHandler != null)
         {
-            firstStageFilter = async x => (IMongoQueryable<TEntity>)_searchHandler.HandleSearch(x, searchRequest)
-                                          ?? (IMongoQueryable<TEntity>)await _searchHandler.HandleSearchAsync(x, searchRequest);
+            firstStageFilter = async x => _searchHandler.HandleSearch(x, searchRequest)
+                                          ?? await _searchHandler.HandleSearchAsync(x, searchRequest);
         }
 
         var query = await _readClient.GetQueryableAsync(firstStageFilter, cancellationToken);

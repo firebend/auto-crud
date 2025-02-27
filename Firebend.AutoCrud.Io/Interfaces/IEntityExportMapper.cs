@@ -5,5 +5,5 @@ public interface IEntityExportMapper<in TEntity, TVersion, out TOut>
     where TVersion : class
     where TOut : class
 {
-    TOut Map(TEntity entity);
+    public TOut Map(TEntity entity);
 }

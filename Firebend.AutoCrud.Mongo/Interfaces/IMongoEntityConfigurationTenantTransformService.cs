@@ -6,7 +6,7 @@ public interface IMongoEntityConfigurationTenantTransformService<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    string GetCollection(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration, string shardKey);
+    public string GetCollection(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration, string shardKey);
 
-    string GetDatabase(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration, string shardKey);
+    public string GetDatabase(IMongoEntityDefaultConfiguration<TKey, TEntity> configuration, string shardKey);
 }

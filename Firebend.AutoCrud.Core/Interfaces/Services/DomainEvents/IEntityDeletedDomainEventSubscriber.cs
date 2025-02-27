@@ -7,5 +7,5 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 public interface IEntityDeletedDomainEventSubscriber<TEntity> : IDomainEventSubscriber
     where TEntity : class
 {
-    Task EntityDeletedAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken);
+    public Task EntityDeletedAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken);
 }

@@ -9,15 +9,15 @@ public interface IEntityDomainEventPublisher<TKey, TEntity>
     where TEntity : class, IEntity<TKey>
     where TKey : struct
 {
-    Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
+    public Task PublishEntityAddEventAsync(EntityAddedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
+    public Task PublishEntityDeleteEventAsync(EntityDeletedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 
-    Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
+    public Task PublishEntityUpdatedEventAsync(EntityUpdatedDomainEvent<TEntity> domainEvent,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);
 }

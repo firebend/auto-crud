@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Mongo.Interfaces;
 
 public interface IConfigureCollection
 {
-    Task ConfigureAsync(CancellationToken cancellationToken);
+    public Task ConfigureAsync(CancellationToken cancellationToken);
 }
 
 // ReSharper disable once UnusedTypeParameter
