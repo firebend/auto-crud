@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 
 public interface IShardManager
 {
-    Task<ShardMap> RegisterShardAsync(string shardDatabaseName,
+    public Task<ShardMap> RegisterShardAsync(string shardDatabaseName,
         string key,
         CancellationToken cancellationToken);
 }

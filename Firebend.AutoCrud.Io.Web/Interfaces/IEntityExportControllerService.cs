@@ -15,7 +15,7 @@ public interface IEntityExportControllerService<TKey, TEntity, TVersion, TSearch
     where TVersion : class, IAutoCrudApiVersion
     where TMapped : class
 {
-    Task<FileResult> ExportEntitiesAsync(EntityFileType fileType,
+    public Task<FileResult> ExportEntitiesAsync(EntityFileType fileType,
         string fileName,
         TSearch search,
         CancellationToken cancellationToken);

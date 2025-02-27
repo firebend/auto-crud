@@ -11,19 +11,19 @@ namespace Firebend.AutoCrud.EntityFramework.Interfaces;
 
 public interface IDbContext : IDisposable, IAsyncDisposable
 {
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    public Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
-    DbSet<TEntity> Set<TEntity>()
+    public DbSet<TEntity> Set<TEntity>()
         where TEntity : class;
 
-    EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
+    public EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         where TEntity : class;
 
-    DatabaseFacade Database { get; }
+    public DatabaseFacade Database { get; }
 
-    IModel Model { get; }
+    public IModel Model { get; }
 
-    DbContextOptions Options { get; }
+    public DbContextOptions Options { get; }
 
-    bool UseUserDefinedTransaction { get; set; }
+    public bool UseUserDefinedTransaction { get; set; }
 }

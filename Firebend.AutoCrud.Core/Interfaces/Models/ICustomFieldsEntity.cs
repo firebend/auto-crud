@@ -6,5 +6,5 @@ namespace Firebend.AutoCrud.Core.Interfaces.Models;
 public interface ICustomFieldsEntity<TKey>
     where TKey : struct
 {
-    List<CustomFieldsEntity<TKey>> CustomFields { get; set; }
+    public List<CustomFieldsEntity<TKey>> CustomFields { get; set; }
 }

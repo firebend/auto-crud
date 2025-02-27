@@ -4,5 +4,5 @@ namespace Firebend.AutoCrud.Mongo.Interfaces;
 
 public interface IMongoClientSettingsConfigurator
 {
-    MongoClientSettings Configure(string server, MongoClientSettings settings);
+    public MongoClientSettings Configure(string server, MongoClientSettings settings);
 }

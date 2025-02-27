@@ -6,5 +6,5 @@ namespace Firebend.AutoCrud.Io.Interfaces;
 public interface IFileFieldWriteFilter<TExport, TVersion>
     where TVersion : class, IAutoCrudApiVersion
 {
-    bool ShouldExport(IFileFieldWrite<TExport> field);
+    public bool ShouldExport(IFileFieldWrite<TExport> field);
 }

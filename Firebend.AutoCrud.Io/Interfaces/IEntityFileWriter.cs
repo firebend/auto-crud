@@ -11,9 +11,9 @@ namespace Firebend.AutoCrud.Io.Interfaces;
 public interface IEntityFileWriter<TVersion> : IDisposable
     where TVersion : class, IAutoCrudApiVersion
 {
-    EntityFileType FileType { get; }
+    public EntityFileType FileType { get; }
 
-    Task<Stream> WriteRecordsAsync<T>(IFileFieldWrite<T>[] fields,
+    public Task<Stream> WriteRecordsAsync<T>(IFileFieldWrite<T>[] fields,
         IEnumerable<T> records,
         CancellationToken cancellationToken)
         where T : class;

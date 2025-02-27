@@ -5,5 +5,5 @@ namespace Firebend.AutoCrud.EntityFramework.Elastic.Interfaces;
 
 public interface IDbCreator
 {
-    Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken);
+    public Task EnsureCreatedAsync(string rootConnectionString, string dbName, CancellationToken cancellationToken);
 }

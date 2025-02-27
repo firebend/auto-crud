@@ -9,5 +9,5 @@ public interface IEntityKeyParser<TKey, TEntity, TVersion>
     where TKey : struct
     where TVersion : class, IAutoCrudApiVersion
 {
-    TKey? ParseKey(string key);
+    public TKey? ParseKey(string key);
 }

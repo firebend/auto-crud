@@ -8,13 +8,13 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 
 public interface IEntityTransactionOutbox
 {
-    Task AddEnrollmentAsync(EntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken);
+    public Task AddEnrollmentAsync(EntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken);
 
-    Task InvokeEnrollmentsAsync(string transactionId, CancellationToken cancellationToken);
+    public Task InvokeEnrollmentsAsync(string transactionId, CancellationToken cancellationToken);
 
-    Task ClearEnrollmentsAsync(string transactionId, CancellationToken cancellationToken);
+    public Task ClearEnrollmentsAsync(string transactionId, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, List<EntityTransactionOutboxEnrollment>>> GetEnrollmentsAsync(CancellationToken cancellationToken);
+    public Task<Dictionary<string, List<EntityTransactionOutboxEnrollment>>> GetEnrollmentsAsync(CancellationToken cancellationToken);
 
-    Action<string, List<EntityTransactionOutboxEnrollment>> OnBeforeInvokeEnrollments { get; set; }
+    public Action<string, List<EntityTransactionOutboxEnrollment>> OnBeforeInvokeEnrollments { get; set; }
 }

@@ -5,5 +5,5 @@ namespace Firebend.AutoCrud.Mongo.Interfaces;
 
 public interface IMongoAllShardsProvider
 {
-    Task<string[]> GetAllShardsAsync(CancellationToken cancellationToken);
+    public Task<string[]> GetAllShardsAsync(CancellationToken cancellationToken);
 }

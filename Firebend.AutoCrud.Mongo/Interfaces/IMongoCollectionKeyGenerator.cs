@@ -9,5 +9,5 @@ public interface IMongoCollectionKeyGenerator<TKey, TEntity>
     where TEntity : IEntity<TKey>
     where TKey : struct
 {
-    Task<TKey> GenerateKeyAsync(CancellationToken cancellationToken);
+    public Task<TKey> GenerateKeyAsync(CancellationToken cancellationToken);
 }

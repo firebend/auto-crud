@@ -14,28 +14,28 @@ public interface ISessionTransactionManager : IDisposable
     /// <summary>
     /// True if session transaction has started
     /// </summary>
-    bool TransactionStarted { get; }
+    public bool TransactionStarted { get; }
 
     /// <summary>
     /// List of transaction ids associated to session transaction
     /// </summary>
-    ImmutableList<Guid> TransactionIds { get; }
+    public ImmutableList<Guid> TransactionIds { get; }
     /// <summary>
     /// Call to start tracking db requests in a transaction for the current session
     /// </summary>
-    void Start();
+    public void Start();
 
     /// <summary>
     /// Calls CompleteAsync on all transactions registered in this session and then disposes of transactions
     /// </summary>
-    Task CompleteAsync(CancellationToken cancellationToken);
+    public Task CompleteAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Calls RollbackAsync on all transactions registered in this session and then disposes of transactions
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task RollbackAsync(CancellationToken cancellationToken);
+    public Task RollbackAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Returns an IEntityTransaction if TransactionStarted is true; otherwise, returns null
@@ -44,7 +44,7 @@ public interface ISessionTransactionManager : IDisposable
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TEntity"></typeparam>
     /// <returns>IEntityTransaction | null</returns>
-    Task<IEntityTransaction> GetTransaction<TKey, TEntity>(CancellationToken cancellationToken)
+    public Task<IEntityTransaction> GetTransaction<TKey, TEntity>(CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : IEntity<TKey>;
 
@@ -52,5 +52,5 @@ public interface ISessionTransactionManager : IDisposable
     /// Adds a transaction to track if it is not already being tracked by the session
     /// </summary>
     /// <param name="transaction"></param>
-    void AddTransaction(IEntityTransaction transaction);
+    public void AddTransaction(IEntityTransaction transaction);
 }

@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Mongo.Interfaces;
 
 public interface IMongoMigration
 {
-    MongoDbMigrationVersion Version { get; }
+    public MongoDbMigrationVersion Version { get; }
 
-    Task<bool> ApplyMigrationAsync(CancellationToken cancellationToken);
+    public Task<bool> ApplyMigrationAsync(CancellationToken cancellationToken);
 }

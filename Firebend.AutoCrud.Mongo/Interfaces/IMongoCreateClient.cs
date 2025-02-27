@@ -8,7 +8,7 @@ public interface IMongoCreateClient<TKey, TEntity>
     where TEntity : IEntity<TKey>
     where TKey : struct
 {
-    Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken);
+    public Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken);
 
-    Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
+    public Task<TEntity> CreateAsync(TEntity entity, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
 }

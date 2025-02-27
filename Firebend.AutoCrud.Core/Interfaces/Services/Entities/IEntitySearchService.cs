@@ -12,11 +12,11 @@ public interface IEntitySearchService<TKey, TEntity, in TSearch> : IDisposable
     where TEntity : class, IEntity<TKey>
     where TSearch : IEntitySearchRequest
 {
-    Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken);
+    public Task<List<TEntity>> SearchAsync(TSearch request, CancellationToken cancellationToken);
 
-    Task<List<TEntity>> SearchAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
+    public Task<List<TEntity>> SearchAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
 
-    Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken);
+    public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, CancellationToken cancellationToken);
 
-    Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
+    public Task<EntityPagedResponse<TEntity>> PageAsync(TSearch request, IEntityTransaction entityTransaction, CancellationToken cancellationToken);
 }

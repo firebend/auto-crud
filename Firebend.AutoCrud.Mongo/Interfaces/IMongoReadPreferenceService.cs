@@ -4,6 +4,6 @@ namespace Firebend.AutoCrud.Mongo.Interfaces;
 
 public interface IMongoReadPreferenceService
 {
-    ReadPreferenceMode? GetMode();
-    void SetMode(ReadPreferenceMode mode);
+    public ReadPreferenceMode? GetMode();
+    public void SetMode(ReadPreferenceMode mode);
 }

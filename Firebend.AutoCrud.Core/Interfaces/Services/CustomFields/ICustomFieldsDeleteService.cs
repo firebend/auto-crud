@@ -10,10 +10,10 @@ public interface ICustomFieldsDeleteService<TKey, TEntity> : IDisposable
     where TKey : struct
     where TEntity : IEntity<TKey>, ICustomFieldsEntity<TKey>
 {
-    Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
+    public Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
         Guid key,
         CancellationToken cancellationToken);
-    Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
+    public Task<CustomFieldsEntity<TKey>> DeleteAsync(TKey rootEntityKey,
         Guid key,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken);

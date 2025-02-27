@@ -12,9 +12,9 @@ public interface ICustomFieldsValidationService<TKey, TEntity, TVersion>
     where TEntity : class, IEntity<TKey>, ICustomFieldsEntity<TKey>
     where TVersion : class, IAutoCrudApiVersion
 {
-    Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> customField,
+    public Task<ModelStateResult<CustomFieldsEntity<TKey>>> ValidateAsync(CustomFieldsEntity<TKey> customField,
         CancellationToken cancellationToken);
 
-    Task<ModelStateResult<JsonPatchDocument<CustomFieldsEntity<TKey>>>> ValidateAsync(JsonPatchDocument<CustomFieldsEntity<TKey>> patch,
+    public Task<ModelStateResult<JsonPatchDocument<CustomFieldsEntity<TKey>>>> ValidateAsync(JsonPatchDocument<CustomFieldsEntity<TKey>> patch,
         CancellationToken cancellationToken);
 }

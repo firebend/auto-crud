@@ -6,5 +6,5 @@ namespace Firebend.AutoCrud.Core.Interfaces.Services.Concurrency;
 
 public interface IDistributedLockService
 {
-    ValueTask<IDisposable> LockAsync(string key, CancellationToken cancellationToken);
+    public ValueTask<IDisposable> LockAsync(string key, CancellationToken cancellationToken);
 }

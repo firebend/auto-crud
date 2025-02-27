@@ -7,5 +7,5 @@ public interface IEntityFrameworkIncludesProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable);
+    public IQueryable<TEntity> AddIncludes(IQueryable<TEntity> queryable);
 }

@@ -8,5 +8,5 @@ public interface IDefaultEntityOrderByProvider<TKey, TEntity>
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    (Expression<Func<TEntity, object>> order, bool ascending) GetOrderBy();
+    public (Expression<Func<TEntity, object>> order, bool ascending) GetOrderBy();
 }

@@ -6,7 +6,7 @@ namespace Firebend.AutoCrud.Io.Interfaces;
 public interface IEntityFileTypeMimeTypeMapper<TVersion>
     where TVersion : class, IAutoCrudApiVersion
 {
-    string MapMimeType(EntityFileType entityFileType);
+    public string MapMimeType(EntityFileType entityFileType);
 
-    string GetExtension(EntityFileType entityFileType);
+    public string GetExtension(EntityFileType entityFileType);
 }

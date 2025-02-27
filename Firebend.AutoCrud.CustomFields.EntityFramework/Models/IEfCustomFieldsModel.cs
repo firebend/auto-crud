@@ -5,5 +5,5 @@ namespace Firebend.AutoCrud.CustomFields.EntityFramework.Models;
 public interface IEfCustomFieldsModel<TKey>
     where TKey : struct
 {
-    CustomFieldsEntity<TKey> ToCustomFields();
+    public CustomFieldsEntity<TKey> ToCustomFields();
 }

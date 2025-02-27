@@ -9,22 +9,22 @@ public interface IDomainEventPublisherService<in TKey, TEntity>
     where TKey : struct
     where TEntity : class, IEntity<TKey>
 {
-    Task<TEntity> ReadAndPublishAddedEventAsync(TKey key,
+    public Task<TEntity> ReadAndPublishAddedEventAsync(TKey key,
         IEntityTransaction transaction,
         CancellationToken cancellationToken);
 
-    Task<TEntity> ReadAndPublishUpdateEventAsync(TKey key,
+    public Task<TEntity> ReadAndPublishUpdateEventAsync(TKey key,
         TEntity previous,
         IEntityTransaction transaction,
         JsonPatchDocument<TEntity> patch,
         CancellationToken cancellationToken);
 
-    Task<TEntity> ReadAndPublishUpdateEventAsync(TKey key,
+    public Task<TEntity> ReadAndPublishUpdateEventAsync(TKey key,
         TEntity previous,
         IEntityTransaction transaction,
         CancellationToken cancellationToken);
 
-    Task PublishDeleteEventAsync(TEntity entity,
+    public Task PublishDeleteEventAsync(TEntity entity,
         IEntityTransaction transaction,
         CancellationToken cancellationToken);
 }
