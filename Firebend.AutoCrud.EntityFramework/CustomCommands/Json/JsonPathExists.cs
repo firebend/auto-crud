@@ -36,6 +36,7 @@ public static class JsonPathExists
                     [false, false],
                     typeof(int),
                     null);
+
                 return arrayValExpression;
             });
 

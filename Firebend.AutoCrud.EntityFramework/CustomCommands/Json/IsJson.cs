@@ -36,6 +36,7 @@ public static class IsJson
                     [false],
                     typeof(int),
                     null);
+
                 return arrayValExpression;
             });
 

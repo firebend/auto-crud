@@ -36,6 +36,7 @@ public static class JsonQuery
                     [false, false],
                     typeof(string),
                     null);
+
                 return arrayValExpression;
             });
 
