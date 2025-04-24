@@ -84,8 +84,8 @@ public class FullTextContainsAnyMethodCallTranslator : IMethodCallTranslator
             throw new InvalidOperationException("Invalid property");
         }
 
-        var splatString = !string.IsNullOrWhiteSpace(columnExpression.Table.Alias)
-            ? $"[{columnExpression.Table.Alias}].*"
+        var splatString = !string.IsNullOrWhiteSpace(columnExpression.TableAlias)
+            ? $"[{columnExpression.TableAlias}].*"
             : "*";
 
         var splat = _sqlExpressionFactory.Fragment(splatString);

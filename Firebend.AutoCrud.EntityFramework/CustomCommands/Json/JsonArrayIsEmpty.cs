@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Firebend.AutoCrud.EntityFramework.CustomCommands.Json;
 
@@ -29,6 +30,7 @@ public static class JsonArrayIsEmpty
                 }
 
                 var columnFragment = new SqlFragmentExpression(columnName.Value.ToString()!);
+
                 var arrayStringValExpression = new SqlFunctionExpression(
                     "JSON_QUERY",
                     [columnFragment, args[1]],
@@ -36,9 +38,18 @@ public static class JsonArrayIsEmpty
                     [false, false],
                     typeof(string),
                     null);
-                var emptyArrayConstantExpression = new SqlConstantExpression(Expression.Constant("[]"), null);
-                var equalsExpression = new SqlBinaryExpression(ExpressionType.Equal, arrayStringValExpression,
-                    emptyArrayConstantExpression, typeof(bool), null);
+
+                var emptyArrayConstantExpression = new SqlConstantExpression(
+                    "[]",
+                    typeof(string),
+                    null);
+
+                var equalsExpression = new SqlBinaryExpression(ExpressionType.Equal,
+                    arrayStringValExpression,
+                    emptyArrayConstantExpression,
+                    typeof(bool),
+                    null);
+
                 return equalsExpression;
             });
 

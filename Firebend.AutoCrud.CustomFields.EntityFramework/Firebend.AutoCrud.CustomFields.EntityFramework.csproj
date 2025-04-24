@@ -28,8 +28,8 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.13" />
-      <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
+      <PackageReference Include="System.Text.Encodings.Web" Version="9.0.4" />
     </ItemGroup>
 
 </Project>
