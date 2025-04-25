@@ -36,6 +36,7 @@ public static class JsonValue
                     [false, false],
                     typeof(string),
                     null);
+
                 return arrayValExpression;
             });
 

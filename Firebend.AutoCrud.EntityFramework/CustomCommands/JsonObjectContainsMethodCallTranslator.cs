@@ -59,8 +59,8 @@ public class JsonObjectContainsMethodCallTranslator : IMethodCallTranslator
             return null;
         }
 
-        var columnString = !string.IsNullOrWhiteSpace(columnExpression.Table.Alias)
-            ? $"[{columnExpression.Table.Alias}].{columnExpression.Name}"
+        var columnString = !string.IsNullOrWhiteSpace(columnExpression.TableAlias)
+            ? $"[{columnExpression.TableAlias}].{columnExpression.Name}"
             : columnExpression.Name;
 
         var columnFragment = _sqlExpressionFactory.Fragment(columnString);
