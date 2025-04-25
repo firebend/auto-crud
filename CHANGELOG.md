@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="15.0.1"></a>
+## [15.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.1) (2025-04-25)
+
+### Other
+
+* Forks/jacob/package updates/2025/04/14 (#400) ([9767626](https://www.github.com/firebend/auto-crud/commit/97676260e37a8d8bcf516e931da414f22e538647))
+* force release ([#401](https://www.github.com/firebend/auto-crud/issues/401)) ([65d6ba3](https://www.github.com/firebend/auto-crud/commit/65d6ba36231d54b37d6d0768a7cc7e82b2a52a6d))
+
 <a name="15.0.0"></a>
 ## [15.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.0) (2025-02-27)
 
