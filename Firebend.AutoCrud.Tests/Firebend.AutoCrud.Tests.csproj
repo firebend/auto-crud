@@ -16,7 +16,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
         <PackageReference Include="Microsoft.OpenApi" Version="1.6.24" />
         <PackageReference Include="nunit" Version="4.3.2" />
