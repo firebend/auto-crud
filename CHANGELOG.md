@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="15.0.2"></a>
+## [15.0.2](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.2) (2025-05-23)
+
+### Other
+
+* package updates ([#404](https://www.github.com/firebend/auto-crud/issues/404)) ([71f7531](https://www.github.com/firebend/auto-crud/commit/71f75318bf3d1b12485ecac777ace952be49221d))
+
 <a name="15.0.1"></a>
 ## [15.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.1) (2025-04-25)
 
