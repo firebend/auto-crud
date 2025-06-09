@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="15.0.3"></a>
+## [15.0.3](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.3) (2025-06-09)
+
+### Other
+
+* bump CsvHelper and 8 others ([#405](https://www.github.com/firebend/auto-crud/issues/405)) ([43af5db](https://www.github.com/firebend/auto-crud/commit/43af5db821167ee15ecd21d7b61ab42440101e1e))
+
 <a name="15.0.2"></a>
 ## [15.0.2](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.2) (2025-05-23)
 
