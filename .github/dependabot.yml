@@ -5,7 +5,10 @@
 
 version: 2
 updates:
-  - package-ecosystem: "nuget" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "nuget"
+    directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    commit-message:
+      include: scope
+      prefix: "fix: "
