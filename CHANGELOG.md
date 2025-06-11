@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="15.0.4"></a>
+## [15.0.4](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.4) (2025-06-09)
+
+### Other
+
+* force release from dependabot ([#406](https://www.github.com/firebend/auto-crud/issues/406)) ([5035d2b](https://www.github.com/firebend/auto-crud/commit/5035d2b966b696a1a89809a34d54fa857326e502))
+
 <a name="15.0.3"></a>
 ## [15.0.3](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.3) (2025-06-09)
 
