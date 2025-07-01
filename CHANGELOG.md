@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="15.0.6"></a>
+## [15.0.6](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.6) (2025-07-01)
+
+### Other
+
+* Bump BenchmarkDotNet and 24 others ([#408](https://www.github.com/firebend/auto-crud/issues/408)) ([3322be5](https://www.github.com/firebend/auto-crud/commit/3322be51ee8d87acb71bdcfb1dc4f049c31dea64))
+
 <a name="15.0.5"></a>
 ## [15.0.5](https://www.github.com/firebend/auto-crud/releases/tag/v15.0.5) (2025-06-12)
 
