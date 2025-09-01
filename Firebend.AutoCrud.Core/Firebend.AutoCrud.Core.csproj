@@ -24,7 +24,7 @@
 
     <ItemGroup>
       <PackageReference Include="AsyncKeyedLock" Version="7.1.6" />
-      <PackageReference Include="Firebend.JsonPatchGenerator" Version="9.0.6" />
+      <PackageReference Include="Firebend.JsonPatchGenerator" Version="9.0.8" />
       <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.6" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
