@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="16.1.0"></a>
+## [16.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v16.1.0) (2025-12-03)
+
+### ✨ Features
+
+* add delete validation service and integrate into delete controller ([#428](https://www.github.com/firebend/auto-crud/issues/428)) ([8a6db9d](https://www.github.com/firebend/auto-crud/commit/8a6db9d4c12118ee1b79c1a7d337dc051ef253e2))
+
 <a name="16.0.0"></a>
 ## [16.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v16.0.0) (2025-10-02)
 
