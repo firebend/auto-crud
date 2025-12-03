@@ -8,6 +8,7 @@ using Firebend.JsonPatch.Extensions;
 using FluentAssertions;
 using Flurl.Http;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Firebend.AutoCrud.IntegrationTests;
@@ -24,6 +25,27 @@ public class EfEndToEndTest : BaseTest<
 
     [TestMethod]
     public async Task Ef_Api_Should_Work() => await EndToEndAsync(x => x.FirstName, false);
+
+    [TestMethod]
+    public async Task Ef_Delete_Validation_Should_Fail()
+    {
+        await TestRunner.Authenticate();
+        var faked = await GenerateCreateRequestAsync();
+        faked.FirstName = "Block";
+        var created = await PostAsync(faked);
+
+        var deleteResponse = await $"{Url}/{created.Id}".WithAuth().AllowHttpStatus(400).DeleteAsync();
+
+        deleteResponse.Should().NotBeNull();
+        deleteResponse.StatusCode.Should().Be(400);
+
+        var deleteResponseModel = await deleteResponse.GetJsonAsync<ValidationProblemDetails>();
+        deleteResponseModel.Should().NotBeNull();
+        deleteResponseModel.Errors.Should().NotBeNull();
+        deleteResponseModel.Errors.Should().ContainKey(nameof(PersonViewModelBase.FirstName));
+        deleteResponseModel.Errors[nameof(PersonViewModelBase.FirstName)].Should()
+            .Contain("Cannot delete a person with the first name 'Block'");
+    }
 
     [TestMethod]
     public async Task Export_Should_Work()

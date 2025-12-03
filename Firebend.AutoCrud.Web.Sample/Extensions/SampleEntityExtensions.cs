@@ -219,6 +219,7 @@ public static class SampleEntityExtensions
                     .WithMaxExportPageSize(50)
                     .WithVersionedRoute(routePrefix: "api")
                     .WithValidationService<PersonValidationService>()
+                    .WithDeleteValidationService<PersonDeleteValidationService>()
                     //.AddAuthorizationPolicies()
                     .Builder
                     .WithRegistration<ICustomFieldsValidationService<Guid, EfPerson, V1>,
