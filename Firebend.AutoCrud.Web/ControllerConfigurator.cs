@@ -50,6 +50,7 @@ public partial class
         WithOpenApiGroupName(name);
 
         WithValidationService<DefaultEntityValidationService<TKey, TEntity, TVersion>>(false);
+        WithDeleteValidationService<DefaultEntityDeleteValidationService<TKey, TEntity, TVersion>>(false);
 
         Builder.WithRegistration<IEntityKeyParser<TKey, TEntity, TVersion>, DefaultEntityKeyParser<TKey, TEntity, TVersion>>(false);
 
@@ -1062,6 +1063,38 @@ public partial class
     public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithValidationService<TService>(bool replace = true)
     {
         var type = typeof(IEntityValidationService<,,>)
+            .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion));
+
+        if (!type.IsAssignableFrom(typeof(TService)))
+        {
+            throw new ArgumentException($"The service type {typeof(TService).Name} does not implement {type.Name}");
+        }
+
+        Builder.WithRegistration(type, typeof(TService), replace);
+
+        return this;
+    }
+
+
+    /// <summary>
+    /// Registers a delete validation service for an entity
+    /// </summary>
+    /// <typeparam name="TService">The delete validation service to use</typeparam>
+    /// <param name="replace">Whether to replace the existing delete validation service; default=<code>true</code></param>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithDeleteValidationService<DeleteValidationService>()
+    /// </code>
+    /// </example>
+    public ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> WithDeleteValidationService<TService>(bool replace = true)
+    {
+        var type = typeof(IEntityDeleteValidationService<,,>)
             .MakeGenericType(Builder.EntityKeyType, Builder.EntityType, typeof(TVersion));
 
         if (!type.IsAssignableFrom(typeof(TService)))

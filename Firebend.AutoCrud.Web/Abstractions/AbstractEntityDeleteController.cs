@@ -19,15 +19,21 @@ public abstract class AbstractEntityDeleteController<TKey, TEntity, TVersion, TV
     where TViewModel : class
 {
     private readonly IEntityDeleteService<TKey, TEntity> _deleteService;
+    private readonly IEntityReadService<TKey, TEntity> _readService;
+    private readonly IEntityDeleteValidationService<TKey, TEntity, TVersion> _validationService;
     private readonly IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> _viewModelMapper;
 
     protected AbstractEntityDeleteController(IEntityDeleteService<TKey, TEntity> deleteService,
         IEntityKeyParser<TKey, TEntity, TVersion> entityKeyParser,
         IReadViewModelMapper<TKey, TEntity, TVersion, TViewModel> viewModelMapper,
-        IOptions<ApiBehaviorOptions> apiOptions) : base(entityKeyParser, apiOptions)
+        IOptions<ApiBehaviorOptions> apiOptions,
+        IEntityReadService<TKey, TEntity> readService,
+        IEntityDeleteValidationService<TKey, TEntity, TVersion> validationService) : base(entityKeyParser, apiOptions)
     {
         _deleteService = deleteService;
         _viewModelMapper = viewModelMapper;
+        _readService = readService;
+        _validationService = validationService;
     }
 
     [HttpDelete("{id}")]
@@ -41,6 +47,7 @@ public abstract class AbstractEntityDeleteController<TKey, TEntity, TVersion, TV
         [Required][FromRoute] string id,
         CancellationToken cancellationToken)
     {
+        Response.RegisterForDispose(_readService);
         Response.RegisterForDispose(_deleteService);
 
         var key = GetKey(id);
@@ -50,12 +57,25 @@ public abstract class AbstractEntityDeleteController<TKey, TEntity, TVersion, TV
             return GetInvalidModelStateResult();
         }
 
-        var deleted = await _deleteService.DeleteAsync(key.Value, cancellationToken);
+        var entity = await _readService.GetByKeyAsync(key.Value, cancellationToken);
 
-        if (deleted == null)
+        if (entity == null)
         {
             return NotFound(new { id });
         }
+
+        var validationResult = await _validationService.ValidateAsync(entity, cancellationToken);
+
+        if (!validationResult.WasSuccessful)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyPath, error.Error);
+            }
+            return GetInvalidModelStateResult();
+        }
+
+        var deleted = await _deleteService.DeleteAsync(key.Value, cancellationToken);
 
         var mapped = await _viewModelMapper.ToAsync(deleted, cancellationToken);
 
