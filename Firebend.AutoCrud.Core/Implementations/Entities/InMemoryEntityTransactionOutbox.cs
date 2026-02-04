@@ -69,7 +69,12 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
             })
             .ToArray();
 
-        await Task.WhenAll(tasks);
+        var exceptions = (await Task.WhenAll(tasks)).Where(x => x is not null);
+
+        if (exceptions.Any())
+        {
+            throw new AggregateException("One or more enrollment actions failed", exceptions);
+        }
 
         _enrollments.Remove(transactionId);
     }
