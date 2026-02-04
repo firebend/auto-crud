@@ -6,12 +6,19 @@ using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Extensions;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Core.Implementations.Entities;
 
 public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
 {
     private readonly Dictionary<string, List<EntityTransactionOutboxEnrollment>> _enrollments = new();
+    private readonly ILogger<InMemoryEntityTransactionOutbox> _logger;
+
+    public InMemoryEntityTransactionOutbox(ILogger<InMemoryEntityTransactionOutbox> logger)
+    {
+        _logger = logger;
+    }
 
     public async Task AddEnrollmentAsync(EntityTransactionOutboxEnrollment enrollment, CancellationToken cancellationToken)
     {
@@ -69,7 +76,13 @@ public class InMemoryEntityTransactionOutbox : IEntityTransactionOutbox
             })
             .ToArray();
 
-        await Task.WhenAll(tasks);
+        var exceptions = (await Task.WhenAll(tasks)).Where(x => x is not null);
+
+        if (exceptions.Any())
+        {
+            _logger.LogError("One or more enrollment actions failed for transaction {TransactionId}", transactionId);
+            throw new AggregateException("One or more enrollment actions failed", exceptions);
+        }
 
         _enrollments.Remove(transactionId);
     }
