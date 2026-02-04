@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="16.1.1"></a>
+## [16.1.1](https://www.github.com/firebend/auto-crud/releases/tag/v16.1.1) (2026-02-04)
+
+### Other
+
+* transaction outbox exceptions ([#430](https://www.github.com/firebend/auto-crud/issues/430)) ([3e8249c](https://www.github.com/firebend/auto-crud/commit/3e8249c21e82840fcac1277b2081c94bcdbaeae0))
+
 <a name="16.1.0"></a>
 ## [16.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v16.1.0) (2025-12-03)
 
