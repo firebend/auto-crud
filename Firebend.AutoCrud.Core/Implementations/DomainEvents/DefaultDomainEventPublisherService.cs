@@ -9,6 +9,7 @@ using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Firebend.JsonPatch.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents;
 
@@ -20,6 +21,7 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
     private readonly IDomainEventContextProvider _contextProvider;
     private readonly IEntityReadService<TKey, TEntity> _readService;
     private readonly IJsonPatchGenerator _patchGenerator;
+    private readonly ILogger<DefaultDomainEventPublisherService<TKey, TEntity>> _logger;
     private readonly bool _hasPublisher;
     private readonly bool _hasDomainEventContextProvider;
 
@@ -27,22 +29,26 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
         IEntityReadService<TKey, TEntity> readService,
         IJsonPatchGenerator patchGenerator,
         IEntityDomainEventPublisher<TKey, TEntity> publisher = null,
-        IDomainEventContextProvider contextProvider = null)
+        IDomainEventContextProvider contextProvider = null,
+        ILogger<DefaultDomainEventPublisherService<TKey, TEntity>> logger = null)
     {
         _publisher = publisher;
         _contextProvider = contextProvider;
         _readService = readService;
         _patchGenerator = patchGenerator;
+        _logger = logger;
         _hasPublisher = publisher is not null and not DefaultEntityDomainEventPublisher<TKey, TEntity>;
         _hasDomainEventContextProvider = contextProvider is not null and not DefaultDomainEventContextProvider;
     }
 
     public async Task<TEntity> ReadAndPublishAddedEventAsync(TKey key, IEntityTransaction transaction, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("ReadAndPublishAddedEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
         var entity = await _readService.GetByKeyAsync(key, transaction, cancellationToken);
 
         if (!_hasPublisher)
         {
+            _logger.LogDebug("No domain event publisher configured. Skipping publish of added event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
             return entity;
         }
 
@@ -66,10 +72,12 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
         Func<TEntity, TEntity, JsonPatchDocument<TEntity>> patchGenerator,
         CancellationToken cancellationToken)
     {
+        _logger.LogDebug("ReadAndPublishUpdateEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
         var entity = await _readService.GetByKeyAsync(key, transaction, cancellationToken);
 
         if (!_hasPublisher)
         {
+            _logger.LogDebug("No domain event publisher configured. Skipping publish of updated event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
             return entity;
         }
 
@@ -120,8 +128,10 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
 
     public async Task PublishDeleteEventAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("PublishDeleteEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, entity.Id);
         if (!_hasPublisher)
         {
+            _logger.LogDebug("No domain event publisher configured. Skipping publish of deleted event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, entity.Id);
             return;
         }
 
