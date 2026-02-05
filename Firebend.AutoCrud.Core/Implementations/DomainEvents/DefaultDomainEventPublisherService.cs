@@ -43,12 +43,12 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
 
     public async Task<TEntity> ReadAndPublishAddedEventAsync(TKey key, IEntityTransaction transaction, CancellationToken cancellationToken)
     {
-        _logger.LogWarning("ReadAndPublishAddedEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
+        _logger.LogDebug("ReadAndPublishAddedEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
         var entity = await _readService.GetByKeyAsync(key, transaction, cancellationToken);
 
         if (!_hasPublisher)
         {
-            _logger.LogWarning("No domain event publisher configured. Skipping publish of added event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
+            _logger.LogDebug("No domain event publisher configured. Skipping publish of added event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
             return entity;
         }
 
@@ -72,12 +72,12 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
         Func<TEntity, TEntity, JsonPatchDocument<TEntity>> patchGenerator,
         CancellationToken cancellationToken)
     {
-        _logger.LogWarning("ReadAndPublishUpdateEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
+        _logger.LogDebug("ReadAndPublishUpdateEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
         var entity = await _readService.GetByKeyAsync(key, transaction, cancellationToken);
 
         if (!_hasPublisher)
         {
-            _logger.LogWarning("No domain event publisher configured. Skipping publish of updated event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
+            _logger.LogDebug("No domain event publisher configured. Skipping publish of updated event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, key);
             return entity;
         }
 
@@ -128,10 +128,10 @@ public class DefaultDomainEventPublisherService<TKey, TEntity> : IDomainEventPub
 
     public async Task PublishDeleteEventAsync(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
     {
-        _logger.LogWarning("PublishDeleteEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, entity.Id);
+        _logger.LogDebug("PublishDeleteEvent called for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, entity.Id);
         if (!_hasPublisher)
         {
-            _logger.LogWarning("No domain event publisher configured. Skipping publish of deleted event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, entity.Id);
+            _logger.LogDebug("No domain event publisher configured. Skipping publish of deleted event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, entity.Id);
             return;
         }
 

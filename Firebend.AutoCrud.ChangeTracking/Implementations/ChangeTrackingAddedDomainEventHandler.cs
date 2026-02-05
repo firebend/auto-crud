@@ -28,7 +28,7 @@ public class ChangeTrackingAddedDomainEventHandler<TKey, TEntity> :
 
     public Task EntityAddedAsync(EntityAddedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
     {
-        _logger.LogWarning("Handling added event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, domainEvent.Entity.Id);
+        _logger.LogDebug("Handling added event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, domainEvent.Entity.Id);
         return _changeTrackingService.TrackAddedAsync(domainEvent, cancellationToken);
     }
 

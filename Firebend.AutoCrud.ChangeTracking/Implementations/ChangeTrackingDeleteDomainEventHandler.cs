@@ -28,7 +28,7 @@ public class ChangeTrackingDeleteDomainEventHandler<TKey, TEntity> :
 
     public Task EntityDeletedAsync(EntityDeletedDomainEvent<TEntity> domainEvent, CancellationToken cancellationToken)
     {
-        _logger.LogWarning("Handling deleted event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, domainEvent.Entity.Id);
+        _logger.LogDebug("Handling deleted event for entity of type {EntityType} with key {Key}.", typeof(TEntity).Name, domainEvent.Entity.Id);
         return _changeTrackingService.TrackDeleteAsync(domainEvent, cancellationToken);
     }
 
