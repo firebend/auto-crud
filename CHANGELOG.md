@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="16.1.2"></a>
+## [16.1.2](https://www.github.com/firebend/auto-crud/releases/tag/v16.1.2) (2026-02-05)
+
+### Other
+
+* logging to diagnose change events ([#431](https://www.github.com/firebend/auto-crud/issues/431)) ([e87e2b2](https://www.github.com/firebend/auto-crud/commit/e87e2b246d2d0e7398bd5deab73eb9c8d5cb385e))
+
 <a name="16.1.1"></a>
 ## [16.1.1](https://www.github.com/firebend/auto-crud/releases/tag/v16.1.1) (2026-02-04)
 
