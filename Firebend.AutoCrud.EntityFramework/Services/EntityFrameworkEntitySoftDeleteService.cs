@@ -1,7 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Firebend.AutoCrud.Core.Implementations;
-using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
 using Microsoft.AspNetCore.JsonPatch;
@@ -10,8 +9,7 @@ namespace Firebend.AutoCrud.EntityFramework.Services;
 
 public class EntityFrameworkEntitySoftDeleteService<TKey, TEntity>(
     IEntityUpdateService<TKey, TEntity> updateService,
-    ISessionTransactionManager transactionManager,
-    IEntityCacheService<TKey, TEntity> cacheService = null)
+    ISessionTransactionManager transactionManager)
     : BaseDisposable,
         IEntityDeleteService<TKey, TEntity>
     where TKey : struct
@@ -22,7 +20,6 @@ public class EntityFrameworkEntitySoftDeleteService<TKey, TEntity>(
         CancellationToken cancellationToken)
     {
         var patch = new JsonPatchDocument<TEntity>();
-        _ = cacheService;
 
         patch.Add(x => x.IsDeleted, true);
 
