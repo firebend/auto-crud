@@ -4,6 +4,7 @@ using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.EntityFramework.Services;
@@ -34,6 +35,14 @@ public class EntityFrameworkEntityDeleteService<TKey, TEntity> : BaseDisposable,
 
         if (_cacheService != null)
         {
+            if (transaction is not null)
+            {
+                await transaction.AddFunctionEnrollmentAsync<TEntity, FunctionTransactionOutboxEnrollment>(
+                    ct => _cacheService.RemoveAsync(key, ct),
+                    cancellationToken);
+                return deleted;
+            }
+
             await _cacheService.RemoveAsync(key, cancellationToken);
         }
 

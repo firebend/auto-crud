@@ -21,19 +21,13 @@ public class MongoEntitySoftDeleteService<TKey, TEntity>(
         CancellationToken cancellationToken)
     {
         var patch = new JsonPatchDocument<TEntity>();
+        _ = cacheService;
 
         patch.Add(x => x.IsDeleted, true);
 
-        var deleted = await (entityTransaction is not null
+        return await (entityTransaction is not null
             ? updateService.PatchAsync(key, patch, entityTransaction, cancellationToken)
             : updateService.PatchAsync(key, patch, cancellationToken));
-
-        if (cacheService != null)
-        {
-            await cacheService.RemoveAsync(key, cancellationToken);
-        }
-
-        return deleted;
     }
 
     public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)

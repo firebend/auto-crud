@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
 
 namespace Firebend.AutoCrud.Mongo.Services;
@@ -25,6 +26,14 @@ public class MongoEntityDeleteService<TKey, TEntity>(
 
         if (cacheService != null)
         {
+            if (transaction is not null)
+            {
+                await transaction.AddFunctionEnrollmentAsync<TEntity, FunctionTransactionOutboxEnrollment>(
+                    ct => cacheService.RemoveAsync(key, ct),
+                    cancellationToken);
+                return deleted;
+            }
+
             await cacheService.RemoveAsync(key, cancellationToken);
         }
 

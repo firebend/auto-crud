@@ -5,6 +5,7 @@ using Firebend.AutoCrud.Core.Implementations;
 using Firebend.AutoCrud.Core.Interfaces.Caching;
 using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.Entities;
+using Firebend.AutoCrud.Core.Models.Entities;
 using Firebend.AutoCrud.Mongo.Interfaces;
 using Microsoft.AspNetCore.JsonPatch;
 
@@ -31,7 +32,7 @@ public class MongoEntityUpdateService<TKey, TEntity>(
         // Allow creating entities through PUT to make it easier to set the guid in the client
         // when creating new entities. ( ACID2.0 )
         var updated = await updateClient.UpsertAsync(entity, transaction, cancellationToken);
-        await PostUpdate(updated, cancellationToken);
+        await PostUpdate(updated, transaction, cancellationToken);
         return updated;
     }
 
@@ -41,7 +42,7 @@ public class MongoEntityUpdateService<TKey, TEntity>(
     {
         transactionManager.AddTransaction(entityTransaction);
         var updated = await updateClient.UpsertAsync(entity, entityTransaction, cancellationToken);
-        await PostUpdate(updated, cancellationToken);
+        await PostUpdate(updated, entityTransaction, cancellationToken);
         return updated;
     }
 
@@ -56,7 +57,7 @@ public class MongoEntityUpdateService<TKey, TEntity>(
 
         var transaction = await transactionManager.GetTransaction<TKey, TEntity>(cancellationToken);
         var updated = await updateClient.UpdateAsync(key, jsonPatchDocument, transaction, cancellationToken);
-        await PostUpdate(updated, cancellationToken);
+        await PostUpdate(updated, transaction, cancellationToken);
         return updated;
     }
 
@@ -67,14 +68,22 @@ public class MongoEntityUpdateService<TKey, TEntity>(
     {
         transactionManager.AddTransaction(entityTransaction);
         var updated = await updateClient.UpdateAsync(key, jsonPatchDocument, entityTransaction, cancellationToken);
-        await PostUpdate(updated, cancellationToken);
+        await PostUpdate(updated, entityTransaction, cancellationToken);
         return updated;
     }
 
-    private async Task PostUpdate(TEntity entity, CancellationToken cancellationToken)
+    private async Task PostUpdate(TEntity entity, IEntityTransaction transaction, CancellationToken cancellationToken)
     {
         if (cacheService is null)
         {
+            return;
+        }
+
+        if (transaction is not null)
+        {
+            await transaction.AddFunctionEnrollmentAsync<TEntity, FunctionTransactionOutboxEnrollment>(
+                ct => cacheService.RemoveAsync(entity.Id, ct),
+                cancellationToken);
             return;
         }
 

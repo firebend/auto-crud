@@ -22,19 +22,15 @@ public class EntityFrameworkEntitySoftDeleteService<TKey, TEntity>(
         CancellationToken cancellationToken)
     {
         var patch = new JsonPatchDocument<TEntity>();
+        _ = cacheService;
 
         patch.Add(x => x.IsDeleted, true);
 
-        var deleted = await (entityTransaction != null
+        return await (entityTransaction != null
             ? updateService.PatchAsync(key, patch, entityTransaction, cancellationToken)
             : updateService.PatchAsync(key, patch, cancellationToken));
 
-        if (cacheService != null)
-        {
-            await cacheService.RemoveAsync(key, cancellationToken);
-        }
-
-        return deleted;
+        // cache invalidation not necessary since this is handled by the update service
     }
 
     public async Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
