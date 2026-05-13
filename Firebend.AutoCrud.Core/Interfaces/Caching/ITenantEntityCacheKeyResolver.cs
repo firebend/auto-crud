@@ -7,5 +7,5 @@ namespace Firebend.AutoCrud.Core.Interfaces.Caching;
 
 public interface ITenantEntityCacheKeyResolver
 {
-    Task<string?> GetTenantIdSegmentAsync(Type entityType, CancellationToken cancellationToken);
+    public Task<string?> GetTenantIdSegmentAsync(Type entityType, CancellationToken cancellationToken);
 }

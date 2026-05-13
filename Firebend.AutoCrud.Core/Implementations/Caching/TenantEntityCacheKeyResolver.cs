@@ -55,21 +55,11 @@ public class TenantEntityCacheKeyResolver(IServiceProvider serviceProvider) : IT
     {
         return async cancellationToken =>
         {
-            var tenantProvider = serviceProvider.GetService(providerType);
-
-            if (tenantProvider is null)
-            {
-                throw new InvalidOperationException(
+            var tenantProvider = serviceProvider.GetService(providerType) ?? throw new InvalidOperationException(
                     $"Tenant entity cache keys require a registered {providerType.FullName}.");
-            }
 
-            var tenant = await ((ITenantEntityProvider<TTenantKey>)tenantProvider).GetTenantAsync(cancellationToken);
-
-            if (tenant is null)
-            {
-                throw new InvalidOperationException(
+            var tenant = await ((ITenantEntityProvider<TTenantKey>)tenantProvider).GetTenantAsync(cancellationToken) ?? throw new InvalidOperationException(
                     $"Unable to resolve tenant for entity cache key using {providerType.FullName}.");
-            }
 
             var tenantId = tenant.TenantId;
 
