@@ -6,6 +6,7 @@ using Firebend.AutoCrud.Core.Interfaces.Models;
 using Firebend.AutoCrud.Core.Interfaces.Services.DomainEvents;
 using Firebend.AutoCrud.Core.Models.DomainEvents;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Firebend.AutoCrud.Core.Implementations.DomainEvents;
 
@@ -14,10 +15,12 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
     where TEntity : class, IEntity<TKey>
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<ServiceProviderDomainEventPublisher<TKey, TEntity>> _logger;
 
-    public ServiceProviderDomainEventPublisher(IServiceProvider serviceProvider)
+    public ServiceProviderDomainEventPublisher(IServiceProvider serviceProvider, ILogger<ServiceProviderDomainEventPublisher<TKey, TEntity>> logger)
     {
         _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
 
@@ -103,7 +106,12 @@ public class ServiceProviderDomainEventPublisher<TKey, TEntity> : IEntityDomainE
                 }
             });
 
-        await Task.WhenAll(tasks);
+        var exceptions = await Task.WhenAll(tasks);
+
+        foreach (var exception in exceptions.Where(ex => ex != null).ToArray())
+        {
+            _logger.LogError(exception, "Failed to publish domain event {EventType}", typeof(TEvent).Name);
+        }
 
         foreach (var subscriber in subscribersArray)
         {

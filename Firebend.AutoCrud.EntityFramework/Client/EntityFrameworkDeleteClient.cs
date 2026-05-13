@@ -118,7 +118,7 @@ public class EntityFrameworkDeleteClient<TKey, TEntity> : AbstractDbContextRepo<
     public Task<TEntity> DeleteAsync(TKey filter,
         IEntityTransaction entityTransaction,
         CancellationToken cancellationToken)
-        => DeleteInternalAsync(filter, null, cancellationToken);
+        => DeleteInternalAsync(filter, entityTransaction, cancellationToken);
 
     public virtual Task<TEntity> DeleteAsync(TKey key, CancellationToken cancellationToken)
         => DeleteInternalAsync(key, null, cancellationToken);
