@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
@@ -21,6 +22,12 @@ public class TestEntity : IEntity<int>
     public int Id { get; set; }
 }
 
+public class TestTenantEntity : IEntity<int>, ITenantEntity<Guid>
+{
+    public int Id { get; set; }
+    public Guid TenantId { get; set; }
+}
+
 [TestFixture]
 public class DefaultEntityCacheServiceTests
 {
@@ -41,6 +48,11 @@ public class DefaultEntityCacheServiceTests
         _fixture.Inject<IEntityCacheOptions>(_cacheOptions);
         _fixture.Inject<IEntityCacheSerializer>(
             new JsonEntityCacheSerializer(_fixture.Freeze<ILogger<JsonEntityCacheSerializer>>()));
+
+        var tenantCacheKeyResolver = new Mock<ITenantEntityCacheKeyResolver>();
+        tenantCacheKeyResolver.Setup(x => x.GetTenantIdSegmentAsync(It.IsAny<Type>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string)null);
+        _fixture.Inject(tenantCacheKeyResolver.Object);
     }
 
     [Test]
@@ -76,6 +88,44 @@ public class DefaultEntityCacheServiceTests
         // Assert
         var cached = await _memoryCache.GetAsync("TestPrefix:TestEntity:1");
         cached.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task EntityCacheService_Should_Use_Tenant_Key_When_Entity_Is_Tenant_Entity()
+    {
+        var tenantId = Guid.NewGuid();
+        var tenantCacheKeyResolver = new Mock<ITenantEntityCacheKeyResolver>();
+        tenantCacheKeyResolver.Setup(x => x.GetTenantIdSegmentAsync(typeof(TestTenantEntity), default))
+            .ReturnsAsync($"{tenantId}");
+
+        _fixture.Inject<IDistributedCache>(_memoryCache);
+        _fixture.Inject(tenantCacheKeyResolver.Object);
+
+        var testEntity = new TestTenantEntity { Id = 1, TenantId = tenantId };
+        var sut = _fixture.Create<DefaultEntityCacheService<int, TestTenantEntity>>();
+
+        await sut.SetAsync(testEntity);
+
+        var cached = await _memoryCache.GetAsync($"{tenantId}:TestTenantEntity:1");
+        cached.Should().NotBeNull();
+    }
+
+    [Test]
+    public void EntityCacheService_Should_Throw_When_Tenant_Provider_Is_Not_Registered()
+    {
+        var tenantCacheKeyResolver = new Mock<ITenantEntityCacheKeyResolver>();
+        tenantCacheKeyResolver.Setup(x => x.GetTenantIdSegmentAsync(typeof(TestTenantEntity), default))
+            .ThrowsAsync(new InvalidOperationException());
+
+        _fixture.Inject<IDistributedCache>(_memoryCache);
+        _fixture.Inject(tenantCacheKeyResolver.Object);
+
+        var testEntity = new TestTenantEntity { Id = 1, TenantId = Guid.NewGuid() };
+        var sut = _fixture.Create<DefaultEntityCacheService<int, TestTenantEntity>>();
+
+        async Task Action() => await sut.SetAsync(testEntity);
+
+        Assert.ThrowsAsync<InvalidOperationException>(Action);
     }
 
     [Test]

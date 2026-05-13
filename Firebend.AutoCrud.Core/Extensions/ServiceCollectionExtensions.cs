@@ -32,6 +32,7 @@ public static class ServiceCollectionExtensions
         var cacheOptions = new EntityCacheOptions();
         configure?.Invoke(cacheOptions);
         services.AddScoped<IEntityCacheOptions>((_) => cacheOptions);
+        services.TryAddScoped<ITenantEntityCacheKeyResolver, TenantEntityCacheKeyResolver>();
         services.TryAddSingleton<IEntityCacheSerializer, JsonEntityCacheSerializer>();
         CheckDistributedCache(services);
         return services;
@@ -42,6 +43,7 @@ public static class ServiceCollectionExtensions
         where TCacheSerializer : class, IEntityCacheSerializer
     {
         services.AddScoped<IEntityCacheOptions, TCacheOptions>();
+        services.TryAddScoped<ITenantEntityCacheKeyResolver, TenantEntityCacheKeyResolver>();
         services.AddSingleton<IEntityCacheSerializer, TCacheSerializer>();
         CheckDistributedCache(services);
         return services;
