@@ -12,21 +12,21 @@ namespace Firebend.AutoCrud.Core.Implementations.Caching;
 
 public class TenantEntityCacheKeyResolver(IServiceProvider serviceProvider) : ITenantEntityCacheKeyResolver
 {
-    private readonly ConcurrentDictionary<Type, TenantEntityCacheKeyMetadata> _tenantEntityCacheKeyMetadata = [];
+    private static readonly ConcurrentDictionary<Type, TenantEntityCacheKeyMetadata> TenantEntityCacheKeyMetadataCache = [];
 
     public async Task<string?> GetTenantIdSegmentAsync(Type entityType, CancellationToken cancellationToken)
     {
-        var metadata = _tenantEntityCacheKeyMetadata.GetOrAdd(entityType, CreateTenantEntityCacheKeyMetadata);
+        var metadata = TenantEntityCacheKeyMetadataCache.GetOrAdd(entityType, CreateTenantEntityCacheKeyMetadata);
 
         if (metadata.GetTenantIdSegmentAsync is null)
         {
             return null;
         }
 
-        return await metadata.GetTenantIdSegmentAsync(cancellationToken);
+        return await metadata.GetTenantIdSegmentAsync(serviceProvider, cancellationToken);
     }
 
-    private TenantEntityCacheKeyMetadata CreateTenantEntityCacheKeyMetadata(Type entityType)
+    private static TenantEntityCacheKeyMetadata CreateTenantEntityCacheKeyMetadata(Type entityType)
     {
         var tenantKeyType = entityType
             .GetInterfaces()
@@ -40,22 +40,20 @@ public class TenantEntityCacheKeyResolver(IServiceProvider serviceProvider) : IT
         }
 
         var providerType = typeof(ITenantEntityProvider<>).MakeGenericType(tenantKeyType);
-        var getTenantIdSegmentAsync = (Func<CancellationToken, Task<string>>)GetType()
+        var getTenantIdSegmentAsync = (Func<IServiceProvider, CancellationToken, Task<string>>)typeof(TenantEntityCacheKeyResolver)
             .GetMethod(nameof(CreateGetTenantIdSegmentAsync), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
             .MakeGenericMethod(tenantKeyType)
-            .Invoke(null, [serviceProvider, providerType])!;
-
+            .Invoke(null, [providerType])!;
         return new TenantEntityCacheKeyMetadata(getTenantIdSegmentAsync);
     }
 
-    private static Func<CancellationToken, Task<string>> CreateGetTenantIdSegmentAsync<TTenantKey>(
-        IServiceProvider serviceProvider,
+    private static Func<IServiceProvider, CancellationToken, Task<string>> CreateGetTenantIdSegmentAsync<TTenantKey>(
         Type providerType)
         where TTenantKey : struct
     {
-        return async cancellationToken =>
+        return async (sp, cancellationToken) =>
         {
-            var tenantProvider = serviceProvider.GetService(providerType) ?? throw new InvalidOperationException(
+            var tenantProvider = sp.GetService(providerType) ?? throw new InvalidOperationException(
                     $"Tenant entity cache keys require a registered {providerType.FullName}.");
 
             var tenant = await ((ITenantEntityProvider<TTenantKey>)tenantProvider).GetTenantAsync(cancellationToken) ?? throw new InvalidOperationException(
@@ -73,5 +71,5 @@ public class TenantEntityCacheKeyResolver(IServiceProvider serviceProvider) : IT
         };
     }
 
-    private sealed record TenantEntityCacheKeyMetadata(Func<CancellationToken, Task<string>>? GetTenantIdSegmentAsync);
+    private sealed record TenantEntityCacheKeyMetadata(Func<IServiceProvider, CancellationToken, Task<string>>? GetTenantIdSegmentAsync);
 }
