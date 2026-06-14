@@ -88,7 +88,7 @@ public class EntityFrameworkEntityBuilder<TKey, TEntity> : EntityCrudBuilder<TKe
 
         var dbContextProvider = typeof(DbContextProvider<,,>).MakeGenericType(EntityKeyType, EntityType, DbContextType);
 
-        WithRegistration<IDbContextProvider<TKey, TEntity>>(dbContextProvider);
+        WithRegistration<IDbContextProvider<TKey, TEntity>>(dbContextProvider, replace: false);
     }
 
     /// <summary>

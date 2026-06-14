@@ -1,3 +1,4 @@
+using System;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,7 +73,10 @@ public class DbContextProvider<TKey, TEntity, TContext>(
     public async Task<IDbContext> GetDbContextAsync(DbTransaction transaction,
         CancellationToken cancellationToken)
     {
-        await AutoCrudEfMigrationsMediator.HaveMigrationsRan<TContext>().Task;
+        if (WaitForMigrations)
+        {
+            await AutoCrudEfMigrationsMediator.HaveMigrationsRan<TContext>().Task;
+        }
 
         var dbContext = await CreateDbContextAsync(cancellationToken);
         dbContext.UseUserDefinedTransaction = true;
