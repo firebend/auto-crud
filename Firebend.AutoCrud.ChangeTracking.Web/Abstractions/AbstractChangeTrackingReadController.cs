@@ -94,3 +94,89 @@ public abstract class AbstractChangeTrackingReadController<TKey, TEntity, TVersi
         });
     }
 }
+
+/// <summary>
+/// Abstract controller exposing a `/changes` endpoint for a custom <typeparamref name="TChangeTrackingEntity"/>
+/// change-tracking row type, mapped to a custom <typeparamref name="TChangeTrackingViewModel"/> DTO.
+/// </summary>
+[ApiController]
+public abstract class AbstractChangeTrackingReadController<TKey, TEntity, TVersion, TViewModel, TChangeTrackingEntity, TChangeTrackingViewModel>
+    : AbstractControllerWithKeyParser<TKey, TEntity, TVersion>
+    where TKey : struct
+    where TEntity : class, IEntity<TKey>
+    where TVersion : class, IAutoCrudApiVersion
+    where TViewModel : class
+    where TChangeTrackingEntity : ChangeTrackingEntity<TKey, TEntity>
+    where TChangeTrackingViewModel : ChangeTrackingModel<TKey, TViewModel>, new()
+{
+    private readonly IChangeTrackingReadService<TKey, TEntity, TChangeTrackingEntity> _read;
+    private readonly IMaxPageSize<TKey, TEntity, TVersion> _maxPageSize;
+    private readonly IChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TViewModel, TChangeTrackingEntity, TChangeTrackingViewModel> _mapper;
+
+    protected AbstractChangeTrackingReadController(
+        IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
+        IOptions<ApiBehaviorOptions> apiOptions,
+        IChangeTrackingReadService<TKey, TEntity, TChangeTrackingEntity> read,
+        IMaxPageSize<TKey, TEntity, TVersion> maxPageSize,
+        IChangeTrackingViewModelMapper<TKey, TEntity, TVersion, TViewModel, TChangeTrackingEntity, TChangeTrackingViewModel> mapper) : base(keyParser, apiOptions)
+    {
+        _read = read;
+        _maxPageSize = maxPageSize;
+        _mapper = mapper;
+    }
+
+    [HttpGet("{entityId}/changes")]
+    [SwaggerOperation("Gets change tracking history for a specific {entityName}")]
+    [SwaggerResponse(200, "Change tracking history for the given entity key")]
+    [SwaggerResponse(403, "Forbidden")]
+    [Produces("application/json")]
+    public virtual async Task<ActionResult<EntityPagedResponse<TChangeTrackingViewModel>>> GetChangesAsync(
+        [Required][FromRoute] string entityId,
+        [Required][FromQuery] ModifiedEntitySearchRequest changeSearchRequest,
+        CancellationToken cancellationToken)
+    {
+        Response.RegisterForDispose(_read);
+
+        var key = GetKey(entityId);
+
+        if (!key.HasValue)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var validationResult = changeSearchRequest.ValidateSearchRequest(_maxPageSize?.MaxPageSize);
+
+        if (!validationResult.WasSuccessful)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                ModelState.AddModelError(error.PropertyPath, error.Error);
+            }
+
+            return GetInvalidModelStateResult();
+        }
+
+        changeSearchRequest.DoCount ??= true;
+
+        var changeRequest = new ChangeTrackingSearchRequest<TKey>();
+        changeSearchRequest.CopyPropertiesTo(changeRequest);
+        changeRequest.EntityId = key.Value;
+
+        var changes = await _read.GetChangesByEntityId(changeRequest, cancellationToken);
+
+        if (changes.Data.IsEmpty())
+        {
+            return Ok(changes);
+        }
+
+        var mapped = await _mapper.MapAsync(changes.Data, cancellationToken);
+
+        return Ok(new EntityPagedResponse<TChangeTrackingViewModel>
+        {
+            Data = mapped,
+            CurrentPage = changes.CurrentPage,
+            TotalRecords = changes.TotalRecords,
+            CurrentPageSize = changes.CurrentPageSize
+        });
+    }
+}
