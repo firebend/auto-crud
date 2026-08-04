@@ -56,4 +56,27 @@ public class ExtensionsTests
         configurator.Builder.Registrations.Should().ContainKey(typeof(IChangeTrackingService<Guid, MongoExtensionsTestEntity>));
         configurator.Builder.Registrations.Should().NotContainKey(typeof(IChangeTrackingReadService<Guid, MongoExtensionsTestEntity>));
     }
+
+    [Test]
+    public void WithMongoChangeTracking_CustomRowTypeOverload_RegistersTier2ReadService()
+    {
+        var configurator = BuildConfigurator();
+
+        configurator.WithMongoChangeTracking<MongoDbEntityBuilder<Guid, MongoExtensionsTestEntity>, Guid, MongoExtensionsTestEntity, MongoExtensionsCustomRow>(
+            changeTracking => changeTracking.WithConnectionString("mongodb://localhost:27017"));
+
+        configurator.Builder.Registrations.Should()
+            .ContainKey(typeof(IChangeTrackingReadService<Guid, MongoExtensionsTestEntity, MongoExtensionsCustomRow>));
+    }
+
+    [Test]
+    public void WithMongoChangeTracking_DefaultOverload_RegistersTier2ReadServiceToo()
+    {
+        var configurator = BuildConfigurator();
+
+        configurator.WithMongoChangeTracking(changeTracking => changeTracking.WithConnectionString("mongodb://localhost:27017"));
+
+        configurator.Builder.Registrations.Should()
+            .ContainKey(typeof(IChangeTrackingReadService<Guid, MongoExtensionsTestEntity, ChangeTrackingEntity<Guid, MongoExtensionsTestEntity>>));
+    }
 }

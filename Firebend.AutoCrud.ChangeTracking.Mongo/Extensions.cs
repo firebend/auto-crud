@@ -63,6 +63,9 @@ public static class Extensions
     /// This function registers a <see cref="MongoChangeTrackingService{TEntityKey,TEntity,TChangeTrackingEntity}"/> to track changes and,
     /// when <typeparamref name="TChangeTrackingEntity"/> is the default <see cref="ChangeTrackingEntity{TKey,TEntity}"/> row type,
     /// a <see cref="MongoChangeTrackingReadRepository{TEntityKey,TEntity}"/> to read changes.
+    /// It always also registers a <see cref="MongoChangeTrackingReadRepository{TEntityKey,TEntity,TChangeTrackingEntity}"/>
+    /// keyed on <typeparamref name="TChangeTrackingEntity"/>, so a consumer using a custom row type can still read
+    /// changes back (including its extra fields) via <c>WithChangeTrackingControllers</c>.
     /// It also registers <see cref="ChangeTrackingAddedDomainEventHandler{TKey,TEntity}"/>, <see cref="ChangeTrackingUpdatedDomainEventHandler{TKey,TEntity}"/>,
     /// and <see cref="ChangeTrackingDeleteDomainEventHandler{TKey,TEntity}"/> to hook into the domain event pipeline and persist the changes.
     /// <param name="configurator">
@@ -115,28 +118,40 @@ public static class Extensions
         configurator.Builder.WithRegistration<IChangeTrackingService<TKey, TEntity>,
             MongoChangeTrackingService<TKey, TEntity, TChangeTrackingEntity>>(false);
 
-        // The read path (search, paged reads, the /changes endpoint) is hardcoded to the base
-        // ChangeTrackingEntity<TKey,TEntity> type and shared with the EF change-tracking
-        // implementation and the Web read controller via IChangeTrackingReadService<TKey,TEntity> -
-        // it can only be wired up when that's actually the row type in use.
+        // The old 2-arg IChangeTrackingReadService<TKey,TEntity> interface predates custom row
+        // types and can only be wired up when the row type in use actually is the base
+        // ChangeTrackingEntity<TKey,TEntity> type - mirroring the EF implementation for
+        // consistency, even though Mongo itself has no equivalent CLR-base-class query
+        // restriction. Its own dependencies (Mongo read client, order-by, search handler) are NOT
+        // registered here - the unconditional block below always supplies them, keyed on
+        // TChangeTrackingEntity, and when TChangeTrackingEntity is this same default type, that's
+        // exactly what this registration needs too, so registering them twice would be redundant.
         if (typeof(TChangeTrackingEntity) == typeof(ChangeTrackingEntity<TKey, TEntity>))
         {
-            configurator.Builder.WithRegistration<IMongoReadClient<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-                MongoReadClient<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
-
             configurator.Builder.WithRegistration<IChangeTrackingReadService<TKey, TEntity>,
                 MongoChangeTrackingReadRepository<TKey, TEntity>>(false);
-
-            configurator.Builder.WithRegistration<IDefaultEntityOrderByProvider<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-                DefaultEntityOrderByProviderModified<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
-
-            configurator.Builder.WithRegistration<IEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey, TEntity>>,
-                DefaultEntityQueryOrderByHandler<Guid, ChangeTrackingEntity<TKey, TEntity>>>(false);
-
-            configurator.Builder.WithRegistration<
-                IEntitySearchHandler<Guid, ChangeTrackingEntity<TKey, TEntity>, ChangeTrackingSearchRequest<TKey>>,
-                MongoFullTextSearchHandler<Guid, ChangeTrackingEntity<TKey, TEntity>, ChangeTrackingSearchRequest<TKey>>>(false);
         }
+
+        // Registers the tier-2/3 read path - the 3-arg IChangeTrackingReadService and everything it
+        // depends on (Mongo read client, order-by, search handler) - keyed on TChangeTrackingEntity
+        // itself, so it works for both the default and any custom row type. When TChangeTrackingEntity
+        // is the default ChangeTrackingEntity<TKey,TEntity>, these same registrations also satisfy the
+        // old 2-arg service registered above.
+        configurator.Builder.WithRegistration<IMongoReadClient<Guid, TChangeTrackingEntity>,
+            MongoReadClient<Guid, TChangeTrackingEntity>>(false);
+
+        configurator.Builder.WithRegistration<IChangeTrackingReadService<TKey, TEntity, TChangeTrackingEntity>,
+            MongoChangeTrackingReadRepository<TKey, TEntity, TChangeTrackingEntity>>(false);
+
+        configurator.Builder.WithRegistration<IDefaultEntityOrderByProvider<Guid, TChangeTrackingEntity>,
+            DefaultEntityOrderByProviderModified<Guid, TChangeTrackingEntity>>(false);
+
+        configurator.Builder.WithRegistration<IEntityQueryOrderByHandler<Guid, TChangeTrackingEntity>,
+            DefaultEntityQueryOrderByHandler<Guid, TChangeTrackingEntity>>(false);
+
+        configurator.Builder.WithRegistration<
+            IEntitySearchHandler<Guid, TChangeTrackingEntity, ChangeTrackingSearchRequest<TKey>>,
+            MongoFullTextSearchHandler<Guid, TChangeTrackingEntity, ChangeTrackingSearchRequest<TKey>>>(false);
 
         if (configurator.Builder.IsTenantEntity)
         {
