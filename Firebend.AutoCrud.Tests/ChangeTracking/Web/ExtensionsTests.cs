@@ -5,6 +5,7 @@ using Firebend.AutoCrud.ChangeTracking.Models;
 using Firebend.AutoCrud.ChangeTracking.Web;
 using Firebend.AutoCrud.ChangeTracking.Web.Abstractions;
 using Firebend.AutoCrud.ChangeTracking.Web.Implementations;
+using Firebend.AutoCrud.ChangeTracking.Web.Implementations.Authorization;
 using Firebend.AutoCrud.ChangeTracking.Web.Interfaces;
 using Firebend.AutoCrud.Core.Abstractions.Builders;
 using Firebend.AutoCrud.Core.Interfaces.Models;
@@ -131,5 +132,51 @@ public class ExtensionsTests
 
         builder.Registrations.Should().ContainKey(expectedMapperType);
         builder.Registrations.Should().ContainKey(expectedControllerType);
+    }
+
+    [Test]
+    public void AddChangeTrackingResourceAuthorization_Tier2_AppliesFilterToTier2ControllerType()
+    {
+        var builder = BuildBuilder();
+
+        builder.AddControllers<Guid, WebExtensionsTestEntity, V1>(configure =>
+        {
+            configure.WithReadViewModel<WebExtensionsTestViewModel, WebExtensionsFakeReadViewModelMapper>();
+            configure
+                .WithChangeTrackingControllers<EntityCrudBuilder<Guid, WebExtensionsTestEntity>, Guid, WebExtensionsTestEntity, V1, WebExtensionsCustomRow>()
+                .AddChangeTrackingResourceAuthorization<EntityCrudBuilder<Guid, WebExtensionsTestEntity>, Guid, WebExtensionsTestEntity, V1, WebExtensionsCustomRow>();
+        });
+
+        var expectedDefaultViewModelType = typeof(ChangeTrackingModel<,>).MakeGenericType(typeof(Guid), typeof(WebExtensionsTestViewModel));
+
+        var expectedControllerType = typeof(AbstractChangeTrackingReadController<,,,,,>).MakeGenericType(
+            typeof(Guid), typeof(WebExtensionsTestEntity), typeof(V1), typeof(WebExtensionsTestViewModel),
+            typeof(WebExtensionsCustomRow), expectedDefaultViewModelType);
+
+        builder.Attributes.Should().ContainKey(expectedControllerType);
+        builder.Attributes[expectedControllerType].Should()
+            .Contain(a => a.AttributeType == typeof(EntityChangeTrackingAuthorizationFilter<Guid, WebExtensionsTestEntity, V1>));
+    }
+
+    [Test]
+    public void AddChangeTrackingAuthorizationPolicy_Tier3_AppliesPolicyToTier3ControllerType()
+    {
+        var builder = BuildBuilder();
+
+        builder.AddControllers<Guid, WebExtensionsTestEntity, V1>(configure =>
+        {
+            configure.WithReadViewModel<WebExtensionsTestViewModel, WebExtensionsFakeReadViewModelMapper>();
+            configure
+                .WithChangeTrackingControllers<EntityCrudBuilder<Guid, WebExtensionsTestEntity>, Guid, WebExtensionsTestEntity, V1, WebExtensionsCustomRow, WebExtensionsCustomViewModel>()
+                .AddChangeTrackingAuthorizationPolicy<EntityCrudBuilder<Guid, WebExtensionsTestEntity>, Guid, WebExtensionsTestEntity, V1, WebExtensionsCustomRow, WebExtensionsCustomViewModel>("ChangeTrackingRead");
+        });
+
+        var expectedControllerType = typeof(AbstractChangeTrackingReadController<,,,,,>).MakeGenericType(
+            typeof(Guid), typeof(WebExtensionsTestEntity), typeof(V1), typeof(WebExtensionsTestViewModel),
+            typeof(WebExtensionsCustomRow), typeof(WebExtensionsCustomViewModel));
+
+        builder.Attributes.Should().ContainKey(expectedControllerType);
+        builder.Attributes[expectedControllerType].Should()
+            .Contain(a => a.AttributeType == typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute));
     }
 }

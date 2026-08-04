@@ -255,6 +255,108 @@ public static class Extensions
         => configurator.AddResourceAuthorization(configurator.ChangeTrackingControllerType(),
             typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity, TVersion>), policy);
 
+    /// <summary>
+    /// Adds resource authorization to change tracking read requests for a custom <typeparamref name="TChangeTrackingEntity"/>
+    /// row type, using the same <see cref="EntityChangeTrackingAuthorizationFilter{TKey,TEntity,TVersion}"/> as the
+    /// default row type, since the filter only depends on the route's entity id argument name — not on the row or DTO type.
+    /// </summary>
+    /// <param name="policy">The resource authorization policy</param>
+    /// <typeparam name="TBuilder">
+    /// The type of <see cref="EntityCrudBuilder{TKey,TEntity}"/> builder.
+    /// </typeparam>
+    /// <typeparam name="TKey">
+    /// The type of key the entity uses.
+    /// </typeparam>
+    /// <typeparam name="TEntity">
+    /// The type of entity.
+    /// </typeparam>
+    /// <typeparam name="TVersion">
+    /// The API version the controller is for.
+    /// </typeparam>
+    /// <typeparam name="TChangeTrackingEntity">
+    /// The type of row persisted for each change. Must match whatever <see cref="WithChangeTrackingControllers{TBuilder,TKey,TEntity,TVersion,TChangeTrackingEntity}"/>
+    /// was called with for the same entity, so the resolved controller type matches the one actually registered.
+    /// </typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithChangeTrackingControllers&lt;EntityCrudBuilder&lt;Guid, WeatherForecast&gt;, Guid, WeatherForecast, V1, WeatherForecastAuditRow&gt;()
+    ///          .AddChangeTrackingResourceAuthorization&lt;EntityCrudBuilder&lt;Guid, WeatherForecast&gt;, Guid, WeatherForecast, V1, WeatherForecastAuditRow&gt;()
+    /// </code>
+    /// </example>
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddChangeTrackingResourceAuthorization<TBuilder,
+        TKey, TEntity, TVersion, TChangeTrackingEntity>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator,
+        string policy = ChangeTrackingAuthorizationRequirement.DefaultPolicy)
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
+        where TChangeTrackingEntity : ChangeTrackingEntity<TKey, TEntity>
+        => configurator.AddResourceAuthorization(
+            ResolveChangeTrackingControllerType(configurator, typeof(AbstractChangeTrackingReadController<,,,,,>),
+                typeof(TChangeTrackingEntity), DefaultChangeTrackingViewModelType(configurator)),
+            typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity, TVersion>), policy);
+
+    /// <summary>
+    /// Adds resource authorization to change tracking read requests for a custom <typeparamref name="TChangeTrackingEntity"/>
+    /// row type mapped to a custom <typeparamref name="TChangeTrackingViewModel"/> DTO, using the same
+    /// <see cref="EntityChangeTrackingAuthorizationFilter{TKey,TEntity,TVersion}"/> as the default row type, since the
+    /// filter only depends on the route's entity id argument name — not on the row or DTO type.
+    /// </summary>
+    /// <param name="policy">The resource authorization policy</param>
+    /// <typeparam name="TBuilder">
+    /// The type of <see cref="EntityCrudBuilder{TKey,TEntity}"/> builder.
+    /// </typeparam>
+    /// <typeparam name="TKey">
+    /// The type of key the entity uses.
+    /// </typeparam>
+    /// <typeparam name="TEntity">
+    /// The type of entity.
+    /// </typeparam>
+    /// <typeparam name="TVersion">
+    /// The API version the controller is for.
+    /// </typeparam>
+    /// <typeparam name="TChangeTrackingEntity">
+    /// The type of row persisted for each change. Must match whatever <see cref="WithChangeTrackingControllers{TBuilder,TKey,TEntity,TVersion,TChangeTrackingEntity,TChangeTrackingViewModel}"/>
+    /// was called with for the same entity, so the resolved controller type matches the one actually registered.
+    /// </typeparam>
+    /// <typeparam name="TChangeTrackingViewModel">
+    /// The DTO returned by the `/changes` endpoint. Must match whatever <see cref="WithChangeTrackingControllers{TBuilder,TKey,TEntity,TVersion,TChangeTrackingEntity,TChangeTrackingViewModel}"/>
+    /// was called with for the same entity, so the resolved controller type matches the one actually registered.
+    /// </typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithChangeTrackingControllers&lt;EntityCrudBuilder&lt;Guid, WeatherForecast&gt;, Guid, WeatherForecast, V1, WeatherForecastAuditRow, WeatherForecastAuditViewModel&gt;()
+    ///          .AddChangeTrackingResourceAuthorization&lt;EntityCrudBuilder&lt;Guid, WeatherForecast&gt;, Guid, WeatherForecast, V1, WeatherForecastAuditRow, WeatherForecastAuditViewModel&gt;()
+    /// </code>
+    /// </example>
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddChangeTrackingResourceAuthorization<TBuilder,
+        TKey, TEntity, TVersion, TChangeTrackingEntity, TChangeTrackingViewModel>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator,
+        string policy = ChangeTrackingAuthorizationRequirement.DefaultPolicy)
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
+        where TChangeTrackingEntity : ChangeTrackingEntity<TKey, TEntity>
+        where TChangeTrackingViewModel : class, new()
+        => configurator.AddResourceAuthorization(
+            ResolveChangeTrackingControllerType(configurator, typeof(AbstractChangeTrackingReadController<,,,,,>),
+                typeof(TChangeTrackingEntity), typeof(TChangeTrackingViewModel)),
+            typeof(EntityChangeTrackingAuthorizationFilter<TKey, TEntity, TVersion>), policy);
+
     public static IServiceCollection AddDefaultChangeTrackingResourceAuthorizationRequirement(this IServiceCollection serviceCollection)
         => serviceCollection.AddAuthorization(options =>
             {
@@ -269,4 +371,99 @@ public static class Extensions
         where TEntity : class, IEntity<TKey>
         where TVersion : class, IAutoCrudApiVersion
         => configurator.AddAuthorizationPolicy(configurator.ChangeTrackingControllerType(), policy);
+
+    /// <summary>
+    /// Adds an authorization policy to change tracking read requests for a custom <typeparamref name="TChangeTrackingEntity"/>
+    /// row type.
+    /// </summary>
+    /// <param name="policy">The authorization policy name</param>
+    /// <typeparam name="TBuilder">
+    /// The type of <see cref="EntityCrudBuilder{TKey,TEntity}"/> builder.
+    /// </typeparam>
+    /// <typeparam name="TKey">
+    /// The type of key the entity uses.
+    /// </typeparam>
+    /// <typeparam name="TEntity">
+    /// The type of entity.
+    /// </typeparam>
+    /// <typeparam name="TVersion">
+    /// The API version the controller is for.
+    /// </typeparam>
+    /// <typeparam name="TChangeTrackingEntity">
+    /// The type of row persisted for each change. Must match whatever <see cref="WithChangeTrackingControllers{TBuilder,TKey,TEntity,TVersion,TChangeTrackingEntity}"/>
+    /// was called with for the same entity, so the resolved controller type matches the one actually registered.
+    /// </typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithChangeTrackingControllers&lt;EntityCrudBuilder&lt;Guid, WeatherForecast&gt;, Guid, WeatherForecast, V1, WeatherForecastAuditRow&gt;()
+    ///          .AddChangeTrackingAuthorizationPolicy&lt;EntityCrudBuilder&lt;Guid, WeatherForecast&gt;, Guid, WeatherForecast, V1, WeatherForecastAuditRow&gt;("Policy")
+    /// </code>
+    /// </example>
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddChangeTrackingAuthorizationPolicy<TBuilder, TKey, TEntity, TVersion, TChangeTrackingEntity>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator, string policy)
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
+        where TChangeTrackingEntity : ChangeTrackingEntity<TKey, TEntity>
+        => configurator.AddAuthorizationPolicy(
+            ResolveChangeTrackingControllerType(configurator, typeof(AbstractChangeTrackingReadController<,,,,,>),
+                typeof(TChangeTrackingEntity), DefaultChangeTrackingViewModelType(configurator)),
+            policy);
+
+    /// <summary>
+    /// Adds an authorization policy to change tracking read requests for a custom <typeparamref name="TChangeTrackingEntity"/>
+    /// row type mapped to a custom <typeparamref name="TChangeTrackingViewModel"/> DTO.
+    /// </summary>
+    /// <param name="policy">The authorization policy name</param>
+    /// <typeparam name="TBuilder">
+    /// The type of <see cref="EntityCrudBuilder{TKey,TEntity}"/> builder.
+    /// </typeparam>
+    /// <typeparam name="TKey">
+    /// The type of key the entity uses.
+    /// </typeparam>
+    /// <typeparam name="TEntity">
+    /// The type of entity.
+    /// </typeparam>
+    /// <typeparam name="TVersion">
+    /// The API version the controller is for.
+    /// </typeparam>
+    /// <typeparam name="TChangeTrackingEntity">
+    /// The type of row persisted for each change. Must match whatever <see cref="WithChangeTrackingControllers{TBuilder,TKey,TEntity,TVersion,TChangeTrackingEntity,TChangeTrackingViewModel}"/>
+    /// was called with for the same entity, so the resolved controller type matches the one actually registered.
+    /// </typeparam>
+    /// <typeparam name="TChangeTrackingViewModel">
+    /// The DTO returned by the `/changes` endpoint. Must match whatever <see cref="WithChangeTrackingControllers{TBuilder,TKey,TEntity,TVersion,TChangeTrackingEntity,TChangeTrackingViewModel}"/>
+    /// was called with for the same entity, so the resolved controller type matches the one actually registered.
+    /// </typeparam>
+    /// <example>
+    /// <code>
+    /// forecast.WithDefaultDatabase("Samples")
+    ///      .WithCollection("WeatherForecasts")
+    ///      .WithFullTextSearch()
+    ///      .AddCrud()
+    ///      .AddControllers(controllers => controllers
+    ///          .WithAllControllers()
+    ///          .WithChangeTrackingControllers&lt;EntityCrudBuilder&lt;Guid, WeatherForecast&gt;, Guid, WeatherForecast, V1, WeatherForecastAuditRow, WeatherForecastAuditViewModel&gt;()
+    ///          .AddChangeTrackingAuthorizationPolicy&lt;EntityCrudBuilder&lt;Guid, WeatherForecast&gt;, Guid, WeatherForecast, V1, WeatherForecastAuditRow, WeatherForecastAuditViewModel&gt;("Policy")
+    /// </code>
+    /// </example>
+    public static ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> AddChangeTrackingAuthorizationPolicy<TBuilder, TKey, TEntity, TVersion, TChangeTrackingEntity, TChangeTrackingViewModel>(
+        this ControllerConfigurator<TBuilder, TKey, TEntity, TVersion> configurator, string policy)
+        where TBuilder : EntityCrudBuilder<TKey, TEntity>
+        where TKey : struct
+        where TEntity : class, IEntity<TKey>
+        where TVersion : class, IAutoCrudApiVersion
+        where TChangeTrackingEntity : ChangeTrackingEntity<TKey, TEntity>
+        where TChangeTrackingViewModel : class, new()
+        => configurator.AddAuthorizationPolicy(
+            ResolveChangeTrackingControllerType(configurator, typeof(AbstractChangeTrackingReadController<,,,,,>),
+                typeof(TChangeTrackingEntity), typeof(TChangeTrackingViewModel)),
+            policy);
 }
