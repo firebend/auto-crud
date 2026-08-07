@@ -12,51 +12,18 @@ using Firebend.AutoCrud.EntityFramework.Interfaces;
 
 namespace Firebend.AutoCrud.ChangeTracking.EntityFramework.Implementations;
 
+// A thin closure of the generic 3-arg version over the default row type, kept as its own named
+// class since it predates custom row types and is part of the public API.
 public class EntityFrameworkChangeTrackingReadService<TEntityKey, TEntity> :
-    AbstractEntitySearchService<ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>>,
+    EntityFrameworkChangeTrackingReadService<TEntityKey, TEntity, ChangeTrackingEntity<TEntityKey, TEntity>>,
     IChangeTrackingReadService<TEntityKey, TEntity>
     where TEntity : class, IEntity<TEntityKey>
     where TEntityKey : struct
 {
-    private readonly IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> _queryClient;
-    private readonly IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> _searchHandler;
-
     public EntityFrameworkChangeTrackingReadService(IEntityFrameworkQueryClient<Guid, ChangeTrackingEntity<TEntityKey, TEntity>> queryClient,
         IEntitySearchHandler<Guid, ChangeTrackingEntity<TEntityKey, TEntity>, ChangeTrackingSearchRequest<TEntityKey>> searchHandler)
+        : base(queryClient, searchHandler)
     {
-        _queryClient = queryClient;
-        _searchHandler = searchHandler;
-    }
-
-    public async Task<EntityPagedResponse<ChangeTrackingEntity<TEntityKey, TEntity>>> GetChangesByEntityId(
-        ChangeTrackingSearchRequest<TEntityKey> searchRequest,
-        CancellationToken cancellationToken)
-    {
-        if (searchRequest == null)
-        {
-            throw new ArgumentNullException(nameof(searchRequest));
-        }
-
-        var (query, context) = await _queryClient
-            .GetQueryableAsync(true, cancellationToken);
-
-        await using (context)
-        {
-            query = query.Where(x => x.EntityId.Equals(searchRequest.EntityId));
-
-            query = GetSearchExpressions(searchRequest).Aggregate(query, (current, expression) => current.Where(expression));
-
-            if (_searchHandler != null)
-            {
-                query = _searchHandler.HandleSearch(query, searchRequest)
-                        ?? await _searchHandler.HandleSearchAsync(query, searchRequest);
-            }
-
-            var paged = await _queryClient
-                .GetPagedResponseAsync(query, searchRequest, true, cancellationToken);
-
-            return paged;
-        }
     }
 }
 
