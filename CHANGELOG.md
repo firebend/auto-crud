@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="17.0.0"></a>
+## [17.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v17.0.0) (2026-08-12)
+
+### ✨ Features
+
+* Extensible change tracking rows ([#437](https://www.github.com/firebend/auto-crud/issues/437)) ([bf4ef4e](https://www.github.com/firebend/auto-crud/commit/bf4ef4ef0682f5fda25b12a49d2cf93ad111ff24))
+
+### Breaking Changes
+
+* Extensible change tracking rows ([#437](https://www.github.com/firebend/auto-crud/issues/437)) ([bf4ef4e](https://www.github.com/firebend/auto-crud/commit/bf4ef4ef0682f5fda25b12a49d2cf93ad111ff24))
+
+### Other
+
+* !feat: Extensible change tracking rows (#436) ([3dce5f0](https://www.github.com/firebend/auto-crud/commit/3dce5f09df912814b40e4088a543b10417fc32dd))
+
 <a name="16.1.4"></a>
 ## [16.1.4](https://www.github.com/firebend/auto-crud/releases/tag/v16.1.4) (2026-06-17)
 
