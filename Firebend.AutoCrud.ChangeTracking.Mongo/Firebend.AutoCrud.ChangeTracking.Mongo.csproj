@@ -4,6 +4,7 @@
         <Version>16.1.4</Version>
         <TargetFramework>net9.0</TargetFramework>
         <LangVersion>latestmajor</LangVersion>
+        <Bumper>1</Bumper>
     </PropertyGroup>
 
     <PropertyGroup>
