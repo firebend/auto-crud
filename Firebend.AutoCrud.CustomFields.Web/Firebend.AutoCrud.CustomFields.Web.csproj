@@ -23,6 +23,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Firebend.AutoCrud.Core\Firebend.AutoCrud.Core.csproj" />
       <ProjectReference Include="..\Firebend.AutoCrud.Web\Firebend.AutoCrud.Web.csproj" />
     </ItemGroup>
