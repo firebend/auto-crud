@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="17.0.1"></a>
+## [17.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v17.0.1) (2026-10-07)
+
+### Other
+
+* Update AsyncKeyedLock package version to 8.1.2 (#438) ([5917364](https://www.github.com/firebend/auto-crud/commit/5917364d461524b1a09639a0a65d45c769477afb))
+* await entity read before disposing read service in EntityAuthProvider ([#439](https://www.github.com/firebend/auto-crud/issues/439)) ([c3ae3d3](https://www.github.com/firebend/auto-crud/commit/c3ae3d3759d7bec88455b2b650f8cf91594272b8))
+
 <a name="17.0.0"></a>
 ## [17.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v17.0.0) (2026-08-12)
 

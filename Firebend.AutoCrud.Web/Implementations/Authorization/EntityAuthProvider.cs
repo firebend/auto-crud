@@ -36,7 +36,7 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
         return entityId;
     }
 
-    protected virtual Task<TEntity> GetEntityAsync<TKey, TEntity>(TKey id, CancellationToken cancellationToken)
+    protected virtual async Task<TEntity> GetEntityAsync<TKey, TEntity>(TKey id, CancellationToken cancellationToken)
         where TKey : struct
         where TEntity : class, IEntity<TKey>
     {
@@ -44,7 +44,7 @@ public abstract class EntityAuthProvider : IEntityAuthProvider
 
         using (readService)
         {
-            return readService.GetByKeyAsync(id, cancellationToken);
+            return await readService.GetByKeyAsync(id, cancellationToken);
         }
     }
 
