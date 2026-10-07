@@ -52,12 +52,8 @@ public static class CustomFieldsTypeConfigurationExtensions
                     .Where(x => x.IsGenericType && x.GetInterfaces().Length == 0)
                     .FirstOrDefault(x => x.IsAssignableToGenericType(typeof(ITenantEntity<>)))
                     ?.GetGenericArguments()
-                    .FirstOrDefault();
-
-                if (tenantKeyType == null)
-                {
-                    throw new Exception("Could not determine tenant key type for entity " + entityType.Name);
-                }
+                    .FirstOrDefault()
+                    ?? throw new Exception("Could not determine tenant key type for entity " + entityType.Name);
             }
 
             var customFieldsEntityType = isTenantEntity ?
