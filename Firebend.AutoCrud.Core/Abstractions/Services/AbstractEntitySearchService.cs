@@ -10,17 +10,13 @@ namespace Firebend.AutoCrud.Core.Abstractions.Services;
 public abstract class AbstractEntitySearchService<TEntity, TSearch> : BaseDisposable
     where TSearch : IEntitySearchRequest
 {
-    private Type _myType;
-    private MethodInfo _yieldDateFiltersMethodInfo;
-    private MethodInfo _yieldActiveFiltersMethodInfo;
+    private Type MyType => field ??= typeof(AbstractEntitySearchService<TEntity, TSearch>);
 
-    private Type MyType => _myType ??= typeof(AbstractEntitySearchService<TEntity, TSearch>);
-
-    private MethodInfo YieldDateFiltersMethodInfo => _yieldDateFiltersMethodInfo ??= MyType
+    private MethodInfo YieldDateFiltersMethodInfo => field ??= MyType
         .GetMethod(nameof(YieldDateFilters), BindingFlags.Static | BindingFlags.NonPublic)
         ?.MakeGenericMethod(typeof(TEntity));
 
-    private MethodInfo YieldActiveFiltersMethodInfo => _yieldActiveFiltersMethodInfo ??= MyType
+    private MethodInfo YieldActiveFiltersMethodInfo => field ??= MyType
         .GetMethod(nameof(YieldActiveFilters), BindingFlags.Static | BindingFlags.NonPublic)
         ?.MakeGenericMethod(typeof(TEntity));
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFrameworks>$(FirebendTargetFrameworks)</TargetFrameworks>
 
         <IsPackable>false</IsPackable>
 
@@ -9,22 +9,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoFixture" Version="4.18.1" />
-        <PackageReference Include="AutoFixture.AutoMoq" Version="4.18.1" />
-        <PackageReference Include="FluentAssertions" Version="8.7.0" />
-        <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1">
+        <PackageReference Include="AutoFixture" />
+        <PackageReference Include="AutoFixture.AutoMoq" />
+        <PackageReference Include="FluentAssertions" />
+        <PackageReference Include="GitHubActionsTestLogger">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-        <PackageReference Include="nunit" Version="4.4.0" />
-        <PackageReference Include="NUnit3TestAdapter" Version="5.1.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.5" />
-        <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
-        <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.7.0" />
+        <PackageReference Include="Microsoft.Data.SqlClient" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+        <PackageReference Include="NUnit" />
+        <PackageReference Include="NUnit3TestAdapter" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
     </ItemGroup>
 
     <ItemGroup>

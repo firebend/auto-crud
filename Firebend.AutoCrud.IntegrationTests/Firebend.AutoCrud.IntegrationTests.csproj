@@ -1,26 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <!-- References the runnable Web.Sample app, so it follows the app framework. -->
+        <TargetFramework>$(FirebendAppTargetFramework)</TargetFramework>
 
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bogus" Version="35.6.4" />
-        <PackageReference Include="CsvHelper" Version="33.1.0" />
-        <PackageReference Include="FluentAssertions" Version="8.7.0" />
-        <PackageReference Include="Flurl.Http" Version="4.0.2" />
-        <PackageReference Include="Flurl.Http.Newtonsoft" Version="0.9.1" />
-        <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1">
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="CsvHelper" />
+        <PackageReference Include="FluentAssertions" />
+        <PackageReference Include="Flurl.Http" />
+        <PackageReference Include="Flurl.Http.Newtonsoft" />
+        <PackageReference Include="GitHubActionsTestLogger">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="9.0.9" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-        <PackageReference Include="MSTest.TestAdapter" Version="3.11.0" />
-        <PackageReference Include="MSTest.TestFramework" Version="3.11.0" />
-        <PackageReference Include="coverlet.collector" Version="6.0.4">
+        <PackageReference Include="Microsoft.AspNetCore.JsonPatch" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="MSTest.TestAdapter" />
+        <PackageReference Include="MSTest.TestFramework" />
+        <PackageReference Include="coverlet.collector">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>

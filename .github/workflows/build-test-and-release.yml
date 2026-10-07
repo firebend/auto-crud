@@ -10,7 +10,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PUSH_TO_PROTECTED_BRANCH }}
           fetch-depth: '0'
@@ -34,9 +34,11 @@ jobs:
 
       - name: Setup .NET Core
         if: steps.versionize.outcome == 'success'
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: |
+            9.0.x
+            10.0.x
 
       - name: Install dependencies
         if: steps.versionize.outcome == 'success'

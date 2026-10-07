@@ -4,7 +4,7 @@ using Firebend.AutoCrud.Web.Attributes;
 using Firebend.AutoCrud.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Firebend.AutoCrud.Web.Implementations.Swagger;
@@ -107,6 +107,12 @@ public class SwaggerOperationFilter : IOperationFilter
         if (!string.IsNullOrWhiteSpace(operation.Summary))
         {
             operation.Summary = SanitizeEntityName(operation.Summary, entityNameAttribute);
+        }
+
+        // Microsoft.OpenApi 2.x leaves model collections null until something is added.
+        if (operation.Responses is null)
+        {
+            return;
         }
 
         foreach (var (_, response) in operation.Responses)

@@ -11,29 +11,32 @@ namespace Firebend.AutoCrud.Core.Models.DomainEvents;
 public class EntityUpdatedDomainEvent<T> : DomainEventBase
     where T : class
 {
-    private T _modified;
-    private List<Operation<T>> _operations;
-    private JsonPatchDocument<T> _patch;
-
     public T Previous { get; set; }
 
     public List<Operation<T>> Operations
     {
-        get => _operations;
+        get;
         set
         {
-            _operations = value;
-            _patch = null;
-            _modified = null;
+            field = value;
+            Patch = null;
+            Modified = null;
         }
     }
 
     [JsonIgnore]
     public JsonPatchDocument<T> Patch
-        => _patch ??= Operations?.HasValues() ?? false ? new JsonPatchDocument<T>(Operations, new DefaultContractResolver()) : null;
+    {
+        get => field ??= Operations?.HasValues() ?? false ? new JsonPatchDocument<T>(Operations, new DefaultContractResolver()) : null;
+        private set;
+    }
 
     [JsonIgnore]
-    public T Modified => _modified ??= GetModified(Previous, Patch);
+    public T Modified
+    {
+        get => field ??= GetModified(Previous, Patch);
+        private set;
+    }
 
     private static T GetModified(T previous, JsonPatchDocument<T> patchDocument)
     {

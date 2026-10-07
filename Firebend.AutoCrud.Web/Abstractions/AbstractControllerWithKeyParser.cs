@@ -15,8 +15,7 @@ public abstract class AbstractControllerWithKeyParser<TKey, TEntity, TVersion> :
 {
     private readonly IEntityKeyParser<TKey, TEntity, TVersion> _keyParser;
 
-    private Type _entityType;
-    private Type EntityType => _entityType ??= typeof(TEntity);
+    private Type EntityType => field ??= typeof(TEntity);
 
     protected AbstractControllerWithKeyParser(IEntityKeyParser<TKey, TEntity, TVersion> keyParser,
         IOptions<ApiBehaviorOptions> apiOptions) : base(apiOptions)
