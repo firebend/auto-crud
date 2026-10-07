@@ -146,4 +146,30 @@ public class EntityAuthProviderTests
         _entityReadService.Verify(s => s.GetByKeyAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()));
         _authService.Verify(a => a.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()));
     }
+
+    [Test]
+    public async Task AuthorizeEntityAsync_ById_Should_Not_Dispose_Read_Service_Before_Read_Completes()
+    {
+        // given
+        var read = new TaskCompletionSource<ActionFilterTestHelper.TestEntity>();
+        var disposedWhileReadPending = false;
+
+        _entityReadService.Setup(s => s.GetByKeyAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(read.Task);
+        _entityReadService.Setup(s => s.Dispose())
+            .Callback(() => disposedWhileReadPending = !read.Task.IsCompleted);
+
+        var entityAuthProvider =
+            new DefaultEntityAuthProvider(_authService.Object, _serviceProvider.Object);
+
+        // when
+        var authorize = entityAuthProvider.AuthorizeEntityAsync<Guid, ActionFilterTestHelper.TestEntity, V1>(
+            Guid.NewGuid(), It.IsAny<ClaimsPrincipal>(), It.IsAny<string>(), It.IsAny<CancellationToken>());
+        read.SetResult(new ActionFilterTestHelper.TestEntity());
+        await authorize;
+
+        // then
+        Assert.That(disposedWhileReadPending, Is.False);
+        _entityReadService.Verify(s => s.Dispose(), Times.Once);
+    }
 }
