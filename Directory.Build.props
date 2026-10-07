@@ -5,4 +5,8 @@
     <!-- Single framework for samples, benchmarks, and other runnable apps. -->
     <FirebendAppTargetFramework>net10.0</FirebendAppTargetFramework>
   </PropertyGroup>
+  <ItemGroup Condition="'$(PackageIcon)' != ''">
+    <!-- Embeds the repo-root icon in every package that sets PackageIcon. -->
+    <None Include="$(MSBuildThisFileDirectory)nuget-image.png" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 </Project>

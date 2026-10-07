@@ -18,9 +18,9 @@
       <PackageTags>firebend;autocrud;crud;entity;web;asp;aspnet;mvc</PackageTags>
       <Authors>Firebend</Authors>
       <RepositoryUrl>https://github.com/firebend/auto-crud</RepositoryUrl>
-      <PackageLicenseUrl>https://github.com/firebend/auto-crud/blob/main/LICENSE</PackageLicenseUrl>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
       <PackageProjectUrl>https://github.com/firebend/auto-crud</PackageProjectUrl>
-      <PackageIconUrl>https://github.com/firebend/auto-crud/blob/main/nuget-image.png?raw=true</PackageIconUrl>
+      <PackageIcon>nuget-image.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
