@@ -71,11 +71,11 @@ jobs:
         if: steps.versionize.outcome == 'success'
         run: dotnet pack Firebend.AutoCrud.Mongo/Firebend.AutoCrud.Mongo.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
-      - name: Pack Web
+      - name: Pack Domain Events MassTransit
         if: steps.versionize.outcome == 'success'
         run: dotnet pack Firebend.AutoCrud.DomainEvents.MassTransit/Firebend.AutoCrud.DomainEvents.MassTransit.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
-      - name: Pack Domain Events MassTransit
+      - name: Pack Web
         if: steps.versionize.outcome == 'success'
         run: dotnet pack Firebend.AutoCrud.Web/Firebend.AutoCrud.Web.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
