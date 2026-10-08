@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="18.0.0"></a>
+## [18.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v18.0.0) (2026-10-08)
+
+### ✨ Features
+
+* target net9.0 and net10.0 with configurable frameworks ([#440](https://www.github.com/firebend/auto-crud/issues/440)) ([a6d95e4](https://www.github.com/firebend/auto-crud/commit/a6d95e4b8b3fdc7a55b8aa661e01e1ab45ed1f51))
+
+### Breaking Changes
+
+* target net9.0 and net10.0 with configurable frameworks ([#440](https://www.github.com/firebend/auto-crud/issues/440)) ([a6d95e4](https://www.github.com/firebend/auto-crud/commit/a6d95e4b8b3fdc7a55b8aa661e01e1ab45ed1f51))
+
 <a name="17.0.1"></a>
 ## [17.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v17.0.1) (2026-10-07)
 

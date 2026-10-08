@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>$(FirebendTargetFrameworks)</TargetFrameworks>
-        <Version>17.0.1</Version>
+        <Version>18.0.0</Version>
         <LangVersion>latestmajor</LangVersion>
         <Bumper>3</Bumper>
     </PropertyGroup>
