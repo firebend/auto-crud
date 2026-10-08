@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="18.0.1"></a>
+## [18.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v18.0.1) (2026-10-08)
+
+### Other
+
+* give JsonContainsAny LIKE patterns a string type mapping ([7766570](https://www.github.com/firebend/auto-crud/commit/7766570ee1bb778d6466bf25c2b1b7da4eb21aa1))
+
 <a name="18.0.0"></a>
 ## [18.0.0](https://www.github.com/firebend/auto-crud/releases/tag/v18.0.0) (2026-10-08)
 
