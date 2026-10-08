@@ -46,7 +46,7 @@
     <PackageVersion Include="AsyncKeyedLock" Version="8.1.2" />
     <PackageVersion Include="ClosedXML" Version="0.105.1" />
     <PackageVersion Include="CsvHelper" Version="33.1.0" />
-    <PackageVersion Include="Firebend.JsonPatchGenerator" Version="9.0.13" />
+    <PackageVersion Include="Firebend.JsonPatchGenerator" Version="10.0.0" />
     <PackageVersion Include="Humanizer.Core" Version="3.0.10" />
     <!-- MassTransit v9 is commercially licensed; stay on the latest v8. -->
     <PackageVersion Include="MassTransit" Version="8.5.3" />
