@@ -25,24 +25,16 @@ public class EntityAuthorizationFilter<TKey, TEntity, TVersion> : IAsyncActionFi
 
     public virtual Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        _entityAuthProvider = context.HttpContext.RequestServices.GetService<IEntityAuthProvider>();
-
-        if (_entityAuthProvider == null)
-        {
-            throw new DependencyResolverException($"Unable to resolve {nameof(IEntityAuthProvider)}");
-        }
+        _entityAuthProvider = context.HttpContext.RequestServices.GetService<IEntityAuthProvider>()
+            ?? throw new DependencyResolverException($"Unable to resolve {nameof(IEntityAuthProvider)}");
 
         return AuthorizeRequestAsync(context, next);
     }
 
     public Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
-        _entityAuthProvider = context.HttpContext.RequestServices.GetService<IEntityAuthProvider>();
-
-        if (_entityAuthProvider == null)
-        {
-            throw new DependencyResolverException($"Unable to resolve {nameof(IEntityAuthProvider)}");
-        }
+        _entityAuthProvider = context.HttpContext.RequestServices.GetService<IEntityAuthProvider>()
+            ?? throw new DependencyResolverException($"Unable to resolve {nameof(IEntityAuthProvider)}");
 
         return AuthorizeResponseAsync(context, next);
     }

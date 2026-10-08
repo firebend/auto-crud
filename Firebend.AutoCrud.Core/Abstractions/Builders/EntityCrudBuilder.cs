@@ -23,8 +23,6 @@ public abstract class EntityCrudBuilder<TKey, TEntity> : EntityBuilder<TKey, TEn
 
     private bool? _isTenantEntity;
 
-    private Type _tenantEntityKeyType;
-
     protected EntityCrudBuilder(IServiceCollection services) : base(services)
     {
         SearchRequestType = IsActiveEntity switch
@@ -77,9 +75,9 @@ public abstract class EntityCrudBuilder<TKey, TEntity> : EntityBuilder<TKey, TEn
     {
         get
         {
-            if (_tenantEntityKeyType != null)
+            if (field != null)
             {
-                return _tenantEntityKeyType;
+                return field;
             }
 
             if (!IsTenantEntity)
@@ -87,9 +85,9 @@ public abstract class EntityCrudBuilder<TKey, TEntity> : EntityBuilder<TKey, TEn
                 return null;
             }
 
-            _tenantEntityKeyType = EntityType.GetProperty(nameof(ITenantEntity<int>.TenantId))
+            field = EntityType.GetProperty(nameof(ITenantEntity<int>.TenantId))
                 ?.PropertyType;
-            return _tenantEntityKeyType;
+            return field;
         }
     }
 

@@ -6,7 +6,7 @@ using Firebend.AutoCrud.Web.Implementations.Swagger;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using NUnit.Framework;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -31,7 +31,7 @@ public class SwaggerOperationFilterTests
                 ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
             }
         };
-        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
+        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), new OpenApiDocument(), methodInfo);
         var filter = new SwaggerOperationFilter();
 
         //act
@@ -58,7 +58,7 @@ public class SwaggerOperationFilterTests
                 ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
             }
         };
-        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
+        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), new OpenApiDocument(), methodInfo);
         var filter = new SwaggerOperationFilter();
 
         //act
@@ -94,7 +94,7 @@ public class SwaggerOperationFilterTests
                 ActionName = nameof(FakeController.ReadByIdAsync).Replace("Async", null)
             }
         };
-        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), methodInfo);
+        var context = new OperationFilterContext(apiDescription, generator, new SchemaRepository(), new OpenApiDocument(), methodInfo);
         var filter = new SwaggerOperationFilter();
 
         //act

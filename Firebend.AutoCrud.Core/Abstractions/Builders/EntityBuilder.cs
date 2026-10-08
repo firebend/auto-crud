@@ -8,15 +8,12 @@ public abstract class EntityBuilder<TKey, TEntity> : BaseBuilder
     where TKey : struct
     where TEntity : IEntity<TKey>
 {
-    private Type _entityType;
-    private Type _entityKeyType;
-
     private string _signatureBase;
     public string EntityName { get; set; }
 
-    public Type EntityType => _entityType ??= typeof(TEntity);
+    public Type EntityType => field ??= typeof(TEntity);
 
-    public Type EntityKeyType => _entityKeyType ??= typeof(TKey);
+    public Type EntityKeyType => field ??= typeof(TKey);
 
     public Type ExportType { get; set; }
 

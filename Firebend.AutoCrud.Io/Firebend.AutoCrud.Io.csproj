@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFrameworks>$(FirebendTargetFrameworks)</TargetFrameworks>
         <Version>17.0.1</Version>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
@@ -17,14 +17,14 @@
       <PackageTags>firebend;autocrud;crud;io;csv;spreadsheet;excel</PackageTags>
       <Authors>Firebend</Authors>
       <RepositoryUrl>https://github.com/firebend/auto-crud</RepositoryUrl>
-      <PackageLicenseUrl>https://github.com/firebend/auto-crud/blob/main/LICENSE</PackageLicenseUrl>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
       <PackageProjectUrl>https://github.com/firebend/auto-crud</PackageProjectUrl>
-      <PackageIconUrl>https://github.com/firebend/auto-crud/blob/main/nuget-image.png?raw=true</PackageIconUrl>
+      <PackageIcon>nuget-image.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ClosedXML" Version="0.105.0" />
-      <PackageReference Include="CsvHelper" Version="33.1.0" />
+      <PackageReference Include="ClosedXML" />
+      <PackageReference Include="CsvHelper" />
     </ItemGroup>
 
     <ItemGroup>

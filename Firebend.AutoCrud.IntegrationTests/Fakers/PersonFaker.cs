@@ -5,13 +5,11 @@ namespace Firebend.AutoCrud.IntegrationTests.Fakers;
 
 public static class PersonFaker
 {
-    private static Faker<PersonViewModelBase> _fakerViewModelBase;
-
     public static Faker<PersonViewModelBase> Faker
     {
         get
         {
-            _fakerViewModelBase ??= new Faker<PersonViewModelBase>()
+            field ??= new Faker<PersonViewModelBase>()
                 .StrictMode(true)
                 .RuleFor(x => x.Email, f => f.Person.Email)
                 .RuleFor(x => x.FirstName, f => f.Person.FirstName)
@@ -20,7 +18,7 @@ public static class PersonFaker
                 .RuleFor(x => x.OtherEmail, f => f.Person.Email)
                 .RuleFor(x => x.DataAuth, _ => new DataAuth());
 
-            return _fakerViewModelBase;
+            return field;
         }
     }
 }

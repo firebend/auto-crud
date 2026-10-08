@@ -10,10 +10,17 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PUSH_TO_PROTECTED_BRANCH }}
           fetch-depth: '0'
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          # The .NET 9 SDK supplies the net9.0 runtime for tests; global.json pins the SDK that builds.
+          dotnet-version: 9.0.x
+          global-json-file: global.json
 
       - name: Install Versionize
         run: dotnet tool install --global Versionize
@@ -31,12 +38,6 @@ jobs:
       - name: No release required
         if: steps.versionize.outcome != 'success'
         run: echo "Skipping publishing. No release required."
-
-      - name: Setup .NET Core
-        if: steps.versionize.outcome == 'success'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '9.0.x'
 
       - name: Install dependencies
         if: steps.versionize.outcome == 'success'
@@ -70,11 +71,11 @@ jobs:
         if: steps.versionize.outcome == 'success'
         run: dotnet pack Firebend.AutoCrud.Mongo/Firebend.AutoCrud.Mongo.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
-      - name: Pack Web
+      - name: Pack Domain Events MassTransit
         if: steps.versionize.outcome == 'success'
         run: dotnet pack Firebend.AutoCrud.DomainEvents.MassTransit/Firebend.AutoCrud.DomainEvents.MassTransit.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
-      - name: Pack Domain Events MassTransit
+      - name: Pack Web
         if: steps.versionize.outcome == 'success'
         run: dotnet pack Firebend.AutoCrud.Web/Firebend.AutoCrud.Web.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 

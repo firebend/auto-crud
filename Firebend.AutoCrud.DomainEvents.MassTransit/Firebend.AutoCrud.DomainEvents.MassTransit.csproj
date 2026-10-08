@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Version>17.0.1</Version>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFrameworks>$(FirebendTargetFrameworks)</TargetFrameworks>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
@@ -17,9 +17,9 @@
       <PackageTags>firebend;autocrud;crud;domain;events;masstransit;service bus;</PackageTags>
       <Authors>Firebend</Authors>
       <RepositoryUrl>https://github.com/firebend/auto-crud</RepositoryUrl>
-      <PackageLicenseUrl>https://github.com/firebend/auto-crud/blob/main/LICENSE</PackageLicenseUrl>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
       <PackageProjectUrl>https://github.com/firebend/auto-crud</PackageProjectUrl>
-      <PackageIconUrl>https://github.com/firebend/auto-crud/blob/main/nuget-image.png?raw=true</PackageIconUrl>
+      <PackageIcon>nuget-image.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -27,8 +27,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MassTransit" Version="8.5.3" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+      <PackageReference Include="MassTransit" />
+      <PackageReference Include="Newtonsoft.Json" />
     </ItemGroup>
 
 </Project>

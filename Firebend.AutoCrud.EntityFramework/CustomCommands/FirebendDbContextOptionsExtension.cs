@@ -6,8 +6,6 @@ namespace Firebend.AutoCrud.EntityFramework.CustomCommands;
 
 public class FirebendDbContextOptionsExtension : IDbContextOptionsExtension
 {
-    private DbContextOptionsExtensionInfo _info;
-
     public void ApplyServices(IServiceCollection services)
     {
         _ = new EntityFrameworkRelationalServicesBuilder(services)
@@ -18,6 +16,5 @@ public class FirebendDbContextOptionsExtension : IDbContextOptionsExtension
     {
     }
 
-    public DbContextOptionsExtensionInfo Info
-        => _info ??= new FirebendAutoCrudFunctionsExtensionsInfo(this);
+    public DbContextOptionsExtensionInfo Info => field ??= new FirebendAutoCrudFunctionsExtensionsInfo(this);
 }

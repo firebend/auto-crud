@@ -12,8 +12,7 @@ public record ObjectMapperContext(
     ICollection<string> PropertiesToInclude,
     bool IncludeObjects)
 {
-    private string _key;
-    public string Key => _key ??= GetMapKey();
+    public string Key => field ??= GetMapKey();
     private string GetMapKey() => GetKeyUsingStringBuilder();
     private string GetKeyUsingStringBuilder()
     {

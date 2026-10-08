@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFrameworks>$(FirebendTargetFrameworks)</TargetFrameworks>
         <Version>17.0.1</Version>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
@@ -17,20 +17,18 @@
       <PackageTags>firebend;autocrud;crud;</PackageTags>
       <Authors>Firebend</Authors>
       <RepositoryUrl>https://github.com/firebend/auto-crud</RepositoryUrl>
-      <PackageLicenseUrl>https://github.com/firebend/auto-crud/blob/main/LICENSE</PackageLicenseUrl>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
       <PackageProjectUrl>https://github.com/firebend/auto-crud</PackageProjectUrl>
-      <PackageIconUrl>https://github.com/firebend/auto-crud/blob/main/nuget-image.png?raw=true</PackageIconUrl>
+      <PackageIcon>nuget-image.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AsyncKeyedLock" Version="8.1.2" />
-      <PackageReference Include="Firebend.JsonPatchGenerator" Version="9.0.13" />
-      <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
-      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.9" />
-      <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
-      <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.7.0" />
+      <PackageReference Include="AsyncKeyedLock" />
+      <PackageReference Include="Firebend.JsonPatchGenerator" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>

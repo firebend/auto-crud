@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFrameworks>$(FirebendTargetFrameworks)</TargetFrameworks>
         <Version>17.0.1</Version>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
@@ -17,16 +17,15 @@
       <PackageTags>firebend;autocrud;crud;elastic pool;azure;sql;server</PackageTags>
       <Authors>Firebend</Authors>
       <RepositoryUrl>https://github.com/firebend/auto-crud</RepositoryUrl>
-      <PackageLicenseUrl>https://github.com/firebend/auto-crud/blob/main/LICENSE</PackageLicenseUrl>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
       <PackageProjectUrl>https://github.com/firebend/auto-crud</PackageProjectUrl>
-      <PackageIconUrl>https://github.com/firebend/auto-crud/blob/main/nuget-image.png?raw=true</PackageIconUrl>
+      <PackageIcon>nuget-image.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" Version="2.4.2" />
-      <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-      <PackageReference Include="System.Text.Encodings.Web" Version="9.0.9" />
+      <PackageReference Include="Microsoft.Azure.SqlDatabase.ElasticScale.Client" />
+      <PackageReference Include="Microsoft.Data.SqlClient" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     </ItemGroup>
 
     <ItemGroup>
