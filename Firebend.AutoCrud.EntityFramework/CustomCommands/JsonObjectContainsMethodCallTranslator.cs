@@ -65,7 +65,15 @@ public class JsonObjectContainsMethodCallTranslator : IMethodCallTranslator
 
         var columnFragment = _sqlExpressionFactory.Fragment(columnString);
 
-        var stringTypeMapping = ExpressionExtensions.InferTypeMapping(jsonObjectExpression);
+        // The column fragment carries no type mapping, so LIKE cannot infer one for the pattern; EF Core 10 then
+        // refuses to generate SQL ("does not have a type mapping assigned"). Give every pattern the provider's plain
+        // string mapping: the column's own mapping can carry a value converter (e.g. object <-> JSON) that would try
+        // to convert the pattern itself.
+        var stringTypeMapping = _sqlExpressionFactory
+            .ApplyDefaultTypeMapping(_sqlExpressionFactory.Constant(string.Empty))
+            .TypeMapping;
+
+        SqlExpression StringConstant(string value) => _sqlExpressionFactory.Constant(value, stringTypeMapping);
 
         switch (pattern)
         {
@@ -73,9 +81,7 @@ public class JsonObjectContainsMethodCallTranslator : IMethodCallTranslator
             {
                 if (constantPattern.Value is not string patternValue)
                 {
-                    return _sqlExpressionFactory.Like(
-                        columnFragment,
-                        _sqlExpressionFactory.Constant(null!, stringTypeMapping));
+                    return _sqlExpressionFactory.Like(columnFragment, StringConstant(null!));
                 }
 
                 if (patternValue.Length == 0)
@@ -86,12 +92,15 @@ public class JsonObjectContainsMethodCallTranslator : IMethodCallTranslator
                 return patternValue.Any(IsLikeWildChar)
                     ? _sqlExpressionFactory.Like(
                         columnFragment,
-                        _sqlExpressionFactory.Constant($"%{EscapeLikePattern(patternValue)}%"),
-                        _sqlExpressionFactory.Constant(LikeEscapeString))
-                    : _sqlExpressionFactory.Like(columnFragment, _sqlExpressionFactory.Constant($"%{patternValue}%"));
+                        StringConstant($"%{EscapeLikePattern(patternValue)}%"),
+                        StringConstant(LikeEscapeString))
+                    : _sqlExpressionFactory.Like(columnFragment, StringConstant($"%{patternValue}%"));
             }
             case SqlParameterExpression:
-                return _sqlExpressionFactory.Like(columnFragment, pattern, _sqlExpressionFactory.Constant(LikeEscapeString));
+                return _sqlExpressionFactory.Like(
+                    columnFragment,
+                    _sqlExpressionFactory.ApplyTypeMapping(pattern, stringTypeMapping),
+                    StringConstant(LikeEscapeString));
             default:
                 return null;
         }
