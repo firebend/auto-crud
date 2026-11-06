@@ -9,6 +9,9 @@ jobs:
   build_test_and_release:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # nuget.org trusted publishing (OIDC)
     steps:
       - uses: actions/checkout@v4
         with:
@@ -115,9 +118,16 @@ jobs:
         if: steps.versionize.outcome == 'success'
         run: dotnet pack Firebend.AutoCrud.CustomFields.Web/Firebend.AutoCrud.CustomFields.Web.csproj --no-build -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o .
 
+      - name: NuGet login (trusted publishing)
+        id: nuget-login
+        if: steps.versionize.outcome == 'success'
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
       - name: Publish Nuget Packages
         if: steps.versionize.outcome == 'success'
-        run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+        run: dotnet nuget push *.nupkg --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
       - name: Push version changes
         if: steps.versionize.outcome == 'success'
