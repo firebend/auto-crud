@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [versio
 
 
 
+<a name="18.1.0"></a>
+## [18.1.0](https://www.github.com/firebend/auto-crud/releases/tag/v18.1.0) (2026-11-10)
+
+### ✨ Features
+
+* index change-tracking tables on EntityId and ModifiedDate ([#448](https://www.github.com/firebend/auto-crud/issues/448)) ([0ed1334](https://www.github.com/firebend/auto-crud/commit/0ed133416fe5afa84cd554948198447159139357))
+
+### Other
+
+* Publish to nuget.org with trusted publishing ([#447](https://www.github.com/firebend/auto-crud/issues/447)) ([aa7ff0f](https://www.github.com/firebend/auto-crud/commit/aa7ff0f8f508f28c7711c44252842235d8f862bd))
+
 <a name="18.0.1"></a>
 ## [18.0.1](https://www.github.com/firebend/auto-crud/releases/tag/v18.0.1) (2026-10-08)
 
