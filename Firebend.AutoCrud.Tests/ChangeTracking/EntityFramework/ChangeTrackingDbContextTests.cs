@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.DbContexts;
 using Firebend.AutoCrud.ChangeTracking.EntityFramework.Interfaces;
 using Firebend.AutoCrud.ChangeTracking.Models;
@@ -64,5 +65,42 @@ public class ChangeTrackingDbContextTests
         // The base type is NOT separately queryable once only the derived type is mapped -
         // this is why the read path (Task 4) must stay pinned to the default row type.
         context.Model.FindEntityType(typeof(ChangeTrackingEntity<Guid, ChangeTrackingDbContextTestEntity>)).Should().BeNull();
+    }
+
+    [Test]
+    public void DefaultRowType_IndexesEntityIdThenModifiedDate_WithPinnedName()
+    {
+        using var context = BuildContext<ChangeTrackingEntity<Guid, ChangeTrackingDbContextTestEntity>>();
+
+        var entityType = context.Model.FindEntityType(typeof(ChangeTrackingEntity<Guid, ChangeTrackingDbContextTestEntity>));
+
+        var index = entityType!.GetIndexes().Should().ContainSingle().Subject;
+        index.Properties.Select(p => p.Name).Should().Equal(
+            nameof(ChangeTrackingEntity<Guid, ChangeTrackingDbContextTestEntity>.EntityId),
+            nameof(ChangeTrackingEntity<Guid, ChangeTrackingDbContextTestEntity>.ModifiedDate));
+        index.GetDatabaseName().Should().Be("IX_ChangeTrackingDbContextTestEntity_Changes_EntityId_ModifiedDate");
+    }
+
+    [Test]
+    public void CustomRowType_KeepsTheIndex()
+    {
+        using var context = BuildContext<CustomChangeTrackingRow>();
+
+        var entityType = context.Model.FindEntityType(typeof(CustomChangeTrackingRow));
+
+        entityType!.GetIndexes().Select(i => i.GetDatabaseName())
+            .Should().Equal("IX_ChangeTrackingDbContextTestEntity_Changes_EntityId_ModifiedDate");
+    }
+
+    [Test]
+    public void CreateScript_CreatesTheIndexWithTheTable()
+    {
+        using var context = BuildContext<ChangeTrackingEntity<Guid, ChangeTrackingDbContextTestEntity>>();
+
+        var script = context.Database.GenerateCreateScript();
+
+        script.Should().Contain(
+            "CREATE INDEX [IX_ChangeTrackingDbContextTestEntity_Changes_EntityId_ModifiedDate] " +
+            "ON [dbo].[ChangeTrackingDbContextTestEntity_Changes] ([EntityId], [ModifiedDate]);");
     }
 }

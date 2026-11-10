@@ -54,6 +54,13 @@ public class ChangeTrackingDbContext<TKey, TEntity, TChangeTrackingEntity>(
             changes.Property(x => x.UserEmail).HasMaxLength(250);
             changes.Property(x => x.EntityId);
 
+            // Reads filter and count on EntityId and page in ModifiedDate order; without this every
+            // GET {id}/changes scans the whole table. The name is pinned so consumers that add the index
+            // to existing tables out of band (CreateTables() never alters a table that already exists)
+            // can use the same name and be skipped here, and vice versa.
+            changes.HasIndex(x => new { x.EntityId, x.ModifiedDate })
+                .HasDatabaseName($"IX_{tableName}_EntityId_ModifiedDate");
+
             MapJson(changes, x => x.Changes);
             MapJson(changes, x => x.Entity);
 
